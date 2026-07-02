@@ -1,0 +1,37 @@
+-- Run this in the Supabase SQL Editor to create the shifts table.
+
+CREATE TABLE IF NOT EXISTS public.shifts (
+  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  place       TEXT NOT NULL CHECK (place IN ('pasta', 'coffee')),
+  shift_date  DATE NOT NULL,
+  hours       NUMERIC(5, 2) NOT NULL CHECK (hours > 0),
+  tips        NUMERIC(10, 2) NOT NULL DEFAULT 0 CHECK (tips >= 0),
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_shifts_shift_date ON public.shifts (shift_date);
+
+COMMENT ON TABLE public.shifts IS 'Work shifts — pay rates are hardcoded in the app (pasta=50, coffee=34).';
+COMMENT ON COLUMN public.shifts.place IS 'Workplace: pasta or coffee';
+COMMENT ON COLUMN public.shifts.hours IS 'Hours worked on this shift';
+COMMENT ON COLUMN public.shifts.tips IS 'Tips earned (optional, defaults to 0)';
+
+-- Row Level Security (adjust if you add auth later)
+ALTER TABLE public.shifts ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Allow public read on shifts"
+  ON public.shifts FOR SELECT
+  USING (true);
+
+CREATE POLICY "Allow public insert on shifts"
+  ON public.shifts FOR INSERT
+  WITH CHECK (true);
+
+CREATE POLICY "Allow public update on shifts"
+  ON public.shifts FOR UPDATE
+  USING (true)
+  WITH CHECK (true);
+
+CREATE POLICY "Allow public delete on shifts"
+  ON public.shifts FOR DELETE
+  USING (true);

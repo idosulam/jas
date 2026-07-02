@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import NavHome from './NavHome';
-import NavWorkouts from './NavWorkouts';
-import NavProfile from './NavProfile';
+import nav_Shifts from '../navbar/Nav_Shifts';
+import NavWorkouts from '../navbar/NavWorkouts';
+import NavProfile from '../navbar/NavProfile';
 import './Navbar.css';
 
+
 const NAV_ITEMS = [
-  { id: 'home', Component: NavHome },
+  { id: 'Shifts', Component: nav_Shifts },
   { id: 'workouts', Component: NavWorkouts },
   { id: 'profile', Component: NavProfile },
 ];
@@ -49,6 +50,7 @@ function Navbar({ activeId, onChange }) {
   }, [activeId]);
 
   return (
+    
     <nav className="navbar" aria-label="Main navigation">
       <div className={`navbar__glass ${isPulsing ? 'navbar__glass--pulse' : ''}`}>
         <div className="navbar__shine" aria-hidden="true" />
@@ -72,6 +74,7 @@ function Navbar({ activeId, onChange }) {
         </div>
       </div>
     </nav>
+    
   );
 }
 

@@ -1,25 +1,25 @@
 import { useRef, useState } from 'react';
 import Navbar from './components/Navbar/Navbar.jsx';
 import PageTransition from './components/PageTransition.jsx';
-import Home from './components/Pages/home/Home.jsx';
+import Shifts from './components/Pages/Shifts/Shifts.jsx';
 import Workouts from './components/Pages/workouts/Workouts.jsx';
 import Profile from './components/Pages/profile/Profile.jsx';
 import './styles/pages.css';
 import './styles/animations.css';
 import './App.css';
 
-const TAB_ORDER = ['home', 'workouts', 'profile'];
+const TAB_ORDER = ['Shifts', 'workouts', 'profile'];
 
 const PAGES = {
-  home: Home,
+  Shifts: Shifts,
   workouts: Workouts,
   profile: Profile,
 };
 
 function App() {
-  const [activeNav, setActiveNav] = useState('home');
+  const [activeNav, setActiveNav] = useState('Shifts');
   const [direction, setDirection] = useState('forward');
-  const prevNavRef = useRef('home');
+  const prevNavRef = useRef('Shifts');
 
   const handleNavChange = (id) => {
     if (id === activeNav) return;

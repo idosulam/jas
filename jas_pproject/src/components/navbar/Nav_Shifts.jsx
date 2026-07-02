@@ -1,4 +1,4 @@
-function NavHome({ isActive, onClick }) {
+function Nav_Shifts({ isActive, onClick }) {
   return (
     <button
       type="button"
@@ -14,9 +14,9 @@ function NavHome({ isActive, onClick }) {
           strokeLinejoin="round"
         />
       </svg>
-      <span className="nav-option__label">Home</span>
+      <span className="nav-option__label">Shifts</span>
     </button>
   );
 }
 
-export default NavHome;
+export default Nav_Shifts;
