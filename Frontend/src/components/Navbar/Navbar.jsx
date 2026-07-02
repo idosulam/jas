@@ -1,81 +1,78 @@
-import { useCallback, useEffect, useState } from 'react'
-import NavBrand from './NavBrand'
-import NavMenu from './NavMenu'
-import MobileMenuButton from './MobileMenuButton'
-import { navItems } from './navItems'
-import './Navbar.css'
+import { useCallback, useEffect, useRef, useState } from 'react';
+import NavHome from './NavHome';
+import NavWorkouts from './NavWorkouts';
+import NavProfile from './NavProfile';
+import './Navbar.css';
 
-function Navbar({
-  items = navItems,
-  activeId = null,
-  onSelect,
-  className = '',
-}) {
-  const [isMobileOpen, setIsMobileOpen] = useState(false)
+const NAV_ITEMS = [
+  { id: 'home', Component: NavHome },
+  { id: 'workouts', Component: NavWorkouts },
+  { id: 'profile', Component: NavProfile },
+];
 
-  const handleSelect = useCallback(
-    (id) => {
-      onSelect?.(id)
-      setIsMobileOpen(false)
-    },
-    [onSelect],
-  )
+function Navbar({ activeId, onChange }) {
+  const navRef = useRef(null);
+  const prevActiveRef = useRef(activeId);
+  const [indicator, setIndicator] = useState({ left: 0, width: 0 });
+  const [isPulsing, setIsPulsing] = useState(false);
 
-  const handleToggle = useCallback(() => {
-    setIsMobileOpen((open) => !open)
-  }, [])
+  const updateIndicator = useCallback(() => {
+    const nav = navRef.current;
+    if (!nav) return;
 
-  useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth >= 768) {
-        setIsMobileOpen(false)
-      }
-    }
+    const activeButton = nav.querySelector(`[data-nav-id="${activeId}"]`);
+    if (!activeButton) return;
 
-    window.addEventListener('resize', handleResize)
-    return () => window.removeEventListener('resize', handleResize)
-  }, [])
+    const navRect = nav.getBoundingClientRect();
+    const buttonRect = activeButton.getBoundingClientRect();
+
+    setIndicator({
+      left: buttonRect.left - navRect.left,
+      width: buttonRect.width,
+    });
+  }, [activeId]);
 
   useEffect(() => {
-    document.body.classList.toggle('nav-mobile-open', isMobileOpen)
-    return () => document.body.classList.remove('nav-mobile-open')
-  }, [isMobileOpen])
+    updateIndicator();
+    window.addEventListener('resize', updateIndicator);
+    return () => window.removeEventListener('resize', updateIndicator);
+  }, [updateIndicator]);
+
+  useEffect(() => {
+    if (prevActiveRef.current === activeId) return;
+
+    prevActiveRef.current = activeId;
+    setIsPulsing(true);
+
+    const timer = setTimeout(() => setIsPulsing(false), 450);
+    return () => clearTimeout(timer);
+  }, [activeId]);
 
   return (
-    <>
-      <header className={`navbar ${className}`.trim()}>
-        <div className="navbar__liquid navbar__liquid--one" aria-hidden="true" />
-        <div className="navbar__liquid navbar__liquid--two" aria-hidden="true" />
-
-        <div className="navbar__inner">
-          <NavBrand onSelect={handleSelect} />
-
-          <NavMenu
-            items={items}
-            activeId={activeId}
-            onSelect={handleSelect}
-            className="nav-menu--desktop"
+    <nav className="navbar" aria-label="Main navigation">
+      <div className={`navbar__glass ${isPulsing ? 'navbar__glass--pulse' : ''}`}>
+        <div className="navbar__shine" aria-hidden="true" />
+        <div className="navbar__inner" ref={navRef}>
+          <div
+            className="navbar__indicator"
+            style={{
+              transform: `translateX(${indicator.left}px)`,
+              width: indicator.width,
+            }}
+            aria-hidden="true"
           />
-
-          <MobileMenuButton isOpen={isMobileOpen} onToggle={handleToggle} />
+          {NAV_ITEMS.map(({ id, Component }) => (
+            <div key={id} data-nav-id={id} className="navbar__item">
+              <Component
+                isActive={activeId === id}
+                onClick={() => onChange(id)}
+              />
+            </div>
+          ))}
         </div>
-      </header>
-
-      <div
-        className={`nav-drawer-backdrop ${isMobileOpen ? 'nav-drawer-backdrop--visible' : ''}`.trim()}
-        aria-hidden="true"
-        onClick={handleToggle}
-      />
-
-      <NavMenu
-        items={items}
-        activeId={activeId}
-        onSelect={handleSelect}
-        isOpen={isMobileOpen}
-        className="nav-menu--mobile"
-      />
-    </>
-  )
+      </div>
+    </nav>
+  );
 }
 
-export default Navbar
+export default Navbar;
