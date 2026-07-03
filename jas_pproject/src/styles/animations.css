@@ -2,12 +2,10 @@
   from {
     opacity: 0;
     transform: translateX(2.5rem) scale(0.97);
-    filter: blur(6px);
   }
   to {
     opacity: 1;
     transform: translateX(0) scale(1);
-    filter: blur(0);
   }
 }
 
@@ -15,12 +13,10 @@
   from {
     opacity: 0;
     transform: translateX(-2.5rem) scale(0.97);
-    filter: blur(6px);
   }
   to {
     opacity: 1;
     transform: translateX(0) scale(1);
-    filter: blur(0);
   }
 }
 
@@ -139,6 +135,7 @@
   animation-duration: 0.45s;
   animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
   animation-fill-mode: both;
+  will-change: transform, opacity;
 }
 
 .page-transition--forward {
