@@ -1,12 +1,12 @@
-import "./Workouts.css";
+import "./Calendar.css";
 
-function Workouts() {
+function Calendar() {
   return (
     <section className="">
-      <h1 className="">Workouts</h1>
+      <h1 className="">Calendar</h1>
       <p className="">Browse routines and start a session.</p>
     </section>
   );
 }
 
-export default Workouts;
+export default Calendar;

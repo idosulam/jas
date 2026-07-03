@@ -1,14 +1,13 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import nav_Shifts from '../navbar/Nav_Shifts';
-import NavWorkouts from '../navbar/NavWorkouts';
-import NavProfile from '../navbar/NavProfile';
-import './Navbar.css';
-
+import { useCallback, useEffect, useRef, useState } from "react";
+import nav_Shifts from "../navbar/Nav_Shifts";
+import Nav_Calendar from "../navbar/Nav_Calendar";
+import Nav_Profile from "../navbar/Nav_Profile";
+import "./Navbar.css";
 
 const NAV_ITEMS = [
-  { id: 'Shifts', Component: nav_Shifts },
-  { id: 'workouts', Component: NavWorkouts },
-  { id: 'profile', Component: NavProfile },
+  { id: "Shifts", Component: nav_Shifts },
+  { id: "Calendar", Component: Nav_Calendar },
+  { id: "Profile", Component: Nav_Profile },
 ];
 
 function Navbar({ activeId, onChange }) {
@@ -35,8 +34,8 @@ function Navbar({ activeId, onChange }) {
 
   useEffect(() => {
     updateIndicator();
-    window.addEventListener('resize', updateIndicator);
-    return () => window.removeEventListener('resize', updateIndicator);
+    window.addEventListener("resize", updateIndicator);
+    return () => window.removeEventListener("resize", updateIndicator);
   }, [updateIndicator]);
 
   useEffect(() => {
@@ -50,9 +49,10 @@ function Navbar({ activeId, onChange }) {
   }, [activeId]);
 
   return (
-    
     <nav className="navbar" aria-label="Main navigation">
-      <div className={`navbar__glass ${isPulsing ? 'navbar__glass--pulse' : ''}`}>
+      <div
+        className={`navbar__glass ${isPulsing ? "navbar__glass--pulse" : ""}`}
+      >
         <div className="navbar__shine" aria-hidden="true" />
         <div className="navbar__inner" ref={navRef}>
           <div
@@ -74,7 +74,6 @@ function Navbar({ activeId, onChange }) {
         </div>
       </div>
     </nav>
-    
   );
 }
 

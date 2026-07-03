@@ -2,17 +2,17 @@ import { useRef, useState } from "react";
 import Navbar from "./components/Navbar/Navbar.jsx";
 import PageTransition from "./components/PageTransition.jsx";
 import Shifts from "./components/Pages/Shifts/Shifts.jsx";
-import Workouts from "./components/Pages/workouts/Workouts.jsx";
+import Calendar from "./components/Pages/Calendar/Calendar.jsx";
 import Profile from "./components/Pages/profile/Profile.jsx";
 import "./styles/pages.css";
 import "./styles/animations.css";
 
-const TAB_ORDER = ["Shifts", "workouts", "profile"];
+const TAB_ORDER = ["Shifts", "Calendar", "Profile"];
 
 const PAGES = {
   Shifts: Shifts,
-  workouts: Workouts,
-  profile: Profile,
+  Calendar: Calendar,
+  Profile: Profile,
 };
 
 function App() {
