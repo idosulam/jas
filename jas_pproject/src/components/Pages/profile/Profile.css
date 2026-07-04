@@ -444,6 +444,13 @@
   color: rgba(255, 255, 255, 0.35);
 }
 
+.profile__height-row,
+.profile__weight-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.7rem;
+}
+
 .profile__field input,
 .profile__field select {
   padding: 0.65rem 0.75rem;

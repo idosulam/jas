@@ -1,6 +1,6 @@
 import "./Calendar.css";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { supabase } from "../../../lib/superbase";
+import { getSupabaseClient } from "../../../lib/superbase";
 import {
   addDays,
   DAY_END_HOUR,
@@ -14,6 +14,12 @@ import {
   toDateKey,
   TOTAL_HOURS,
 } from "./calendarLayout";
+import {
+  getUserFacingError,
+  sanitizeDate,
+  sanitizeText,
+  sanitizeTime,
+} from "../../../lib/security";
 
 const MODAL_EXIT_MS = 260;
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -87,17 +93,23 @@ function Calendar() {
     setLoading(true);
     setError(null);
 
-    const { data, error: fetchError } = await supabase
-      .from("events")
-      .select("*")
-      .eq("event_date", selectedKey)
-      .order("start_time", { ascending: true });
+    try {
+      const supabase = getSupabaseClient();
+      const { data, error: fetchError } = await supabase
+        .from("events")
+        .select("*")
+        .eq("event_date", selectedKey)
+        .order("start_time", { ascending: true });
 
-    if (fetchError) {
-      setError(fetchError.message);
+      if (fetchError) {
+        setError(getUserFacingError(fetchError.message));
+        setEvents([]);
+      } else {
+        setEvents(data ?? []);
+      }
+    } catch (err) {
+      setError(getUserFacingError(err.message));
       setEvents([]);
-    } else {
-      setEvents(data ?? []);
     }
     setLoading(false);
   }, [selectedKey]);
@@ -159,13 +171,17 @@ function Calendar() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const title = form.title.trim();
-    if (!title || !form.event_date || !form.start_time || !form.end_time) {
+    const title = sanitizeText(form.title, 80);
+    const eventDate = sanitizeDate(form.event_date, selectedKey);
+    const startTime = sanitizeTime(form.start_time, "09:00");
+    const endTime = sanitizeTime(form.end_time, "10:00");
+
+    if (!title || !eventDate || !startTime || !endTime) {
       setError("Please fill in title, date, and times.");
       return;
     }
 
-    if (form.end_time <= form.start_time) {
+    if (endTime <= startTime) {
       setError("End time must be after start time.");
       return;
     }
@@ -175,32 +191,40 @@ function Calendar() {
 
     const payload = {
       title,
-      notes: form.notes.trim() || null,
-      event_date: form.event_date,
-      start_time: form.start_time,
-      end_time: form.end_time,
-      color: form.color,
+      notes: sanitizeText(form.notes, 240) || null,
+      event_date: eventDate,
+      start_time: startTime,
+      end_time: endTime,
+      color: ["indigo", "pink", "orange", "green", "cyan"].includes(form.color)
+        ? form.color
+        : "indigo",
     };
 
-    let dbError;
-    if (editingEvent) {
-      ({ error: dbError } = await supabase
-        .from("events")
-        .update(payload)
-        .eq("id", editingEvent.id));
-    } else {
-      ({ error: dbError } = await supabase.from("events").insert(payload));
+    try {
+      const supabase = getSupabaseClient();
+      let dbError;
+      if (editingEvent) {
+        ({ error: dbError } = await supabase
+          .from("events")
+          .update(payload)
+          .eq("id", editingEvent.id));
+      } else {
+        ({ error: dbError } = await supabase.from("events").insert(payload));
+      }
+
+      setSaving(false);
+
+      if (dbError) {
+        setError(getUserFacingError(dbError.message));
+        return;
+      }
+
+      closeFormModal();
+      fetchEvents();
+    } catch (err) {
+      setSaving(false);
+      setError(getUserFacingError(err.message));
     }
-
-    setSaving(false);
-
-    if (dbError) {
-      setError(dbError.message);
-      return;
-    }
-
-    closeFormModal();
-    fetchEvents();
   };
 
   const confirmDelete = async () => {
@@ -209,20 +233,26 @@ function Calendar() {
     setDeleting(true);
     setError(null);
 
-    const { error: dbError } = await supabase
-      .from("events")
-      .delete()
-      .eq("id", deleteTarget.id);
+    try {
+      const supabase = getSupabaseClient();
+      const { error: dbError } = await supabase
+        .from("events")
+        .delete()
+        .eq("id", deleteTarget.id);
 
-    setDeleting(false);
+      setDeleting(false);
 
-    if (dbError) {
-      setError(dbError.message);
-      return;
+      if (dbError) {
+        setError(getUserFacingError(dbError.message));
+        return;
+      }
+
+      closeDeleteModal();
+      fetchEvents();
+    } catch (err) {
+      setDeleting(false);
+      setError(getUserFacingError(err.message));
     }
-
-    closeDeleteModal();
-    fetchEvents();
   };
 
   const toggleComplete = async (event) => {
@@ -230,32 +260,39 @@ function Calendar() {
     setError(null);
 
     const nextCompleted = !event.is_completed;
-    const { error: dbError } = await supabase
-      .from("events")
-      .update({
-        is_completed: nextCompleted,
-        completed_at: nextCompleted ? new Date().toISOString() : null,
-      })
-      .eq("id", event.id);
 
-    setTogglingId(null);
+    try {
+      const supabase = getSupabaseClient();
+      const { error: dbError } = await supabase
+        .from("events")
+        .update({
+          is_completed: nextCompleted,
+          completed_at: nextCompleted ? new Date().toISOString() : null,
+        })
+        .eq("id", event.id);
 
-    if (dbError) {
-      setError(dbError.message);
-      return;
+      setTogglingId(null);
+
+      if (dbError) {
+        setError(getUserFacingError(dbError.message));
+        return;
+      }
+
+      setEvents((prev) =>
+        prev.map((item) =>
+          item.id === event.id
+            ? {
+                ...item,
+                is_completed: nextCompleted,
+                completed_at: nextCompleted ? new Date().toISOString() : null,
+              }
+            : item,
+        ),
+      );
+    } catch (err) {
+      setTogglingId(null);
+      setError(getUserFacingError(err.message));
     }
-
-    setEvents((prev) =>
-      prev.map((item) =>
-        item.id === event.id
-          ? {
-              ...item,
-              is_completed: nextCompleted,
-              completed_at: nextCompleted ? new Date().toISOString() : null,
-            }
-          : item,
-      ),
-    );
   };
 
   const handleGridClick = (e) => {
@@ -298,8 +335,7 @@ function Calendar() {
               type="button"
               className="calendar__today-btn"
               onClick={() => setSelectedDate(new Date())}
-            >
-            </button>
+            ></button>
           )}
         </div>
         <button
@@ -330,7 +366,9 @@ function Calendar() {
               onClick={() => setSelectedDate(day)}
               aria-pressed={isSelected}
             >
-              <span className="calendar__week-label">{WEEKDAYS[day.getDay()]}</span>
+              <span className="calendar__week-label">
+                {WEEKDAYS[day.getDay()]}
+              </span>
               <span className="calendar__week-num">{day.getDate()}</span>
             </button>
           );
@@ -413,9 +451,9 @@ function Calendar() {
                 const style = eventStyle(event);
                 if (!style) return null;
 
-                const colorInfo = EVENT_COLORS[event.color] ?? EVENT_COLORS.indigo;
-                const isShort =
-                  parseInt(style.height, 10) < 44;
+                const colorInfo =
+                  EVENT_COLORS[event.color] ?? EVENT_COLORS.indigo;
+                const isShort = parseInt(style.height, 10) < 44;
 
                 return (
                   <article
@@ -440,7 +478,10 @@ function Calendar() {
                       }
                       aria-pressed={event.is_completed}
                     >
-                      <span className="calendar__check-icon" aria-hidden="true" />
+                      <span
+                        className="calendar__check-icon"
+                        aria-hidden="true"
+                      />
                     </button>
 
                     <button
@@ -448,7 +489,9 @@ function Calendar() {
                       className="calendar__event-body"
                       onClick={() => openEditModal(event)}
                     >
-                      <span className="calendar__event-title">{event.title}</span>
+                      <span className="calendar__event-title">
+                        {event.title}
+                      </span>
                       {!isShort && (
                         <span className="calendar__event-time">
                           {formatTime12(event.start_time)} –{" "}
@@ -608,18 +651,24 @@ function Calendar() {
 
               <label className="calendar__field">
                 <span>Color</span>
-                <div className="calendar__colors" role="radiogroup" aria-label="Event color">
-                  {Object.entries(EVENT_COLORS).map(([key, { label, accent }]) => (
-                    <button
-                      key={key}
-                      type="button"
-                      className={`calendar__color${form.color === key ? " calendar__color--active" : ""}`}
-                      style={{ "--swatch": accent }}
-                      onClick={() => setForm({ ...form, color: key })}
-                      aria-label={label}
-                      aria-pressed={form.color === key}
-                    />
-                  ))}
+                <div
+                  className="calendar__colors"
+                  role="radiogroup"
+                  aria-label="Event color"
+                >
+                  {Object.entries(EVENT_COLORS).map(
+                    ([key, { label, accent }]) => (
+                      <button
+                        key={key}
+                        type="button"
+                        className={`calendar__color${form.color === key ? " calendar__color--active" : ""}`}
+                        style={{ "--swatch": accent }}
+                        onClick={() => setForm({ ...form, color: key })}
+                        aria-label={label}
+                        aria-pressed={form.color === key}
+                      />
+                    ),
+                  )}
                 </div>
               </label>
 

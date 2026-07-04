@@ -1,5 +1,7 @@
 -- Run this in the Supabase SQL Editor to create profile & weight tracking tables.
 
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
 CREATE TABLE IF NOT EXISTS public.profile (
   id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   display_name    TEXT NOT NULL DEFAULT 'Jas',
@@ -21,8 +23,8 @@ CREATE TABLE IF NOT EXISTS public.weight_entries (
 
 CREATE INDEX IF NOT EXISTS idx_weight_entries_date ON public.weight_entries (entry_date);
 
-COMMENT ON TABLE public.profile IS 'Single-user profile — height & goal stored in metric (cm, kg).';
-COMMENT ON TABLE public.weight_entries IS 'Daily weigh-ins — weight always stored in kg.';
+COMMENT ON TABLE public.profile IS 'Single-user profile — height is stored in cm and goal weight in kg; the app converts lbs in the UI before saving.';
+COMMENT ON TABLE public.weight_entries IS 'Daily weigh-ins — weight is stored in kg for consistent analytics.';
 
 ALTER TABLE public.profile ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.weight_entries ENABLE ROW LEVEL SECURITY;
