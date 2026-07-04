@@ -1,6 +1,12 @@
 import "./Shifts.css";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { supabase } from "../../../lib/superbase";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { getSupabaseClient } from "../../../lib/superbase";
+import {
+  getUserFacingError,
+  sanitizeDate,
+  sanitizeNumber,
+  sanitizeText,
+} from "../../../lib/security";
 
 const PLACES = {
   pasta: { label: "Pasta Via", rate: 50 },
@@ -33,9 +39,26 @@ const MODAL_EXIT_MS = 260;
 const emptyForm = () => ({
   place: "pasta",
   shift_date: new Date().toISOString().slice(0, 10),
+  start_time: "",
+  end_time: "",
   hours: "",
   tips: "",
 });
+
+function parseTimeToMinutes(value) {
+  if (!value) return null;
+  const [hours, minutes] = value.split(":").map(Number);
+  if (Number.isNaN(hours) || Number.isNaN(minutes)) return null;
+  return hours * 60 + minutes;
+}
+
+function calculateHoursFromTimes(startTime, endTime) {
+  const start = parseTimeToMinutes(startTime);
+  const end = parseTimeToMinutes(endTime);
+  if (start == null || end == null) return null;
+  const diffMinutes = end >= start ? end - start : 24 * 60 - start + end;
+  return Number((diffMinutes / 60).toFixed(2));
+}
 
 function calcPay(place, hours) {
   return (PLACES[place]?.rate ?? 0) * (parseFloat(hours) || 0);
@@ -94,18 +117,24 @@ function Shifts() {
     const startDate = new Date(year, month, 1).toISOString().slice(0, 10);
     const endDate = new Date(year, month + 1, 0).toISOString().slice(0, 10);
 
-    const { data, error: fetchError } = await supabase
-      .from("shifts")
-      .select("*")
-      .gte("shift_date", startDate)
-      .lte("shift_date", endDate)
-      .order("shift_date", { ascending: true });
+    try {
+      const supabase = getSupabaseClient();
+      const { data, error: fetchError } = await supabase
+        .from("shifts")
+        .select("*")
+        .gte("shift_date", startDate)
+        .lte("shift_date", endDate)
+        .order("shift_date", { ascending: true });
 
-    if (fetchError) {
-      setError(fetchError.message);
+      if (fetchError) {
+        setError(getUserFacingError(fetchError.message));
+        setShifts([]);
+      } else {
+        setShifts(data ?? []);
+      }
+    } catch (err) {
+      setError(getUserFacingError(err.message));
       setShifts([]);
-    } else {
-      setShifts(data ?? []);
     }
     setLoading(false);
   }, [month, year]);
@@ -146,6 +175,8 @@ function Shifts() {
     setForm({
       place: shift.place,
       shift_date: shift.shift_date,
+      start_time: shift.start_time ?? "",
+      end_time: shift.end_time ?? "",
       hours: String(shift.hours),
       tips: shift.tips ? String(shift.tips) : "",
     });
@@ -161,6 +192,18 @@ function Shifts() {
       setEditingShift(null);
       setForm(emptyForm());
     }, MODAL_EXIT_MS);
+  };
+
+  const handleTimeChange = (field, value) => {
+    const nextForm = { ...form, [field]: value };
+    const computedHours = calculateHoursFromTimes(
+      nextForm.start_time,
+      nextForm.end_time,
+    );
+    if (computedHours != null) {
+      nextForm.hours = String(computedHours);
+    }
+    setForm(nextForm);
   };
 
   const openDeleteModal = (shift) => {
@@ -179,10 +222,14 @@ function Shifts() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const hours = parseFloat(form.hours);
-    const tips = parseFloat(form.tips) || 0;
+    const shiftDate = sanitizeDate(
+      form.shift_date,
+      new Date().toISOString().slice(0, 10),
+    );
+    const hours = sanitizeNumber(form.hours, 0.01, 24);
+    const tips = sanitizeNumber(form.tips, 0, 10000) ?? 0;
 
-    if (!form.shift_date || !form.place || !hours || hours <= 0) {
+    if (!shiftDate || !form.place || !hours || hours <= 0) {
       setError("Please fill in place, date, and valid hours.");
       return;
     }
@@ -191,31 +238,39 @@ function Shifts() {
     setError(null);
 
     const payload = {
-      place: form.place,
-      shift_date: form.shift_date,
-      hours,
-      tips,
+      place: ["pasta", "coffee"].includes(form.place) ? form.place : "pasta",
+      shift_date: shiftDate,
+      start_time: form.start_time || null,
+      end_time: form.end_time || null,
+      hours: Number(hours.toFixed(2)),
+      tips: Number(tips.toFixed(2)),
     };
 
-    let dbError;
-    if (editingShift) {
-      ({ error: dbError } = await supabase
-        .from("shifts")
-        .update(payload)
-        .eq("id", editingShift.id));
-    } else {
-      ({ error: dbError } = await supabase.from("shifts").insert(payload));
+    try {
+      const supabase = getSupabaseClient();
+      let dbError;
+      if (editingShift) {
+        ({ error: dbError } = await supabase
+          .from("shifts")
+          .update(payload)
+          .eq("id", editingShift.id));
+      } else {
+        ({ error: dbError } = await supabase.from("shifts").insert(payload));
+      }
+
+      setSaving(false);
+
+      if (dbError) {
+        setError(getUserFacingError(dbError.message));
+        return;
+      }
+
+      closeFormModal();
+      fetchShifts();
+    } catch (err) {
+      setSaving(false);
+      setError(getUserFacingError(err.message));
     }
-
-    setSaving(false);
-
-    if (dbError) {
-      setError(dbError.message);
-      return;
-    }
-
-    closeFormModal();
-    fetchShifts();
   };
 
   const confirmDelete = async () => {
@@ -224,26 +279,32 @@ function Shifts() {
     setDeleting(true);
     setError(null);
 
-    const { error: dbError } = await supabase
-      .from("shifts")
-      .delete()
-      .eq("id", deleteTarget.id);
+    try {
+      const supabase = getSupabaseClient();
+      const { error: dbError } = await supabase
+        .from("shifts")
+        .delete()
+        .eq("id", deleteTarget.id);
 
-    setDeleting(false);
+      setDeleting(false);
 
-    if (dbError) {
-      setError(dbError.message);
-      return;
+      if (dbError) {
+        setError(getUserFacingError(dbError.message));
+        return;
+      }
+
+      const removedId = deleteTarget.id;
+      closeDeleteModal();
+      setRemovingId(removedId);
+
+      setTimeout(() => {
+        setShifts((prev) => prev.filter((s) => s.id !== removedId));
+        setRemovingId(null);
+      }, 380);
+    } catch (err) {
+      setDeleting(false);
+      setError(getUserFacingError(err.message));
     }
-
-    const removedId = deleteTarget.id;
-    closeDeleteModal();
-    setRemovingId(removedId);
-
-    setTimeout(() => {
-      setShifts((prev) => prev.filter((s) => s.id !== removedId));
-      setRemovingId(null);
-    }, 380);
   };
 
   const previewPay = calcPay(form.place, form.hours);
@@ -474,12 +535,35 @@ function Shifts() {
                 />
               </label>
 
+              <div className="shifts__time-row">
+                <label className="shifts__field">
+                  <span>Start time</span>
+                  <input
+                    type="time"
+                    value={form.start_time}
+                    onChange={(e) =>
+                      handleTimeChange("start_time", e.target.value)
+                    }
+                  />
+                </label>
+                <label className="shifts__field">
+                  <span>End time</span>
+                  <input
+                    type="time"
+                    value={form.end_time}
+                    onChange={(e) =>
+                      handleTimeChange("end_time", e.target.value)
+                    }
+                  />
+                </label>
+              </div>
+
               <label className="shifts__field">
                 <span>Hours</span>
                 <input
                   type="number"
-                  min="0.25"
-                  step="0.25"
+                  min="0.1"
+                  step="0.1"
                   placeholder="e.g. 6"
                   value={form.hours}
                   onChange={(e) => setForm({ ...form, hours: e.target.value })}

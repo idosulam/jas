@@ -1,6 +1,6 @@
 import "./Calendar.css";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { supabase } from "../../../lib/superbase";
+import { getSupabaseClient } from "../../../lib/superbase";
 import {
   addDays,
   DAY_END_HOUR,
@@ -14,6 +14,12 @@ import {
   toDateKey,
   TOTAL_HOURS,
 } from "./calendarLayout";
+import {
+  getUserFacingError,
+  sanitizeDate,
+  sanitizeText,
+  sanitizeTime,
+} from "../../../lib/security";
 
 const MODAL_EXIT_MS = 260;
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -30,7 +36,9 @@ const emptyForm = (dateKey) => ({
 function Calendar() {
   const today = useMemo(() => new Date(), []);
   const [selectedDate, setSelectedDate] = useState(today);
+  const [viewMode, setViewMode] = useState("week");
   const [events, setEvents] = useState([]);
+  const [allEvents, setAllEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
@@ -51,6 +59,15 @@ function Calendar() {
     const start = startOfWeek(selectedDate);
     return Array.from({ length: 7 }, (_, i) => addDays(start, i));
   }, [selectedDate]);
+
+  const monthDays = useMemo(() => {
+    const start = startOfWeek(
+      new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1),
+    );
+    return Array.from({ length: 42 }, (_, i) => addDays(start, i));
+  }, [selectedDate]);
+
+  const visibleDays = viewMode === "week" ? weekDays : monthDays;
 
   const hourLabels = useMemo(
     () =>
@@ -73,6 +90,11 @@ function Calendar() {
     [events],
   );
 
+  const busyDates = useMemo(
+    () => new Set(allEvents.map((event) => event.event_date)),
+    [allEvents],
+  );
+
   const nowLineTop = useMemo(() => {
     if (!isToday) return null;
     const now = new Date(nowTick);
@@ -87,20 +109,40 @@ function Calendar() {
     setLoading(true);
     setError(null);
 
-    const { data, error: fetchError } = await supabase
-      .from("events")
-      .select("*")
-      .eq("event_date", selectedKey)
-      .order("start_time", { ascending: true });
+    const rangeStart =
+      viewMode === "week"
+        ? startOfWeek(selectedDate)
+        : new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
+    const rangeEnd =
+      viewMode === "week"
+        ? addDays(rangeStart, 6)
+        : new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 0);
 
-    if (fetchError) {
-      setError(fetchError.message);
+    try {
+      const supabase = getSupabaseClient();
+      const { data, error: fetchError } = await supabase
+        .from("events")
+        .select("*")
+        .gte("event_date", toDateKey(rangeStart))
+        .lte("event_date", toDateKey(rangeEnd))
+        .order("start_time", { ascending: true });
+
+      if (fetchError) {
+        setError(getUserFacingError(fetchError.message));
+        setAllEvents([]);
+        setEvents([]);
+      } else {
+        const items = data ?? [];
+        setAllEvents(items);
+        setEvents(items.filter((event) => event.event_date === selectedKey));
+      }
+    } catch (err) {
+      setError(getUserFacingError(err.message));
+      setAllEvents([]);
       setEvents([]);
-    } else {
-      setEvents(data ?? []);
     }
     setLoading(false);
-  }, [selectedKey]);
+  }, [selectedDate, selectedKey, viewMode]);
 
   useEffect(() => {
     fetchEvents();
@@ -119,6 +161,18 @@ function Calendar() {
       setEditingEvent(null);
       setForm(emptyForm(selectedKey));
     }, MODAL_EXIT_MS);
+  };
+
+  const shiftSelectedDate = (direction) => {
+    const delta = direction === "next" ? 1 : -1;
+    if (viewMode === "month") {
+      const next = new Date(selectedDate);
+      next.setMonth(next.getMonth() + delta);
+      setSelectedDate(next);
+      return;
+    }
+
+    setSelectedDate((date) => addDays(date, delta * 7));
   };
 
   const openAddModal = (startTime = "09:00") => {
@@ -159,13 +213,17 @@ function Calendar() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const title = form.title.trim();
-    if (!title || !form.event_date || !form.start_time || !form.end_time) {
+    const title = sanitizeText(form.title, 80);
+    const eventDate = sanitizeDate(form.event_date, selectedKey);
+    const startTime = sanitizeTime(form.start_time, "09:00");
+    const endTime = sanitizeTime(form.end_time, "10:00");
+
+    if (!title || !eventDate || !startTime || !endTime) {
       setError("Please fill in title, date, and times.");
       return;
     }
 
-    if (form.end_time <= form.start_time) {
+    if (endTime <= startTime) {
       setError("End time must be after start time.");
       return;
     }
@@ -175,32 +233,40 @@ function Calendar() {
 
     const payload = {
       title,
-      notes: form.notes.trim() || null,
-      event_date: form.event_date,
-      start_time: form.start_time,
-      end_time: form.end_time,
-      color: form.color,
+      notes: sanitizeText(form.notes, 240) || null,
+      event_date: eventDate,
+      start_time: startTime,
+      end_time: endTime,
+      color: ["indigo", "pink", "orange", "green", "cyan"].includes(form.color)
+        ? form.color
+        : "indigo",
     };
 
-    let dbError;
-    if (editingEvent) {
-      ({ error: dbError } = await supabase
-        .from("events")
-        .update(payload)
-        .eq("id", editingEvent.id));
-    } else {
-      ({ error: dbError } = await supabase.from("events").insert(payload));
+    try {
+      const supabase = getSupabaseClient();
+      let dbError;
+      if (editingEvent) {
+        ({ error: dbError } = await supabase
+          .from("events")
+          .update(payload)
+          .eq("id", editingEvent.id));
+      } else {
+        ({ error: dbError } = await supabase.from("events").insert(payload));
+      }
+
+      setSaving(false);
+
+      if (dbError) {
+        setError(getUserFacingError(dbError.message));
+        return;
+      }
+
+      closeFormModal();
+      fetchEvents();
+    } catch (err) {
+      setSaving(false);
+      setError(getUserFacingError(err.message));
     }
-
-    setSaving(false);
-
-    if (dbError) {
-      setError(dbError.message);
-      return;
-    }
-
-    closeFormModal();
-    fetchEvents();
   };
 
   const confirmDelete = async () => {
@@ -209,20 +275,26 @@ function Calendar() {
     setDeleting(true);
     setError(null);
 
-    const { error: dbError } = await supabase
-      .from("events")
-      .delete()
-      .eq("id", deleteTarget.id);
+    try {
+      const supabase = getSupabaseClient();
+      const { error: dbError } = await supabase
+        .from("events")
+        .delete()
+        .eq("id", deleteTarget.id);
 
-    setDeleting(false);
+      setDeleting(false);
 
-    if (dbError) {
-      setError(dbError.message);
-      return;
+      if (dbError) {
+        setError(getUserFacingError(dbError.message));
+        return;
+      }
+
+      closeDeleteModal();
+      fetchEvents();
+    } catch (err) {
+      setDeleting(false);
+      setError(getUserFacingError(err.message));
     }
-
-    closeDeleteModal();
-    fetchEvents();
   };
 
   const toggleComplete = async (event) => {
@@ -230,32 +302,39 @@ function Calendar() {
     setError(null);
 
     const nextCompleted = !event.is_completed;
-    const { error: dbError } = await supabase
-      .from("events")
-      .update({
-        is_completed: nextCompleted,
-        completed_at: nextCompleted ? new Date().toISOString() : null,
-      })
-      .eq("id", event.id);
 
-    setTogglingId(null);
+    try {
+      const supabase = getSupabaseClient();
+      const { error: dbError } = await supabase
+        .from("events")
+        .update({
+          is_completed: nextCompleted,
+          completed_at: nextCompleted ? new Date().toISOString() : null,
+        })
+        .eq("id", event.id);
 
-    if (dbError) {
-      setError(dbError.message);
-      return;
+      setTogglingId(null);
+
+      if (dbError) {
+        setError(getUserFacingError(dbError.message));
+        return;
+      }
+
+      setEvents((prev) =>
+        prev.map((item) =>
+          item.id === event.id
+            ? {
+                ...item,
+                is_completed: nextCompleted,
+                completed_at: nextCompleted ? new Date().toISOString() : null,
+              }
+            : item,
+        ),
+      );
+    } catch (err) {
+      setTogglingId(null);
+      setError(getUserFacingError(err.message));
     }
-
-    setEvents((prev) =>
-      prev.map((item) =>
-        item.id === event.id
-          ? {
-              ...item,
-              is_completed: nextCompleted,
-              completed_at: nextCompleted ? new Date().toISOString() : null,
-            }
-          : item,
-      ),
-    );
   };
 
   const handleGridClick = (e) => {
@@ -286,52 +365,95 @@ function Calendar() {
         <button
           type="button"
           className="calendar__nav-btn"
-          onClick={() => setSelectedDate((d) => addDays(d, -1))}
-          aria-label="Previous day"
+          onClick={() => shiftSelectedDate("prev")}
+          aria-label={viewMode === "month" ? "Previous month" : "Previous week"}
         >
           ‹
         </button>
         <div className="calendar__nav-center">
-          <p className="calendar__date-label">{dayTitle}</p>
+          <p className="calendar__date-label">
+            {viewMode === "month"
+              ? selectedDate.toLocaleDateString(undefined, {
+                  month: "long",
+                  year: "numeric",
+                })
+              : dayTitle}
+          </p>
           {!isToday && (
             <button
               type="button"
               className="calendar__today-btn"
               onClick={() => setSelectedDate(new Date())}
             >
+              Today
             </button>
           )}
         </div>
         <button
           type="button"
           className="calendar__nav-btn"
-          onClick={() => setSelectedDate((d) => addDays(d, 1))}
-          aria-label="Next day"
+          onClick={() => shiftSelectedDate("next")}
+          aria-label={viewMode === "month" ? "Next month" : "Next week"}
         >
           ›
         </button>
       </div>
 
       <div
-        className="calendar__week animate-in animate-in--2"
-        role="group"
-        aria-label="Week days"
+        className="calendar__view-toggle animate-in animate-in--2"
+        role="tablist"
+        aria-label="Calendar view"
       >
-        {weekDays.map((day) => {
+        <button
+          type="button"
+          className={`calendar__view-btn${viewMode === "week" ? " calendar__view-btn--active" : ""}`}
+          onClick={() => setViewMode("week")}
+          aria-pressed={viewMode === "week"}
+        >
+          1 week
+        </button>
+        <button
+          type="button"
+          className={`calendar__view-btn${viewMode === "month" ? " calendar__view-btn--active" : ""}`}
+          onClick={() => setViewMode("month")}
+          aria-pressed={viewMode === "month"}
+        >
+          1 month
+        </button>
+      </div>
+
+      <div
+        className={`calendar__week animate-in animate-in--2${viewMode === "month" ? " calendar__week--month" : ""}`}
+        role="group"
+        aria-label={viewMode === "week" ? "Week days" : "Month days"}
+      >
+        {visibleDays.map((day) => {
           const key = toDateKey(day);
           const isSelected = key === selectedKey;
           const isDayToday = key === toDateKey(today);
+          const hasEvents = busyDates.has(key);
+          const isInCurrentMonth =
+            viewMode === "month"
+              ? day.getMonth() === selectedDate.getMonth()
+              : true;
 
           return (
             <button
               key={key}
               type="button"
-              className={`calendar__week-day${isSelected ? " calendar__week-day--active" : ""}${isDayToday ? " calendar__week-day--today" : ""}`}
+              className={`calendar__week-day${isSelected ? " calendar__week-day--active" : ""}${isDayToday ? " calendar__week-day--today" : ""}${hasEvents ? " calendar__week-day--busy" : ""}${!isInCurrentMonth ? " calendar__week-day--muted" : ""}`}
               onClick={() => setSelectedDate(day)}
               aria-pressed={isSelected}
             >
-              <span className="calendar__week-label">{WEEKDAYS[day.getDay()]}</span>
+              {viewMode === "week" && (
+                <span className="calendar__week-label">
+                  {WEEKDAYS[day.getDay()]}
+                </span>
+              )}
               <span className="calendar__week-num">{day.getDate()}</span>
+              {hasEvents && (
+                <span className="calendar__week-dot" aria-hidden="true" />
+              )}
             </button>
           );
         })}
@@ -413,9 +535,9 @@ function Calendar() {
                 const style = eventStyle(event);
                 if (!style) return null;
 
-                const colorInfo = EVENT_COLORS[event.color] ?? EVENT_COLORS.indigo;
-                const isShort =
-                  parseInt(style.height, 10) < 44;
+                const colorInfo =
+                  EVENT_COLORS[event.color] ?? EVENT_COLORS.indigo;
+                const isShort = parseInt(style.height, 10) < 44;
 
                 return (
                   <article
@@ -440,7 +562,10 @@ function Calendar() {
                       }
                       aria-pressed={event.is_completed}
                     >
-                      <span className="calendar__check-icon" aria-hidden="true" />
+                      <span
+                        className="calendar__check-icon"
+                        aria-hidden="true"
+                      />
                     </button>
 
                     <button
@@ -448,7 +573,9 @@ function Calendar() {
                       className="calendar__event-body"
                       onClick={() => openEditModal(event)}
                     >
-                      <span className="calendar__event-title">{event.title}</span>
+                      <span className="calendar__event-title">
+                        {event.title}
+                      </span>
                       {!isShort && (
                         <span className="calendar__event-time">
                           {formatTime12(event.start_time)} –{" "}
@@ -608,18 +735,24 @@ function Calendar() {
 
               <label className="calendar__field">
                 <span>Color</span>
-                <div className="calendar__colors" role="radiogroup" aria-label="Event color">
-                  {Object.entries(EVENT_COLORS).map(([key, { label, accent }]) => (
-                    <button
-                      key={key}
-                      type="button"
-                      className={`calendar__color${form.color === key ? " calendar__color--active" : ""}`}
-                      style={{ "--swatch": accent }}
-                      onClick={() => setForm({ ...form, color: key })}
-                      aria-label={label}
-                      aria-pressed={form.color === key}
-                    />
-                  ))}
+                <div
+                  className="calendar__colors"
+                  role="radiogroup"
+                  aria-label="Event color"
+                >
+                  {Object.entries(EVENT_COLORS).map(
+                    ([key, { label, accent }]) => (
+                      <button
+                        key={key}
+                        type="button"
+                        className={`calendar__color${form.color === key ? " calendar__color--active" : ""}`}
+                        style={{ "--swatch": accent }}
+                        onClick={() => setForm({ ...form, color: key })}
+                        aria-label={label}
+                        aria-pressed={form.color === key}
+                      />
+                    ),
+                  )}
                 </div>
               </label>
 
