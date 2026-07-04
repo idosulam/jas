@@ -39,9 +39,26 @@ const MODAL_EXIT_MS = 260;
 const emptyForm = () => ({
   place: "pasta",
   shift_date: new Date().toISOString().slice(0, 10),
+  start_time: "",
+  end_time: "",
   hours: "",
   tips: "",
 });
+
+function parseTimeToMinutes(value) {
+  if (!value) return null;
+  const [hours, minutes] = value.split(":").map(Number);
+  if (Number.isNaN(hours) || Number.isNaN(minutes)) return null;
+  return hours * 60 + minutes;
+}
+
+function calculateHoursFromTimes(startTime, endTime) {
+  const start = parseTimeToMinutes(startTime);
+  const end = parseTimeToMinutes(endTime);
+  if (start == null || end == null) return null;
+  const diffMinutes = end >= start ? end - start : 24 * 60 - start + end;
+  return Number((diffMinutes / 60).toFixed(2));
+}
 
 function calcPay(place, hours) {
   return (PLACES[place]?.rate ?? 0) * (parseFloat(hours) || 0);
@@ -158,6 +175,8 @@ function Shifts() {
     setForm({
       place: shift.place,
       shift_date: shift.shift_date,
+      start_time: shift.start_time ?? "",
+      end_time: shift.end_time ?? "",
       hours: String(shift.hours),
       tips: shift.tips ? String(shift.tips) : "",
     });
@@ -173,6 +192,18 @@ function Shifts() {
       setEditingShift(null);
       setForm(emptyForm());
     }, MODAL_EXIT_MS);
+  };
+
+  const handleTimeChange = (field, value) => {
+    const nextForm = { ...form, [field]: value };
+    const computedHours = calculateHoursFromTimes(
+      nextForm.start_time,
+      nextForm.end_time,
+    );
+    if (computedHours != null) {
+      nextForm.hours = String(computedHours);
+    }
+    setForm(nextForm);
   };
 
   const openDeleteModal = (shift) => {
@@ -209,6 +240,8 @@ function Shifts() {
     const payload = {
       place: ["pasta", "coffee"].includes(form.place) ? form.place : "pasta",
       shift_date: shiftDate,
+      start_time: form.start_time || null,
+      end_time: form.end_time || null,
       hours: Number(hours.toFixed(2)),
       tips: Number(tips.toFixed(2)),
     };
@@ -502,12 +535,35 @@ function Shifts() {
                 />
               </label>
 
+              <div className="shifts__time-row">
+                <label className="shifts__field">
+                  <span>Start time</span>
+                  <input
+                    type="time"
+                    value={form.start_time}
+                    onChange={(e) =>
+                      handleTimeChange("start_time", e.target.value)
+                    }
+                  />
+                </label>
+                <label className="shifts__field">
+                  <span>End time</span>
+                  <input
+                    type="time"
+                    value={form.end_time}
+                    onChange={(e) =>
+                      handleTimeChange("end_time", e.target.value)
+                    }
+                  />
+                </label>
+              </div>
+
               <label className="shifts__field">
                 <span>Hours</span>
                 <input
                   type="number"
-                  min="0.25"
-                  step="0.25"
+                  min="0.1"
+                  step="0.1"
                   placeholder="e.g. 6"
                   value={form.hours}
                   onChange={(e) => setForm({ ...form, hours: e.target.value })}

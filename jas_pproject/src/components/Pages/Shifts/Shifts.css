@@ -510,6 +510,12 @@
   animation: shiftsFieldIn 0.4s cubic-bezier(0.22, 1, 0.36, 1) backwards;
 }
 
+.shifts__time-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.7rem;
+}
+
 .shifts__field:nth-child(1) {
   animation-delay: 0.05s;
 }
