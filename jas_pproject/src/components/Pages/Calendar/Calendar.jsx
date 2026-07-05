@@ -336,13 +336,10 @@ function Calendar() {
       setError(getUserFacingError(err.message));
     }
   };
-
   const handleGridClick = (e) => {
     const grid = e.currentTarget;
-    const timeline = grid.closest(".calendar__timeline");
     const rect = grid.getBoundingClientRect();
-    const scrollTop = timeline?.scrollTop ?? 0;
-    const y = e.clientY - rect.top + scrollTop;
+    const y = e.clientY - rect.top;
     const hourOffset = Math.floor(y / HOUR_HEIGHT);
     const hour = Math.min(DAY_START_HOUR + hourOffset, DAY_END_HOUR);
     openAddModal(`${String(hour).padStart(2, "0")}:00`);

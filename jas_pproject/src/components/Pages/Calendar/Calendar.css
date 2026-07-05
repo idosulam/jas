@@ -289,7 +289,7 @@
 .calendar__hours {
   flex-shrink: 0;
   width: 3.25rem;
-  padding-top: 0;
+  padding-top: 0.45rem;
   border-right: 1px solid rgba(255, 255, 255, 0.08);
 }
 
