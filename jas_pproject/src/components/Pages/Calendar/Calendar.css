@@ -448,6 +448,7 @@
   position: absolute;
   inset: auto 0 1rem;
   pointer-events: none;
+  margin-left: 2rem;
 }
 
 .calendar__reminders {
