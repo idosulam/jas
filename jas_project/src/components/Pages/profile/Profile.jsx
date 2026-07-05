@@ -1,5 +1,6 @@
 import "./Profile.css";
 import { useCallback, useEffect, useMemo, useState, useRef } from "react";
+import { createPortal } from "react-dom";
 import { getSupabaseClient } from "../../../lib/superbase";
 import {
   getUserFacingError,
@@ -428,6 +429,8 @@ function Profile() {
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const hasLoadedOnce = useRef(false);
+  const [showFloatingActions, setShowFloatingActions] = useState(false);
+  const logWeightBtnRef = useRef(null);
 
   const fetchData = useCallback(async () => {
     // only show the full-page loading state the first time
@@ -472,6 +475,27 @@ function Profile() {
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  useEffect(() => {
+    if (weightModalOpen || profileModalOpen || deleteTarget) {
+      const previousOverflow = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.body.style.overflow = previousOverflow;
+      };
+    }
+  }, [weightModalOpen, profileModalOpen, deleteTarget]);
+
+  useEffect(() => {
+    const target = logWeightBtnRef.current;
+    if (!target) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setShowFloatingActions(!entry.isIntersecting),
+      { threshold: 0 },
+    );
+    observer.observe(target);
+    return () => observer.disconnect();
+  }, []);
 
   const handleUnitChange = (nextUnit) => {
     setUnit(nextUnit);
@@ -825,7 +849,7 @@ function Profile() {
   const unitLabel = unit === "kg" ? "kg" : "lbs";
 
   return (
-    <section className="page profile">
+    <section className="page ">
       <header className="profile__header">
         <div className="profile__avatar" aria-hidden="true">
           {displayName.charAt(0).toUpperCase()}
@@ -932,6 +956,7 @@ function Profile() {
                 type="button"
                 className="profile__text-btn"
                 onClick={openAddWeight}
+                ref={logWeightBtnRef}
               >
                 + Log weight
               </button>
@@ -1036,7 +1061,7 @@ function Profile() {
           >
             <div className="profile__panel-head">
               <h2 id="profile-history-title" className="profile__panel-title">
-                Weigh-in history
+                Weight history
               </h2>
               <button
                 type="button"
@@ -1107,281 +1132,339 @@ function Profile() {
         </>
       )}
 
-      {weightModalOpen && (
-        <div
-          className={`profile__overlay${weightModalClosing ? " profile__overlay--closing" : ""}`}
-          onClick={closeWeightModal}
-          role="presentation"
-        >
+      {weightModalOpen &&
+        createPortal(
           <div
-            className={`profile__modal${weightModalClosing ? " profile__modal--closing" : ""}`}
-            onClick={(e) => e.stopPropagation()}
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="weight-modal-title"
+            className={`profile__overlay${weightModalClosing ? " profile__overlay--closing" : ""}`}
+            onClick={closeWeightModal}
+            role="presentation"
           >
-            <h2 id="weight-modal-title" className="profile__modal-title">
-              {editingEntry ? "Edit weigh-in" : "Log weigh-in"}
-            </h2>
-            <form className="profile__form" onSubmit={saveWeight}>
-              <label className="profile__field">
-                Date
-                <input
-                  type="date"
-                  value={weightForm.entry_date}
-                  onChange={(e) =>
-                    setWeightForm((f) => ({ ...f, entry_date: e.target.value }))
-                  }
-                  required
-                />
-              </label>
-              <div className="profile__weight-row">
+            <div
+              className={`profile__modal${weightModalClosing ? " profile__modal--closing" : ""}`}
+              onClick={(e) => e.stopPropagation()}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="weight-modal-title"
+            >
+              <h2 id="weight-modal-title" className="profile__modal-title">
+                {editingEntry ? "Edit weigh-in" : "Log weigh-in"}
+              </h2>
+              <form className="profile__form" onSubmit={saveWeight}>
                 <label className="profile__field">
-                  Weight (kg)
+                  Date
                   <input
-                    type="number"
-                    step="0.1"
-                    min="1"
-                    placeholder="62.5"
-                    value={weightForm.weight_kg}
-                    onChange={(e) => handleWeightKgChange(e.target.value)}
+                    type="date"
+                    value={weightForm.entry_date}
+                    onChange={(e) =>
+                      setWeightForm((f) => ({
+                        ...f,
+                        entry_date: e.target.value,
+                      }))
+                    }
                     required
                   />
                 </label>
+                <div className="profile__weight-row">
+                  <label className="profile__field">
+                    Weight (kg)
+                    <input
+                      type="number"
+                      step="0.1"
+                      min="1"
+                      placeholder="62.5"
+                      value={weightForm.weight_kg}
+                      onChange={(e) => handleWeightKgChange(e.target.value)}
+                      required
+                    />
+                  </label>
+                  <label className="profile__field">
+                    Weight (lbs)
+                    <input
+                      type="number"
+                      step="0.1"
+                      min="1"
+                      placeholder="137.8"
+                      value={weightForm.weight_lbs}
+                      onChange={(e) => handleWeightLbsChange(e.target.value)}
+                      required
+                    />
+                  </label>
+                </div>
                 <label className="profile__field">
-                  Weight (lbs)
+                  Notes <span className="profile__optional">(optional)</span>
                   <input
-                    type="number"
-                    step="0.1"
-                    min="1"
-                    placeholder="137.8"
-                    value={weightForm.weight_lbs}
-                    onChange={(e) => handleWeightLbsChange(e.target.value)}
-                    required
+                    type="text"
+                    placeholder="Post-leg day, morning fasted…"
+                    value={weightForm.notes}
+                    onChange={(e) =>
+                      setWeightForm((f) => ({ ...f, notes: e.target.value }))
+                    }
                   />
                 </label>
-              </div>
-              <label className="profile__field">
-                Notes <span className="profile__optional">(optional)</span>
-                <input
-                  type="text"
-                  placeholder="Post-leg day, morning fasted…"
-                  value={weightForm.notes}
-                  onChange={(e) =>
-                    setWeightForm((f) => ({ ...f, notes: e.target.value }))
-                  }
-                />
-              </label>
-              <div className="profile__modal-actions">
-                <button
-                  type="button"
-                  className="profile__btn profile__btn--ghost"
-                  onClick={closeWeightModal}
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="profile__btn profile__btn--primary"
-                  disabled={saving}
-                >
-                  {saving ? "Saving…" : "Save"}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+                <div className="profile__modal-actions">
+                  <button
+                    type="button"
+                    className="profile__btn profile__btn--ghost"
+                    onClick={closeWeightModal}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="profile__btn profile__btn--primary"
+                    disabled={saving}
+                  >
+                    {saving ? "Saving…" : "Save"}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>,
+          document.body,
+        )}
 
-      {profileModalOpen && (
-        <div
-          className={`profile__overlay${profileModalClosing ? " profile__overlay--closing" : ""}`}
-          onClick={closeProfileModal}
-          role="presentation"
-        >
+      {profileModalOpen &&
+        createPortal(
           <div
-            className={`profile__modal${profileModalClosing ? " profile__modal--closing" : ""}`}
-            onClick={(e) => e.stopPropagation()}
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="profile-modal-title"
+            className={`profile__overlay${profileModalClosing ? " profile__overlay--closing" : ""}`}
+            onClick={closeProfileModal}
+            role="presentation"
           >
-            <h2 id="profile-modal-title" className="profile__modal-title">
-              Edit profile
-            </h2>
-            <form className="profile__form" onSubmit={saveProfile}>
-              <label className="profile__field">
-                Name
-                <input
-                  type="text"
-                  value={profileForm.display_name}
-                  onChange={(e) =>
-                    setProfileForm((f) => ({
-                      ...f,
-                      display_name: e.target.value,
-                    }))
-                  }
-                />
-              </label>
-              <label className="profile__field">
-                Age
-                <input
-                  type="number"
-                  min="13"
-                  max="120"
-                  placeholder="26"
-                  value={profileForm.age}
-                  onChange={(e) =>
-                    setProfileForm((f) => ({ ...f, age: e.target.value }))
-                  }
-                />
-              </label>
-              <label className="profile__field">
-                Height (cm)
-                <input
-                  type="number"
-                  step="0.1"
-                  min="1"
-                  placeholder="165"
-                  value={profileForm.height_cm}
-                  onChange={(e) => handleHeightCmChange(e.target.value)}
-                />
-              </label>
-              <div className="profile__height-row">
+            <div
+              className={`profile__modal${profileModalClosing ? " profile__modal--closing" : ""}`}
+              onClick={(e) => e.stopPropagation()}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="profile-modal-title"
+            >
+              <h2 id="profile-modal-title" className="profile__modal-title">
+                Edit profile
+              </h2>
+              <form className="profile__form" onSubmit={saveProfile}>
                 <label className="profile__field">
-                  Feet
+                  Name
                   <input
-                    type="number"
-                    min="0"
-                    max="9"
-                    placeholder="5"
-                    value={profileForm.height_ft}
+                    type="text"
+                    value={profileForm.display_name}
                     onChange={(e) =>
-                      handleHeightImperialChange("height_ft", e.target.value)
+                      setProfileForm((f) => ({
+                        ...f,
+                        display_name: e.target.value,
+                      }))
                     }
                   />
                 </label>
                 <label className="profile__field">
-                  Inches
+                  Age
                   <input
                     type="number"
-                    min="0"
-                    max="11"
-                    step="0.1"
-                    placeholder="5"
-                    value={profileForm.height_in}
+                    min="13"
+                    max="120"
+                    placeholder="26"
+                    value={profileForm.age}
                     onChange={(e) =>
-                      handleHeightImperialChange("height_in", e.target.value)
+                      setProfileForm((f) => ({ ...f, age: e.target.value }))
                     }
                   />
                 </label>
-              </div>
-              <div className="profile__weight-row">
                 <label className="profile__field">
-                  Goal weight (kg)
+                  Height (cm)
                   <input
                     type="number"
                     step="0.1"
                     min="1"
-                    placeholder="58"
-                    value={profileForm.goal_weight_kg}
-                    onChange={(e) => handleGoalWeightKgChange(e.target.value)}
+                    placeholder="165"
+                    value={profileForm.height_cm}
+                    onChange={(e) => handleHeightCmChange(e.target.value)}
                   />
                 </label>
+                <div className="profile__height-row">
+                  <label className="profile__field">
+                    Feet
+                    <input
+                      type="number"
+                      min="0"
+                      max="9"
+                      placeholder="5"
+                      value={profileForm.height_ft}
+                      onChange={(e) =>
+                        handleHeightImperialChange("height_ft", e.target.value)
+                      }
+                    />
+                  </label>
+                  <label className="profile__field">
+                    Inches
+                    <input
+                      type="number"
+                      min="0"
+                      max="11"
+                      step="0.1"
+                      placeholder="5"
+                      value={profileForm.height_in}
+                      onChange={(e) =>
+                        handleHeightImperialChange("height_in", e.target.value)
+                      }
+                    />
+                  </label>
+                </div>
+                <div className="profile__weight-row">
+                  <label className="profile__field">
+                    Goal weight (kg)
+                    <input
+                      type="number"
+                      step="0.1"
+                      min="1"
+                      placeholder="58"
+                      value={profileForm.goal_weight_kg}
+                      onChange={(e) => handleGoalWeightKgChange(e.target.value)}
+                    />
+                  </label>
+                  <label className="profile__field">
+                    Goal weight (lbs)
+                    <input
+                      type="number"
+                      step="0.1"
+                      min="1"
+                      placeholder="128"
+                      value={profileForm.goal_weight_lbs}
+                      onChange={(e) =>
+                        handleGoalWeightLbsChange(e.target.value)
+                      }
+                    />
+                  </label>
+                </div>
                 <label className="profile__field">
-                  Goal weight (lbs)
-                  <input
-                    type="number"
-                    step="0.1"
-                    min="1"
-                    placeholder="128"
-                    value={profileForm.goal_weight_lbs}
-                    onChange={(e) => handleGoalWeightLbsChange(e.target.value)}
-                  />
+                  Gender
+                  <select
+                    value={profileForm.gender}
+                    onChange={(e) =>
+                      setProfileForm((f) => ({ ...f, gender: e.target.value }))
+                    }
+                  >
+                    <option value="female">Female</option>
+                    <option value="male">Male</option>
+                    <option value="other">Other</option>
+                  </select>
                 </label>
-              </div>
-              <label className="profile__field">
-                Gender
-                <select
-                  value={profileForm.gender}
-                  onChange={(e) =>
-                    setProfileForm((f) => ({ ...f, gender: e.target.value }))
-                  }
-                >
-                  <option value="female">Female</option>
-                  <option value="male">Male</option>
-                  <option value="other">Other</option>
-                </select>
-              </label>
-              <p className="profile__form-hint">
-                Enter height in centimeters or feet and inches. Weight fields
-                follow your {unitLabel} toggle.
+                <p className="profile__form-hint">
+                  Enter height in centimeters or feet and inches. Weight fields
+                  follow your {unitLabel} toggle.
+                </p>
+                <div className="profile__modal-actions">
+                  <button
+                    type="button"
+                    className="profile__btn profile__btn--ghost"
+                    onClick={closeProfileModal}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="profile__btn profile__btn--primary"
+                    disabled={saving}
+                  >
+                    {saving ? "Saving…" : "Save profile"}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>,
+          document.body,
+        )}
+
+      {deleteTarget &&
+        createPortal(
+          <div
+            className={`profile__overlay${deleteModalClosing ? " profile__overlay--closing" : ""}`}
+            onClick={closeDeleteModal}
+            role="presentation"
+          >
+            <div
+              className={`profile__modal profile__modal--compact${deleteModalClosing ? " profile__modal--closing" : ""}`}
+              onClick={(e) => e.stopPropagation()}
+              role="alertdialog"
+              aria-modal="true"
+              aria-labelledby="delete-modal-title"
+            >
+              <h2 id="delete-modal-title" className="profile__modal-title">
+                Delete weigh-in?
+              </h2>
+              <p className="profile__delete-text">
+                Remove {formatDateLabel(deleteTarget.entry_date)} (
+                {formatWeight(
+                  toDisplayKg(Number(deleteTarget.weight_kg), unit),
+                  unitLabel,
+                )}
+                )?
               </p>
               <div className="profile__modal-actions">
                 <button
                   type="button"
                   className="profile__btn profile__btn--ghost"
-                  onClick={closeProfileModal}
+                  onClick={closeDeleteModal}
                 >
                   Cancel
                 </button>
                 <button
-                  type="submit"
-                  className="profile__btn profile__btn--primary"
-                  disabled={saving}
+                  type="button"
+                  className="profile__btn profile__btn--danger"
+                  onClick={confirmDelete}
+                  disabled={deleting}
                 >
-                  {saving ? "Saving…" : "Save profile"}
+                  {deleting ? "Deleting…" : "Delete"}
                 </button>
               </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {deleteTarget && (
-        <div
-          className={`profile__overlay${deleteModalClosing ? " profile__overlay--closing" : ""}`}
-          onClick={closeDeleteModal}
-          role="presentation"
-        >
-          <div
-            className={`profile__modal profile__modal--compact${deleteModalClosing ? " profile__modal--closing" : ""}`}
-            onClick={(e) => e.stopPropagation()}
-            role="alertdialog"
-            aria-modal="true"
-            aria-labelledby="delete-modal-title"
-          >
-            <h2 id="delete-modal-title" className="profile__modal-title">
-              Delete weigh-in?
-            </h2>
-            <p className="profile__delete-text">
-              Remove {formatDateLabel(deleteTarget.entry_date)} (
-              {formatWeight(
-                toDisplayKg(Number(deleteTarget.weight_kg), unit),
-                unitLabel,
-              )}
-              )?
-            </p>
-            <div className="profile__modal-actions">
-              <button
-                type="button"
-                className="profile__btn profile__btn--ghost"
-                onClick={closeDeleteModal}
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                className="profile__btn profile__btn--danger"
-                onClick={confirmDelete}
-                disabled={deleting}
-              >
-                {deleting ? "Deleting…" : "Delete"}
-              </button>
             </div>
-          </div>
-        </div>
-      )}
+          </div>,
+          document.body,
+        )}
+
+      {showFloatingActions &&
+        createPortal(
+          <div className="profile__fab-stack">
+            <button
+              type="button"
+              className="profile__fab profile__fab--up"
+              onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+              aria-label="Scroll to top"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                aria-hidden="true"
+              >
+                <path
+                  d="M12 19V5M5 12l7-7 7 7"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </button>
+            <button
+              type="button"
+              className="profile__fab profile__fab--add"
+              onClick={openAddWeight}
+              aria-label="Log weight"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                aria-hidden="true"
+              >
+                <path
+                  d="M12 5v14M5 12h14"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </button>
+          </div>,
+          document.body,
+        )}
     </section>
   );
 }

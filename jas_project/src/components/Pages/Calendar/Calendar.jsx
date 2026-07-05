@@ -640,15 +640,16 @@ function Calendar() {
               })}
             </div>
           </div>
-
-          {events.length === 0 && (
-            <p className="calendar__empty calendar__empty--overlay">
-              No events today. Tap the timeline or + Add event.
-            </p>
-          )}
         </div>
       )}
-
+      {events.length === 0 && (
+        <p
+          className="calendar__empty calendar__reminder"
+          style={{ marginTop: "1rem" }}
+        >
+          No events today. Tap the timeline or + Add event.
+        </p>
+      )}
       {events.length > 0 && (
         <ul className="calendar__reminders animate-in animate-in--4">
           {events.map((event) => (

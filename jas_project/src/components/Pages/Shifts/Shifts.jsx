@@ -466,7 +466,7 @@ function Shifts() {
         </div>
       ) : filteredShifts.length === 0 ? (
         <p
-          className="shifts__empty shifts__empty--fade"
+          className="shifts__empty shifts__empty--fade glass-card shifts__stat"
           key={`empty-${placeFilter}`}
         >
           {placeFilter === "all"
