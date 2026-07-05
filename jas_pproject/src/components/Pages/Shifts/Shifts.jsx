@@ -19,6 +19,11 @@ const PLACE_FILTERS = [
   { id: "coffee", label: "Cafe Nimrod" },
 ];
 
+const PAY_TYPES = [
+  { id: "hourly", label: "Hourly + tips" },
+  { id: "tips_only", label: "Tips only" },
+];
+
 const MONTHS = [
   "January",
   "February",
@@ -38,11 +43,13 @@ const MODAL_EXIT_MS = 260;
 
 const emptyForm = () => ({
   place: "pasta",
+  pay_type: "hourly",
   shift_date: new Date().toISOString().slice(0, 10),
   start_time: "",
   end_time: "",
   hours: "",
   tips: "",
+  notes: "",
 });
 
 function parseTimeToMinutes(value) {
@@ -60,7 +67,8 @@ function calculateHoursFromTimes(startTime, endTime) {
   return Number((diffMinutes / 60).toFixed(2));
 }
 
-function calcPay(place, hours) {
+function calcPay(place, hours, payType = "hourly") {
+  if (payType === "tips_only") return 0;
   return (PLACES[place]?.rate ?? 0) * (parseFloat(hours) || 0);
 }
 
@@ -85,6 +93,7 @@ function Shifts() {
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [expandedNoteId, setExpandedNoteId] = useState(null);
 
   function useCountUp(value, duration = 500) {
     const [display, setDisplay] = useState(value);
@@ -151,7 +160,7 @@ function Shifts() {
   const totals = useMemo(() => {
     return filteredShifts.reduce(
       (acc, shift) => {
-        const pay = calcPay(shift.place, shift.hours);
+        const pay = calcPay(shift.place, shift.hours, shift.pay_type);
         const tips = parseFloat(shift.tips) || 0;
         acc.hours += parseFloat(shift.hours) || 0;
         acc.pay += pay;
@@ -174,11 +183,13 @@ function Shifts() {
     setEditingShift(shift);
     setForm({
       place: shift.place,
+      pay_type: shift.pay_type === "tips_only" ? "tips_only" : "hourly",
       shift_date: shift.shift_date,
       start_time: shift.start_time ?? "",
       end_time: shift.end_time ?? "",
       hours: String(shift.hours),
       tips: shift.tips ? String(shift.tips) : "",
+      notes: shift.notes ?? "",
     });
     setFormModalClosing(false);
     setModalOpen(true);
@@ -228,6 +239,7 @@ function Shifts() {
     );
     const hours = sanitizeNumber(form.hours, 0.01, 24);
     const tips = sanitizeNumber(form.tips, 0, 10000) ?? 0;
+    const notes = form.notes.trim() ? sanitizeText(form.notes, 500) : null;
 
     if (!shiftDate || !form.place || !hours || hours <= 0) {
       setError("Please fill in place, date, and valid hours.");
@@ -239,11 +251,13 @@ function Shifts() {
 
     const payload = {
       place: ["pasta", "coffee"].includes(form.place) ? form.place : "pasta",
+      pay_type: form.pay_type === "tips_only" ? "tips_only" : "hourly",
       shift_date: shiftDate,
       start_time: form.start_time || null,
       end_time: form.end_time || null,
       hours: Number(hours.toFixed(2)),
       tips: Number(tips.toFixed(2)),
+      notes,
     };
 
     try {
@@ -307,10 +321,10 @@ function Shifts() {
     }
   };
 
-  const previewPay = calcPay(form.place, form.hours);
+  const previewPay = calcPay(form.place, form.hours, form.pay_type);
 
   const deletePay = deleteTarget
-    ? calcPay(deleteTarget.place, deleteTarget.hours)
+    ? calcPay(deleteTarget.place, deleteTarget.hours, deleteTarget.pay_type)
     : 0;
   const deleteTips = deleteTarget ? parseFloat(deleteTarget.tips) || 0 : 0;
   const deletePlaceInfo = deleteTarget ? PLACES[deleteTarget.place] : null;
@@ -437,10 +451,11 @@ function Shifts() {
       ) : (
         <ul className="shifts__list" key={`list-${placeFilter}`}>
           {filteredShifts.map((shift, index) => {
-            const pay = calcPay(shift.place, shift.hours);
+            const pay = calcPay(shift.place, shift.hours, shift.pay_type);
             const tips = parseFloat(shift.tips) || 0;
             const placeInfo = PLACES[shift.place];
             const isRemoving = removingId === shift.id;
+            const isTipsOnly = shift.pay_type === "tips_only";
 
             return (
               <li
@@ -455,18 +470,60 @@ function Shifts() {
                     >
                       {placeInfo?.label ?? shift.place}
                     </span>
-                    <span className="shifts__date">{shift.shift_date}</span>
+                    <div className="shifts__card-top-right">
+                      <span className="shifts__date">{shift.shift_date}</span>
+                      {shift.notes && (
+                        <button
+                          type="button"
+                          className={`shifts__note-toggle${expandedNoteId === shift.id ? " shifts__note-toggle--active" : ""}`}
+                          onClick={() =>
+                            setExpandedNoteId(
+                              expandedNoteId === shift.id ? null : shift.id,
+                            )
+                          }
+                          aria-expanded={expandedNoteId === shift.id}
+                          aria-label={
+                            expandedNoteId === shift.id
+                              ? "Hide note"
+                              : "View note"
+                          }
+                        >
+                          <svg
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="1.75"
+                            aria-hidden="true"
+                          >
+                            <path
+                              d="M21 12c0 4.418-4.03 8-9 8-1.06 0-2.07-.16-3-.46L3 21l1.5-4.5C3.55 15.13 3 13.62 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8Z"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
+                          </svg>
+                        </button>
+                      )}
+                    </div>
                   </div>
                   <div className="shifts__card-details">
-                    <span>
-                      {shift.hours}h × ₪{placeInfo?.rate}
-                    </span>
-                    <span>Pay {formatMoney(pay)}</span>
+                    {isTipsOnly ? (
+                      <span className="shifts__tips-only-tag">Tips only</span>
+                    ) : (
+                      <>
+                        <span>
+                          {shift.hours}h × ₪{placeInfo?.rate}
+                        </span>
+                        <span>Pay {formatMoney(pay)}</span>
+                      </>
+                    )}
                     {tips > 0 && <span>Tips {formatMoney(tips)}</span>}
                     <span className="shifts__card-total">
                       {formatMoney(pay + tips)}
                     </span>
                   </div>
+                  {shift.notes && expandedNoteId === shift.id && (
+                    <p className="shifts__note-panel">{shift.notes}</p>
+                  )}
                 </div>
                 <div className="shifts__card-actions">
                   <button
@@ -523,6 +580,24 @@ function Shifts() {
                 </select>
               </label>
 
+              <div
+                className="shifts__pay-toggle"
+                role="group"
+                aria-label="Pay type"
+              >
+                {PAY_TYPES.map(({ id, label }) => (
+                  <button
+                    key={id}
+                    type="button"
+                    className={`shifts__pay-toggle-btn${form.pay_type === id ? " shifts__pay-toggle-btn--active" : ""}`}
+                    onClick={() => setForm({ ...form, pay_type: id })}
+                    aria-pressed={form.pay_type === id}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+
               <label className="shifts__field">
                 <span>Date</span>
                 <input
@@ -572,7 +647,9 @@ function Shifts() {
               </label>
 
               <label className="shifts__field">
-                <span>Tips (optional)</span>
+                <span>
+                  Tips{form.pay_type === "tips_only" ? "" : " (optional)"}
+                </span>
                 <input
                   type="number"
                   min="0"
@@ -583,16 +660,39 @@ function Shifts() {
                 />
               </label>
 
+              <label className="shifts__field">
+                <span>Notes (optional)</span>
+                <textarea
+                  placeholder="e.g. Covered for Dana, closed the register"
+                  value={form.notes}
+                  maxLength={500}
+                  onChange={(e) => setForm({ ...form, notes: e.target.value })}
+                />
+              </label>
+
               {form.hours && (
                 <p className="shifts__preview shifts__preview--pop">
-                  Estimated pay: <strong>{formatMoney(previewPay)}</strong>
-                  {form.tips && (
+                  {form.pay_type === "tips_only" ? (
                     <>
-                      {" "}
-                      + tips {formatMoney(parseFloat(form.tips) || 0)} ={" "}
-                      <strong>
-                        {formatMoney(previewPay + (parseFloat(form.tips) || 0))}
-                      </strong>
+                      Tips only shift — total{" "}
+                      <strong>{formatMoney(parseFloat(form.tips) || 0)}</strong>
+                    </>
+                  ) : (
+                    <>
+                      Estimated pay: <strong>{formatMoney(previewPay)}</strong>
+                      {form.tips && (
+                        <>
+                          {" "}
+                          + tips {formatMoney(
+                            parseFloat(form.tips) || 0,
+                          )} ={" "}
+                          <strong>
+                            {formatMoney(
+                              previewPay + (parseFloat(form.tips) || 0),
+                            )}
+                          </strong>
+                        </>
+                      )}
                     </>
                   )}
                 </p>

@@ -128,6 +128,66 @@
   box-shadow: 0 4px 16px rgba(180, 130, 70, 0.25);
 }
 
+/* Pay type toggle (in form) */
+.shifts__pay-toggle {
+  display: flex;
+  gap: 0.4rem;
+  padding: 0.3rem;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(12px);
+  animation: shiftsFieldIn 0.4s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+  animation-delay: 0.08s;
+}
+
+.shifts__pay-toggle-btn {
+  flex: 1;
+  padding: 0.5rem 0.7rem;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.55);
+  font-family: inherit;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+    color 0.25s ease,
+    transform 0.2s cubic-bezier(0.34, 1.4, 0.64, 1);
+}
+
+.shifts__pay-toggle-btn:hover {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.shifts__pay-toggle-btn--active {
+  color: #fff;
+  background: linear-gradient(
+    135deg,
+    rgba(99, 102, 241, 0.55),
+    rgba(168, 85, 247, 0.45)
+  );
+  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.25);
+}
+
+.shifts__pay-toggle-btn:active {
+  transform: scale(0.96);
+}
+
+.shifts__tips-only-tag {
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  background: rgba(52, 211, 153, 0.15);
+  border: 1px solid rgba(52, 211, 153, 0.32);
+  color: #6ee7b7;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
 .shifts__summary {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -338,9 +398,65 @@
   color: rgba(255, 255, 255, 0.5);
 }
 
+.shifts__card-top-right {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.shifts__note-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.55);
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.2s cubic-bezier(0.34, 1.4, 0.64, 1);
+}
+
+.shifts__note-toggle svg {
+  width: 0.8rem;
+  height: 0.8rem;
+}
+
+.shifts__note-toggle:hover {
+  color: rgba(255, 255, 255, 0.85);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: scale(1.08);
+}
+
+.shifts__note-toggle--active {
+  color: #c7d2fe;
+  background: rgba(99, 102, 241, 0.2);
+  border-color: rgba(99, 102, 241, 0.4);
+}
+
+.shifts__note-panel {
+  margin-top: 0.6rem;
+  padding: 0.65rem 0.75rem;
+  border-radius: 0.65rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.8rem;
+  line-height: 1.45;
+  white-space: pre-wrap;
+  animation: shiftsFadeUp 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
 .shifts__card-details {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: 0.35rem 0.75rem;
   font-size: 0.8rem;
   color: rgba(255, 255, 255, 0.65);
@@ -530,7 +646,8 @@
 }
 
 .shifts__field input,
-.shifts__field select {
+.shifts__field select,
+.shifts__field textarea {
   padding: 0.65rem 0.75rem;
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 0.65rem;
@@ -544,8 +661,14 @@
     box-shadow 0.2s ease;
 }
 
+.shifts__field textarea {
+  min-height: 4.5rem;
+  resize: vertical;
+}
+
 .shifts__field input:focus,
-.shifts__field select:focus {
+.shifts__field select:focus,
+.shifts__field textarea:focus {
   outline: none;
   border-color: rgba(99, 102, 241, 0.55);
   background: rgba(255, 255, 255, 0.1);
@@ -802,7 +925,8 @@
   .shifts__spinner,
   .shifts__place-indicator,
   .shifts__stat,
-  .shifts__card--removing {
+  .shifts__card--removing,
+  .shifts__pay-toggle {
     animation: none !important;
     transition: none !important;
   }
