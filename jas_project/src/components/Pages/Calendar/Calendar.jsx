@@ -288,19 +288,23 @@ function Calendar() {
         const message = getUserFacingError(dbError.message);
         setError(message);
         toastError(
-          editingEvent ? "Edit didn’t work." : "Upload event didn’t work.",
+          editingEvent ? "Failed to edit event." : "Failed to upload event.",
         );
         return;
       }
 
       closeFormModal();
-      toastSuccess(editingEvent ? "Edit was ok." : "Upload event was ok.");
+      toastSuccess(
+        editingEvent
+          ? "Event edited successfully."
+          : "Event uploaded successfully.",
+      );
       fetchEvents();
     } catch (err) {
       setSaving(false);
       setError(getUserFacingError(err.message));
       toastError(
-        editingEvent ? "Edit didn’t work." : "Upload event didn’t work.",
+        editingEvent ? "Failed to edit event." : "Failed to upload event.",
       );
     }
   };
@@ -322,13 +326,13 @@ function Calendar() {
 
       if (dbError) {
         setError(getUserFacingError(dbError.message));
-        toastError("Delete didn’t work.");
+        toastError("Failed to delete event.");
         return;
       }
 
       const removedId = deleteTarget.id;
       closeDeleteModal();
-      toastSuccess("Delete was ok.");
+      toastSuccess("event deleted successfully.");
       setRemovingId(removedId);
 
       setTimeout(() => {
@@ -339,7 +343,7 @@ function Calendar() {
     } catch (err) {
       setDeleting(false);
       setError(getUserFacingError(err.message));
-      toastError("Delete didn’t work.");
+      toastError("Failed to delete event.");
     }
   };
 

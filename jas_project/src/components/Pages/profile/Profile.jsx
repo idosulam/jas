@@ -684,19 +684,27 @@ function Profile() {
       if (saveError) {
         setError(getUserFacingError(saveError.message));
         toastError(
-          editingEntry ? "Edit didn’t work." : "Upload event didn’t work.",
+          editingEntry
+            ? "Failed to edit weight entry."
+            : "Failed to upload weight entry.",
         );
         return;
       }
 
       closeWeightModal();
-      toastSuccess(editingEntry ? "Edit was ok." : "Upload event was ok.");
+      toastSuccess(
+        editingEntry
+          ? "Weight entry edited successfully."
+          : "Weight entry uploaded successfully.",
+      );
       fetchData();
     } catch (err) {
       setSaving(false);
       setError(getUserFacingError(err.message));
       toastError(
-        editingEntry ? "Edit didn’t work." : "Upload event didn’t work.",
+        editingEntry
+          ? "Failed to edit weight entry."
+          : "Failed to upload weight entry.",
       );
     }
   };
@@ -740,17 +748,17 @@ function Profile() {
 
       if (saveError) {
         setError(getUserFacingError(saveError.message));
-        toastError("Save profile didn’t work.");
+        toastError("Failed to save profile.");
         return;
       }
 
       closeProfileModal();
-      toastSuccess("Save profile was ok.");
+      toastSuccess("Profile saved successfully.");
       fetchData();
     } catch (err) {
       setSaving(false);
       setError(getUserFacingError(err.message));
-      toastError("Save profile didn’t work.");
+      toastError("Failed to save profile.");
     }
   };
 
@@ -778,17 +786,17 @@ function Profile() {
 
       if (deleteError) {
         setError(getUserFacingError(deleteError.message));
-        toastError("Delete didn’t work.");
+        toastError("Failed to delete weight entry.");
         fetchData(); // resync in case the optimistic update was wrong
         return;
       }
 
-      toastSuccess("Delete was ok.");
+      toastSuccess("Weight entry deleted successfully.");
       fetchData(); // quiet background resync, no loading flash now
     } catch (err) {
       setDeleting(false);
       setError(getUserFacingError(err.message));
-      toastError("Delete didn’t work.");
+      toastError("Failed to delete weight entry.");
       fetchData();
     }
   };

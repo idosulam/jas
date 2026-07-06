@@ -305,19 +305,23 @@ function Shifts() {
         const message = getUserFacingError(dbError.message);
         setError(message);
         toastError(
-          editingShift ? "Edit didn’t work." : "Upload shift didn’t work.",
+          editingShift ? "Failed to edit shift." : "Shift upload failed.",
         );
         return;
       }
 
       closeFormModal();
-      toastSuccess(editingShift ? "Edit was ok." : "Upload shift was ok.");
+      toastSuccess(
+        editingShift
+          ? "Shift edited successfully."
+          : "Shift uploaded successfully.",
+      );
       fetchShifts();
     } catch (err) {
       setSaving(false);
       setError(getUserFacingError(err.message));
       toastError(
-        editingShift ? "Edit didn’t work." : "Upload shift didn’t work.",
+        editingShift ? "Failed to edit shift." : "Shift upload failed.",
       );
     }
   };
@@ -339,13 +343,13 @@ function Shifts() {
 
       if (dbError) {
         setError(getUserFacingError(dbError.message));
-        toastError("Delete didn’t work.");
+        toastError("Failed to delete shift.");
         return;
       }
 
       const removedId = deleteTarget.id;
       closeDeleteModal();
-      toastSuccess("Delete was ok.");
+      toastSuccess("Shift deleted successfully.");
       setRemovingId(removedId);
 
       setTimeout(() => {
@@ -355,7 +359,7 @@ function Shifts() {
     } catch (err) {
       setDeleting(false);
       setError(getUserFacingError(err.message));
-      toastError("Delete didn’t work.");
+      toastError("Failed to delete shift.");
     }
   };
 
