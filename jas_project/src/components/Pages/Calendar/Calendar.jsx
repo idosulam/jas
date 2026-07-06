@@ -14,7 +14,7 @@ import {
   startOfWeek,
   toDateKey,
   TOTAL_HOURS,
-} from "./calendarLayout";
+} from "./calendar_layout";
 import {
   getUserFacingError,
   sanitizeDate,

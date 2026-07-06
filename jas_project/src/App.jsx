@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import Navbar from "./components/Navbar/Navbar.jsx";
-import PageTransition from "./components/PageTransition.jsx";
+import PageTransition from "./components/Page_transition.jsx";
 import Shifts from "./components/Pages/Shifts/Shifts.jsx";
 import Calendar from "./components/Pages/Calendar/Calendar.jsx";
 import Profile from "./components/Pages/profile/Profile.jsx";
