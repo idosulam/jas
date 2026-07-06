@@ -1,0 +1,72 @@
+.profile {
+  max-width: 34rem;
+}
+
+.profile__summary .glass-card,
+.profile__panel,
+.profile__history-item,
+.profile__chart-wrap,
+.profile__goal-bar,
+.profile__fab--up,
+.profile__modal,
+.profile__field input,
+.profile__field textarea,
+.profile__field select {
+  box-shadow:
+    0 16px 40px rgba(7, 10, 25, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.26);
+}
+
+.profile__summary .glass-card,
+.profile__panel,
+.profile__history-item,
+.profile__chart-wrap,
+.profile__goal-bar,
+.profile__modal,
+.profile__field input,
+.profile__field textarea,
+.profile__field select {
+  background:
+    linear-gradient(160deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.05)),
+    rgba(12, 18, 36, 0.56);
+  border-color: rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(18px) saturate(150%);
+  -webkit-backdrop-filter: blur(18px) saturate(150%);
+}
+
+.profile__field input,
+.profile__field textarea,
+.profile__field select {
+  width: 100%;
+  padding: 0.82rem 0.95rem;
+  border-radius: 0.95rem;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: #fff;
+  outline: none;
+  transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.profile__field input:focus,
+.profile__field textarea:focus,
+.profile__field select:focus {
+  border-color: rgba(129, 140, 248, 0.78);
+  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.18);
+  transform: translateY(-1px);
+}
+
+.profile__error--glass {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.18), rgba(248, 113, 113, 0.08));
+  border-color: rgba(248, 113, 113, 0.28);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  box-shadow: 0 18px 40px rgba(127, 29, 29, 0.18);
+}
+
+.profile__history-item {
+  transition: transform 0.28s cubic-bezier(0.34, 1.4, 0.64, 1), box-shadow 0.25s ease;
+}
+
+.profile__history-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 18px 36px rgba(99, 102, 241, 0.14);
+}
