@@ -37,16 +37,6 @@ function App() {
   const ActivePage = PAGES[activeNav];
 
   return (
-<<<<<<< HEAD
-    <div className="app">
-      <main className="app__content">
-        <PageTransition pageKey={activeNav} direction={direction}>
-          <ActivePage />
-        </PageTransition>
-      </main>
-      <Navbar activeId={activeNav} onChange={handleNavChange} />
-    </div>
-=======
     <ToastProvider>
       <div className="app app--glassy">
         <main className="app__content">
@@ -57,7 +47,6 @@ function App() {
         <Navbar activeId={activeNav} onChange={handleNavChange} />
       </div>
     </ToastProvider>
->>>>>>> kpmg
   );
 }
 
