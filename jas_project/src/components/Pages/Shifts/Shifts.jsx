@@ -1,5 +1,4 @@
 import "./Shifts.css";
-import "./shifts_glassy.css";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { getSupabaseClient } from "../../../lib/superbase";
@@ -304,7 +303,9 @@ function Shifts() {
       if (dbError) {
         const message = getUserFacingError(dbError.message);
         setError(message);
-        toastError(editingShift ? "Edit didn’t work." : "Upload shift didn’t work.");
+        toastError(
+          editingShift ? "Edit didn’t work." : "Upload shift didn’t work.",
+        );
         return;
       }
 
@@ -314,7 +315,9 @@ function Shifts() {
     } catch (err) {
       setSaving(false);
       setError(getUserFacingError(err.message));
-      toastError(editingShift ? "Edit didn’t work." : "Upload shift didn’t work.");
+      toastError(
+        editingShift ? "Edit didn’t work." : "Upload shift didn’t work.",
+      );
     }
   };
 

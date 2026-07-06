@@ -1,5 +1,4 @@
 import "./Calendar.css";
-import "./calendar_glassy.css";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { getSupabaseClient } from "../../../lib/superbase";
@@ -287,7 +286,9 @@ function Calendar() {
       if (dbError) {
         const message = getUserFacingError(dbError.message);
         setError(message);
-        toastError(editingEvent ? "Edit didn’t work." : "Upload event didn’t work.");
+        toastError(
+          editingEvent ? "Edit didn’t work." : "Upload event didn’t work.",
+        );
         return;
       }
 
@@ -297,7 +298,9 @@ function Calendar() {
     } catch (err) {
       setSaving(false);
       setError(getUserFacingError(err.message));
-      toastError(editingEvent ? "Edit didn’t work." : "Upload event didn’t work.");
+      toastError(
+        editingEvent ? "Edit didn’t work." : "Upload event didn’t work.",
+      );
     }
   };
 
