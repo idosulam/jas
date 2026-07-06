@@ -72,7 +72,12 @@ function GlassToastCard({ toast, onPause, onResume, onDismiss }) {
       <div className="glass-toast__halo" />
       <div className="glass-toast__content">
         <div className="glass-toast__top">
-          <div className="glass-toast__icon" aria-hidden="true">
+          <div
+            className="glass-toast__icon"
+            aria-hidden="true"
+            onMouseEnter={() => onPause(toast.id)}
+            onMouseLeave={() => onResume(toast.id)}
+          >
             {toast.type === "success" ? "✓" : "!"}
           </div>
           <div className="glass-toast__copy">
@@ -88,12 +93,7 @@ function GlassToastCard({ toast, onPause, onResume, onDismiss }) {
             ×
           </button>
         </div>
-        <div
-          className="glass-toast__timer"
-          onMouseEnter={() => onPause(toast.id)}
-          onMouseLeave={() => onResume(toast.id)}
-          aria-label={barLabel}
-        >
+        <div className="glass-toast__timer" aria-label={barLabel}>
           <div
             className="glass-toast__timer-fill"
             style={{ width: `${progress}%` }}
