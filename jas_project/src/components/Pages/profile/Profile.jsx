@@ -433,10 +433,7 @@ function Profile() {
   const hasLoadedOnce = useRef(false);
   const [showFloatingActions, setShowFloatingActions] = useState(false);
   const logWeightBtnRef = useRef(null);
-<<<<<<< HEAD
-=======
   const { success: toastSuccess, error: toastError } = useGlassToast();
->>>>>>> kpmg
 
   const fetchData = useCallback(async () => {
     // only show the full-page loading state the first time
@@ -686,30 +683,21 @@ function Profile() {
 
       if (saveError) {
         setError(getUserFacingError(saveError.message));
-<<<<<<< HEAD
-=======
         toastError(
           editingEntry ? "Edit didn’t work." : "Upload event didn’t work.",
         );
->>>>>>> kpmg
         return;
       }
 
       closeWeightModal();
-<<<<<<< HEAD
-=======
       toastSuccess(editingEntry ? "Edit was ok." : "Upload event was ok.");
->>>>>>> kpmg
       fetchData();
     } catch (err) {
       setSaving(false);
       setError(getUserFacingError(err.message));
-<<<<<<< HEAD
-=======
       toastError(
         editingEntry ? "Edit didn’t work." : "Upload event didn’t work.",
       );
->>>>>>> kpmg
     }
   };
 
@@ -752,26 +740,17 @@ function Profile() {
 
       if (saveError) {
         setError(getUserFacingError(saveError.message));
-<<<<<<< HEAD
-=======
         toastError("Save profile didn’t work.");
->>>>>>> kpmg
         return;
       }
 
       closeProfileModal();
-<<<<<<< HEAD
-=======
       toastSuccess("Save profile was ok.");
->>>>>>> kpmg
       fetchData();
     } catch (err) {
       setSaving(false);
       setError(getUserFacingError(err.message));
-<<<<<<< HEAD
-=======
       toastError("Save profile didn’t work.");
->>>>>>> kpmg
     }
   };
 
@@ -799,26 +778,17 @@ function Profile() {
 
       if (deleteError) {
         setError(getUserFacingError(deleteError.message));
-<<<<<<< HEAD
-=======
         toastError("Delete didn’t work.");
->>>>>>> kpmg
         fetchData(); // resync in case the optimistic update was wrong
         return;
       }
 
-<<<<<<< HEAD
-=======
       toastSuccess("Delete was ok.");
->>>>>>> kpmg
       fetchData(); // quiet background resync, no loading flash now
     } catch (err) {
       setDeleting(false);
       setError(getUserFacingError(err.message));
-<<<<<<< HEAD
-=======
       toastError("Delete didn’t work.");
->>>>>>> kpmg
       fetchData();
     }
   };
@@ -935,11 +905,7 @@ function Profile() {
       </header>
 
       {error && (
-<<<<<<< HEAD
-        <p className="profile__error" role="alert">
-=======
         <p className="profile__error profile__error--glass" role="alert">
->>>>>>> kpmg
           {error}
         </p>
       )}
