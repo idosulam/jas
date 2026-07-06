@@ -1,5 +1,4 @@
 import "./Profile.css";
-import "./profile_glassy.css";
 import { useCallback, useEffect, useMemo, useState, useRef } from "react";
 import { createPortal } from "react-dom";
 import { getSupabaseClient } from "../../../lib/superbase";
@@ -683,7 +682,9 @@ function Profile() {
 
       if (saveError) {
         setError(getUserFacingError(saveError.message));
-        toastError(editingEntry ? "Edit didn’t work." : "Upload event didn’t work.");
+        toastError(
+          editingEntry ? "Edit didn’t work." : "Upload event didn’t work.",
+        );
         return;
       }
 
@@ -693,7 +694,9 @@ function Profile() {
     } catch (err) {
       setSaving(false);
       setError(getUserFacingError(err.message));
-      toastError(editingEntry ? "Edit didn’t work." : "Upload event didn’t work.");
+      toastError(
+        editingEntry ? "Edit didn’t work." : "Upload event didn’t work.",
+      );
     }
   };
 

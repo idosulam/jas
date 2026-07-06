@@ -1,9 +1,9 @@
 import { useRef, useState } from "react";
 import Navbar from "./components/Navbar/Navbar.jsx";
-import PageTransition from "./components/PageTransition.jsx";
-import Shifts from "./components/Pages/Shifts/Shifts_glassy.jsx";
-import Calendar from "./components/Pages/Calendar/Calendar_glassy.jsx";
-import Profile from "./components/Pages/profile/Profile_glassy.jsx";
+import Page_transition from "./components/Page_transition.jsx";
+import Shifts from "./components/Pages/Shifts/Shifts.jsx";
+import Calendar from "./components/Pages/Calendar/Calendar.jsx";
+import Profile from "./components/Pages/profile/Profile.jsx";
 import "./styles/pages.css";
 import "./styles/animations.css";
 import "./styles/glass_toast.css";
@@ -38,9 +38,9 @@ function App() {
     <ToastProvider>
       <div className="app app--glassy">
         <main className="app__content">
-          <PageTransition pageKey={activeNav} direction={direction}>
+          <Page_transition pageKey={activeNav} direction={direction}>
             <ActivePage />
-          </PageTransition>
+          </Page_transition>
         </main>
         <Navbar activeId={activeNav} onChange={handleNavChange} />
       </div>
