@@ -22,6 +22,8 @@ import {
   sanitizeTime,
 } from "../../../lib/security";
 
+import { useGlassToast } from "../../../lib/glass_toast_provider.jsx";
+
 const MODAL_EXIT_MS = 260;
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -55,6 +57,10 @@ function Calendar() {
   const [nowTick, setNowTick] = useState(() => Date.now());
   const [showFloatingActions, setShowFloatingActions] = useState(false);
   const addBtnRef = useRef(null);
+<<<<<<< HEAD
+=======
+  const { success: toastSuccess, error: toastError } = useGlassToast();
+>>>>>>> kpmg
 
   const selectedKey = toDateKey(selectedDate);
   const isToday = selectedKey === toDateKey(today);
@@ -282,15 +288,33 @@ function Calendar() {
       setSaving(false);
 
       if (dbError) {
+<<<<<<< HEAD
         setError(getUserFacingError(dbError.message));
+=======
+        const message = getUserFacingError(dbError.message);
+        setError(message);
+        toastError(
+          editingEvent ? "Edit didn’t work." : "Upload event didn’t work.",
+        );
+>>>>>>> kpmg
         return;
       }
 
       closeFormModal();
+<<<<<<< HEAD
+=======
+      toastSuccess(editingEvent ? "Edit was ok." : "Upload event was ok.");
+>>>>>>> kpmg
       fetchEvents();
     } catch (err) {
       setSaving(false);
       setError(getUserFacingError(err.message));
+<<<<<<< HEAD
+=======
+      toastError(
+        editingEvent ? "Edit didn’t work." : "Upload event didn’t work.",
+      );
+>>>>>>> kpmg
     }
   };
 
@@ -311,11 +335,19 @@ function Calendar() {
 
       if (dbError) {
         setError(getUserFacingError(dbError.message));
+<<<<<<< HEAD
+=======
+        toastError("Delete didn’t work.");
+>>>>>>> kpmg
         return;
       }
 
       const removedId = deleteTarget.id;
       closeDeleteModal();
+<<<<<<< HEAD
+=======
+      toastSuccess("Delete was ok.");
+>>>>>>> kpmg
       setRemovingId(removedId);
 
       setTimeout(() => {
@@ -326,6 +358,10 @@ function Calendar() {
     } catch (err) {
       setDeleting(false);
       setError(getUserFacingError(err.message));
+<<<<<<< HEAD
+=======
+      toastError("Delete didn’t work.");
+>>>>>>> kpmg
     }
   };
 
@@ -500,7 +536,11 @@ function Calendar() {
       </div>
 
       {error && (
+<<<<<<< HEAD
         <p className="calendar__error" role="alert">
+=======
+        <p className="calendar__error calendar__error--glass" role="alert">
+>>>>>>> kpmg
           {error}
         </p>
       )}

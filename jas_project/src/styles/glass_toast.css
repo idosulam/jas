@@ -1,0 +1,179 @@
+.app--glassy {
+  isolation: isolate;
+}
+
+.glass-toast-viewport {
+  position: fixed;
+  top: max(1rem, env(safe-area-inset-top, 0px));
+  right: max(1rem, env(safe-area-inset-right, 0px));
+  z-index: 1200;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  width: min(92vw, 24rem);
+  pointer-events: none;
+}
+
+.glass-toast {
+  pointer-events: auto;
+  position: relative;
+  overflow: hidden;
+  border-radius: 1.35rem;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.07)),
+    rgba(12, 16, 34, 0.72);
+  backdrop-filter: blur(26px) saturate(160%);
+  -webkit-backdrop-filter: blur(26px) saturate(160%);
+  box-shadow:
+    0 20px 48px rgba(5, 8, 20, 0.34),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.08);
+  animation: glassToastIn 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+  touch-action: pan-y;
+}
+
+.glass-toast--dragging {
+  transition: none;
+  cursor: grabbing;
+}
+
+.glass-toast__halo {
+  position: absolute;
+  inset: -18%;
+  background: radial-gradient(circle at top right, rgba(255, 255, 255, 0.35), transparent 42%);
+  opacity: 0.85;
+  pointer-events: none;
+}
+
+.glass-toast__content {
+  position: relative;
+  padding: 1rem 1rem 0.75rem;
+}
+
+.glass-toast__top {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.glass-toast__icon {
+  display: grid;
+  place-items: center;
+  width: 2.3rem;
+  height: 2.3rem;
+  border-radius: 0.9rem;
+  font-weight: 800;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.12);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22);
+  flex-shrink: 0;
+}
+
+.glass-toast--success .glass-toast__icon {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.35), rgba(34, 197, 94, 0.2));
+  color: #d1fae5;
+}
+
+.glass-toast--error .glass-toast__icon {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.34), rgba(248, 113, 113, 0.15));
+  color: #fee2e2;
+}
+
+.glass-toast__copy {
+  min-width: 0;
+}
+
+.glass-toast__title {
+  display: block;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: rgba(255, 255, 255, 0.96);
+  margin-bottom: 0.18rem;
+}
+
+.glass-toast__message {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.84rem;
+  line-height: 1.5;
+}
+
+.glass-toast__close {
+  appearance: none;
+  border: 0;
+  border-radius: 999px;
+  width: 1.9rem;
+  height: 1.9rem;
+  display: grid;
+  place-items: center;
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.75);
+  cursor: pointer;
+  transition: transform 0.2s ease, background 0.2s ease, color 0.2s ease;
+}
+
+.glass-toast__close:hover {
+  transform: scale(1.06);
+  background: rgba(255, 255, 255, 0.14);
+  color: white;
+}
+
+.glass-toast__timer {
+  margin-top: 0.8rem;
+  height: 0.35rem;
+  width: 100%;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.25);
+}
+
+.glass-toast__timer-fill {
+  height: 100%;
+  border-radius: inherit;
+  transition: width 0.04s linear;
+  box-shadow: 0 0 16px currentColor;
+}
+
+.glass-toast--success .glass-toast__timer-fill {
+  background: linear-gradient(90deg, #34d399, #22c55e);
+  color: #22c55e;
+}
+
+.glass-toast--error .glass-toast__timer-fill {
+  background: linear-gradient(90deg, #fb7185, #ef4444);
+  color: #ef4444;
+}
+
+@keyframes glassToastIn {
+  from {
+    opacity: 0;
+    transform: translate3d(36px, -10px, 0) scale(0.96);
+    filter: blur(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+    filter: blur(0);
+  }
+}
+
+@media (max-width: 640px) {
+  .glass-toast-viewport {
+    left: 1rem;
+    right: 1rem;
+    width: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .glass-toast,
+  .glass-toast__timer-fill,
+  .glass-toast__close {
+    animation: none !important;
+    transition: none !important;
+  }
+}

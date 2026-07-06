@@ -1,11 +1,15 @@
 import { useRef, useState } from "react";
 import Navbar from "./components/Navbar/Navbar.jsx";
 import PageTransition from "./components/Page_transition.jsx";
+import Page_transition from "./components/Page_transition.jsx";
 import Shifts from "./components/Pages/Shifts/Shifts.jsx";
 import Calendar from "./components/Pages/Calendar/Calendar.jsx";
 import Profile from "./components/Pages/profile/Profile.jsx";
 import "./styles/pages.css";
 import "./styles/animations.css";
+
+import "./styles/glass_toast.css";
+import { ToastProvider } from "./lib/glass_toast_provider.jsx";
 
 const TAB_ORDER = ["Shifts", "Calendar", "Profile"];
 
@@ -33,6 +37,7 @@ function App() {
   const ActivePage = PAGES[activeNav];
 
   return (
+<<<<<<< HEAD
     <div className="app">
       <main className="app__content">
         <PageTransition pageKey={activeNav} direction={direction}>
@@ -41,6 +46,18 @@ function App() {
       </main>
       <Navbar activeId={activeNav} onChange={handleNavChange} />
     </div>
+=======
+    <ToastProvider>
+      <div className="app app--glassy">
+        <main className="app__content">
+          <Page_transition pageKey={activeNav} direction={direction}>
+            <ActivePage />
+          </Page_transition>
+        </main>
+        <Navbar activeId={activeNav} onChange={handleNavChange} />
+      </div>
+    </ToastProvider>
+>>>>>>> kpmg
   );
 }
 

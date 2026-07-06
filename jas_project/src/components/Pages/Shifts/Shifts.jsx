@@ -9,6 +9,8 @@ import {
   sanitizeText,
 } from "../../../lib/security";
 
+import { useGlassToast } from "../../../lib/glass_toast_provider.jsx";
+
 const PLACES = {
   pasta: { label: "Pasta Via", rate: 50 },
   coffee: { label: "Cafe Nimrod", rate: 34 },
@@ -97,6 +99,10 @@ function Shifts() {
   const [expandedNoteId, setExpandedNoteId] = useState(null);
   const [showFloatingActions, setShowFloatingActions] = useState(false);
   const addBtnRef = useRef(null);
+<<<<<<< HEAD
+=======
+  const { success: toastSuccess, error: toastError } = useGlassToast();
+>>>>>>> kpmg
 
   function useCountUp(value, duration = 500) {
     const [display, setDisplay] = useState(value);
@@ -299,15 +305,33 @@ function Shifts() {
       setSaving(false);
 
       if (dbError) {
+<<<<<<< HEAD
         setError(getUserFacingError(dbError.message));
+=======
+        const message = getUserFacingError(dbError.message);
+        setError(message);
+        toastError(
+          editingShift ? "Edit didn’t work." : "Upload shift didn’t work.",
+        );
+>>>>>>> kpmg
         return;
       }
 
       closeFormModal();
+<<<<<<< HEAD
+=======
+      toastSuccess(editingShift ? "Edit was ok." : "Upload shift was ok.");
+>>>>>>> kpmg
       fetchShifts();
     } catch (err) {
       setSaving(false);
       setError(getUserFacingError(err.message));
+<<<<<<< HEAD
+=======
+      toastError(
+        editingShift ? "Edit didn’t work." : "Upload shift didn’t work.",
+      );
+>>>>>>> kpmg
     }
   };
 
@@ -328,11 +352,19 @@ function Shifts() {
 
       if (dbError) {
         setError(getUserFacingError(dbError.message));
+<<<<<<< HEAD
+=======
+        toastError("Delete didn’t work.");
+>>>>>>> kpmg
         return;
       }
 
       const removedId = deleteTarget.id;
       closeDeleteModal();
+<<<<<<< HEAD
+=======
+      toastSuccess("Delete was ok.");
+>>>>>>> kpmg
       setRemovingId(removedId);
 
       setTimeout(() => {
@@ -342,6 +374,10 @@ function Shifts() {
     } catch (err) {
       setDeleting(false);
       setError(getUserFacingError(err.message));
+<<<<<<< HEAD
+=======
+      toastError("Delete didn’t work.");
+>>>>>>> kpmg
     }
   };
 
