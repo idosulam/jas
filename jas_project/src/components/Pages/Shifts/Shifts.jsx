@@ -556,7 +556,6 @@ function Shifts() {
                         <span>
                           {shift.hours}h × ₪{placeInfo?.rate}
                         </span>
-                        <span>Pay {formatMoney(pay)}</span>
                       </>
                     )}
                     {tips > 0 && <span>Tips {formatMoney(tips)}</span>}
