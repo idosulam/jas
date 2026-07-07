@@ -684,7 +684,7 @@
   .shifts__modal,
   .shifts__modal--delete {
     width: 100%;
-    max-height: min(78svh, calc(100svh - 16px - env(safe-area-inset-bottom)));
+    max-height: min(80vh, calc(100svh - 16px - env(safe-area-inset-bottom)));
     border-radius: 22px 22px 0 0;
   }
 
@@ -738,7 +738,7 @@
 @media (max-width: 420px) {
   .shifts__modal,
   .shifts__modal--delete {
-    max-height: min(74svh, calc(100svh - 12px - env(safe-area-inset-bottom)));
+    max-height: min(80vh, calc(100svh - 12px - env(safe-area-inset-bottom)));
   }
 
   .shifts__modal-title {
