@@ -999,7 +999,6 @@
 }
 
 @media (max-width: 640px) {
-
   .shifts__field input[type="time"] {
     text-align: center;
     letter-spacing: 0.05em;
@@ -1010,13 +1009,12 @@
     font-weight: 500;
     opacity: 0.9;
   }
-
-}@media (max-width: 640px) {
-
+}
+@media (max-width: 640px) {
   /* 🔽 Compact inputs (date + time) */
   .shifts__field input[type="date"],
   .shifts__field input[type="time"] {
-    min-height: 38px;          /* was ~46 → tighter */
+    min-height: 38px; /* was ~46 → tighter */
     padding: 0.55rem 0.65rem;
     font-size: 14.5px;
     border-radius: 0.65rem;
@@ -1044,6 +1042,57 @@
   }
 
   /* 🔽 Make whole field block tighter */
+  .shifts__field {
+    gap: 0.3rem;
+  }
+}
+
+@media (max-width: 640px) {
+  /* Unify date/time with the rest of the fields — iOS gives these
+     inputs their own intrinsic height/width unless we pin the box
+     model explicitly, which is why they were sticking out. */
+  .shifts__field input[type="date"],
+  .shifts__field input[type="time"] {
+    -webkit-appearance: none;
+    appearance: none;
+    box-sizing: border-box;
+    width: 100%;
+    height: 46px;
+    min-height: 46px;
+    padding: 0.7rem 0.75rem;
+    font-size: 16px;
+    line-height: 1.2;
+    border-radius: 0.75rem;
+  }
+
+  .shifts__field input[type="time"] {
+    text-align: center;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+  }
+
+  .shifts__field input[type="date"] {
+    font-weight: 500;
+    opacity: 0.9;
+  }
+
+  /* Keep the time row's two inputs matching each other and the rest */
+  .shifts__time-row .shifts__field input {
+    height: 46px;
+    min-height: 46px;
+    padding: 0.7rem 0.75rem;
+    font-size: 16px;
+  }
+
+  .shifts__field span {
+    font-size: 0.68rem;
+    margin-bottom: 0.2rem;
+  }
+
+  .shifts__time-row {
+    gap: 0.55rem;
+  }
+
   .shifts__field {
     gap: 0.3rem;
   }
