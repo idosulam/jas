@@ -997,3 +997,54 @@
     font-size: 0.72rem;
   }
 }
+
+@media (max-width: 640px) {
+
+  .shifts__field input[type="time"] {
+    text-align: center;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+  }
+
+  .shifts__field input[type="date"] {
+    font-weight: 500;
+    opacity: 0.9;
+  }
+
+}@media (max-width: 640px) {
+
+  /* 🔽 Compact inputs (date + time) */
+  .shifts__field input[type="date"],
+  .shifts__field input[type="time"] {
+    min-height: 38px;          /* was ~46 → tighter */
+    padding: 0.55rem 0.65rem;
+    font-size: 14.5px;
+    border-radius: 0.65rem;
+
+    /* make them feel lighter vs text inputs */
+    background: rgba(255, 255, 255, 0.04);
+  }
+
+  /* 🔽 Even tighter inside time row */
+  .shifts__time-row .shifts__field input {
+    min-height: 36px;
+    padding: 0.5rem 0.55rem;
+    font-size: 14px;
+  }
+
+  /* 🔽 Label spacing tighter */
+  .shifts__field span {
+    font-size: 0.68rem;
+    margin-bottom: 0.2rem;
+  }
+
+  /* 🔽 Reduce vertical gaps for this section */
+  .shifts__time-row {
+    gap: 0.55rem;
+  }
+
+  /* 🔽 Make whole field block tighter */
+  .shifts__field {
+    gap: 0.3rem;
+  }
+}
