@@ -42,13 +42,20 @@ const MONTHS = [
   "December",
 ];
 
-const MODAL_EXIT_MS = 260;
+function getCurrentLocalTime() {
+  const now = new Date();
+  const hours = String(now.getHours()).padStart(2, "0");
+  const minutes = String(now.getMinutes()).padStart(2, "0");
+  return `${hours}:${minutes}`;
+}
+
+const MODAL_EXIT_MS = 320;
 
 const emptyForm = () => ({
   place: "pasta",
   pay_type: "hourly",
   shift_date: new Date().toISOString().slice(0, 10),
-  start_time: "",
+  start_time: getCurrentLocalTime(),
   end_time: "",
   hours: "",
   tips: "",
