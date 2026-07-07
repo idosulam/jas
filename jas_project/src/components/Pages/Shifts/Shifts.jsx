@@ -179,7 +179,14 @@ function Shifts() {
     const target = addBtnRef.current;
     if (!target) return;
     const observer = new IntersectionObserver(
-      ([entry]) => setShowFloatingActions(!entry.isIntersecting),
+      ([entry]) => {
+        // Only show floating actions once the button has scrolled
+        // above the viewport (i.e. we're below it), not when it's
+        // simply below the viewport because we haven't reached it yet.
+        const scrolledPastIt =
+          !entry.isIntersecting && entry.boundingClientRect.top < 0;
+        setShowFloatingActions(scrolledPastIt);
+      },
       { threshold: 0 },
     );
     observer.observe(target);
