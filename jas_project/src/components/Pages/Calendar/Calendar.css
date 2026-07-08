@@ -1284,7 +1284,7 @@
 .calendar__modal {
   position: relative;
   width: min(100%, 640px);
-  max-height: min(84svh, calc(100svh - 24px - env(safe-area-inset-bottom)));
+  max-height: min(120svh, calc(100svh - 24px - env(safe-area-inset-bottom)));
   overflow-y: auto;
   overscroll-behavior: contain;
   margin: 0;
@@ -1486,19 +1486,6 @@
   animation: calendarOverlayOut 0.26s ease forwards;
 }
 
-.calendar__modal {
-  width: 100%;
-  max-width: 22rem;
-  position: relative;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  padding: 1.25rem 1.25rem max(1.25rem, env(safe-area-inset-bottom));
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 1.1rem 1.1rem 0 0;
-  background: linear-gradient(160deg, #1a1a2e 0%, #16213e 100%);
-  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.4);
-  animation: calendarModalSlideUp 0.38s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
 .calendar__modal::before,
 .calendar__modal--delete::before {
   content: "";
