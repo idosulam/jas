@@ -760,30 +760,28 @@ function Calendar() {
                   />
                 </label>
 
-                <div className="calendar__field-row">
-                  <label className="calendar__field">
-                    <span>Start</span>
-                    <input
-                      type="time"
-                      value={form.start_time}
-                      onChange={(e) =>
-                        setForm({ ...form, start_time: e.target.value })
-                      }
-                      required
-                    />
-                  </label>
-                  <label className="calendar__field">
-                    <span>End</span>
-                    <input
-                      type="time"
-                      value={form.end_time}
-                      onChange={(e) =>
-                        setForm({ ...form, end_time: e.target.value })
-                      }
-                      required
-                    />
-                  </label>
-                </div>
+                <label className="calendar__field">
+                  <span>Start</span>
+                  <input
+                    type="time"
+                    value={form.start_time}
+                    onChange={(e) =>
+                      setForm({ ...form, start_time: e.target.value })
+                    }
+                    required
+                  />
+                </label>
+                <label className="calendar__field">
+                  <span>End</span>
+                  <input
+                    type="time"
+                    value={form.end_time}
+                    onChange={(e) =>
+                      setForm({ ...form, end_time: e.target.value })
+                    }
+                    required
+                  />
+                </label>
 
                 <label className="calendar__field">
                   <span>Color</span>
@@ -859,6 +857,22 @@ function Calendar() {
               aria-modal="true"
               aria-labelledby="delete-event-title"
             >
+              {" "}
+              <div className="shifts__delete-icon" aria-hidden="true">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.75"
+                >
+                  <path
+                    d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6h14Z"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path d="M10 11v6M14 11v6" strokeLinecap="round" />
+                </svg>
+              </div>
               <h2 id="delete-event-title" className="calendar__modal-title">
                 Delete this event?
               </h2>

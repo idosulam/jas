@@ -269,12 +269,15 @@
 
 .calendar__week-day {
   position: relative;
+
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
 
   gap: 0.25rem;
+
+  aspect-ratio: 0.9;
 
   padding: 0.7rem 0.25rem;
 
@@ -298,6 +301,7 @@
 
 .calendar__week-day::before {
   content: "";
+
   position: absolute;
   inset: 0;
 
@@ -1278,19 +1282,43 @@
 }
 
 .calendar__modal {
-  width: 100%;
-  max-width: 22rem;
-  max-height: min(90dvh, 36rem);
+  position: relative;
+  width: min(100%, 640px);
+  max-height: min(84svh, calc(100svh - 24px - env(safe-area-inset-bottom)));
   overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  padding: 1.25rem 1.25rem max(1.25rem, env(safe-area-inset-bottom));
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 1.1rem 1.1rem 0 0;
-  background: linear-gradient(160deg, #1a1a2e 0%, #16213e 100%);
-  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.4);
-  animation: calendarModalSlideUp 0.38s cubic-bezier(0.34, 1.56, 0.64, 1);
+  overscroll-behavior: contain;
+  margin: 0;
+  padding: 2rem;
+  background: rgba(20, 18, 48, 0.98);
+  border: 1px solid var(--sheet-border);
+  border-radius: 26px 26px 0 0;
+  box-shadow: var(--sheet-shadow);
+  transform-origin: bottom center;
+  animation: shiftsSheetIn 420ms var(--sheet-ease) both;
+  will-change: transform, opacity;
 }
 
+@keyframes shiftsSheetIn {
+  from {
+    opacity: 0;
+    transform: translateY(34px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes shiftsSheetOut {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(24px) scale(0.992);
+  }
+}
 /* ==========================================================
    CALENDAR.CSS
    Part 1A — Foundation
@@ -1461,18 +1489,16 @@
 .calendar__modal {
   width: 100%;
   max-width: 22rem;
-  max-height: min(110dvh, 40rem);
+  position: relative;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-
-  padding: 1.5rem 1.5rem max(1.5rem, env(safe-area-inset-bottom));
-  border: 1px solid var(--border-strong);
-  border-radius: 1.25rem 1.25rem 0 0;
+  padding: 1.25rem 1.25rem max(1.25rem, env(safe-area-inset-bottom));
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 1.1rem 1.1rem 0 0;
   background: linear-gradient(160deg, #1a1a2e 0%, #16213e 100%);
-  box-shadow: var(--shadow-lg);
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.4);
   animation: calendarModalSlideUp 0.38s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
-
 .calendar__modal::before,
 .calendar__modal--delete::before {
   content: "";
