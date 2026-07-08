@@ -14,6 +14,7 @@ import { useGlassToast } from "../../../lib/glass_toast_provider.jsx";
 const UNIT_STORAGE_KEY = "profile_weight_unit";
 const KG_TO_LBS = 2.20462;
 const MODAL_EXIT_MS = 260;
+const SWIPE_CLOSE_THRESHOLD = 110;
 
 const emptyProfileForm = () => ({
   display_name: "Jas",
@@ -88,6 +89,84 @@ function feetAndInchesToCm(feet, inches) {
   if (parsedFeet == null && parsedInches == null) return null;
   const totalInches = (parsedFeet ?? 0) * 12 + (parsedInches ?? 0);
   return Number((totalInches * 2.54).toFixed(2));
+}
+function useSwipeDownToClose(isOpen, isClosing, onClose) {
+  const startYRef = useRef(0);
+  const dragYRef = useRef(0);
+  const draggingRef = useRef(false);
+  const [dragY, setDragY] = useState(0);
+
+  const resetDrag = useCallback(() => {
+    dragYRef.current = 0;
+    draggingRef.current = false;
+    setDragY(0);
+  }, []);
+
+  useEffect(() => {
+    if (!isOpen) {
+      resetDrag();
+    }
+  }, [isOpen, resetDrag]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handlePointerMove = (e) => {
+      if (!draggingRef.current) return;
+
+      const nextDrag = Math.max(0, e.clientY - startYRef.current);
+      dragYRef.current = nextDrag;
+      setDragY(nextDrag);
+    };
+
+    const handlePointerEnd = () => {
+      if (!draggingRef.current) return;
+
+      const shouldClose = dragYRef.current >= SWIPE_CLOSE_THRESHOLD;
+      resetDrag();
+
+      if (shouldClose) {
+        onClose();
+      }
+    };
+
+    window.addEventListener("pointermove", handlePointerMove);
+    window.addEventListener("pointerup", handlePointerEnd);
+    window.addEventListener("pointercancel", handlePointerEnd);
+
+    return () => {
+      window.removeEventListener("pointermove", handlePointerMove);
+      window.removeEventListener("pointerup", handlePointerEnd);
+      window.removeEventListener("pointercancel", handlePointerEnd);
+    };
+  }, [isOpen, onClose, resetDrag]);
+
+  const bind = {
+    onPointerDown: (e) => {
+      if (e.pointerType === "mouse" && e.button !== 0) return;
+
+      startYRef.current = e.clientY;
+      dragYRef.current = 0;
+      draggingRef.current = true;
+
+      if (e.currentTarget.setPointerCapture) {
+        e.currentTarget.setPointerCapture(e.pointerId);
+      }
+    },
+  };
+
+  return {
+    bind,
+    dragY,
+    dragging: dragY > 0,
+    style:
+      dragY > 0 && !isClosing
+        ? {
+            transform: `translateY(${dragY}px)`,
+            transition: "none",
+          }
+        : undefined,
+  };
 }
 
 function formatHeight(heightCm) {
@@ -411,6 +490,7 @@ function WeightChart({ entries, unit, goalKg }) {
 }
 
 function Profile() {
+
   const [removingId, setRemovingId] = useState(null);
   const [unit, setUnit] = useState(loadUnit);
   const [profile, setProfile] = useState(null);
@@ -872,6 +952,23 @@ function Profile() {
   const displayName = profile?.display_name ?? "Jas";
   const unitLabel = unit === "kg" ? "kg" : "lbs";
 
+  const weightSwipe = useSwipeDownToClose(
+    weightModalOpen,
+    weightModalClosing,
+    closeWeightModal,
+  );
+
+  const profileSwipe = useSwipeDownToClose(
+    profileModalOpen,
+    profileModalClosing,
+    closeProfileModal,
+  );
+
+  const deleteSwipe = useSwipeDownToClose(
+    Boolean(deleteTarget),
+    deleteModalClosing,
+    closeDeleteModal,
+  );
   return (
     <section className="page ">
       <header className="profile__header">
@@ -1164,12 +1261,14 @@ function Profile() {
             role="presentation"
           >
             <div
-              className={`profile__modal${weightModalClosing ? " profile__modal--closing" : ""}`}
-              onClick={(e) => e.stopPropagation()}
-              role="dialog"
-              aria-modal="true"
-              aria-labelledby="weight-modal-title"
-            >
+  className={`profile__modal${weightModalClosing ? " profile__modal--closing" : ""}${weightSwipe.dragging ? " profile__modal--dragging" : ""}`}
+  onClick={(e) => e.stopPropagation()}
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="weight-modal-title"
+  {...weightSwipe.bind}
+  style={weightSwipe.style}
+>
               <h2 id="weight-modal-title" className="profile__modal-title">
                 {editingEntry ? "Edit weigh-in" : "Log weigh-in"}
               </h2>
