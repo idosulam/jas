@@ -1231,6 +1231,37 @@
   .calendar__event-actions {
     display: none;
   }
+  .calendar__week--week {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(3.4rem, 1fr);
+    grid-template-columns: none;
+    gap: 0.55rem;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding-bottom: 0.25rem;
+    scroll-snap-type: x proximity;
+    --webkit-overflow-scrolling: touch;
+  }
+  .calendar__week--week::-webkit-scrollbar {
+    display: none;
+  }
+  .calendar__week--week .calendar__week-day {
+    min-width: 3.4rem;
+    min-height: 4rem;
+    aspect-ratio: auto;
+    padding: 0.55rem 0.25rem;
+    border-radius: 1rem;
+    scroll-snap-align: start;
+  }
+  .calendar__week--week .calendar__week-label {
+    font-size: 0.58rem;
+    letter-spacing: 0.04em;
+  }
+  .calendar__week--week .calendar__week-num {
+    font-size: 1.05rem;
+    line-height: 1;
+  }
 
   .calendar__fab-stack {
     right: 1rem;
