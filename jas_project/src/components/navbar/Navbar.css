@@ -1,3 +1,7 @@
+/* ============================================================
+   Navbar — Premium glass with purple accent glow
+   ============================================================ */
+
 .navbar {
   position: fixed;
   bottom: 1.5rem;
@@ -14,17 +18,18 @@
   border-radius: 999px;
   background: linear-gradient(
     135deg,
-    rgba(255, 255, 255, 0.22) 0%,
-    rgba(255, 255, 255, 0.06) 50%,
-    rgba(255, 255, 255, 0.14) 100%
+    rgba(255, 255, 255, 0.08) 0%,
+    rgba(255, 255, 255, 0.03) 50%,
+    rgba(168, 85, 247, 0.06) 100%
   );
-  backdrop-filter: blur(10px) saturate(140%);
-  -webkit-backdrop-filter: blur(10px) saturate(140%);
-  border: 1px solid rgba(255, 255, 255, 0.35);
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.25),
-    inset 0 1px 0 rgba(255, 255, 255, 0.45),
-    inset 0 -1px 0 rgba(255, 255, 255, 0.08);
+    0 8px 32px rgba(0, 0, 0, 0.35),
+    0 0 0 1px rgba(168, 85, 247, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.03);
   overflow: hidden;
   transition: transform 0.35s cubic-bezier(0.34, 1.4, 0.64, 1);
   will-change: transform;
@@ -39,7 +44,8 @@
   inset: 0;
   background: radial-gradient(
     ellipse 80% 50% at 50% -20%,
-    rgba(255, 255, 255, 0.35),
+    rgba(168, 85, 247, 0.15),
+    rgba(236, 72, 153, 0.05),
     transparent 70%
   );
   pointer-events: none;
@@ -56,10 +62,26 @@
   background: linear-gradient(
     90deg,
     transparent,
-    rgba(255, 255, 255, 0.15),
+    rgba(255, 255, 255, 0.1),
     transparent
   );
-  animation: shimmer 6s ease-in-out infinite;
+  animation: shimmer 7s ease-in-out infinite;
+}
+
+/* Purple glow effect under the navbar */
+.navbar__glow {
+  position: absolute;
+  bottom: -12px;
+  left: 10%;
+  right: 10%;
+  height: 20px;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(168, 85, 247, 0.25),
+    transparent 70%
+  );
+  filter: blur(8px);
+  pointer-events: none;
 }
 
 .navbar__inner {
@@ -81,14 +103,15 @@
   height: 100%;
   border-radius: 999px;
   background: linear-gradient(
-    160deg,
-    rgba(255, 255, 255, 0.55) 0%,
-    rgba(255, 255, 255, 0.18) 100%
+    135deg,
+    rgba(168, 85, 247, 0.35) 0%,
+    rgba(236, 72, 153, 0.2) 100%
   );
-  border: 1px solid rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(168, 85, 247, 0.4);
   box-shadow:
-    0 4px 16px rgba(0, 0, 0, 0.12),
-    inset 0 1px 0 rgba(255, 255, 255, 0.7);
+    0 4px 16px rgba(168, 85, 247, 0.2),
+    0 0 20px rgba(168, 85, 247, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
   transition:
     transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1),
     width 0.4s cubic-bezier(0.34, 1.2, 0.64, 1);
@@ -111,10 +134,10 @@
   border: none;
   border-radius: 999px;
   background: transparent;
-  color: rgba(255, 255, 255, 0.65);
+  color: rgba(255, 255, 255, 0.5);
   font-family: inherit;
   font-size: 0.7rem;
-  font-weight: 500;
+  font-weight: 600;
   letter-spacing: 0.02em;
   cursor: pointer;
   overflow: hidden;
@@ -130,7 +153,7 @@
   border-radius: inherit;
   background: radial-gradient(
     circle at center,
-    rgba(255, 255, 255, 0.35),
+    rgba(168, 85, 247, 0.3),
     transparent 70%
   );
   opacity: 0;
@@ -154,16 +177,16 @@
 }
 
 .nav-option:hover {
-  color: rgba(255, 255, 255, 0.9);
+  color: rgba(255, 255, 255, 0.85);
 }
 
 .nav-option:focus-visible {
-  outline: 2px solid rgba(255, 255, 255, 0.8);
+  outline: 2px solid var(--color-primary);
   outline-offset: 2px;
 }
 
 .nav-option--active {
-  color: rgba(255, 255, 255, 1);
+  color: #fff;
 }
 
 .nav-option__icon {
@@ -174,6 +197,7 @@
 
 .nav-option--active .nav-option__icon {
   animation: iconPop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  filter: drop-shadow(0 0 6px rgba(168, 85, 247, 0.5));
 }
 
 .nav-option__label {
@@ -192,6 +216,11 @@
     top: 1.5rem;
     bottom: auto;
     animation-name: navbarEnterDesktop;
+  }
+
+  .navbar__glow {
+    bottom: auto;
+    top: -12px;
   }
 }
 
