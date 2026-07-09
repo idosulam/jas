@@ -1199,6 +1199,8 @@
   }
 
   .calendar__week {
+    width: max-content;
+    margin-left: -1rem;
     gap: 0.45rem;
   }
 
@@ -1325,7 +1327,7 @@
   border-radius: 26px 26px 0 0;
   box-shadow: var(--sheet-shadow);
   transform-origin: bottom center;
-  animation: shiftsSheetIn 420ms var(--sheet-ease) both;
+  animation: calendarModalSlideUp 0.38s cubic-bezier(0.34, 1.56, 0.64, 1);
   will-change: transform, opacity;
 }
 
@@ -1757,5 +1759,16 @@
   .calendar__spinner {
     animation: none !important;
     transition: none !important;
+  }
+}
+
+@keyframes calendarModalSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(110%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
