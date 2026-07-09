@@ -1,48 +1,8 @@
 /* ==========================================================
-   CALENDAR.CSS
-   Part 1A — Foundation
+   Calendar.css — All Calendar-specific styles
+   Shared classes live in pages.css / animations.css
+   CSS variables live in index.css :root
    ========================================================== */
-
-:root {
-  --primary: #6366f1;
-  --primary-hover: #7c7ff5;
-  --primary-glow: rgba(99, 102, 241, 0.35);
-
-  --secondary: #a855f7;
-  --accent: #f472b6;
-  --success: #22c55e;
-  --danger: #ef4444;
-  --warning: #f59e0b;
-
-  --bg: #0b1020;
-  --surface: rgba(255, 255, 255, 0.05);
-  --surface-hover: rgba(255, 255, 255, 0.08);
-
-  --border: rgba(255, 255, 255, 0.12);
-  --border-strong: rgba(255, 255, 255, 0.2);
-
-  --text: #f8fafc;
-  --text-muted: rgba(248, 250, 252, 0.62);
-
-  --blur: blur(18px);
-
-  --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.15);
-  --shadow-md: 0 12px 30px rgba(0, 0, 0, 0.25);
-  --shadow-lg: 0 24px 50px rgba(0, 0, 0, 0.35);
-
-  --radius-sm: 0.75rem;
-  --radius: 1rem;
-  --radius-lg: 1.5rem;
-  --radius-xl: 2rem;
-
-  --transition: 0.22s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}
 
 .calendar {
   color: var(--text);
@@ -56,6 +16,24 @@
   padding: 1.5rem;
 }
 
+/* ── Scoped glass-card overrides for Calendar ── */
+.calendar .glass-card__value {
+  display: block;
+  margin-bottom: 0.35rem;
+  font-size: 2.2rem;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--color-primary);
+}
+
+.calendar .glass-card__label {
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
 /* ==========================================================
    Header
    ========================================================== */
@@ -63,31 +41,6 @@
 .calendar__header {
   text-align: center;
   margin-bottom: 2rem;
-}
-
-.page__eyebrow {
-  display: inline-block;
-  margin-bottom: 0.55rem;
-
-  color: var(--primary);
-
-  font-size: 0.78rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.14em;
-}
-
-.page__title {
-  margin: 0;
-
-  font-size: clamp(2rem, 5vw, 3rem);
-  font-weight: 800;
-  letter-spacing: -0.04em;
-
-  background: linear-gradient(135deg, #fff, rgba(255, 255, 255, 0.72));
-
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
 }
 
 /* ==========================================================
@@ -98,17 +51,13 @@
   display: flex;
   align-items: center;
   gap: 0.9rem;
-
   margin-bottom: 1.5rem;
   padding: 0.8rem;
-
   border: 1px solid var(--border);
   border-radius: 1.4rem;
-
   background: var(--surface);
   backdrop-filter: var(--blur);
   -webkit-backdrop-filter: var(--blur);
-
   box-shadow: var(--shadow-md);
 }
 
@@ -121,11 +70,9 @@
   display: flex;
   justify-content: center;
   align-items: center;
-
   gap: 0.35rem;
-
   margin: 0;
-
+  font-family: var(--font-heading);
   font-size: 1.15rem;
   font-weight: 700;
   letter-spacing: -0.03em;
@@ -134,21 +81,15 @@
 .calendar__nav-btn {
   width: 3rem;
   height: 3rem;
-
   flex-shrink: 0;
-
   display: grid;
   place-items: center;
-
   border: none;
   border-radius: 1rem;
-
   background: rgba(255, 255, 255, 0.06);
-
   color: #fff;
-
+  font-size: 1.4rem;
   cursor: pointer;
-
   transition:
     transform var(--transition),
     background var(--transition),
@@ -157,9 +98,7 @@
 
 .calendar__nav-btn:hover {
   transform: translateY(-2px);
-
   background: rgba(255, 255, 255, 0.11);
-
   box-shadow: 0 0 0 1px rgba(99, 102, 241, 0.4);
 }
 
@@ -167,23 +106,21 @@
   transform: scale(0.95);
 }
 
+.calendar__nav-btn:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
 .calendar__today-btn {
   margin-top: 0.45rem;
-
   border: none;
   border-radius: 999px;
-
   padding: 0.35rem 0.9rem;
-
-  background: linear-gradient(135deg, var(--primary), var(--secondary));
-
+  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
   color: #fff;
-
   font-size: 0.72rem;
   font-weight: 700;
-
   cursor: pointer;
-
   transition:
     transform var(--transition),
     box-shadow var(--transition);
@@ -191,8 +128,12 @@
 
 .calendar__today-btn:hover {
   transform: translateY(-2px);
+  box-shadow: 0 0 18px var(--color-primary-glow);
+}
 
-  box-shadow: 0 0 18px var(--primary-glow);
+.calendar__today-btn:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
 }
 
 /* ==========================================================
@@ -203,57 +144,45 @@
   display: flex;
   justify-content: center;
   align-items: center;
-
   gap: 0.35rem;
-
   width: max-content;
-
   margin: 0 auto 2rem;
-
   padding: 0.3rem;
-
   border: 1px solid var(--border);
-
   border-radius: 999px;
-
   background: var(--surface);
-
   backdrop-filter: var(--blur);
 }
 
 .calendar__view-btn {
   border: none;
-
   border-radius: 999px;
-
   padding: 0.65rem 1.25rem;
-
   background: transparent;
-
   color: var(--text-muted);
-
   font-weight: 700;
-
   cursor: pointer;
-
   transition: all var(--transition);
 }
 
 .calendar__view-btn:hover {
   color: #fff;
-
   background: rgba(255, 255, 255, 0.05);
 }
 
 .calendar__view-btn--active {
   color: #fff;
-
-  background: linear-gradient(135deg, var(--primary), var(--secondary));
-
+  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
   box-shadow: 0 8px 24px rgba(99, 102, 241, 0.28);
 }
+
+.calendar__view-btn:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
 /* ==========================================================
-   Part 1B — Week Grid, Summary, Toolbar
+   Week Grid
    ========================================================== */
 
 .calendar__week {
@@ -269,29 +198,19 @@
 
 .calendar__week-day {
   position: relative;
-
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-
   gap: 0.25rem;
-
   aspect-ratio: 0.9;
-
   padding: 0.7rem 0.25rem;
-
   border: 1px solid var(--border);
   border-radius: 1.25rem;
-
   background: var(--surface);
-
   color: var(--text);
-
   cursor: pointer;
-
   overflow: hidden;
-
   transition:
     transform var(--transition),
     background var(--transition),
@@ -301,28 +220,17 @@
 
 .calendar__week-day::before {
   content: "";
-
   position: absolute;
   inset: 0;
-
   opacity: 0;
-
-  background: radial-gradient(
-    circle at top,
-    rgba(99, 102, 241, 0.18),
-    transparent 70%
-  );
-
+  background: radial-gradient(circle at top, rgba(99, 102, 241, 0.18), transparent 70%);
   transition: opacity var(--transition);
 }
 
 .calendar__week-day:hover {
   transform: translateY(-4px);
-
   background: var(--surface-hover);
-
   border-color: rgba(99, 102, 241, 0.35);
-
   box-shadow: 0 10px 24px rgba(0, 0, 0, 0.22);
 }
 
@@ -331,14 +239,8 @@
 }
 
 .calendar__week-day--active {
-  border-color: var(--primary);
-
-  background: linear-gradient(
-    135deg,
-    rgba(99, 102, 241, 0.18),
-    rgba(168, 85, 247, 0.12)
-  );
-
+  border-color: var(--color-primary);
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.18), rgba(168, 85, 247, 0.12));
   box-shadow:
     inset 0 0 0 1px rgba(99, 102, 241, 0.25),
     0 12px 30px rgba(99, 102, 241, 0.18);
@@ -350,15 +252,10 @@
 
 .calendar__week-day--today::after {
   content: "";
-
   position: absolute;
-
   inset: 2px;
-
   border-radius: inherit;
-
   border: 1px solid rgba(244, 114, 182, 0.25);
-
   pointer-events: none;
 }
 
@@ -370,34 +267,31 @@
   opacity: 0.45;
 }
 
+.calendar__week-day:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
 .calendar__week-label {
   font-size: 0.68rem;
-
   font-weight: 700;
-
   letter-spacing: 0.08em;
-
   text-transform: uppercase;
-
   color: var(--text-muted);
 }
 
 .calendar__week-num {
+  font-family: var(--font-heading);
   font-size: 1.45rem;
-
   font-weight: 800;
-
   letter-spacing: -0.04em;
 }
 
 .calendar__week-dot {
   width: 0.42rem;
   height: 0.42rem;
-
   border-radius: 999px;
-
   background: linear-gradient(135deg, #f472b6, #f59e0b);
-
   box-shadow: 0 0 14px rgba(244, 114, 182, 0.65);
 }
 
@@ -407,29 +301,19 @@
 
 .calendar__summary {
   display: grid;
-
   grid-template-columns: repeat(2, 1fr);
-
   gap: 1rem;
-
   margin-bottom: 2rem;
 }
 
 .calendar__stat {
   padding: 1.35rem;
-
   border-radius: 1.4rem;
-
   border: 1px solid var(--border);
-
   background: var(--surface);
-
   backdrop-filter: var(--blur);
-
   text-align: center;
-
   box-shadow: var(--shadow-sm);
-
   transition:
     transform var(--transition),
     border-color var(--transition);
@@ -437,34 +321,7 @@
 
 .calendar__stat:hover {
   transform: translateY(-3px);
-
   border-color: rgba(99, 102, 241, 0.3);
-}
-
-.glass-card__value {
-  display: block;
-
-  margin-bottom: 0.35rem;
-
-  font-size: 2.2rem;
-
-  font-weight: 800;
-
-  line-height: 1;
-
-  color: var(--primary);
-}
-
-.glass-card__label {
-  font-size: 0.82rem;
-
-  font-weight: 700;
-
-  letter-spacing: 0.08em;
-
-  text-transform: uppercase;
-
-  color: var(--text-muted);
 }
 
 /* ==========================================================
@@ -473,17 +330,11 @@
 
 .calendar__error {
   margin-bottom: 1.2rem;
-
   padding: 0.9rem 1rem;
-
   border-radius: 1rem;
-
   border: 1px solid rgba(239, 68, 68, 0.35);
-
   background: rgba(239, 68, 68, 0.12);
-
   color: #fecaca;
-
   font-size: 0.9rem;
 }
 
@@ -493,45 +344,30 @@
 
 .calendar__toolbar {
   display: flex;
-
   align-items: center;
-
   justify-content: space-between;
-
   gap: 1rem;
-
   margin-bottom: 1rem;
 }
 
 .calendar__section-title {
   margin: 0;
-
+  font-family: var(--font-heading);
   font-size: 1.1rem;
-
   font-weight: 700;
-
   letter-spacing: -0.03em;
 }
 
 .calendar__add-btn {
   border: none;
-
   border-radius: 999px;
-
   padding: 0.8rem 1.2rem;
-
-  background: linear-gradient(135deg, var(--primary), var(--secondary));
-
+  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
   color: #fff;
-
   font-size: 0.82rem;
-
   font-weight: 700;
-
   cursor: pointer;
-
   box-shadow: 0 10px 24px rgba(99, 102, 241, 0.28);
-
   transition:
     transform var(--transition),
     box-shadow var(--transition);
@@ -539,7 +375,6 @@
 
 .calendar__add-btn:hover {
   transform: translateY(-2px);
-
   box-shadow: 0 14px 32px rgba(99, 102, 241, 0.35);
 }
 
@@ -547,40 +382,31 @@
   transform: scale(0.96);
 }
 
+.calendar__add-btn:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
 /* ==========================================================
-   Part 2A — Timeline & Event Cards
+   Timeline & Event Cards
    ========================================================== */
 
 .calendar__day {
   position: relative;
-
   overflow: hidden;
-
   border-radius: 1.75rem;
-
   border: 1px solid var(--border);
-
   background: var(--surface);
-
   backdrop-filter: var(--blur);
-
   box-shadow: var(--shadow-md);
 }
 
-/* ----------------------------------------------------------
-   Timeline
----------------------------------------------------------- */
-
 .calendar__timeline {
   display: flex;
-
   max-height: 42rem;
-
   overflow-y: auto;
   overflow-x: hidden;
-
   scroll-behavior: smooth;
-
   -webkit-overflow-scrolling: touch;
 }
 
@@ -594,150 +420,98 @@
 
 .calendar__timeline::-webkit-scrollbar-thumb {
   border-radius: 999px;
-
   background: rgba(255, 255, 255, 0.12);
 }
 
-/* ----------------------------------------------------------
-   Hours
----------------------------------------------------------- */
-
 .calendar__hours {
   flex-shrink: 0;
-
   width: 4rem;
-
   border-right: 1px solid var(--border);
-
   background: linear-gradient(to right, rgba(255, 255, 255, 0.02), transparent);
 }
 
 .calendar__hour-label {
   display: flex;
-
   justify-content: flex-end;
-
   align-items: flex-start;
-
   padding-right: 0.7rem;
   padding-top: 0.15rem;
-
   height: 56px;
-
   font-size: 0.68rem;
-
   font-weight: 700;
-
   color: var(--text-muted);
-
   user-select: none;
 }
 
-/* ----------------------------------------------------------
-   Grid
----------------------------------------------------------- */
-
 .calendar__grid {
   position: relative;
-
   flex: 1;
-
   cursor: pointer;
-
-  background-image: linear-gradient(
-    rgba(255, 255, 255, 0.08) 1px,
-    transparent 1px
-  );
-
+  background-image: linear-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px);
   background-size: 100% 56px;
+}
+
+.calendar__grid:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: -2px;
 }
 
 .calendar__grid-line {
   display: none;
 }
 
-/* ----------------------------------------------------------
-   Current Time
----------------------------------------------------------- */
-
 .calendar__now-line {
   position: absolute;
-
   left: 0;
   right: 0;
-
   height: 2px;
-
   background: #ef4444;
-
   z-index: 20;
-
   pointer-events: none;
 }
 
 .calendar__now-dot {
   position: absolute;
-
   left: -5px;
-
   top: 50%;
-
   width: 10px;
   height: 10px;
-
   transform: translateY(-50%);
-
   border-radius: 50%;
-
   background: #ef4444;
-
   box-shadow: 0 0 16px rgba(239, 68, 68, 0.8);
 }
 
 /* ==========================================================
    Event Cards
-========================================================== */
+   ========================================================== */
 
 .calendar__event {
   position: absolute;
-
   display: flex;
-
   align-items: center;
-
   gap: 0.45rem;
-
   padding: 0.35rem 0.45rem;
-
   border-radius: 0.8rem;
-
   border: 1px solid var(--event-accent);
-
   background: var(--event-bg);
-
   overflow: hidden;
-
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.22);
-
   transition:
-    transform 0.18s ease,
-    box-shadow 0.18s ease,
+    transform var(--duration-fast) ease,
+    box-shadow var(--duration-fast) ease,
     opacity 0.2s ease;
-
   z-index: 2;
 }
 
 .calendar__event:hover {
   transform: translateY(-1px) scale(1.015);
-
   box-shadow: 0 14px 28px rgba(0, 0, 0, 0.35);
-
   z-index: 50;
 }
 
 .calendar__event--done {
   opacity: 0.5;
-
   filter: grayscale(0.35);
 }
 
@@ -745,31 +519,19 @@
   text-decoration: line-through;
 }
 
-/* ----------------------------------------------------------
-   Checkbox
----------------------------------------------------------- */
-
+/* ── Checkbox (44px touch target) ── */
 .calendar__check {
-  width: 1.15rem;
-  height: 1.15rem;
-
-  min-width: 1.15rem;
-
+  width: 2.75rem;
+  height: 2.75rem;
+  min-width: 2.75rem;
   display: grid;
   place-items: center;
-
   margin: 0;
-
   padding: 0;
-
   border-radius: 0.35rem;
-
   border: 2px solid rgba(255, 255, 255, 0.65);
-
   background: transparent;
-
   cursor: pointer;
-
   transition: 0.2s;
 }
 
@@ -779,17 +541,19 @@
 
 .calendar__check[aria-pressed="true"] {
   background: var(--event-accent);
-
   border-color: var(--event-accent);
+}
+
+.calendar__check:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
 }
 
 .calendar__check-icon {
   width: 0.34rem;
   height: 0.6rem;
-
   border-right: 2px solid transparent;
   border-bottom: 2px solid transparent;
-
   transform: rotate(45deg) translate(-1px, -1px);
 }
 
@@ -797,70 +561,42 @@
   border-color: white;
 }
 
-/* ----------------------------------------------------------
-   Event Body
----------------------------------------------------------- */
-
+/* ── Event Body ── */
 .calendar__event-body {
   flex: 1;
-
   min-width: 0;
-
   display: flex;
-
   flex-direction: column;
-
   justify-content: center;
-
   align-items: flex-start;
-
   padding: 0;
-
   margin: 0;
-
   border: none;
-
   background: none;
-
   color: white;
-
   text-align: left;
-
   cursor: pointer;
 }
 
 .calendar__event-title {
   width: 100%;
-
   font-size: 0.74rem;
-
   font-weight: 700;
-
   line-height: 1.15;
-
   white-space: nowrap;
-
   overflow: hidden;
-
   text-overflow: ellipsis;
 }
 
 .calendar__event-time {
   margin-top: 2px;
-
   font-size: 0.63rem;
-
   font-weight: 600;
-
   color: rgba(255, 255, 255, 0.72);
-
   white-space: nowrap;
 }
 
-/* ----------------------------------------------------------
-   Short Events
----------------------------------------------------------- */
-
+/* ── Short Events ── */
 .calendar__event[style*="height: 28"],
 .calendar__event[style*="height: 30"],
 .calendar__event[style*="height: 32"] {
@@ -876,75 +612,61 @@
 .calendar__event[style*="height: 28"] .calendar__check,
 .calendar__event[style*="height: 30"] .calendar__check,
 .calendar__event[style*="height: 32"] .calendar__check {
-  width: 0.9rem;
-  height: 0.9rem;
-  min-width: 0.9rem;
+  width: 2rem;
+  height: 2rem;
+  min-width: 2rem;
 }
 
 /* ==========================================================
-   Part 2B — Event Actions, Empty State, Loading,
-   Reminder List, FABs
+   Event Actions (show on :focus-within too)
    ========================================================== */
-
-/* ----------------------------------------------------------
-   Event Actions
----------------------------------------------------------- */
 
 .calendar__event-actions {
   display: flex;
-
   flex-direction: column;
-
   justify-content: center;
-
   gap: 0.2rem;
-
   opacity: 0;
-
   transform: translateX(6px);
-
   transition:
-    opacity 0.18s ease,
-    transform 0.18s ease;
+    opacity var(--duration-fast) ease,
+    transform var(--duration-fast) ease;
 }
 
-.calendar__event:hover .calendar__event-actions {
+.calendar__event:hover .calendar__event-actions,
+.calendar__event:focus-within .calendar__event-actions {
   opacity: 1;
-
   transform: none;
 }
 
 .calendar__event-action {
   border: none;
-
-  border-radius: 0.35rem;
-
-  padding: 0.18rem 0.4rem;
-
+  border-radius: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  min-height: 2.75rem;
+  min-width: 2.75rem;
   background: rgba(255, 255, 255, 0.08);
-
   color: rgba(255, 255, 255, 0.82);
-
-  font-size: 0.55rem;
-
+  font-size: 0.6rem;
   font-weight: 700;
-
   cursor: pointer;
-
   transition:
-    background 0.18s ease,
-    transform 0.18s ease;
+    background var(--duration-fast) ease,
+    transform var(--duration-fast) ease;
 }
 
 .calendar__event-action:hover {
   background: rgba(255, 255, 255, 0.15);
-
   transform: scale(1.04);
+}
+
+.calendar__event-action:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
 }
 
 .calendar__event-action--delete {
   color: #fca5a5;
-
   background: rgba(239, 68, 68, 0.14);
 }
 
@@ -952,105 +674,72 @@
   background: rgba(239, 68, 68, 0.22);
 }
 
-/* ----------------------------------------------------------
-   Empty Overlay
----------------------------------------------------------- */
+/* ==========================================================
+   Empty / Loading
+   ========================================================== */
 
 .calendar__empty {
   text-align: center;
-
   color: var(--text-muted);
-
   font-size: 0.9rem;
-
   padding: 1.25rem;
 }
 
 .calendar__empty--overlay {
   position: absolute;
-
   inset: auto 0 1rem;
-
   pointer-events: none;
 }
 
-/* ----------------------------------------------------------
-   Loading
----------------------------------------------------------- */
-
 .calendar__loading {
   display: flex;
-
   flex-direction: column;
-
   align-items: center;
-
   justify-content: center;
-
   gap: 1rem;
-
   min-height: 18rem;
 }
 
 .calendar__spinner {
   width: 2rem;
   height: 2rem;
-
   border: 2px solid rgba(255, 255, 255, 0.12);
-
-  border-top-color: var(--primary);
-
+  border-top-color: var(--color-primary);
   border-radius: 50%;
-
   animation: calendarSpin 0.8s linear infinite;
 }
 
 /* ==========================================================
    Reminder List
-========================================================== */
+   ========================================================== */
 
 .calendar__reminders {
   list-style: none;
-
   margin: 1.5rem 0 0;
-
   padding: 0;
-
   display: flex;
-
   flex-direction: column;
-
   gap: 0.8rem;
 }
 
 .calendar__reminder {
   display: flex;
-
   align-items: center;
-
   gap: 1rem;
-
   padding: 1rem;
-
   border-radius: 1.2rem;
-
   border: 1px solid var(--border);
-
   background: var(--surface);
-
   backdrop-filter: var(--blur);
-
   transition:
-    transform 0.18s ease,
-    background 0.18s ease,
-    border-color 0.18s ease;
+    transform var(--duration-fast) ease,
+    background var(--duration-fast) ease,
+    border-color var(--duration-fast) ease;
 }
 
 .calendar__reminder:hover {
   transform: translateX(4px);
-
   background: var(--surface-hover);
-
   border-color: rgba(99, 102, 241, 0.25);
 }
 
@@ -1060,374 +749,50 @@
 
 .calendar__reminder-title {
   display: block;
-
   font-size: 0.95rem;
-
   font-weight: 700;
-
   margin-bottom: 0.15rem;
 }
 
 .calendar__reminder-time {
   font-size: 0.75rem;
-
   color: var(--text-muted);
 }
 
 .calendar__reminder-main {
   flex: 1;
-
   min-width: 0;
-
   border: none;
-
   background: none;
-
   color: white;
-
   text-align: left;
-
   cursor: pointer;
 }
 
 .calendar__reminder-delete {
   border: none;
-
   border-radius: 0.65rem;
-
   padding: 0.55rem 0.8rem;
-
+  min-height: 2.75rem;
   background: rgba(239, 68, 68, 0.12);
-
   color: #fca5a5;
-
   font-weight: 700;
-
   cursor: pointer;
-
-  transition: background 0.18s ease;
+  transition: background var(--duration-fast) ease;
 }
 
 .calendar__reminder-delete:hover {
   background: rgba(239, 68, 68, 0.22);
 }
 
+.calendar__reminder-delete:focus-visible {
+  outline: 2px solid var(--color-danger);
+  outline-offset: 2px;
+}
+
 /* ==========================================================
    Floating Buttons
-========================================================== */
-
-.calendar__fab-stack {
-  position: fixed;
-
-  right: 1.5rem;
-
-  bottom: 2rem;
-
-  display: flex;
-
-  flex-direction: column;
-
-  gap: 0.8rem;
-
-  z-index: 100;
-}
-
-.calendar__fab {
-  display: grid;
-
-  place-items: center;
-
-  border: none;
-
-  border-radius: 50%;
-
-  cursor: pointer;
-
-  transition:
-    transform 0.22s ease,
-    box-shadow 0.22s ease;
-}
-
-.calendar__fab:hover {
-  transform: translateY(-3px) scale(1.05);
-}
-
-.calendar__fab:active {
-  transform: scale(0.94);
-}
-
-.calendar__fab--add {
-  width: 3.4rem;
-  height: 3.4rem;
-
-  background: linear-gradient(135deg, var(--primary), var(--secondary));
-
-  color: white;
-
-  box-shadow: 0 14px 30px rgba(99, 102, 241, 0.32);
-}
-
-.calendar__fab--up {
-  width: 2.7rem;
-  height: 2.7rem;
-
-  border: 1px solid var(--border);
-
-  background: var(--surface);
-
-  color: white;
-
-  backdrop-filter: var(--blur);
-}
-
-.calendar__fab svg {
-  width: 1.2rem;
-  height: 1.2rem;
-}
-
-/* ==========================================================
-   Responsive
-========================================================== */
-
-@media (max-width: 640px) {
-  .calendar.page {
-    padding: 1rem;
-  }
-
-  .calendar__summary {
-    grid-template-columns: 1fr;
-  }
-
-  .calendar__week {
-    width: max-content;
-    margin-left: -1rem;
-    gap: 0.45rem;
-  }
-
-  .calendar__week-day {
-    border-radius: 0.9rem;
-  }
-
-  .calendar__week-num {
-    font-size: 1.15rem;
-  }
-
-  .calendar__hours {
-    width: 3.3rem;
-  }
-
-  .calendar__event {
-    gap: 0.35rem;
-
-    padding: 0.25rem 0.3rem;
-  }
-
-  .calendar__event-title {
-    font-size: 0.68rem;
-  }
-
-  .calendar__event-time {
-    font-size: 0.58rem;
-  }
-
-  .calendar__event-actions {
-    display: none;
-  }
-  .calendar__week--week {
-    display: grid;
-    grid-auto-flow: column;
-    grid-auto-columns: minmax(3.4rem, 1fr);
-    grid-template-columns: none;
-    gap: 0.55rem;
-    overflow-x: auto;
-    overflow-y: hidden;
-    padding-bottom: 0.25rem;
-    scroll-snap-type: x proximity;
-    --webkit-overflow-scrolling: touch;
-  }
-  .calendar__week--week::-webkit-scrollbar {
-    display: none;
-  }
-  .calendar__week--week .calendar__week-day {
-    min-width: 3.4rem;
-    min-height: 4rem;
-    aspect-ratio: auto;
-    padding: 0.55rem 0.25rem;
-    border-radius: 1rem;
-    scroll-snap-align: start;
-  }
-  .calendar__week--week .calendar__week-label {
-    font-size: 0.58rem;
-    letter-spacing: 0.04em;
-  }
-  .calendar__week--week .calendar__week-num {
-    font-size: 1.05rem;
-    line-height: 1;
-  }
-
-  .calendar__fab-stack {
-    right: 1rem;
-
-    bottom: calc(6rem + env(safe-area-inset-bottom));
-  }
-}
-
-/* ==========================================================
-   Reduced Motion
-========================================================== */
-
-@media (prefers-reduced-motion: reduce) {
-  * {
-    animation: none !important;
-
-    transition: none !important;
-
-    scroll-behavior: auto !important;
-  }
-}
-
-/* ==========================================================
-   Animations
-========================================================== */
-
-@keyframes calendarSpin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-
-    transform: translateY(18px);
-  }
-
-  to {
-    opacity: 1;
-
-    transform: none;
-  }
-}
-
-.animate-in {
-  animation: fadeInUp 0.45s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.calendar__modal {
-  position: relative;
-  width: min(100%, 640px);
-  max-height: min(120svh, calc(100svh - 24px - env(safe-area-inset-bottom)));
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  margin: 0;
-  padding: 2rem;
-  background: rgba(20, 18, 48, 0.98);
-  border: 1px solid var(--sheet-border);
-  border-radius: 26px 26px 0 0;
-  box-shadow: var(--sheet-shadow);
-  transform-origin: bottom center;
-  animation: calendarModalSlideUp 0.38s cubic-bezier(0.34, 1.56, 0.64, 1);
-  will-change: transform, opacity;
-}
-
-@keyframes shiftsSheetIn {
-  from {
-    opacity: 0;
-    transform: translateY(34px) scale(0.985);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-@keyframes shiftsSheetOut {
-  from {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-  to {
-    opacity: 0;
-    transform: translateY(24px) scale(0.992);
-  }
-}
-/* ==========================================================
-   CALENDAR.CSS
-   Part 1A — Foundation
    ========================================================== */
-
-:root {
-  --primary: #6366f1;
-  --primary-hover: #7c7ff5;
-  --primary-glow: rgba(99, 102, 241, 0.35);
-
-  --secondary: #a855f7;
-  --accent: #f472b6;
-  --success: #22c55e;
-  --danger: #ef4444;
-  --warning: #f59e0b;
-
-  --bg: #0b1020;
-  --surface: rgba(255, 255, 255, 0.05);
-  --surface-hover: rgba(255, 255, 255, 0.08);
-
-  --border: rgba(255, 255, 255, 0.12);
-  --border-strong: rgba(255, 255, 255, 0.2);
-
-  --text: #f8fafc;
-  --text-muted: rgba(248, 250, 252, 0.62);
-
-  --blur: blur(18px);
-
-  --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.15);
-  --shadow-md: 0 12px 30px rgba(0, 0, 0, 0.25);
-  --shadow-lg: 0 24px 50px rgba(0, 0, 0, 0.35);
-
-  --radius-sm: 0.75rem;
-  --radius: 1rem;
-  --radius-lg: 1.5rem;
-  --radius-xl: 2rem;
-
-  --transition: 0.22s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}
-
-.calendar {
-  color: var(--text);
-  padding-bottom: 6rem;
-}
-
-.calendar.page {
-  width: 100%;
-  max-width: 980px;
-  margin-inline: auto;
-  padding: 1.5rem;
-}
-
-/* ==========================================================
-   Header, Nav, View Toggle, Week Grid, Summary, Toolbar
-   (existing code unchanged)
-   ========================================================== */
-/* ... [Your existing header/nav/week/summary/toolbar styles remain the same] ... */
-
-/* ==========================================================
-   Part 2A — Timeline & Event Cards
-   ========================================================== */
-/* ... [Your existing timeline, hours, grid, event styles] ... */
-
-/* ==========================================================
-   Part 2B — FABs, Modals, Reminders
-   ========================================================== */
-
-/* ----------------------------------------------------------
-   Floating Action Buttons
----------------------------------------------------------- */
 
 .calendar__fab-stack {
   position: fixed;
@@ -1438,7 +803,7 @@
   align-items: center;
   gap: 0.85rem;
   z-index: 100;
-  animation: calendarFabIn 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  animation: calendarFabIn var(--duration-normal) var(--ease-out);
 }
 
 @media (max-width: 480px) {
@@ -1455,7 +820,7 @@
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
   transition:
-    transform 0.25s cubic-bezier(0.34, 1.4, 0.64, 1),
+    transform 0.25s var(--ease-spring),
     box-shadow 0.25s ease;
 }
 
@@ -1467,7 +832,7 @@
 .calendar__fab--add {
   width: 3.4rem;
   height: 3.4rem;
-  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
   color: #fff;
   box-shadow: 0 14px 32px rgba(99, 102, 241, 0.4);
 }
@@ -1490,9 +855,14 @@
   transform: scale(0.94);
 }
 
-/* ----------------------------------------------------------
+.calendar__fab:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* ==========================================================
    Modals
----------------------------------------------------------- */
+   ========================================================== */
 
 .calendar__overlay {
   position: fixed;
@@ -1519,6 +889,23 @@
   animation: calendarOverlayOut 0.26s ease forwards;
 }
 
+.calendar__modal {
+  position: relative;
+  width: min(100%, 640px);
+  max-height: min(120svh, calc(100svh - 24px - env(safe-area-inset-bottom)));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  margin: 0;
+  padding: 2rem;
+  background: rgba(20, 18, 48, 0.98);
+  border: 1px solid var(--sheet-border);
+  border-radius: 26px 26px 0 0;
+  box-shadow: var(--sheet-shadow);
+  transform-origin: bottom center;
+  animation: calendarModalSlideUp 0.38s var(--ease-spring);
+  will-change: transform, opacity;
+}
+
 .calendar__modal::before,
 .calendar__modal--delete::before {
   content: "";
@@ -1529,6 +916,7 @@
   background: rgba(255, 255, 255, 0.22);
   margin: 0 auto 0.9rem;
 }
+
 @media (min-width: 640px) {
   .calendar__modal {
     border-radius: 1.25rem;
@@ -1549,6 +937,7 @@
 }
 
 .calendar__modal-title {
+  font-family: var(--font-heading);
   font-size: 1.25rem;
   font-weight: 700;
   letter-spacing: -0.02em;
@@ -1563,7 +952,24 @@
   line-height: 1.55;
 }
 
-/* Form inside modal */
+/* ── Delete icon (Calendar-specific) ── */
+.calendar__delete-icon {
+  width: 3rem;
+  height: 3rem;
+  margin: 0 auto 1rem;
+  display: grid;
+  place-items: center;
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border-radius: 50%;
+}
+
+.calendar__delete-icon svg {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+/* ── Form ── */
 .calendar__form {
   display: flex;
   flex-direction: column;
@@ -1599,9 +1005,10 @@
 }
 
 .calendar__field input:focus,
-.calendar__field textarea:focus {
+.calendar__field textarea:focus,
+.calendar__field select:focus {
   outline: none;
-  border-color: var(--primary);
+  border-color: var(--color-primary);
   background: rgba(255, 255, 255, 0.1);
   box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25);
 }
@@ -1627,10 +1034,19 @@
   transition: transform 0.2s ease;
 }
 
+.calendar__color:hover {
+  transform: scale(1.1);
+}
+
 .calendar__color--active {
   border-color: #fff;
   transform: scale(1.12);
   box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.25);
+}
+
+.calendar__color:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
 }
 
 .calendar__form-actions {
@@ -1663,54 +1079,149 @@
   border: 1px solid var(--border);
 }
 
-.calendar__btn--primary {
-  background: linear-gradient(135deg, var(--primary), var(--secondary));
+.calendar__btn--ghost:hover {
+  background: rgba(255, 255, 255, 0.12);
   color: #fff;
-  box-shadow: 0 8px 24px var(--primary-glow);
+}
+
+.calendar__btn--primary {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+  color: #fff;
+  box-shadow: 0 8px 24px var(--color-primary-glow);
+}
+
+.calendar__btn--primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 28px rgba(99, 102, 241, 0.4);
 }
 
 .calendar__btn--danger {
-  background: linear-gradient(135deg, var(--danger), #dc2626);
+  background: linear-gradient(135deg, var(--color-danger), #dc2626);
   color: #fff;
 }
 
-/* ----------------------------------------------------------
-   Reminders (unchanged from your new version)
----------------------------------------------------------- */
-/* ... your existing reminder styles ... */
+.calendar__btn--danger:hover {
+  box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+  transform: translateY(-1px);
+}
+
+.calendar__btn:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
 
 /* ==========================================================
-   Animations
+   Responsive
+   ========================================================== */
+
+@media (max-width: 640px) {
+  .calendar.page {
+    padding: 1rem;
+  }
+
+  .calendar__summary {
+    grid-template-columns: 1fr;
+  }
+
+  .calendar__week {
+    width: max-content;
+    margin-left: -1rem;
+    gap: 0.45rem;
+  }
+
+  .calendar__week-day {
+    border-radius: 0.9rem;
+  }
+
+  .calendar__week-num {
+    font-size: 1.15rem;
+  }
+
+  .calendar__hours {
+    width: 3.3rem;
+  }
+
+  .calendar__event {
+    gap: 0.35rem;
+    padding: 0.25rem 0.3rem;
+  }
+
+  .calendar__event-title {
+    font-size: 0.68rem;
+  }
+
+  .calendar__event-time {
+    font-size: 0.58rem;
+  }
+
+  .calendar__event-actions {
+    display: none;
+  }
+
+  .calendar__week--week {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(3.4rem, 1fr);
+    grid-template-columns: none;
+    gap: 0.55rem;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding-bottom: 0.25rem;
+    scroll-snap-type: x proximity;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .calendar__week--week::-webkit-scrollbar {
+    display: none;
+  }
+
+  .calendar__week--week .calendar__week-day {
+    min-width: 3.4rem;
+    min-height: 4rem;
+    aspect-ratio: auto;
+    padding: 0.55rem 0.25rem;
+    border-radius: 1rem;
+    scroll-snap-align: start;
+  }
+
+  .calendar__week--week .calendar__week-label {
+    font-size: 0.58rem;
+    letter-spacing: 0.04em;
+  }
+
+  .calendar__week--week .calendar__week-num {
+    font-size: 1.05rem;
+    line-height: 1;
+  }
+
+  .calendar__fab-stack {
+    right: 1rem;
+    bottom: calc(6rem + env(safe-area-inset-bottom));
+  }
+}
+
+/* ==========================================================
+   Calendar-specific Keyframes
    ========================================================== */
 
 @keyframes calendarSpin {
-  to {
-    transform: rotate(360deg);
-  }
+  to { transform: rotate(360deg); }
 }
 
 @keyframes calendarOverlayIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 @keyframes calendarOverlayOut {
-  from {
-    opacity: 1;
-  }
-  to {
-    opacity: 0;
-  }
+  from { opacity: 1; }
+  to { opacity: 0; }
 }
 
 @keyframes calendarModalSlideUp {
   from {
     opacity: 0;
-    transform: translateY(100%);
+    transform: translateY(110%);
   }
   to {
     opacity: 1;
@@ -1751,24 +1262,24 @@
   }
 }
 
-/* Reduced Motion */
+/* ==========================================================
+   Reduced Motion
+   ========================================================== */
+
 @media (prefers-reduced-motion: reduce) {
   .calendar__overlay,
   .calendar__modal,
   .calendar__fab-stack,
-  .calendar__spinner {
+  .calendar__spinner,
+  .calendar__event,
+  .calendar__reminder,
+  .calendar__stat,
+  .calendar__week-day {
     animation: none !important;
     transition: none !important;
   }
-}
 
-@keyframes calendarModalSlideUp {
-  from {
-    opacity: 0;
-    transform: translateY(110%);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+  .calendar__spinner {
+    border-top-color: var(--color-primary);
   }
 }

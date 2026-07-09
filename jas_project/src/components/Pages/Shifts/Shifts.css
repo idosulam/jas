@@ -1,18 +1,8 @@
 /* ============================================================
-   ido_sulam_shifts_phone.css — stronger adaptive/mobile refinement
-   Purpose:
-   - preserve colors, animations, and core behavior
-   - remove duplicates
-   - make phone layout clearly different and more adaptive
+   Shifts.css — All Shifts-specific styles
+   Shared classes live in pages.css / animations.css
+   CSS variables live in index.css :root
    ============================================================ */
-
-:root {
-  --sheet-ease: cubic-bezier(0.22, 1, 0.36, 1);
-  --sheet-overlay-bg: rgba(8, 10, 20, 0.4);
-  --sheet-border: rgba(255, 255, 255, 0.12);
-  --sheet-shadow:
-    0 -8px 30px rgba(0, 0, 0, 0.18), 0 -24px 80px rgba(0, 0, 0, 0.22);
-}
 
 /* ── Base ───────────────────────────────────────────────────── */
 
@@ -32,6 +22,21 @@
 .shifts__header {
   text-align: center;
   margin-bottom: 1.5rem;
+}
+
+/* ── Scoped glass-card overrides for Shifts ── */
+.shifts .glass-card__value {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: 0.2rem;
+}
+
+.shifts .glass-card__label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.4);
 }
 
 /* ── Filters ────────────────────────────────────────────────── */
@@ -70,6 +75,17 @@
   transition: all 0.25s ease;
 }
 
+.shifts__filter select:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25);
+}
+
+.shifts__filter select:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
 /* ── Place Filter Pills ─────────────────────────────────────── */
 
 .shifts__place-filter {
@@ -97,12 +113,21 @@
   font-size: 0.8rem;
   font-weight: 600;
   cursor: pointer;
-  transition: color 0.3s ease;
+  transition: color 0.3s ease, background 0.3s ease;
   white-space: nowrap;
+}
+
+.shifts__place-btn:hover {
+  color: rgba(255, 255, 255, 0.75);
 }
 
 .shifts__place-btn--active {
   color: #fff;
+}
+
+.shifts__place-btn:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
 }
 
 .shifts__place-indicator {
@@ -112,14 +137,10 @@
   width: calc((100% - 0.6rem) / 3);
   height: calc(100% - 0.6rem);
   border-radius: 999px;
-  background: linear-gradient(
-    135deg,
-    rgba(139, 92, 246, 0.6),
-    rgba(168, 85, 247, 0.4)
-  );
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.6), rgba(168, 85, 247, 0.4));
   border: 1px solid rgba(255, 255, 255, 0.2);
   box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
-  transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: transform 0.45s var(--ease-spring);
 }
 
 /* ── Summary ────────────────────────────────────────────────── */
@@ -140,7 +161,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: all 0.35s var(--ease-spring);
 }
 
 .shifts__stat:hover {
@@ -149,27 +170,9 @@
   border-color: rgba(255, 255, 255, 0.2);
 }
 
-.glass-card__value {
-  font-size: 1.4rem;
-  font-weight: 800;
-  color: #fff;
-  margin-bottom: 0.2rem;
-}
-
-.glass-card__label {
-  font-size: 0.7rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.4);
-}
-
 .shifts__stat--total {
   grid-column: span 2;
-  background: linear-gradient(
-    135deg,
-    rgba(139, 92, 246, 0.2),
-    rgba(236, 72, 153, 0.1)
-  );
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(236, 72, 153, 0.1));
   border-color: rgba(139, 92, 246, 0.3);
 }
 
@@ -192,8 +195,10 @@
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 1rem;
   background: rgba(255, 255, 255, 0.03);
-  transition: all 0.3s ease;
+  transition: all var(--duration-normal) ease;
   min-width: 0;
+  animation: fadeUp 0.5s var(--ease-out) backwards;
+  animation-delay: var(--card-delay, 0s);
 }
 
 .shifts__card:hover {
@@ -241,7 +246,7 @@
 
 .shifts__date {
   font-size: 0.8rem;
-  color: rgba(255, 255, 255, 0.35);
+  color: rgba(255, 255, 255, 0.55);
   font-weight: 500;
   flex-shrink: 0;
   text-align: right;
@@ -279,9 +284,10 @@
   font-size: 0.75rem;
   font-weight: 700;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: all var(--duration-fast) var(--ease-out);
   text-align: center;
   min-width: 4.5rem;
+  min-height: 2.75rem;
   border: 1px solid transparent;
 }
 
@@ -311,7 +317,12 @@
   transform: scale(1.06);
 }
 
-/* ── Modal / Bottom Sheet (deduplicated) ───────────────────── */
+.shifts__action:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* ── Modal / Bottom Sheet ──────────────────────────────────── */
 
 .shifts__overlay {
   position: fixed;
@@ -322,8 +333,7 @@
   justify-content: center;
   padding: 14px 12px calc(12px + env(safe-area-inset-bottom));
   background: var(--sheet-overlay-bg);
-
-  animation: shiftsOverlayIn 320ms ease both;
+  animation: shiftsOverlayIn var(--duration-normal) ease both;
 }
 
 .shifts__overlay--delete {
@@ -331,7 +341,7 @@
 }
 
 .shifts__overlay--closing {
-  animation: shiftsOverlayOut 320ms ease both;
+  animation: shiftsOverlayOut var(--duration-normal) ease both;
 }
 
 .shifts__modal {
@@ -347,7 +357,7 @@
   border-radius: 26px 26px 0 0;
   box-shadow: var(--sheet-shadow);
   transform-origin: bottom center;
-  animation: shiftsModalSlideUp 0.38s cubic-bezier(0.34, 1.56, 0.64, 1);
+  animation: shiftsModalSlideUp 0.38s var(--ease-spring);
   will-change: transform, opacity;
 }
 
@@ -359,10 +369,11 @@
 }
 
 .shifts__modal--closing {
-  animation: shiftsSheetOut 320ms var(--sheet-ease) both;
+  animation: shiftsSheetOut var(--duration-normal) var(--sheet-ease) both;
 }
 
 .shifts__modal-title {
+  font-family: var(--font-heading);
   font-size: 1.6rem;
   font-weight: 800;
   margin-bottom: 1.5rem;
@@ -468,8 +479,9 @@
 .shifts__field select:focus,
 .shifts__field textarea:focus {
   outline: none;
-  border-color: rgba(139, 92, 246, 0.5);
+  border-color: var(--color-secondary);
   background: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.2);
 }
 
 .shifts__time-row {
@@ -497,13 +509,23 @@
   font-weight: 700;
   font-size: 0.8rem;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all var(--duration-fast) ease;
+}
+
+.shifts__pay-toggle-btn:hover {
+  color: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.04);
 }
 
 .shifts__pay-toggle-btn--active {
   background: rgba(255, 255, 255, 0.1);
   color: #fff;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.shifts__pay-toggle-btn:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
 }
 
 .shifts__preview {
@@ -538,6 +560,10 @@
   margin-bottom: 0.85rem;
 }
 
+.shifts__list-title {
+  font-family: var(--font-heading);
+}
+
 .shifts__add-btn {
   padding: 0.6rem 1.2rem;
   border: none;
@@ -552,6 +578,16 @@
   flex-shrink: 0;
 }
 
+.shifts__add-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(139, 92, 246, 0.5);
+}
+
+.shifts__add-btn:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
 .shifts__btn--primary {
   background: linear-gradient(135deg, #8b5cf6, #d946ef);
   color: #fff;
@@ -560,6 +596,17 @@
   border-radius: 999px;
   font-weight: 700;
   cursor: pointer;
+  transition: all var(--duration-fast) ease;
+}
+
+.shifts__btn--primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(139, 92, 246, 0.4);
+}
+
+.shifts__btn--primary:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
 }
 
 .shifts__btn--ghost {
@@ -570,11 +617,17 @@
   border-radius: 999px;
   font-weight: 600;
   cursor: pointer;
+  transition: all var(--duration-fast) ease;
 }
 
 .shifts__btn--ghost:hover {
   background: rgba(255, 255, 255, 0.1);
   color: #fff;
+}
+
+.shifts__btn--ghost:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
 }
 
 .shifts__btn--danger {
@@ -585,13 +638,18 @@
   border-radius: 999px;
   font-weight: 700;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all var(--duration-fast) ease;
 }
 
 .shifts__btn--danger:hover {
   background: #dc2626;
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+.shifts__btn--danger:focus-visible {
+  outline: 2px solid var(--color-danger);
+  outline-offset: 2px;
 }
 
 /* ── FAB ────────────────────────────────────────────────────── */
@@ -614,7 +672,20 @@
   display: grid;
   place-items: center;
   cursor: pointer;
-  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: all 0.25s var(--ease-spring);
+}
+
+.shifts__fab:hover {
+  transform: translateY(-2px) scale(1.06);
+}
+
+.shifts__fab:active {
+  transform: scale(0.94);
+}
+
+.shifts__fab:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
 }
 
 .shifts__fab--add {
@@ -632,55 +703,16 @@
   color: #fff;
 }
 
-/* ── Animations ─────────────────────────────────────────────── */
-
-@keyframes shiftsFadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes shiftsFadeUp {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
+/* ── Shifts-specific Keyframes ──────────────────────────────── */
 
 @keyframes shiftsOverlayIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 @keyframes shiftsOverlayOut {
-  from {
-    opacity: 1;
-  }
-  to {
-    opacity: 0;
-  }
-}
-
-@keyframes shiftsSheetIn {
-  from {
-    opacity: 0;
-    transform: translateY(34px) scale(0.985);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
+  from { opacity: 1; }
+  to { opacity: 0; }
 }
 
 @keyframes shiftsSheetOut {
@@ -694,8 +726,15 @@
   }
 }
 
-.animate-in {
-  animation: shiftsFadeUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+@keyframes shiftsModalSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(110%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* ── Responsive / Adaptive ──────────────────────────────────── */
@@ -732,7 +771,6 @@
   }
 }
 
-/* Stronger phone layout */
 @media (max-width: 640px) {
   .shifts {
     padding-bottom: 6.25rem;
@@ -781,11 +819,11 @@
     border-radius: 1rem;
   }
 
-  .glass-card__value {
+  .shifts .glass-card__value {
     font-size: 1.22rem;
   }
 
-  .glass-card__label {
+  .shifts .glass-card__label {
     font-size: 0.66rem;
   }
 
@@ -825,10 +863,9 @@
   .shifts__action {
     flex: 1 1 0;
     min-width: 0;
-    min-height: 40px;
+    min-height: 44px;
   }
 
-  /* modal becomes a clearer phone bottom-sheet */
   .shifts__overlay {
     padding: 0;
     align-items: flex-end;
@@ -860,11 +897,7 @@
     padding: 0 0.95rem 0.85rem;
     font-size: 0.98rem;
     line-height: 1.2;
-    background: linear-gradient(
-      to bottom,
-      rgba(20, 18, 48, 0.98) 78%,
-      rgba(20, 18, 48, 0)
-    );
+    background: linear-gradient(to bottom, rgba(20, 18, 48, 0.98) 78%, rgba(20, 18, 48, 0));
   }
 
   .shifts__form {
@@ -906,6 +939,51 @@
   .shifts__fab-stack {
     right: 1rem;
     bottom: calc(6rem + env(safe-area-inset-bottom, 0px));
+  }
+
+  .shifts__field input[type="date"],
+  .shifts__field input[type="time"] {
+    -webkit-appearance: none;
+    appearance: none;
+    box-sizing: border-box;
+    width: 100%;
+    height: 46px;
+    min-height: 46px;
+    padding: 0.7rem 0.75rem;
+    font-size: 16px;
+    line-height: 1.2;
+    border-radius: 0.75rem;
+  }
+
+  .shifts__field input[type="time"] {
+    text-align: center;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+  }
+
+  .shifts__field input[type="date"] {
+    font-weight: 500;
+    opacity: 0.9;
+  }
+
+  .shifts__time-row .shifts__field input {
+    height: 46px;
+    min-height: 46px;
+    padding: 0.7rem 0.75rem;
+    font-size: 16px;
+  }
+
+  .shifts__field span {
+    font-size: 0.68rem;
+    margin-bottom: 0.2rem;
+  }
+
+  .shifts__time-row {
+    gap: 0.55rem;
+  }
+
+  .shifts__field {
+    gap: 0.3rem;
   }
 }
 
@@ -974,113 +1052,22 @@
   }
 }
 
-@media (max-width: 640px) {
-  .shifts__field input[type="time"] {
-    text-align: center;
-    letter-spacing: 0.05em;
-    font-weight: 600;
-  }
+/* ── Reduced Motion ─────────────────────────────────────────── */
 
-  .shifts__field input[type="date"] {
-    font-weight: 500;
-    opacity: 0.9;
-  }
-}
-@media (max-width: 640px) {
-  /* 🔽 Compact inputs (date + time) */
-  .shifts__field input[type="date"],
-  .shifts__field input[type="time"] {
-    min-height: 38px; /* was ~46 → tighter */
-    padding: 0.55rem 0.65rem;
-    font-size: 14.5px;
-    border-radius: 0.65rem;
-
-    /* make them feel lighter vs text inputs */
-    background: rgba(255, 255, 255, 0.04);
-  }
-
-  /* 🔽 Even tighter inside time row */
-  .shifts__time-row .shifts__field input {
-    min-height: 36px;
-    padding: 0.5rem 0.55rem;
-    font-size: 14px;
-  }
-
-  /* 🔽 Label spacing tighter */
-  .shifts__field span {
-    font-size: 0.68rem;
-    margin-bottom: 0.2rem;
-  }
-
-  /* 🔽 Reduce vertical gaps for this section */
-  .shifts__time-row {
-    gap: 0.55rem;
-  }
-
-  /* 🔽 Make whole field block tighter */
-  .shifts__field {
-    gap: 0.3rem;
-  }
-}
-
-@media (max-width: 640px) {
-  /* Unify date/time with the rest of the fields — iOS gives these
-     inputs their own intrinsic height/width unless we pin the box
-     model explicitly, which is why they were sticking out. */
-  .shifts__field input[type="date"],
-  .shifts__field input[type="time"] {
-    -webkit-appearance: none;
-    appearance: none;
-    box-sizing: border-box;
-    width: 100%;
-    height: 46px;
-    min-height: 46px;
-    padding: 0.7rem 0.75rem;
-    font-size: 16px;
-    line-height: 1.2;
-    border-radius: 0.75rem;
-  }
-
-  .shifts__field input[type="time"] {
-    text-align: center;
-    letter-spacing: 0.05em;
-    font-weight: 600;
-  }
-
-  .shifts__field input[type="date"] {
-    font-weight: 500;
-    opacity: 0.9;
-  }
-
-  /* Keep the time row's two inputs matching each other and the rest */
-  .shifts__time-row .shifts__field input {
-    height: 46px;
-    min-height: 46px;
-    padding: 0.7rem 0.75rem;
-    font-size: 16px;
-  }
-
-  .shifts__field span {
-    font-size: 0.68rem;
-    margin-bottom: 0.2rem;
-  }
-
-  .shifts__time-row {
-    gap: 0.55rem;
-  }
-
-  .shifts__field {
-    gap: 0.3rem;
-  }
-}
-
-@keyframes shiftsModalSlideUp {
-  from {
-    opacity: 0;
-    transform: translateY(110%);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+@media (prefers-reduced-motion: reduce) {
+  .shifts__stat,
+  .shifts__card,
+  .shifts__overlay,
+  .shifts__modal,
+  .shifts__place-indicator,
+  .shifts__action,
+  .shifts__btn--primary,
+  .shifts__btn--ghost,
+  .shifts__btn--danger,
+  .shifts__pay-toggle-btn,
+  .shifts__add-btn,
+  .shifts__fab {
+    animation: none !important;
+    transition: none !important;
   }
 }

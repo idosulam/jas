@@ -1,3 +1,9 @@
+/* ============================================================
+   animations.css — Shared keyframes and animation utilities
+   Component-specific keyframes stay in their own CSS files.
+   ============================================================ */
+
+/* ── Page transitions ── */
 @keyframes pageEnterForward {
   from {
     opacity: 0;
@@ -20,6 +26,7 @@
   }
 }
 
+/* ── Shared motion ── */
 @keyframes fadeUp {
   from {
     opacity: 0;
@@ -51,6 +58,7 @@
   }
 }
 
+/* ── Navbar ── */
 @keyframes navbarEnter {
   from {
     opacity: 0;
@@ -128,12 +136,46 @@
   }
 }
 
+/* ── Shared overlay / modal keyframes ── */
+@keyframes overlayIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes overlayOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(110%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(110%);
+  }
+}
+
+/* ── Page transition classes ── */
 .page-transition {
   width: 100%;
   display: flex;
   justify-content: center;
   animation-duration: 0.45s;
-  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  animation-timing-function: var(--ease-out);
   animation-fill-mode: both;
   will-change: transform, opacity;
 }
@@ -146,30 +188,7 @@
   animation-name: pageEnterBackward;
 }
 
-.animate-in {
-  animation: fadeUp 0.55s cubic-bezier(0.22, 1, 0.36, 1) backwards;
-}
-
-.animate-in--1 {
-  animation-delay: 0.06s;
-}
-
-.animate-in--2 {
-  animation-delay: 0.12s;
-}
-
-.animate-in--3 {
-  animation-delay: 0.18s;
-}
-
-.animate-in--4 {
-  animation-delay: 0.24s;
-}
-
-.animate-scale {
-  animation: scaleIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) backwards;
-}
-
+/* ── Accessibility ── */
 @media (prefers-reduced-motion: reduce) {
   .page-transition,
   .animate-in,

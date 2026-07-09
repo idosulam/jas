@@ -135,8 +135,8 @@
   appearance: none;
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 999px;
-  width: 1.75rem;
-  height: 1.75rem;
+  width: 2.5rem;
+  height: 2.5rem;
   display: grid;
   place-items: center;
   background: rgba(255, 255, 255, 0.06);
@@ -152,6 +152,11 @@
   background: rgba(139, 92, 246, 0.22);
   border-color: rgba(139, 92, 246, 0.4);
   color: rgba(255, 255, 255, 0.9);
+}
+
+.glass-toast__close:focus-visible {
+  outline: 2px solid var(--color-primary, #6366f1);
+  outline-offset: 2px;
 }
 
 /* Timer bar — thin, glowing, matches app's accent purple */

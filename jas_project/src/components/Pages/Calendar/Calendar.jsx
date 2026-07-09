@@ -559,7 +559,15 @@ function Calendar() {
               className="calendar__grid"
               style={{ height: `${TOTAL_HOURS * HOUR_HEIGHT}px` }}
               onClick={handleGridClick}
-              role="presentation"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  handleGridClick(e);
+                }
+              }}
+              tabIndex={0}
+              role="button"
+              aria-label="Click to add event at that time"
             >
               {hourLabels.map((_, i) => (
                 <div
@@ -858,7 +866,7 @@ function Calendar() {
               aria-labelledby="delete-event-title"
             >
               {" "}
-              <div className="shifts__delete-icon" aria-hidden="true">
+              <div className="calendar__delete-icon" aria-hidden="true">
                 <svg
                   viewBox="0 0 24 24"
                   fill="none"
