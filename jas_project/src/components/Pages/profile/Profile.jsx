@@ -490,7 +490,6 @@ function WeightChart({ entries, unit, goalKg }) {
 }
 
 function Profile() {
-
   const [removingId, setRemovingId] = useState(null);
   const [unit, setUnit] = useState(loadUnit);
   const [profile, setProfile] = useState(null);
@@ -1261,14 +1260,14 @@ function Profile() {
             role="presentation"
           >
             <div
-  className={`profile__modal${weightModalClosing ? " profile__modal--closing" : ""}${weightSwipe.dragging ? " profile__modal--dragging" : ""}`}
-  onClick={(e) => e.stopPropagation()}
-  role="dialog"
-  aria-modal="true"
-  aria-labelledby="weight-modal-title"
-  {...weightSwipe.bind}
-  style={weightSwipe.style}
->
+              className={`profile__modal${weightModalClosing ? " profile__modal--closing" : ""}${weightSwipe.dragging ? " profile__modal--dragging" : ""}`}
+              onClick={(e) => e.stopPropagation()}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="weight-modal-title"
+              {...weightSwipe.bind}
+              style={weightSwipe.style}
+            >
               <h2 id="weight-modal-title" className="profile__modal-title">
                 {editingEntry ? "Edit weigh-in" : "Log weigh-in"}
               </h2>
