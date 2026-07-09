@@ -1,29 +1,39 @@
+/* ============================================================
+   animations.css — Shared keyframes and animation utilities
+   ============================================================ */
+
+/* ── Page transitions ── */
 @keyframes pageEnterForward {
   from {
     opacity: 0;
-    transform: translateX(2.5rem) scale(0.97);
+    transform: translateX(2rem) scale(0.98);
+    filter: blur(4px);
   }
   to {
     opacity: 1;
     transform: translateX(0) scale(1);
+    filter: blur(0);
   }
 }
 
 @keyframes pageEnterBackward {
   from {
     opacity: 0;
-    transform: translateX(-2.5rem) scale(0.97);
+    transform: translateX(-2rem) scale(0.98);
+    filter: blur(4px);
   }
   to {
     opacity: 1;
     transform: translateX(0) scale(1);
+    filter: blur(0);
   }
 }
 
+/* ── Shared motion ── */
 @keyframes fadeUp {
   from {
     opacity: 0;
-    transform: translateY(1.25rem);
+    transform: translateY(1rem);
   }
   to {
     opacity: 1;
@@ -43,7 +53,7 @@
 @keyframes scaleIn {
   from {
     opacity: 0;
-    transform: scale(0.85);
+    transform: scale(0.92);
   }
   to {
     opacity: 1;
@@ -51,10 +61,11 @@
   }
 }
 
+/* ── Navbar ── */
 @keyframes navbarEnter {
   from {
     opacity: 0;
-    transform: translateX(-50%) translateY(120%);
+    transform: translateX(-50%) translateY(100%);
   }
   to {
     opacity: 1;
@@ -65,7 +76,7 @@
 @keyframes navbarEnterDesktop {
   from {
     opacity: 0;
-    transform: translateX(-50%) translateY(-120%);
+    transform: translateX(-50%) translateY(-100%);
   }
   to {
     opacity: 1;
@@ -74,23 +85,18 @@
 }
 
 @keyframes glassPulse {
-  0% {
+  0%,
+  100% {
     box-shadow:
-      0 8px 32px rgba(0, 0, 0, 0.25),
-      inset 0 1px 0 rgba(255, 255, 255, 0.45),
-      inset 0 -1px 0 rgba(255, 255, 255, 0.08);
+      0 8px 32px rgba(0, 0, 0, 0.4),
+      0 0 0 1px rgba(129, 140, 248, 0.08),
+      inset 0 1px 0 rgba(255, 255, 255, 0.06);
   }
   50% {
     box-shadow:
-      0 12px 40px rgba(99, 102, 241, 0.35),
-      inset 0 1px 0 rgba(255, 255, 255, 0.55),
-      inset 0 -1px 0 rgba(255, 255, 255, 0.12);
-  }
-  100% {
-    box-shadow:
-      0 8px 32px rgba(0, 0, 0, 0.25),
-      inset 0 1px 0 rgba(255, 255, 255, 0.45),
-      inset 0 -1px 0 rgba(255, 255, 255, 0.08);
+      0 12px 40px rgba(129, 140, 248, 0.2),
+      0 0 0 1px rgba(129, 140, 248, 0.15),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1);
   }
 }
 
@@ -107,11 +113,37 @@
   0% {
     transform: scale(1);
   }
-  40% {
-    transform: scale(1.25);
+  50% {
+    transform: scale(1.2);
   }
   100% {
-    transform: scale(1.08);
+    transform: scale(1.05);
+  }
+}
+
+@keyframes orbFloat1 {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(5%, -3%) scale(1.08);
+  }
+  66% {
+    transform: translate(-3%, 4%) scale(0.95);
+  }
+}
+
+@keyframes orbFloat2 {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(-4%, 3%) scale(1.05);
+  }
+  66% {
+    transform: translate(3%, -4%) scale(0.97);
   }
 }
 
@@ -128,12 +160,56 @@
   }
 }
 
+/* ── Shared overlay / modal ── */
+@keyframes overlayIn {
+  from {
+    opacity: 0;
+    backdrop-filter: blur(0);
+  }
+  to {
+    opacity: 1;
+    backdrop-filter: blur(12px);
+  }
+}
+
+@keyframes overlayOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+}
+
+/* ── Page transition classes ── */
 .page-transition {
   width: 100%;
   display: flex;
   justify-content: center;
-  animation-duration: 0.45s;
-  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  animation-duration: 0.4s;
+  animation-timing-function: var(--ease-out);
   animation-fill-mode: both;
   will-change: transform, opacity;
 }
@@ -146,30 +222,7 @@
   animation-name: pageEnterBackward;
 }
 
-.animate-in {
-  animation: fadeUp 0.55s cubic-bezier(0.22, 1, 0.36, 1) backwards;
-}
-
-.animate-in--1 {
-  animation-delay: 0.06s;
-}
-
-.animate-in--2 {
-  animation-delay: 0.12s;
-}
-
-.animate-in--3 {
-  animation-delay: 0.18s;
-}
-
-.animate-in--4 {
-  animation-delay: 0.24s;
-}
-
-.animate-scale {
-  animation: scaleIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) backwards;
-}
-
+/* ── Accessibility ── */
 @media (prefers-reduced-motion: reduce) {
   .page-transition,
   .animate-in,

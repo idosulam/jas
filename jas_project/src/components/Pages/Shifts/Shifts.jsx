@@ -108,24 +108,7 @@ function Shifts() {
   const addBtnRef = useRef(null);
   const { success: toastSuccess, error: toastError } = useGlassToast();
 
-  function useCountUp(value, duration = 500) {
-    const [display, setDisplay] = useState(value);
-    const prevRef = useRef(value);
-    useEffect(() => {
-      const from = prevRef.current;
-      const to = value;
-      const start = performance.now();
-      const tick = (now) => {
-        const t = Math.min((now - start) / duration, 1);
-        const eased = 1 - Math.pow(1 - t, 3); // easeOutCubic
-        setDisplay(from + (to - from) * eased);
-        if (t < 1) requestAnimationFrame(tick);
-      };
-      requestAnimationFrame(tick);
-      prevRef.current = value;
-    }, [value]);
-    return display;
-  }
+
 
   const yearOptions = useMemo(() => {
     const current = now.getFullYear();

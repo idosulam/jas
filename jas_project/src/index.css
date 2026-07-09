@@ -1,3 +1,75 @@
+@import url("https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700;800&family=Barlow:wght@300;400;500;600;700&display=swap");
+
+:root {
+  /* ── Brand Colors ── */
+  --color-primary: #818cf8;
+  --color-primary-hover: #a5b4fc;
+  --color-primary-glow: rgba(129, 140, 248, 0.4);
+  --color-secondary: #c084fc;
+  --color-accent: #f472b6;
+  --color-success: #34d399;
+  --color-danger: #f87171;
+  --color-warning: #fbbf24;
+
+  /* ── Surfaces ── */
+  --surface: rgba(255, 255, 255, 0.04);
+  --surface-hover: rgba(255, 255, 255, 0.07);
+  --surface-glass: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.1) 0%,
+    rgba(255, 255, 255, 0.03) 100%
+  );
+
+  /* ── Borders ── */
+  --border: rgba(255, 255, 255, 0.08);
+  --border-hover: rgba(255, 255, 255, 0.16);
+  --border-strong: rgba(255, 255, 255, 0.2);
+
+  /* ── Text ── */
+  --text: #f1f5f9;
+  --text-muted: rgba(241, 245, 249, 0.55);
+  --text-dim: rgba(255, 255, 255, 0.35);
+
+  /* ── Glassmorphism ── */
+  --blur: blur(20px);
+  --blur-heavy: blur(40px) saturate(200%);
+
+  /* ── Shadows ── */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.4);
+  --shadow-glow: 0 0 30px rgba(129, 140, 248, 0.15);
+
+  /* ── Radius ── */
+  --radius-sm: 0.625rem;
+  --radius: 1rem;
+  --radius-lg: 1.25rem;
+  --radius-xl: 1.5rem;
+  --radius-pill: 999px;
+
+  /* ── Typography ── */
+  --font-heading: "Barlow Condensed", -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
+  --font-body: "Barlow", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+
+  /* ── Transitions ── */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+  --duration-fast: 0.15s;
+  --duration-normal: 0.25s;
+  --duration-slow: 0.4s;
+  --transition: 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* ── Sheet / Modal ── */
+  --sheet-ease: cubic-bezier(0.32, 0.72, 0, 1);
+  --sheet-overlay-bg: rgba(0, 0, 0, 0.6);
+  --sheet-border: rgba(255, 255, 255, 0.1);
+  --sheet-shadow: 0 -4px 32px rgba(0, 0, 0, 0.5),
+    0 -1px 0 rgba(255, 255, 255, 0.06) inset;
+}
+
 *,
 *::before,
 *::after {
@@ -8,48 +80,83 @@
 
 html {
   font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 body {
   position: relative;
   min-height: 100dvh;
-  font-family:
-    "SF Pro Display",
-    -apple-system,
-    BlinkMacSystemFont,
-    "Segoe UI",
-    Roboto,
-    sans-serif;
-  color: #f5f5f7;
-  background: linear-gradient(160deg, #0f0c29 0%, #1a1a2e 40%, #16213e 100%);
+  font-family: var(--font-body);
+  color: var(--text);
+  background: #070b14;
   overflow-x: hidden;
 }
 
+/* ── Ambient gradient orbs ── */
 body::before,
 body::after {
   content: "";
   position: fixed;
   border-radius: 50%;
-  filter: blur(80px);
   pointer-events: none;
-  animation: bgDrift 18s ease-in-out infinite;
+  will-change: transform;
 }
 
 body::before {
-  width: 55vw;
-  height: 55vw;
-  top: -10%;
-  left: -10%;
-  background: rgba(99, 102, 241, 0.45);
+  width: 60vmax;
+  height: 60vmax;
+  top: -25%;
+  left: -15%;
+  background: radial-gradient(
+    circle,
+    rgba(99, 102, 241, 0.2) 0%,
+    rgba(139, 92, 246, 0.08) 40%,
+    transparent 70%
+  );
+  filter: blur(60px);
+  animation: orbFloat1 22s ease-in-out infinite;
 }
 
 body::after {
-  width: 50vw;
-  height: 50vw;
-  bottom: -15%;
+  width: 50vmax;
+  height: 50vmax;
+  bottom: -20%;
   right: -10%;
-  background: rgba(236, 72, 153, 0.35);
-  animation-delay: -9s;
+  background: radial-gradient(
+    circle,
+    rgba(236, 72, 153, 0.15) 0%,
+    rgba(168, 85, 247, 0.06) 40%,
+    transparent 70%
+  );
+  filter: blur(60px);
+  animation: orbFloat2 26s ease-in-out infinite;
+}
+
+@keyframes orbFloat1 {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(5%, -3%) scale(1.08);
+  }
+  66% {
+    transform: translate(-3%, 4%) scale(0.95);
+  }
+}
+
+@keyframes orbFloat2 {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(-4%, 3%) scale(1.05);
+  }
+  66% {
+    transform: translate(3%, -4%) scale(0.97);
+  }
 }
 
 #root {
@@ -62,7 +169,7 @@ body::after {
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  padding: 2rem 1.5rem 7rem;
+  padding: 2rem 1.25rem 7rem;
 }
 
 .app__content {
@@ -73,7 +180,7 @@ body::after {
 
 @media (min-width: 640px) {
   .app {
-    padding-top: 6.5rem;
+    padding-top: 6rem;
     padding-bottom: 2rem;
   }
 }

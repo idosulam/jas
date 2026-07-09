@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import nav_Shifts from "../navbar/Nav_Shifts";
+import Nav_Shifts from "../navbar/Nav_Shifts";
 import Nav_Calendar from "../navbar/Nav_Calendar";
 import Nav_Profile from "../navbar/Nav_Profile";
 import "./Navbar.css";
 
 const NAV_ITEMS = [
-  { id: "Shifts", Component: nav_Shifts },
+  { id: "Shifts", Component: Nav_Shifts },
   { id: "Calendar", Component: Nav_Calendar },
   { id: "Profile", Component: Nav_Profile },
 ];
