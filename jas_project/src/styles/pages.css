@@ -1,5 +1,5 @@
 /* ============================================================
-   pages.css — Single source of truth for shared page classes
+   pages.css — Shared page classes
    ============================================================ */
 
 /* ── Page layout ── */
@@ -15,48 +15,62 @@
 
 .page__eyebrow {
   font-family: var(--font-heading);
-  font-size: 0.8rem;
+  font-size: 0.7rem;
   font-weight: 600;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.55);
-  margin-bottom: 0.35rem;
+  color: var(--color-primary);
+  margin-bottom: 0.4rem;
+  opacity: 0.9;
 }
 
 .page__title {
   font-family: var(--font-heading);
-  font-size: 2rem;
+  font-size: 2.25rem;
   font-weight: 800;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
   margin-bottom: 0.5rem;
-  background: linear-gradient(135deg, #fff, rgba(255, 255, 255, 0.72));
+  background: linear-gradient(
+    135deg,
+    #fff 0%,
+    rgba(255, 255, 255, 0.65) 100%
+  );
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  color: transparent;
 }
 
 .page__subtitle {
-  font-size: 1rem;
-  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.9rem;
+  color: var(--text-muted);
   line-height: 1.6;
+  max-width: 20rem;
+  margin: 0 auto;
 }
 
-/* ── Glass cards (base) ── */
+/* ── Glass cards ── */
 .glass-card {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.25rem;
+  gap: 0.35rem;
   padding: 1rem;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: var(--radius);
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.14) 0%,
-    rgba(255, 255, 255, 0.04) 100%
-  );
-  backdrop-filter: blur(8px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface-glass);
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
+  transition:
+    transform var(--transition),
+    border-color var(--transition),
+    box-shadow var(--transition);
+}
+
+.glass-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--border-hover);
+  box-shadow: var(--shadow-md), var(--shadow-glow);
 }
 
 .glass-card__value {
@@ -64,17 +78,18 @@
   font-size: 1.5rem;
   font-weight: 700;
   letter-spacing: -0.02em;
+  color: var(--text);
 }
 
 .glass-card__label {
-  font-size: 0.75rem;
+  font-size: 0.65rem;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: rgba(255, 255, 255, 0.55);
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
 }
 
-/* ── Shared animate-in ── */
+/* ── Staggered entrance ── */
 .animate-in {
   animation: fadeUp 0.5s var(--ease-out) backwards;
 }
@@ -95,6 +110,10 @@
   animation-delay: 0.24s;
 }
 
+.animate-in--5 {
+  animation-delay: 0.3s;
+}
+
 .animate-scale {
-  animation: scaleIn 0.5s var(--ease-out) backwards;
+  animation: scaleIn 0.45s var(--ease-spring) backwards;
 }

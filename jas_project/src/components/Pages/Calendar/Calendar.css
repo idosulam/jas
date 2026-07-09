@@ -52,12 +52,12 @@
   align-items: center;
   gap: 0.9rem;
   margin-bottom: 1.5rem;
-  padding: 0.8rem;
+  padding: 0.75rem;
   border: 1px solid var(--border);
-  border-radius: 1.4rem;
-  background: var(--surface);
-  backdrop-filter: var(--blur);
-  -webkit-backdrop-filter: var(--blur);
+  border-radius: var(--radius-xl);
+  background: var(--surface-glass);
+  backdrop-filter: var(--blur-heavy);
+  -webkit-backdrop-filter: var(--blur-heavy);
   box-shadow: var(--shadow-md);
 }
 
@@ -79,27 +79,32 @@
 }
 
 .calendar__nav-btn {
-  width: 3rem;
-  height: 3rem;
+  width: 2.75rem;
+  height: 2.75rem;
   flex-shrink: 0;
   display: grid;
   place-items: center;
   border: none;
-  border-radius: 1rem;
-  background: rgba(255, 255, 255, 0.06);
-  color: #fff;
-  font-size: 1.4rem;
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 1.3rem;
   cursor: pointer;
   transition:
     transform var(--transition),
     background var(--transition),
-    box-shadow var(--transition);
+    border-color var(--transition);
+  -webkit-tap-highlight-color: transparent;
 }
 
 .calendar__nav-btn:hover {
   transform: translateY(-2px);
-  background: rgba(255, 255, 255, 0.11);
-  box-shadow: 0 0 0 1px rgba(99, 102, 241, 0.4);
+  background: var(--surface-hover);
+  border-color: var(--border-hover);
+}
+
+.calendar__nav-btn:active {
+  transform: scale(0.95);
 }
 
 .calendar__nav-btn:active {
@@ -144,36 +149,45 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 0.35rem;
+  gap: 0.25rem;
   width: max-content;
   margin: 0 auto 2rem;
-  padding: 0.3rem;
+  padding: 0.25rem;
   border: 1px solid var(--border);
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: var(--surface);
   backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
 }
 
 .calendar__view-btn {
   border: none;
-  border-radius: 999px;
-  padding: 0.65rem 1.25rem;
+  border-radius: var(--radius-pill);
+  padding: 0.55rem 1.1rem;
   background: transparent;
   color: var(--text-muted);
-  font-weight: 700;
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 0.8rem;
+  letter-spacing: 0.02em;
   cursor: pointer;
-  transition: all var(--transition);
+  transition:
+    color var(--duration-normal) ease,
+    background var(--duration-normal) ease;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .calendar__view-btn:hover {
-  color: #fff;
-  background: rgba(255, 255, 255, 0.05);
+  color: var(--text);
+  background: var(--surface-hover);
 }
 
 .calendar__view-btn--active {
   color: #fff;
   background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
-  box-shadow: 0 8px 24px rgba(99, 102, 241, 0.28);
+  box-shadow:
+    0 4px 16px rgba(129, 140, 248, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
 
 .calendar__view-btn:focus-visible {
@@ -307,21 +321,24 @@
 }
 
 .calendar__stat {
-  padding: 1.35rem;
-  border-radius: 1.4rem;
+  padding: 1.25rem;
+  border-radius: var(--radius-xl);
   border: 1px solid var(--border);
-  background: var(--surface);
+  background: var(--surface-glass);
   backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
   text-align: center;
   box-shadow: var(--shadow-sm);
   transition:
     transform var(--transition),
-    border-color var(--transition);
+    border-color var(--transition),
+    box-shadow var(--transition);
 }
 
 .calendar__stat:hover {
-  transform: translateY(-3px);
-  border-color: rgba(99, 102, 241, 0.3);
+  transform: translateY(-4px) scale(1.02);
+  border-color: var(--border-hover);
+  box-shadow: var(--shadow-md), var(--shadow-glow);
 }
 
 /* ==========================================================
@@ -360,22 +377,29 @@
 
 .calendar__add-btn {
   border: none;
-  border-radius: 999px;
-  padding: 0.8rem 1.2rem;
+  border-radius: var(--radius-pill);
+  padding: 0.6rem 1.1rem;
   background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
   color: #fff;
-  font-size: 0.82rem;
+  font-family: var(--font-heading);
+  font-size: 0.8rem;
   font-weight: 700;
+  letter-spacing: 0.02em;
   cursor: pointer;
-  box-shadow: 0 10px 24px rgba(99, 102, 241, 0.28);
+  box-shadow:
+    0 4px 16px rgba(129, 140, 248, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
   transition:
     transform var(--transition),
     box-shadow var(--transition);
+  -webkit-tap-highlight-color: transparent;
 }
 
 .calendar__add-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 14px 32px rgba(99, 102, 241, 0.35);
+  transform: translateY(-2px) scale(1.03);
+  box-shadow:
+    0 8px 24px rgba(129, 140, 248, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
 }
 
 .calendar__add-btn:active {
@@ -830,20 +854,23 @@
 }
 
 .calendar__fab--add {
-  width: 3.4rem;
-  height: 3.4rem;
+  width: 3.25rem;
+  height: 3.25rem;
   background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
   color: #fff;
-  box-shadow: 0 14px 32px rgba(99, 102, 241, 0.4);
+  box-shadow:
+    0 8px 24px rgba(129, 140, 248, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
 
 .calendar__fab--up {
-  width: 2.7rem;
-  height: 2.7rem;
-  background: var(--surface);
+  width: 2.5rem;
+  height: 2.5rem;
+  background: rgba(255, 255, 255, 0.06);
   border: 1px solid var(--border);
-  color: rgba(255, 255, 255, 0.9);
+  color: var(--text);
   backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
   box-shadow: var(--shadow-md);
 }
 
