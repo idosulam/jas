@@ -140,10 +140,15 @@ function useSwipeDownToClose(isOpen, isClosing, onClose) {
       window.removeEventListener("pointercancel", handlePointerEnd);
     };
   }, [isOpen, onClose, resetDrag]);
-
   const bind = {
     onPointerDown: (e) => {
       if (e.pointerType === "mouse" && e.button !== 0) return;
+
+      // Don't hijack interactive elements — capturing the pointer here
+      // can swallow their click events (this is why Cancel/Save stopped working).
+      if (e.target.closest("button, input, select, textarea, a, label")) {
+        return;
+      }
 
       startYRef.current = e.clientY;
       dragYRef.current = 0;
@@ -154,7 +159,6 @@ function useSwipeDownToClose(isOpen, isClosing, onClose) {
       }
     },
   };
-
   return {
     bind,
     dragY,
@@ -969,7 +973,7 @@ function Profile() {
     closeDeleteModal,
   );
   return (
-    <section className="page ">
+    <section>
       <header className="profile__header">
         <div className="profile__avatar" aria-hidden="true">
           {displayName.charAt(0).toUpperCase()}
