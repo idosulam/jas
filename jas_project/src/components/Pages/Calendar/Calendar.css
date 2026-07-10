@@ -961,17 +961,6 @@
   will-change: transform, opacity;
 }
 
-.calendar__modal::before,
-.calendar__modal--delete::before {
-  content: "";
-  display: block;
-  width: 42px;
-  height: 5px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.22);
-  margin: 0 auto 0.9rem;
-}
-
 @media (min-width: 640px) {
   .calendar__modal {
     border-radius: 1.25rem;
