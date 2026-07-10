@@ -470,7 +470,7 @@ function Calendar() {
       </div>
 
       <div
-        className={`calendar__week animate-in animate-in--2${viewMode === "month" ? " calendar__week--month" : ""}`}
+        className={`calendar__week animate-in animate-in--2${viewMode === "month" ? " calendar__week--month" : " calendar__week--week"}`}
         role="group"
         aria-label={viewMode === "week" ? "Week days" : "Month days"}
       >
@@ -560,7 +560,7 @@ function Calendar() {
               style={{ height: `${TOTAL_HOURS * HOUR_HEIGHT}px` }}
               onClick={handleGridClick}
               onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
+                if (e.key === "Enter" || e.key === " ") {
                   e.preventDefault();
                   handleGridClick(e);
                 }

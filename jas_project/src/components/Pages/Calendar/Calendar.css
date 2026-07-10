@@ -217,7 +217,9 @@
 
 .calendar__week--month {
   grid-template-columns: repeat(7, minmax(0, 1fr));
-  padding-left: 5rem;
+  width: 100%;
+  max-width: 34rem;
+  margin-inline: auto;
 }
 
 .calendar__week-day {
@@ -961,17 +963,6 @@
   will-change: transform, opacity;
 }
 
-.calendar__modal::before,
-.calendar__modal--delete::before {
-  content: "";
-  display: block;
-  width: 42px;
-  height: 5px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.22);
-  margin: 0 auto 0.9rem;
-}
-
 @media (min-width: 640px) {
   .calendar__modal {
     border-radius: 1.25rem;
@@ -1182,12 +1173,19 @@
     grid-template-columns: 1fr;
   }
 
-  .calendar__week {
+  .calendar__week--week {
     width: max-content;
-    margin-left: -1rem;
-    gap: 0.45rem;
+    margin-left: -1.5rem;
+    gap: 0.4rem;
   }
 
+  .calendar__week--month {
+    width: 100%;
+    max-width: 100%;
+    margin-inline: auto;
+    margin-left: 0;
+    gap: 0.4rem;
+  }
   .calendar__week-day {
     border-radius: 0.9rem;
   }
@@ -1219,15 +1217,14 @@
 
   .calendar__week--week {
     display: grid;
-    grid-auto-flow: column;
-    grid-auto-columns: minmax(3.4rem, 1fr);
-    grid-template-columns: none;
-    gap: 0.55rem;
-    overflow-x: auto;
-    overflow-y: hidden;
-    padding-bottom: 0.25rem;
-    scroll-snap-type: x proximity;
-    -webkit-overflow-scrolling: touch;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    grid-auto-flow: row;
+    width: 100%;
+    max-width: 100%;
+    margin-left: 0;
+    gap: 0.3rem;
+    overflow-x: visible;
+    scroll-snap-type: none;
   }
 
   .calendar__week--week::-webkit-scrollbar {
@@ -1235,22 +1232,21 @@
   }
 
   .calendar__week--week .calendar__week-day {
-    min-width: 3.4rem;
-    min-height: 4rem;
+    min-width: 0;
+    width: 100%;
     aspect-ratio: auto;
-    padding: 0.55rem 0.25rem;
-    border-radius: 1rem;
-    scroll-snap-align: start;
+    height: 3.4rem;
+    padding: 0.3rem 0.1rem;
+    border-radius: 0.7rem;
   }
 
   .calendar__week--week .calendar__week-label {
-    font-size: 0.58rem;
-    letter-spacing: 0.04em;
+    font-size: 0.5rem;
+    letter-spacing: 0.02em;
   }
 
   .calendar__week--week .calendar__week-num {
-    font-size: 1.05rem;
-    line-height: 1;
+    font-size: 0.95rem;
   }
 
   .calendar__fab-stack {
