@@ -160,6 +160,17 @@ function Calendar() {
   }, [fetchEvents]);
 
   useEffect(() => {
+    const handleCalendarRefresh = () => {
+      fetchEvents();
+    };
+
+    window.addEventListener("calendar:refresh", handleCalendarRefresh);
+    return () => {
+      window.removeEventListener("calendar:refresh", handleCalendarRefresh);
+    };
+  }, [fetchEvents]);
+
+  useEffect(() => {
     const timer = setInterval(() => setNowTick(Date.now()), 60_000);
     return () => clearInterval(timer);
   }, []);

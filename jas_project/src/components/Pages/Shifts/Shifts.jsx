@@ -287,6 +287,38 @@ function Shifts() {
     return 9 * 60; // fallback 09:00
   }
 
+  function getShiftEventTitle(shiftRecord) {
+    const placeLabel = PLACES[shiftRecord.place]?.label ?? shiftRecord.place;
+    return `${CALENDAR_SHIFT_TITLE_PREFIX}${placeLabel}`;
+  }
+
+  async function removeShiftGeneratedCalendarEvents(supabase, dateKey) {
+    const { data: eventsOnDate = [] } = await supabase
+      .from("events")
+      .select("*")
+      .eq("event_date", dateKey);
+
+    const idsToDelete = (eventsOnDate || [])
+      .filter(
+        (event) =>
+          event.title === CALENDAR_WAKE_TITLE ||
+          event.title === CALENDAR_WALK_TITLE ||
+          (typeof event.notes === "string" &&
+            event.notes.startsWith("Linked shift id:")),
+      )
+      .map((event) => event.id);
+
+    if (idsToDelete.length > 0) {
+      await supabase.from("events").delete().in("id", idsToDelete);
+    }
+  }
+
+  const notifyCalendarRefresh = () => {
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new CustomEvent("calendar:refresh"));
+    }
+  };
+
   async function syncShiftToCalendar(shiftRecord) {
     if (!shiftRecord) return;
     try {
@@ -299,7 +331,10 @@ function Shifts() {
         .select("*")
         .eq("shift_date", dateKey);
 
-      if (!shiftsOnDate || shiftsOnDate.length === 0) return;
+      if (!shiftsOnDate || shiftsOnDate.length === 0) {
+        await removeShiftGeneratedCalendarEvents(supabase, dateKey);
+        return;
+      }
 
       const starts = shiftsOnDate.map(estimateShiftStartMinutes);
       const earliest = Math.min(...starts);
@@ -357,8 +392,7 @@ function Shifts() {
       }
 
       // Ensure shift event exists in calendar
-      const placeLabel = PLACES[shiftRecord.place]?.label ?? shiftRecord.place;
-      const shiftTitle = `${CALENDAR_SHIFT_TITLE_PREFIX}${placeLabel}`;
+      const shiftTitle = getShiftEventTitle(shiftRecord);
       const shiftStart = shiftRecord.start_time || minutesToTime(estimateShiftStartMinutes(shiftRecord));
       const shiftEnd = shiftRecord.end_time || minutesToTime(estimateShiftStartMinutes(shiftRecord) + Math.round((parseFloat(shiftRecord.hours) || 0) * 60));
 
@@ -453,6 +487,7 @@ function Shifts() {
       // Sync to calendar (best-effort)
       try {
         await syncShiftToCalendar(savedShift);
+        notifyCalendarRefresh();
       } catch (e) {
         // ignore sync errors
       }
@@ -495,7 +530,16 @@ function Shifts() {
       }
 
       const removedId = deleteTarget.id;
+      const shiftDate = deleteTarget.shift_date;
+
+      try {
+        await removeShiftGeneratedCalendarEvents(supabase, shiftDate);
+      } catch (cleanupError) {
+        // ignore cleanup errors
+      }
+
       closeDeleteModal();
+      notifyCalendarRefresh();
       toastSuccess("Shift deleted successfully.");
       setRemovingId(removedId);
 
