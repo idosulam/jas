@@ -8,6 +8,7 @@ import {
   DAY_START_HOUR,
   EVENT_COLORS,
   eventStyle,
+  parseTimeToMinutes,
   formatTime12,
   HOUR_HEIGHT,
   layoutOverlappingEvents,
@@ -91,6 +92,9 @@ function Calendar() {
     () => layoutOverlappingEvents(events),
     [events],
   );
+
+  const isWakeEvent = (e) =>
+    typeof e.title === "string" && e.title.toLowerCase().includes("wake");
 
   const pendingCount = useMemo(
     () => events.filter((event) => !event.is_completed).length,
@@ -588,6 +592,23 @@ function Calendar() {
               )}
 
               {laidOutEvents.map((event) => {
+                // Render wake events as a thin, full-width line (not a task card)
+                if (isWakeEvent(event)) {
+                  const minutes = parseTimeToMinutes(event.start_time);
+                  const dayStartMin = DAY_START_HOUR * 60;
+                  const top = ((minutes - dayStartMin) / 60) * HOUR_HEIGHT;
+                  return (
+                    <div
+                      key={event.id}
+                      className="calendar__wake-line"
+                      style={{ top: `${top}px` }}
+                      aria-hidden="true"
+                    >
+                      <span className="calendar__wake-label">{event.title}</span>
+                    </div>
+                  );
+                }
+
                 const style = eventStyle(event);
                 if (!style) return null;
 
@@ -678,7 +699,9 @@ function Calendar() {
       )}
       {events.length > 0 && (
         <ul className="calendar__reminders animate-in animate-in--4">
-          {events.map((event) => (
+          {events
+            .filter((event) => !isWakeEvent(event))
+            .map((event) => (
             <li
               key={`list-${event.id}`}
               className={`calendar__reminder${event.is_completed ? " calendar__reminder--done" : ""}${removingId === event.id ? " calendar__reminder--removing" : ""}`}

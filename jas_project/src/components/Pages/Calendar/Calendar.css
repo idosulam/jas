@@ -532,6 +532,31 @@
   box-shadow: 0 0 16px rgba(239, 68, 68, 0.8);
 }
 
+/* Thin wake-up indicator — a subtle full-width line with small label */
+.calendar__wake-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, rgba(255,200,80,0.9), rgba(255,160,64,0.9));
+  z-index: 18;
+  pointer-events: none;
+}
+
+.calendar__wake-label {
+  position: absolute;
+  left: 8px;
+  top: -1.05rem;
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: rgba(255, 235, 205, 0.95);
+  text-shadow: 0 1px 0 rgba(0,0,0,0.35);
+  pointer-events: none;
+  background: linear-gradient(90deg, rgba(0,0,0,0.12), rgba(0,0,0,0.06));
+  padding: 0.06rem 0.28rem;
+  border-radius: 0.35rem;
+}
+
 /* ==========================================================
    Event Cards
    ========================================================== */
