@@ -332,6 +332,23 @@
   box-shadow: 0 0 10px rgba(244, 114, 182, 0.45);
 }
 
+/* Mobile: avoid overlapping weekday text — move dot to top-right and shrink slightly */
+@media (max-width: 480px) {
+  .calendar__week-dot {
+    left: auto;
+    right: 8px;
+    transform: none;
+    top: 6px;
+    width: 0.38rem;
+    height: 0.38rem;
+    box-shadow: 0 0 8px rgba(244, 114, 182, 0.35);
+  }
+  .calendar__week-num {
+    /* give the number a little extra top padding so it isn't visually crowded */
+    margin-top: 0.15rem;
+  }
+}
+
 /* ==========================================================
    Summary Cards
    ========================================================== */
