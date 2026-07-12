@@ -987,7 +987,7 @@
   animation: calendarOverlayIn 0.28s ease;
 }
 
-@media (min-width: 640px) {
+@media (min-width: 768px) {
   .calendar__overlay {
     align-items: center;
     padding: 1.5rem;
@@ -1015,19 +1015,18 @@
   will-change: transform, opacity;
 }
 
-@media (min-width: 640px) {
+@media (min-width: 768px) {
   .calendar__modal {
     border-radius: 1.25rem;
     animation-name: calendarModalIn;
     padding: 1.25rem 1.25rem max(1.25rem, env(safe-area-inset-bottom));
-    bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px));
+    transform-origin: center;
   }
 }
 
 .calendar__modal--delete {
   text-align: center;
   border-color: rgba(239, 68, 68, 0.4);
-  bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px));
 }
 
 .calendar__modal--closing {

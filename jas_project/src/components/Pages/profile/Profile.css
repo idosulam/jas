@@ -615,6 +615,23 @@
   animation: profileModalSlideDown 0.26s cubic-bezier(0.55, 0, 1, 0.45) forwards;
 }
 
+@media (min-width: 768px) {
+  .profile__overlay {
+    align-items: center;
+    padding: 1.5rem;
+  }
+
+  .profile__modal {
+    border-radius: 1.25rem;
+    transform-origin: center;
+    animation-name: profileModalCenterIn;
+  }
+
+  .profile__modal--closing {
+    animation-name: profileModalCenterOut;
+  }
+}
+
 .profile__modal-title {
   font-family: var(--font-heading);
   font-size: 1.25rem;
@@ -882,6 +899,28 @@
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes profileModalCenterIn {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes profileModalCenterOut {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(18px) scale(0.96);
   }
 }
 
