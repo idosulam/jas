@@ -16,6 +16,13 @@ const PLACES = {
   coffee: { label: "Cafe Nimrod", rate: 34 },
 };
 
+// Calendar-related defaults — change these if you want different behaviour
+const CALENDAR_WAKEUP_BEFORE_MINUTES = 120; // minutes before earliest shift
+const CALENDAR_WALK_AFTER_WAKE_MINUTES = 30; // minutes after wakeup to go for a walk
+const CALENDAR_WAKE_TITLE = "Wake up";
+const CALENDAR_WALK_TITLE = "Go for a walk";
+const CALENDAR_SHIFT_TITLE_PREFIX = "Shift: ";
+
 const PLACE_FILTERS = [
   { id: "all", label: "All" },
   { id: "pasta", label: "Pasta Via" },
@@ -254,6 +261,131 @@ function Shifts() {
     }, MODAL_EXIT_MS);
   };
 
+  // Helpers for calendar integration
+  function minutesToTime(min) {
+    const total = Math.max(0, Math.floor(min));
+    const h = Math.floor(total / 60) % 24;
+    const m = total % 60;
+    return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+  }
+
+  function estimateShiftStartMinutes(shift) {
+    // Prefer explicit start_time, else derive from end_time and hours, else default 09:00
+    const s = shift.start_time;
+    if (s) {
+      const m = parseTimeToMinutes(s);
+      if (m != null) return m;
+    }
+
+    if (shift.end_time && shift.hours) {
+      const end = parseTimeToMinutes(shift.end_time);
+      if (end != null) {
+        return Math.max(0, end - Math.round((parseFloat(shift.hours) || 0) * 60));
+      }
+    }
+
+    return 9 * 60; // fallback 09:00
+  }
+
+  async function syncShiftToCalendar(shiftRecord) {
+    if (!shiftRecord) return;
+    try {
+      const supabase = getSupabaseClient();
+      const dateKey = shiftRecord.shift_date;
+
+      // Fetch all shifts for that date to find earliest start
+      const { data: shiftsOnDate } = await supabase
+        .from("shifts")
+        .select("*")
+        .eq("shift_date", dateKey);
+
+      if (!shiftsOnDate || shiftsOnDate.length === 0) return;
+
+      const starts = shiftsOnDate.map(estimateShiftStartMinutes);
+      const earliest = Math.min(...starts);
+
+      const desiredWake = Math.max(0, earliest - CALENDAR_WAKEUP_BEFORE_MINUTES);
+      const desiredWalk = desiredWake + CALENDAR_WALK_AFTER_WAKE_MINUTES;
+
+      // Fetch existing events for that date
+      const { data: eventsOnDate } = await supabase
+        .from("events")
+        .select("*")
+        .eq("event_date", dateKey);
+
+      const existingWake = (eventsOnDate || []).find((e) => e.title === CALENDAR_WAKE_TITLE);
+      const existingWalk = (eventsOnDate || []).find((e) => e.title === CALENDAR_WALK_TITLE);
+
+      // Upsert wake event
+      if (existingWake) {
+        const existingWakeMin = parseTimeToMinutes(existingWake.start_time?.slice?.(0,5) ?? existingWake.start_time);
+        if (existingWakeMin == null || existingWakeMin > desiredWake) {
+          await supabase
+            .from("events")
+            .update({ start_time: minutesToTime(desiredWake), end_time: minutesToTime(desiredWake + 15) })
+            .eq("id", existingWake.id);
+        }
+      } else {
+        await supabase.from("events").insert({
+          title: CALENDAR_WAKE_TITLE,
+          notes: null,
+          event_date: dateKey,
+          start_time: minutesToTime(desiredWake),
+          end_time: minutesToTime(desiredWake + 15),
+          color: "pink",
+        });
+      }
+
+      // Upsert walk event (ensure it's after wake)
+      if (existingWalk) {
+        const existingWalkMin = parseTimeToMinutes(existingWalk.start_time?.slice?.(0,5) ?? existingWalk.start_time);
+        if (existingWalkMin == null || Math.abs(existingWalkMin - desiredWalk) > 2) {
+          await supabase
+            .from("events")
+            .update({ start_time: minutesToTime(desiredWalk), end_time: minutesToTime(desiredWalk + 30) })
+            .eq("id", existingWalk.id);
+        }
+      } else {
+        await supabase.from("events").insert({
+          title: CALENDAR_WALK_TITLE,
+          notes: null,
+          event_date: dateKey,
+          start_time: minutesToTime(desiredWalk),
+          end_time: minutesToTime(desiredWalk + 30),
+          color: "green",
+        });
+      }
+
+      // Ensure shift event exists in calendar
+      const placeLabel = PLACES[shiftRecord.place]?.label ?? shiftRecord.place;
+      const shiftTitle = `${CALENDAR_SHIFT_TITLE_PREFIX}${placeLabel}`;
+      const shiftStart = shiftRecord.start_time || minutesToTime(estimateShiftStartMinutes(shiftRecord));
+      const shiftEnd = shiftRecord.end_time || minutesToTime(estimateShiftStartMinutes(shiftRecord) + Math.round((parseFloat(shiftRecord.hours) || 0) * 60));
+
+      const existingShiftEvent = (eventsOnDate || []).find(
+        (e) => e.title === shiftTitle && (e.start_time?.slice?.(0,5) ?? e.start_time) === (shiftStart?.slice?.(0,5) ?? shiftStart),
+      );
+
+      if (!existingShiftEvent) {
+        await supabase.from("events").insert({
+          title: shiftTitle,
+          notes: `Linked shift id: ${shiftRecord.id}`,
+          event_date: dateKey,
+          start_time: shiftStart,
+          end_time: shiftEnd,
+          color: "cyan",
+        });
+      }
+    } catch (err) {
+      // Non-fatal: log and show a toast
+      try {
+        toastError?.("Failed to sync shift to calendar.");
+      } catch (e) {
+        // ignore
+      }
+    }
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -287,13 +419,24 @@ function Shifts() {
     try {
       const supabase = getSupabaseClient();
       let dbError;
+      let savedShift = null;
       if (editingShift) {
-        ({ error: dbError } = await supabase
+        const res = await supabase
           .from("shifts")
           .update(payload)
-          .eq("id", editingShift.id));
+          .eq("id", editingShift.id)
+          .select()
+          .single();
+        dbError = res.error;
+        savedShift = res.data;
       } else {
-        ({ error: dbError } = await supabase.from("shifts").insert(payload));
+        const res = await supabase
+          .from("shifts")
+          .insert(payload)
+          .select()
+          .single();
+        dbError = res.error;
+        savedShift = res.data;
       }
 
       setSaving(false);
@@ -305,6 +448,13 @@ function Shifts() {
           editingShift ? "Failed to edit shift." : "Shift upload failed.",
         );
         return;
+      }
+
+      // Sync to calendar (best-effort)
+      try {
+        await syncShiftToCalendar(savedShift);
+      } catch (e) {
+        // ignore sync errors
       }
 
       closeFormModal();
