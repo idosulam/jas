@@ -321,11 +321,15 @@
 }
 
 .calendar__week-dot {
-  width: 0.42rem;
-  height: 0.42rem;
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0.46rem;
+  height: 0.46rem;
   border-radius: 999px;
   background: linear-gradient(135deg, #f472b6, #f59e0b);
-  box-shadow: 0 0 14px rgba(244, 114, 182, 0.65);
+  box-shadow: 0 0 10px rgba(244, 114, 182, 0.45);
 }
 
 /* ==========================================================
@@ -596,18 +600,19 @@
 
 /* ── Checkbox (44px touch target) ── */
 .calendar__check {
-  width: 2.75rem;
-  height: 2.75rem;
-  min-width: 2.75rem;
+  /* adapt to event card height: stay compact for short events, reachable for touch on taller ones */
+  height: min(2.4rem, 70%);
+  aspect-ratio: 1 / 1;
+  min-width: 1.6rem;
   display: grid;
   place-items: center;
-  margin: 0;
+  margin: 0 0.35rem 0 0;
   padding: 0;
-  border-radius: 0.35rem;
-  border: 2px solid rgba(255, 255, 255, 0.65);
+  border-radius: 0.28rem;
+  border: 1.6px solid rgba(255, 255, 255, 0.7);
   background: transparent;
   cursor: pointer;
-  transition: 0.2s;
+  transition: transform 0.12s ease, border-color 0.12s ease, background 0.12s ease;
 }
 
 .calendar__check:hover {
@@ -625,11 +630,12 @@
 }
 
 .calendar__check-icon {
-  width: 0.34rem;
-  height: 0.6rem;
+  width: 0.46rem;
+  height: 0.78rem;
   border-right: 2px solid transparent;
   border-bottom: 2px solid transparent;
   transform: rotate(45deg) translate(-1px, -1px);
+  transition: border-color 0.12s ease;
 }
 
 .calendar__check[aria-pressed="true"] .calendar__check-icon {
@@ -684,12 +690,9 @@
   display: none;
 }
 
-.calendar__event[style*="height: 28"] .calendar__check,
-.calendar__event[style*="height: 30"] .calendar__check,
-.calendar__event[style*="height: 32"] .calendar__check {
-  width: 2rem;
-  height: 2rem;
-  min-width: 2rem;
+.calendar__event[style*="height:"] .calendar__check {
+  /* fallback: ensure the check fits smaller cards; using percentage-based sizing above handles most cases */
+  height: min(2.2rem, 68%);
 }
 
 /* ==========================================================
