@@ -113,19 +113,28 @@ function Shifts() {
   const addBtnRef = useRef(null);
   const { success: toastSuccess, error: toastError } = useGlassToast();
 
+  // Fallback workplaces when Supabase table doesn't exist yet
+  const DEFAULT_WORKPLACES = useMemo(() => [
+    { slug: "pasta", label: "Pasta Via", rate: 50, color: "#fb923c" },
+    { slug: "coffee", label: "Cafe Nimrod", rate: 34, color: "#a78bfa" },
+  ], []);
+
+  // Use Supabase data if available, otherwise fall back to defaults
+  const effectiveWorkplaces = workplaces.length > 0 ? workplaces : DEFAULT_WORKPLACES;
+
   // Build PLACES map from workplaces for backward compatibility
   const PLACES = useMemo(() => {
     const map = {};
-    workplaces.forEach((wp) => {
+    effectiveWorkplaces.forEach((wp) => {
       map[wp.slug] = { label: wp.label, rate: Number(wp.rate), color: wp.color };
     });
     return map;
-  }, [workplaces]);
+  }, [effectiveWorkplaces]);
 
   const PLACE_FILTERS = useMemo(() => [
     { id: "all", label: "All" },
-    ...workplaces.map((wp) => ({ id: wp.slug, label: wp.label })),
-  ], [workplaces]);
+    ...effectiveWorkplaces.map((wp) => ({ id: wp.slug, label: wp.label })),
+  ], [effectiveWorkplaces]);
 
   const fetchWorkplaces = useCallback(async () => {
     try {
@@ -135,9 +144,9 @@ function Shifts() {
         .select("*")
         .eq("active", true)
         .order("created_at", { ascending: true });
-      if (!fetchError) setWorkplaces(data ?? []);
+      if (!fetchError && data && data.length > 0) setWorkplaces(data);
     } catch {
-      // silent
+      // silent — will use defaults
     }
   }, []);
 
@@ -217,7 +226,7 @@ function Shifts() {
       });
     } else {
       setEditingPreset(null);
-      setPresetForm({ label: "", place: form.place || "pasta", start_time: "09:00", end_time: "17:00", hours: "8", pay_type: "hourly" });
+      setPresetForm({ label: "", place: form.place || effectiveWorkplaces[0]?.slug || "pasta", start_time: "09:00", end_time: "17:00", hours: "8", pay_type: "hourly" });
     }
     setPresetModalClosing(false);
     setPresetModalOpen(true);
@@ -347,7 +356,7 @@ function Shifts() {
 
   const openAddModal = () => {
     setEditingShift(null);
-    setForm(emptyForm(workplaces[0]?.slug));
+    setForm(emptyForm(effectiveWorkplaces[0]?.slug));
     setFormModalClosing(false);
     setModalOpen(true);
   };
@@ -374,7 +383,7 @@ function Shifts() {
       setModalOpen(false);
       setFormModalClosing(false);
       setEditingShift(null);
-      setForm(emptyForm(workplaces[0]?.slug));
+      setForm(emptyForm(effectiveWorkplaces[0]?.slug));
     }, MODAL_EXIT_MS);
   };
 
@@ -1241,8 +1250,8 @@ function Shifts() {
                     className={fieldErrors.place ? "shifts__field-error" : ""}
                   >
                     {Object.entries(PLACES).map(([key, { label, rate }]) => (
-                      <option key={wp.slug} value={wp.slug}>
-                        {wp.label} — ₪{Number(wp.rate)}/hr
+                      <option key={key} value={key}>
+                        {label} — ₪{rate}/hr
                       </option>
                     ))}
                   </select>
@@ -1608,7 +1617,7 @@ function Shifts() {
                     onChange={(e) => setPresetForm((f) => ({ ...f, place: e.target.value }))}
                   >
                     {Object.entries(PLACES).map(([key, { label, rate }]) => (
-                      <option key={wp.slug} value={wp.slug}>{wp.label} — ₪{Number(wp.rate)}/hr</option>
+                      <option key={key} value={key}>{label} — ₪{rate}/hr</option>
                     ))}
                   </select>
                 </label>

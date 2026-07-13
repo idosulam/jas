@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import Navbar from "./components/Navbar/Navbar.jsx";
+import Navbar from "./components/navbar/Navbar.jsx";
 import Page_transition from "./components/Page_transition.jsx";
 import Shifts from "./components/Pages/Shifts/Shifts.jsx";
 import Calendar from "./components/Pages/Calendar/Calendar.jsx";
