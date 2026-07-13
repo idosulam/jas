@@ -381,12 +381,13 @@ function Calendar() {
           .select("*")
           .eq("event_date", eventDate);
 
+        let generatedIds = [];
         const shouldRemoveGenerated = remainingEvents.every(
           (event) => isGeneratedWakeEvent(event) || event.id === removedId,
         );
 
         if (shouldRemoveGenerated) {
-          const generatedIds = (remainingEvents || [])
+          generatedIds = (remainingEvents || [])
             .filter((event) => isGeneratedWakeEvent(event))
             .map((event) => event.id);
 
@@ -395,9 +396,11 @@ function Calendar() {
           }
         }
 
-        setEvents((prev) => prev.filter((item) => item.id !== removedId));
-        setAllEvents((prev) => prev.filter((item) => item.id !== removedId));
+        const idsToRemove = [removedId, ...generatedIds];
+        setEvents((prev) => prev.filter((item) => !idsToRemove.includes(item.id)));
+        setAllEvents((prev) => prev.filter((item) => !idsToRemove.includes(item.id)));
         setRemovingId(null);
+        window.dispatchEvent(new CustomEvent("calendar:refresh", { detail: { date: eventDate } }));
       }, 380);
     } catch (err) {
       setDeleting(false);
