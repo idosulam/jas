@@ -802,6 +802,22 @@ function Profile() {
     }
   };
 
+  const isWeightFormValid = useMemo(() => {
+    if (!weightForm.entry_date) return false;
+    const weightKg =
+      sanitizeNumber(weightForm.weight_kg, 1, 1000) ??
+      lbsToKg(weightForm.weight_lbs);
+    if (!weightKg || weightKg <= 0) return false;
+    return true;
+  }, [weightForm]);
+
+  const isProfileFormValid = useMemo(() => {
+    if (!profileForm.display_name || !profileForm.display_name.trim()) return false;
+    const age = sanitizeNumber(profileForm.age, 13, 120);
+    if (profileForm.age && age == null) return false;
+    return true;
+  }, [profileForm]);
+
   const saveWeight = async (e) => {
     e.preventDefault();
     const weightKg =
@@ -1400,7 +1416,7 @@ function Profile() {
                   <button
                     type="submit"
                     className="profile__btn profile__btn--primary"
-                    disabled={saving}
+                    disabled={saving || !isWeightFormValid}
                   >
                     {saving ? "Saving…" : "Save"}
                   </button>
@@ -1549,7 +1565,7 @@ function Profile() {
                   <button
                     type="submit"
                     className="profile__btn profile__btn--primary"
-                    disabled={saving}
+                    disabled={saving || !isProfileFormValid}
                   >
                     {saving ? "Saving…" : "Save profile"}
                   </button>

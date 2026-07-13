@@ -1137,6 +1137,21 @@
   min-height: 5rem;
 }
 
+.calendar__field-error {
+  border-color: #ff6b6b !important;
+  background: rgba(255, 107, 107, 0.08) !important;
+}
+
+.calendar__field-error:focus {
+  border-color: #ff6b6b !important;
+  box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.2) !important;
+}
+
+.calendar__field-error-text {
+  color: #ff6b6b;
+  font-size: 0.85em;
+}
+
 .calendar__colors {
   display: flex;
   gap: 0.65rem;

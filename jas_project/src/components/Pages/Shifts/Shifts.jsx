@@ -258,36 +258,70 @@ function Shifts() {
       nextForm.hours = String(computedHours);
     }
     setForm(nextForm);
-    if (fieldErrors[field]) {
-      setFieldErrors((prev) => ({ ...prev, [field]: null }));
+    setFieldErrors((prev) => ({ ...prev, [field]: null, hours: null }));
+  };
+
+  const handleHoursChange = (value) => {
+    const nextForm = { ...form, hours: value };
+    // Reverse-calculate end_time from start_time + hours
+    if (nextForm.start_time && value) {
+      const startMin = parseTimeToMinutes(nextForm.start_time);
+      const hoursNum = parseFloat(value);
+      if (startMin != null && !isNaN(hoursNum) && hoursNum > 0 && hoursNum <= 24) {
+        const endMin = startMin + Math.round(hoursNum * 60);
+        nextForm.end_time = minutesToTime(endMin);
+      }
     }
+    setForm(nextForm);
+    setFieldErrors((prev) => ({ ...prev, hours: null, end_time: null }));
   };
 
   const validateField = (fieldName, value) => {
     const errors = {};
     switch (fieldName) {
-      case "start_time":
-      case "end_time": {
-        if (value && form.start_time && form.end_time) {
-          const start = parseTimeToMinutes(form.start_time);
+      case "shift_date": {
+        if (!value) {
+          errors[fieldName] = "Pick a date";
+        }
+        break;
+      }
+      case "start_time": {
+        if (!value) {
+          errors[fieldName] = "Required";
+        } else if (form.end_time) {
+          const start = parseTimeToMinutes(value);
           const end = parseTimeToMinutes(form.end_time);
-          if (start != null && end != null && start === end) {
-            errors[fieldName] = "Start and end time cannot be the same";
+          if (start != null && end != null && start >= end) {
+            errors[fieldName] = "Must be before end time";
+          }
+        }
+        break;
+      }
+      case "end_time": {
+        if (!value) {
+          errors[fieldName] = "Required";
+        } else if (form.start_time) {
+          const start = parseTimeToMinutes(form.start_time);
+          const end = parseTimeToMinutes(value);
+          if (start != null && end != null && end <= start) {
+            errors[fieldName] = "Must be after start time";
           }
         }
         break;
       }
       case "hours": {
         const hours = parseFloat(value);
-        if (value && (isNaN(hours) || hours <= 0 || hours > 24)) {
-          errors[fieldName] = "Hours must be between 0 and 24";
+        if (!value || isNaN(hours) || hours <= 0) {
+          errors[fieldName] = "Enter hours worked";
+        } else if (hours > 24) {
+          errors[fieldName] = "Max 24 hours";
         }
         break;
       }
       case "tips": {
         const tips = parseFloat(value);
         if (value && (isNaN(tips) || tips < 0)) {
-          errors[fieldName] = "Tips cannot be negative";
+          errors[fieldName] = "Cannot be negative";
         }
         break;
       }
@@ -297,10 +331,23 @@ function Shifts() {
 
   const handleFieldBlur = (fieldName) => {
     const error = validateField(fieldName, form[fieldName]);
-    if (error) {
-      setFieldErrors((prev) => ({ ...prev, ...error }));
-    }
+    setFieldErrors((prev) => ({ ...prev, [fieldName]: error ? error[fieldName] : null }));
   };
+
+  const isFormValid = useMemo(() => {
+    if (!form.shift_date) return false;
+    if (form.pay_type !== "tips_only" && !form.hours) return false;
+    const hours = parseFloat(form.hours);
+    if (form.hours && (isNaN(hours) || hours <= 0 || hours > 24)) return false;
+    if (form.start_time && form.end_time) {
+      const start = parseTimeToMinutes(form.start_time);
+      const end = parseTimeToMinutes(form.end_time);
+      if (start != null && end != null && end <= start) return false;
+    }
+    const tips = parseFloat(form.tips);
+    if (form.tips && (isNaN(tips) || tips < 0)) return false;
+    return true;
+  }, [form]);
 
   const openDeleteModal = (shift) => {
     setDeleteModalClosing(false);
@@ -520,22 +567,20 @@ function Shifts() {
 
     // Validate all fields
     const errors = {};
-    if (!shiftDate) errors.shift_date = "Please select a date";
-    if (!form.place) errors.place = "Please select a place";
-    if (!hours || hours <= 0) errors.hours = "Hours must be greater than 0";
+    if (!shiftDate) errors.shift_date = "Pick a date";
+    if (!hours || hours <= 0) errors.hours = "Enter hours worked";
+    if (form.pay_type !== "tips_only" && hours > 24) errors.hours = "Max 24 hours";
 
     if (form.start_time && form.end_time) {
       const start = parseTimeToMinutes(form.start_time);
       const end = parseTimeToMinutes(form.end_time);
-      if (start != null && end != null && start === end) {
-        errors.start_time = "Start and end time cannot be the same";
+      if (start != null && end != null && end <= start) {
+        errors.end_time = "Must be after start time";
       }
     }
 
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors);
-      setError("Please fix the errors below before saving.");
-      toastError("Please check your shift details");
       return;
     }
 
@@ -935,7 +980,7 @@ function Shifts() {
 
               <form className="shifts__form" onSubmit={handleSubmit}>
                 <label className="shifts__field">
-                  <span>Place {fieldErrors.place && <span style={{color: 'var(--error-color, #ff6b6b)', fontSize: '0.85em'}}>—{fieldErrors.place}</span>}</span>
+                  <span>Place {fieldErrors.place && <span className="shifts__field-error-text">—{fieldErrors.place}</span>}</span>
                   <select
                     value={form.place}
                     onChange={(e) => {
@@ -971,7 +1016,7 @@ function Shifts() {
                 </div>
 
                 <label className="shifts__field">
-                  <span>Date {fieldErrors.shift_date && <span style={{color: 'var(--error-color, #ff6b6b)', fontSize: '0.85em'}}>—{fieldErrors.shift_date}</span>}</span>
+                  <span>Date {fieldErrors.shift_date && <span className="shifts__field-error-text">—{fieldErrors.shift_date}</span>}</span>
                   <input
                     type="date"
                     value={form.shift_date}
@@ -979,6 +1024,7 @@ function Shifts() {
                       setForm({ ...form, shift_date: e.target.value });
                       setFieldErrors((prev) => ({ ...prev, shift_date: null }));
                     }}
+                    onBlur={() => handleFieldBlur("shift_date")}
                     className={fieldErrors.shift_date ? "shifts__field-error" : ""}
                     required
                   />
@@ -986,38 +1032,56 @@ function Shifts() {
 
                 <div className="shifts__time-row">
                   <label className="shifts__field">
-                    <span>Start time</span>
+                    <span>Start time {fieldErrors.start_time && <span className="shifts__field-error-text">—{fieldErrors.start_time}</span>}</span>
                     <input
                       type="time"
                       value={form.start_time}
                       onChange={(e) =>
                         handleTimeChange("start_time", e.target.value)
                       }
+                      onBlur={() => handleFieldBlur("start_time")}
+                      className={fieldErrors.start_time ? "shifts__field-error" : ""}
                     />
                   </label>
                   <label className="shifts__field">
-                    <span>End time</span>
+                    <span>End time {fieldErrors.end_time && <span className="shifts__field-error-text">—{fieldErrors.end_time}</span>}</span>
                     <input
                       type="time"
                       value={form.end_time}
                       onChange={(e) =>
                         handleTimeChange("end_time", e.target.value)
                       }
+                      onBlur={() => handleFieldBlur("end_time")}
+                      className={fieldErrors.end_time ? "shifts__field-error" : ""}
                     />
                   </label>
                 </div>
 
+                {form.start_time && form.hours && !form.end_time && (
+                  <p className="shifts__hint">
+                    End time will be {(() => {
+                      const startMin = parseTimeToMinutes(form.start_time);
+                      const h = parseFloat(form.hours);
+                      if (startMin != null && !isNaN(h) && h > 0) {
+                        const endMin = startMin + Math.round(h * 60);
+                        return minutesToTime(endMin);
+                      }
+                      return "—";
+                    })()}
+                  </p>
+                )}
+
                 <label className="shifts__field">
-                  <span>Hours</span>
+                  <span>Hours {fieldErrors.hours && <span className="shifts__field-error-text">—{fieldErrors.hours}</span>}</span>
                   <input
                     type="number"
                     min="0.1"
                     step="0.1"
                     placeholder="e.g. 6"
                     value={form.hours}
-                    onChange={(e) =>
-                      setForm({ ...form, hours: e.target.value })
-                    }
+                    onChange={(e) => handleHoursChange(e.target.value)}
+                    onBlur={() => handleFieldBlur("hours")}
+                    className={fieldErrors.hours ? "shifts__field-error" : ""}
                     required
                   />
                 </label>
@@ -1025,6 +1089,7 @@ function Shifts() {
                 <label className="shifts__field">
                   <span>
                     Tips{form.pay_type === "tips_only" ? "" : " (optional)"}
+                    {fieldErrors.tips && <span className="shifts__field-error-text">—{fieldErrors.tips}</span>}
                   </span>
                   <input
                     type="number"
@@ -1033,6 +1098,8 @@ function Shifts() {
                     placeholder="0"
                     value={form.tips}
                     onChange={(e) => setForm({ ...form, tips: e.target.value })}
+                    onBlur={() => handleFieldBlur("tips")}
+                    className={fieldErrors.tips ? "shifts__field-error" : ""}
                   />
                 </label>
 
@@ -1091,7 +1158,7 @@ function Shifts() {
                   <button
                     type="submit"
                     className="shifts__btn shifts__btn--primary"
-                    disabled={saving}
+                    disabled={saving || !isFormValid}
                   >
                     {saving ? (
                       <>
