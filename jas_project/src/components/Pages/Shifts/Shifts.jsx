@@ -36,25 +36,6 @@ const PAY_TYPES = [
   { id: "tips_only", label: "Tips only" },
 ];
 
-const PRESET_STORAGE_KEY = "jas_shift_presets";
-
-function loadPresets() {
-  try {
-    const stored = window.localStorage.getItem(PRESET_STORAGE_KEY);
-    return stored ? JSON.parse(stored) : [];
-  } catch {
-    return [];
-  }
-}
-
-function savePresetsToStorage(presets) {
-  try {
-    window.localStorage.setItem(PRESET_STORAGE_KEY, JSON.stringify(presets));
-  } catch {
-    // ignore storage errors
-  }
-}
-
 const MONTHS = [
   "January",
   "February",
@@ -134,7 +115,7 @@ function Shifts() {
   const [expandedNoteId, setExpandedNoteId] = useState(null);
   const [showFloatingActions, setShowFloatingActions] = useState(false);
   const [fieldErrors, setFieldErrors] = useState({});
-  const [presets, setPresets] = useState(loadPresets);
+  const [presets, setPresets] = useState([]);
   const [presetModalOpen, setPresetModalOpen] = useState(false);
   const [presetModalClosing, setPresetModalClosing] = useState(false);
   const [editingPreset, setEditingPreset] = useState(null);
@@ -142,35 +123,66 @@ function Shifts() {
   const addBtnRef = useRef(null);
   const { success: toastSuccess, error: toastError } = useGlassToast();
 
-  const persistPresets = useCallback((next) => {
-    setPresets(next);
-    savePresetsToStorage(next);
+  const fetchPresets = useCallback(async () => {
+    try {
+      const supabase = getSupabaseClient();
+      const { data, error: fetchError } = await supabase
+        .from("shift_presets")
+        .select("*")
+        .order("created_at", { ascending: true });
+      if (!fetchError) setPresets(data ?? []);
+    } catch {
+      // silent — presets are non-critical
+    }
   }, []);
 
-  const savePreset = useCallback(() => {
+  useEffect(() => { fetchPresets(); }, [fetchPresets]);
+
+  const savePreset = useCallback(async () => {
     const label = presetForm.label.trim();
     if (!label) return;
-    const preset = {
-      id: editingPreset?.id ?? `preset-${Date.now()}`,
+    const payload = {
       label,
       place: presetForm.place,
       start_time: presetForm.start_time,
       end_time: presetForm.end_time,
-      hours: presetForm.hours,
+      hours: Number(Number(presetForm.hours).toFixed(2)),
       pay_type: presetForm.pay_type,
     };
-    const next = editingPreset
-      ? presets.map((p) => (p.id === editingPreset.id ? preset : p))
-      : [...presets, preset];
-    persistPresets(next);
-    closePresetModal();
-    toastSuccess(editingPreset ? "Preset updated." : "Preset created.");
-  }, [presetForm, editingPreset, presets, persistPresets, toastSuccess]);
+    try {
+      const supabase = getSupabaseClient();
+      let dbError;
+      if (editingPreset) {
+        ({ error: dbError } = await supabase.from("shift_presets").update(payload).eq("id", editingPreset.id));
+      } else {
+        ({ error: dbError } = await supabase.from("shift_presets").insert(payload));
+      }
+      if (dbError) {
+        toastError(getUserFacingError(dbError.message));
+        return;
+      }
+      closePresetModal();
+      toastSuccess(editingPreset ? "Preset updated." : "Preset created.");
+      fetchPresets();
+    } catch (err) {
+      toastError(getUserFacingError(err.message));
+    }
+  }, [presetForm, editingPreset, fetchPresets, toastSuccess, toastError]);
 
-  const deletePreset = useCallback((id) => {
-    persistPresets(presets.filter((p) => p.id !== id));
-    toastSuccess("Preset removed.");
-  }, [presets, persistPresets, toastSuccess]);
+  const deletePreset = useCallback(async (id) => {
+    try {
+      const supabase = getSupabaseClient();
+      const { error: dbError } = await supabase.from("shift_presets").delete().eq("id", id);
+      if (dbError) {
+        toastError(getUserFacingError(dbError.message));
+        return;
+      }
+      toastSuccess("Preset removed.");
+      fetchPresets();
+    } catch (err) {
+      toastError(getUserFacingError(err.message));
+    }
+  }, [fetchPresets, toastSuccess, toastError]);
 
   const openPresetModal = useCallback((preset = null) => {
     if (preset) {
