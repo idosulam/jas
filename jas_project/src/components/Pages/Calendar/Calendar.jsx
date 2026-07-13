@@ -869,14 +869,6 @@ function Calendar() {
                     <div className="calendar__event-actions">
                       <button
                         type="button"
-                        className="calendar__event-action"
-                        onClick={() => openEditModal(event)}
-                        aria-label={`Edit ${event.title}`}
-                      >
-                        Edit
-                      </button>
-                      <button
-                        type="button"
                         className="calendar__event-action calendar__event-action--delete"
                         onClick={() => {
                           setDeleteModalClosing(false);
@@ -1072,7 +1064,10 @@ function Calendar() {
                   >
                     {saving ? (
                       <>
-                        <span className="calendar__btn-spinner" aria-hidden="true" />
+                        <span
+                          className="calendar__btn-spinner"
+                          aria-hidden="true"
+                        />
                         Saving…
                       </>
                     ) : editingEvent ? (
@@ -1143,7 +1138,10 @@ function Calendar() {
                 >
                   {deleting ? (
                     <>
-                      <span className="calendar__btn-spinner" aria-hidden="true" />
+                      <span
+                        className="calendar__btn-spinner"
+                        aria-hidden="true"
+                      />
                       Deleting…
                     </>
                   ) : (
