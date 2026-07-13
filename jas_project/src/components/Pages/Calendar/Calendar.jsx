@@ -163,15 +163,18 @@ function Calendar() {
   }, [fetchEvents]);
 
   useEffect(() => {
-    const handleCalendarRefresh = () => {
-      fetchEvents();
+    const handleCalendarRefresh = (event) => {
+      const refreshedDate = event?.detail?.date;
+      if (refreshedDate && refreshedDate === selectedKey) {
+        fetchEvents();
+      }
     };
 
     window.addEventListener("calendar:refresh", handleCalendarRefresh);
     return () => {
       window.removeEventListener("calendar:refresh", handleCalendarRefresh);
     };
-  }, [fetchEvents]);
+  }, [fetchEvents, selectedKey]);
 
   useEffect(() => {
     const timer = setInterval(() => setNowTick(Date.now()), 60_000);

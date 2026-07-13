@@ -543,6 +543,10 @@ function Shifts() {
       toastSuccess("Shift deleted successfully.");
       setRemovingId(removedId);
 
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("calendar:refresh", { detail: { date: shiftDate } }));
+      }
+
       setTimeout(() => {
         setShifts((prev) => prev.filter((s) => s.id !== removedId));
         setRemovingId(null);
