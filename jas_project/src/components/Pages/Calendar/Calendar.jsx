@@ -339,6 +339,11 @@ function Calendar() {
     try {
       const supabase = getSupabaseClient();
       const eventDate = deleteTarget.event_date;
+      const linkedShiftId =
+        typeof deleteTarget.notes === "string"
+          ? deleteTarget.notes.match(/Linked shift id:\s*([a-zA-Z0-9-]+)/)?.[1]
+          : null;
+
       const { error: dbError } = await supabase
         .from("events")
         .delete()
@@ -350,6 +355,19 @@ function Calendar() {
         setError(getUserFacingError(dbError.message));
         toastError("Failed to delete event.");
         return;
+      }
+
+      if (linkedShiftId) {
+        const { error: shiftDeleteError } = await supabase
+          .from("shifts")
+          .delete()
+          .eq("id", linkedShiftId);
+
+        if (shiftDeleteError) {
+          toastError("Deleted calendar event, but the linked shift could not be removed.");
+        } else {
+          window.dispatchEvent(new CustomEvent("shifts:refresh"));
+        }
       }
 
       const removedId = deleteTarget.id;

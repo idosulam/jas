@@ -156,6 +156,17 @@ function Shifts() {
   }, [fetchShifts]);
 
   useEffect(() => {
+    const handleShiftsRefresh = () => {
+      fetchShifts();
+    };
+
+    window.addEventListener("shifts:refresh", handleShiftsRefresh);
+    return () => {
+      window.removeEventListener("shifts:refresh", handleShiftsRefresh);
+    };
+  }, [fetchShifts]);
+
+  useEffect(() => {
     if (modalOpen || deleteTarget) {
       const previousOverflow = document.body.style.overflow;
       document.body.style.overflow = "hidden";
