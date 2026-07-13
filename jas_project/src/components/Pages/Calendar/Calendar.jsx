@@ -96,6 +96,9 @@ function Calendar() {
   const isWakeEvent = (e) =>
     typeof e.title === "string" && e.title.toLowerCase().includes("wake");
 
+  const isGeneratedWakeEvent = (event) =>
+    event?.title === "Wake up" || event?.title === "Go for a walk";
+
   const pendingCount = useMemo(
     () => events.filter((event) => !event.is_completed).length,
     [events],
@@ -332,6 +335,7 @@ function Calendar() {
 
     try {
       const supabase = getSupabaseClient();
+      const eventDate = deleteTarget.event_date;
       const { error: dbError } = await supabase
         .from("events")
         .delete()
@@ -350,7 +354,26 @@ function Calendar() {
       toastSuccess("event deleted successfully.");
       setRemovingId(removedId);
 
-      setTimeout(() => {
+      setTimeout(async () => {
+        const { data: remainingEvents = [] } = await supabase
+          .from("events")
+          .select("*")
+          .eq("event_date", eventDate);
+
+        const shouldRemoveGenerated = remainingEvents.every(
+          (event) => isGeneratedWakeEvent(event) || event.id === removedId,
+        );
+
+        if (shouldRemoveGenerated) {
+          const generatedIds = (remainingEvents || [])
+            .filter((event) => isGeneratedWakeEvent(event))
+            .map((event) => event.id);
+
+          if (generatedIds.length > 0) {
+            await supabase.from("events").delete().in("id", generatedIds);
+          }
+        }
+
         setEvents((prev) => prev.filter((item) => item.id !== removedId));
         setAllEvents((prev) => prev.filter((item) => item.id !== removedId));
         setRemovingId(null);
