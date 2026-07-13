@@ -7,27 +7,18 @@ import {
   sanitizeDate,
   sanitizeNumber,
   sanitizeText,
+  formatDateFriendly,
+  formatTimeFriendly,
 } from "../../../lib/security";
 
 import { useGlassToast } from "../../../lib/glass_toast_provider.jsx";
 
-const PLACES = {
-  pasta: { label: "Pasta Via", rate: 50 },
-  coffee: { label: "Cafe Nimrod", rate: 34 },
-};
-
-// Calendar-related defaults — change these if you want different behaviour
-const CALENDAR_WAKEUP_BEFORE_MINUTES = 120; // minutes before earliest shift
-const CALENDAR_WALK_AFTER_WAKE_MINUTES = 30; // minutes after wakeup to go for a walk
+// Calendar-related defaults
+const CALENDAR_WAKEUP_BEFORE_MINUTES = 120;
+const CALENDAR_WALK_AFTER_WAKE_MINUTES = 30;
 const CALENDAR_WAKE_TITLE = "Wake up";
 const CALENDAR_WALK_TITLE = "Go for a walk";
 const CALENDAR_SHIFT_TITLE_PREFIX = "Shift: ";
-
-const PLACE_FILTERS = [
-  { id: "all", label: "All" },
-  { id: "pasta", label: "Pasta Via" },
-  { id: "coffee", label: "Cafe Nimrod" },
-];
 
 const PAY_TYPES = [
   { id: "hourly", label: "Hourly + tips" },
@@ -58,8 +49,8 @@ function getCurrentLocalTime() {
 
 const MODAL_EXIT_MS = 320;
 
-const emptyForm = () => ({
-  place: "pasta",
+const emptyForm = (firstPlace) => ({
+  place: firstPlace || "pasta",
   pay_type: "hourly",
   shift_date: new Date().toISOString().slice(0, 10),
   start_time: getCurrentLocalTime(),
@@ -113,8 +104,149 @@ function Shifts() {
   const [expandedNoteId, setExpandedNoteId] = useState(null);
   const [showFloatingActions, setShowFloatingActions] = useState(false);
   const [fieldErrors, setFieldErrors] = useState({});
+  const [workplaces, setWorkplaces] = useState([]);
+  const [presets, setPresets] = useState([]);
+  const [presetModalOpen, setPresetModalOpen] = useState(false);
+  const [presetModalClosing, setPresetModalClosing] = useState(false);
+  const [editingPreset, setEditingPreset] = useState(null);
+  const [presetForm, setPresetForm] = useState({ label: "", place: "pasta", start_time: "09:00", end_time: "17:00", hours: "8", pay_type: "hourly" });
   const addBtnRef = useRef(null);
   const { success: toastSuccess, error: toastError } = useGlassToast();
+
+  // Build PLACES map from workplaces for backward compatibility
+  const PLACES = useMemo(() => {
+    const map = {};
+    workplaces.forEach((wp) => {
+      map[wp.slug] = { label: wp.label, rate: Number(wp.rate), color: wp.color };
+    });
+    return map;
+  }, [workplaces]);
+
+  const PLACE_FILTERS = useMemo(() => [
+    { id: "all", label: "All" },
+    ...workplaces.map((wp) => ({ id: wp.slug, label: wp.label })),
+  ], [workplaces]);
+
+  const fetchWorkplaces = useCallback(async () => {
+    try {
+      const supabase = getSupabaseClient();
+      const { data, error: fetchError } = await supabase
+        .from("workplaces")
+        .select("*")
+        .eq("active", true)
+        .order("created_at", { ascending: true });
+      if (!fetchError) setWorkplaces(data ?? []);
+    } catch {
+      // silent
+    }
+  }, []);
+
+  useEffect(() => { fetchWorkplaces(); }, [fetchWorkplaces]);
+
+  const fetchPresets = useCallback(async () => {
+    try {
+      const supabase = getSupabaseClient();
+      const { data, error: fetchError } = await supabase
+        .from("shift_presets")
+        .select("*")
+        .order("created_at", { ascending: true });
+      if (!fetchError) setPresets(data ?? []);
+    } catch {
+      // silent — presets are non-critical
+    }
+  }, []);
+
+  useEffect(() => { fetchPresets(); }, [fetchPresets]);
+
+  const savePreset = useCallback(async () => {
+    const label = presetForm.label.trim();
+    if (!label) return;
+    const payload = {
+      label,
+      place: presetForm.place,
+      start_time: presetForm.start_time,
+      end_time: presetForm.end_time,
+      hours: Number(Number(presetForm.hours).toFixed(2)),
+      pay_type: presetForm.pay_type,
+    };
+    try {
+      const supabase = getSupabaseClient();
+      let dbError;
+      if (editingPreset) {
+        ({ error: dbError } = await supabase.from("shift_presets").update(payload).eq("id", editingPreset.id));
+      } else {
+        ({ error: dbError } = await supabase.from("shift_presets").insert(payload));
+      }
+      if (dbError) {
+        toastError(getUserFacingError(dbError.message));
+        return;
+      }
+      closePresetModal();
+      toastSuccess(editingPreset ? "Preset updated." : "Preset created.");
+      fetchPresets();
+    } catch (err) {
+      toastError(getUserFacingError(err.message));
+    }
+  }, [presetForm, editingPreset, fetchPresets, toastSuccess, toastError]);
+
+  const deletePreset = useCallback(async (id) => {
+    try {
+      const supabase = getSupabaseClient();
+      const { error: dbError } = await supabase.from("shift_presets").delete().eq("id", id);
+      if (dbError) {
+        toastError(getUserFacingError(dbError.message));
+        return;
+      }
+      toastSuccess("Preset removed.");
+      fetchPresets();
+    } catch (err) {
+      toastError(getUserFacingError(err.message));
+    }
+  }, [fetchPresets, toastSuccess, toastError]);
+
+  const openPresetModal = useCallback((preset = null) => {
+    if (preset) {
+      setEditingPreset(preset);
+      setPresetForm({
+        label: preset.label,
+        place: preset.place,
+        start_time: preset.start_time,
+        end_time: preset.end_time,
+        hours: preset.hours,
+        pay_type: preset.pay_type,
+      });
+    } else {
+      setEditingPreset(null);
+      setPresetForm({ label: "", place: form.place || "pasta", start_time: "09:00", end_time: "17:00", hours: "8", pay_type: "hourly" });
+    }
+    setPresetModalClosing(false);
+    setPresetModalOpen(true);
+  }, [form.place]);
+
+  const closePresetModal = useCallback(() => {
+    setPresetModalClosing(true);
+    setTimeout(() => {
+      setPresetModalOpen(false);
+      setPresetModalClosing(false);
+      setEditingPreset(null);
+    }, MODAL_EXIT_MS);
+  }, []);
+
+  const saveCurrentAsPreset = useCallback(() => {
+    const placeLabel = PLACES[form.place]?.label ?? form.place;
+    const timeLabel = form.start_time && form.end_time ? ` ${form.start_time}–${form.end_time}` : "";
+    setEditingPreset(null);
+    setPresetForm({
+      label: `${placeLabel}${timeLabel}`,
+      place: form.place,
+      start_time: form.start_time || "09:00",
+      end_time: form.end_time || "17:00",
+      hours: form.hours || "8",
+      pay_type: form.pay_type,
+    });
+    setPresetModalClosing(false);
+    setPresetModalOpen(true);
+  }, [form]);
 
   const yearOptions = useMemo(() => {
     const current = now.getFullYear();
@@ -215,7 +347,7 @@ function Shifts() {
 
   const openAddModal = () => {
     setEditingShift(null);
-    setForm(emptyForm());
+    setForm(emptyForm(workplaces[0]?.slug));
     setFormModalClosing(false);
     setModalOpen(true);
   };
@@ -242,7 +374,7 @@ function Shifts() {
       setModalOpen(false);
       setFormModalClosing(false);
       setEditingShift(null);
-      setForm(emptyForm());
+      setForm(emptyForm(workplaces[0]?.slug));
     }, MODAL_EXIT_MS);
   };
 
@@ -649,7 +781,7 @@ function Shifts() {
         const message = getUserFacingError(dbError.message);
         setError(message);
         toastError(
-          editingShift ? "Failed to edit shift." : "Shift upload failed.",
+          editingShift ? "Couldn't edit shift." : "Couldn't save shift.",
         );
         return;
       }
@@ -672,15 +804,15 @@ function Shifts() {
       closeFormModal();
       toastSuccess(
         editingShift
-          ? "Shift edited successfully."
-          : "Shift uploaded successfully.",
+          ? "Shift updated."
+          : "Shift saved.",
       );
       fetchShifts();
     } catch (err) {
       setSaving(false);
       setError(getUserFacingError(err.message));
       toastError(
-        editingShift ? "Failed to edit shift." : "Shift upload failed.",
+        editingShift ? "Couldn't edit shift." : "Couldn't save shift.",
       );
     }
   };
@@ -847,6 +979,53 @@ function Shifts() {
         </p>
       )}
 
+      <div className="shifts__templates animate-in animate-in--3">
+        {presets
+          .filter((p) => placeFilter === "all" || p.place === placeFilter)
+          .map((preset) => (
+            <div key={preset.id} className="shifts__preset">
+              <button
+                type="button"
+                className="shifts__template-chip"
+                onClick={() => {
+                  setEditingShift(null);
+                  setForm({
+                    place: preset.place,
+                    pay_type: preset.pay_type,
+                    shift_date: new Date().toISOString().slice(0, 10),
+                    start_time: preset.start_time,
+                    end_time: preset.end_time,
+                    hours: preset.hours,
+                    tips: "",
+                    notes: "",
+                  });
+                  setFormModalClosing(false);
+                  setModalOpen(true);
+                }}
+              >
+                <span className="shifts__template-dot" style={{ background: PLACES[preset.place]?.color || '#818cf8' }} />
+                {preset.label}
+                <span className="shifts__template-time">{preset.start_time}–{preset.end_time}</span>
+              </button>
+              <button
+                type="button"
+                className="shifts__preset-edit"
+                onClick={() => openPresetModal(preset)}
+                aria-label={`Edit ${preset.label} preset`}
+              >
+                ✎
+              </button>
+            </div>
+          ))}
+        <button
+          type="button"
+          className="shifts__template-chip shifts__template-chip--add"
+          onClick={() => openPresetModal()}
+        >
+          + New preset
+        </button>
+      </div>
+
       <div className="shifts__list-header animate-in animate-in--4">
         <h2 className="shifts__list-title">
           {MONTHS[month]} {year}
@@ -922,12 +1101,12 @@ function Shifts() {
                 <div className="shifts__card-main">
                   <div className="shifts__card-top">
                     <span
-                      className={`shifts__badge shifts__badge--${shift.place}`}
+                      className="shifts__badge" style={{ background: `${PLACES[shift.place]?.color || '#818cf8'}15`, color: PLACES[shift.place]?.color || '#818cf8', border: `1px solid ${PLACES[shift.place]?.color || '#818cf8'}26` }}
                     >
                       {placeInfo?.label ?? shift.place}
                     </span>
                     <div className="shifts__card-top-right">
-                      <span className="shifts__date">{shift.shift_date}</span>
+                      <span className="shifts__date">{formatDateFriendly(shift.shift_date)}</span>
                       {shift.notes && (
                         <button
                           type="button"
@@ -981,6 +1160,28 @@ function Shifts() {
                   )}
                 </div>
                 <div className="shifts__card-actions">
+                  <button
+                    type="button"
+                    className="shifts__action shifts__action--copy"
+                    onClick={() => {
+                      setEditingShift(null);
+                      setForm({
+                        place: shift.place,
+                        pay_type: shift.pay_type === "tips_only" ? "tips_only" : "hourly",
+                        shift_date: new Date().toISOString().slice(0, 10),
+                        start_time: shift.start_time ?? "",
+                        end_time: shift.end_time ?? "",
+                        hours: String(shift.hours),
+                        tips: "",
+                        notes: shift.notes ?? "",
+                      });
+                      setFormModalClosing(false);
+                      setModalOpen(true);
+                    }}
+                    aria-label="Copy shift to today"
+                  >
+                    Copy
+                  </button>
                   <button
                     type="button"
                     className="shifts__action shifts__action--edit"
@@ -1040,8 +1241,8 @@ function Shifts() {
                     className={fieldErrors.place ? "shifts__field-error" : ""}
                   >
                     {Object.entries(PLACES).map(([key, { label, rate }]) => (
-                      <option key={key} value={key}>
-                        {label} — ₪{rate}/hr
+                      <option key={wp.slug} value={wp.slug}>
+                        {wp.label} — ₪{Number(wp.rate)}/hr
                       </option>
                     ))}
                   </select>
@@ -1202,6 +1403,9 @@ function Shifts() {
                       setForm({ ...form, notes: e.target.value })
                     }
                   />
+                  {form.notes.length > 0 && (
+                    <span className="shifts__char-count">{form.notes.length}/500</span>
+                  )}
                 </label>
 
                 {form.hours && (
@@ -1243,6 +1447,15 @@ function Shifts() {
                     disabled={saving}
                   >
                     Cancel
+                  </button>
+                  <button
+                    type="button"
+                    className="shifts__btn shifts__btn--outline"
+                    onClick={saveCurrentAsPreset}
+                    disabled={!isFormValid}
+                    title="Save current form as a reusable preset"
+                  >
+                    Save as preset
                   </button>
                   <button
                     type="submit"
@@ -1313,12 +1526,12 @@ function Shifts() {
 
               <div className="shifts__delete-preview">
                 <span
-                  className={`shifts__badge shifts__badge--${deleteTarget.place}`}
+                  className="shifts__badge" style={{ background: `${PLACES[deleteTarget.place]?.color || '#818cf8'}15`, color: PLACES[deleteTarget.place]?.color || '#818cf8', border: `1px solid ${PLACES[deleteTarget.place]?.color || '#818cf8'}26` }}
                 >
                   {deletePlaceInfo?.label}
                 </span>
                 <span className="shifts__delete-date">
-                  {deleteTarget.shift_date}
+                  {formatDateFriendly(deleteTarget.shift_date)}
                 </span>
                 <span className="shifts__delete-amount">
                   {formatMoney(deletePay + deleteTips)}
@@ -1357,6 +1570,106 @@ function Shifts() {
           </div>,
           document.body,
         )}
+      {presetModalOpen &&
+        createPortal(
+          <div
+            className={`shifts__overlay${presetModalClosing ? " shifts__overlay--closing" : ""}`}
+            onClick={closePresetModal}
+          >
+            <div
+              className={`shifts__modal shifts__modal--preset${presetModalClosing ? " shifts__modal--closing" : ""}`}
+              onClick={(e) => e.stopPropagation()}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="preset-modal-title"
+            >
+              <h2 id="preset-modal-title" className="shifts__modal-title">
+                {editingPreset ? "Edit preset" : "Create preset"}
+              </h2>
+              <p className="shifts__preset-hint">
+                Presets let you quick-add common shifts with one tap.
+              </p>
+              <div className="shifts__form">
+                <label className="shifts__field">
+                  <span>Preset name</span>
+                  <input
+                    type="text"
+                    value={presetForm.label}
+                    onChange={(e) => setPresetForm((f) => ({ ...f, label: e.target.value }))}
+                    placeholder="e.g. Morning shift"
+                    maxLength={40}
+                    autoFocus
+                  />
+                </label>
+                <label className="shifts__field">
+                  <span>Place</span>
+                  <select
+                    value={presetForm.place}
+                    onChange={(e) => setPresetForm((f) => ({ ...f, place: e.target.value }))}
+                  >
+                    {Object.entries(PLACES).map(([key, { label, rate }]) => (
+                      <option key={wp.slug} value={wp.slug}>{wp.label} — ₪{Number(wp.rate)}/hr</option>
+                    ))}
+                  </select>
+                </label>
+                <div className="shifts__pay-toggle" role="group" aria-label="Pay type">
+                  {PAY_TYPES.map(({ id, label }) => (
+                    <button
+                      key={id}
+                      type="button"
+                      className={`shifts__pay-toggle-btn${presetForm.pay_type === id ? " shifts__pay-toggle-btn--active" : ""}`}
+                      onClick={() => setPresetForm((f) => ({ ...f, pay_type: id }))}
+                      aria-pressed={presetForm.pay_type === id}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+                <div className="shifts__time-row">
+                  <label className="shifts__field">
+                    <span>Start time</span>
+                    <input type="time" value={presetForm.start_time} onChange={(e) => setPresetForm((f) => ({ ...f, start_time: e.target.value }))} />
+                  </label>
+                  <label className="shifts__field">
+                    <span>End time</span>
+                    <input type="time" value={presetForm.end_time} onChange={(e) => setPresetForm((f) => ({ ...f, end_time: e.target.value }))} />
+                  </label>
+                </div>
+                <label className="shifts__field">
+                  <span>Hours</span>
+                  <input type="number" min="0.01" step="any" value={presetForm.hours} onChange={(e) => setPresetForm((f) => ({ ...f, hours: e.target.value }))} placeholder="8" />
+                </label>
+                <div className="shifts__form-actions">
+                  {editingPreset && (
+                    <button
+                      type="button"
+                      className="shifts__btn shifts__btn--danger-outline"
+                      onClick={() => {
+                        deletePreset(editingPreset.id);
+                        closePresetModal();
+                      }}
+                    >
+                      Delete
+                    </button>
+                  )}
+                  <button type="button" className="shifts__btn shifts__btn--ghost" onClick={closePresetModal}>
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    className="shifts__btn shifts__btn--primary"
+                    onClick={savePreset}
+                    disabled={!presetForm.label.trim()}
+                  >
+                    {editingPreset ? "Update" : "Create"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>,
+          document.body,
+        )}
+
       {showFloatingActions &&
         createPortal(
           <div className="shifts__fab-stack">

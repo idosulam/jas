@@ -371,8 +371,8 @@ function WeightChart({ entries, unit, goalKg }) {
       >
         <defs>
           <linearGradient id="profileChartFill" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="rgba(99, 102, 241, 0.45)" />
-            <stop offset="100%" stopColor="rgba(99, 102, 241, 0)" />
+            <stop offset="0%" stopColor="rgba(16, 185, 129, 0.45)" />
+            <stop offset="100%" stopColor="rgba(16, 185, 129, 0)" />
           </linearGradient>
         </defs>
 
@@ -970,17 +970,17 @@ function Profile() {
 
       if (saveError) {
         setError(getUserFacingError(saveError.message));
-        toastError("Failed to save profile.");
+        toastError("Couldn't save profile.");
         return;
       }
 
       closeProfileModal();
-      toastSuccess("Profile saved successfully.");
+      toastSuccess("Profile saved.");
       fetchData();
     } catch (err) {
       setSaving(false);
       setError(getUserFacingError(err.message));
-      toastError("Failed to save profile.");
+      toastError("Couldn't save profile.");
     }
   };
 
@@ -1013,12 +1013,12 @@ function Profile() {
         return;
       }
 
-      toastSuccess("Weight entry deleted successfully.");
+      toastSuccess("Entry deleted.");
       fetchData(); // quiet background resync, no loading flash now
     } catch (err) {
       setDeleting(false);
       setError(getUserFacingError(err.message));
-      toastError("Failed to delete weight entry.");
+      toastError("Couldn't delete entry.");
       fetchData();
     }
   };
@@ -1249,7 +1249,7 @@ function Profile() {
               <h2 id="profile-goal-title" className="profile__panel-title">
                 Goal progress
               </h2>
-              <div className="profile__goal-bar-wrap">
+              <div className={`profile__goal-bar-wrap${analytics.remainingKg != null && analytics.remainingKg <= 0 ? " profile__goal-reached" : ""}`}>
                 <div
                   className="profile__goal-bar"
                   role="progressbar"
@@ -1260,7 +1260,7 @@ function Profile() {
                 >
                   <div
                     className="profile__goal-bar-fill"
-                    style={{ width: `${analytics.goalProgress ?? 0}%` }}
+                    style={{ width: `${Math.min(analytics.goalProgress ?? 0, 100)}%` }}
                   />
                 </div>
                 <div className="profile__goal-meta">
@@ -1281,6 +1281,13 @@ function Profile() {
                     </span>
                   )}
                 </div>
+                {analytics.remainingKg != null && analytics.remainingKg <= 0 && (
+                  <div className="profile__celebration" aria-hidden="true">
+                    {[...Array(12)].map((_, i) => (
+                      <span key={i} className={`profile__confetti profile__confetti--${i % 6}`} style={{ animationDelay: `${i * 0.1}s` }} />
+                    ))}
+                  </div>
+                )}
               </div>
             </section>
           )}

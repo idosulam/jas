@@ -372,6 +372,63 @@
   font-weight: 600;
 }
 
+/* ── Goal Celebration ─────────────────────────────────────── */
+
+.profile__goal-reached {
+  position: relative;
+  overflow: visible;
+}
+
+.profile__goal-reached .profile__goal-bar-fill {
+  background: linear-gradient(90deg, #34d399, #10b981);
+  animation: goalPulse 2s ease-in-out infinite;
+}
+
+.profile__celebration {
+  position: absolute;
+  top: -10px;
+  left: 0;
+  right: 0;
+  height: 40px;
+  pointer-events: none;
+  overflow: visible;
+}
+
+.profile__confetti {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  animation: confettiFall 1.5s ease-out forwards;
+}
+
+.profile__confetti--0 { background: #34d399; left: 10%; }
+.profile__confetti--1 { background: #60a5fa; left: 25%; }
+.profile__confetti--2 { background: #fbbf24; left: 40%; }
+.profile__confetti--3 { background: #f472b6; left: 55%; }
+.profile__confetti--4 { background: #a78bfa; left: 70%; }
+.profile__confetti--5 { background: #22d3ee; left: 85%; }
+
+@keyframes confettiFall {
+  0% {
+    transform: translateY(0) scale(1) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-60px) scale(0) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+@keyframes goalPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 12px 4px rgba(52, 211, 153, 0.2);
+  }
+}
+
 .profile__insight-text {
   font-size: 0.88rem;
   line-height: 1.65;

@@ -1147,6 +1147,13 @@
   box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.2) !important;
 }
 
+.calendar__char-count {
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  text-align: right;
+  margin-top: -0.25rem;
+}
+
 .calendar__field-error-text {
   color: #ff6b6b;
   font-size: 0.85em;
@@ -1472,6 +1479,55 @@
 /* ==========================================================
    Reduced Motion
    ========================================================== */
+
+/* ── Deletion Animation ─────────────────────────────────────── */
+
+.calendar__event--removing {
+  animation: calendarEventRemove 0.35s var(--ease-smooth) forwards;
+}
+
+.calendar__reminder--removing {
+  animation: calendarReminderRemove 0.3s var(--ease-smooth) forwards;
+}
+
+@keyframes calendarEventRemove {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.85);
+    width: 0 !important;
+    height: 0 !important;
+    padding: 0;
+    margin: 0;
+    overflow: hidden;
+  }
+}
+
+@keyframes calendarReminderRemove {
+  0% {
+    opacity: 1;
+    transform: translateX(0);
+    max-height: 80px;
+    margin-bottom: 0.65rem;
+    padding: 0.85rem 1rem;
+  }
+  50% {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(20px);
+    max-height: 0;
+    margin-bottom: 0;
+    padding: 0;
+    border-width: 0;
+    overflow: hidden;
+  }
+}
 
 @media (prefers-reduced-motion: reduce) {
   .calendar__overlay,

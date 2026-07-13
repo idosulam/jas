@@ -42,7 +42,7 @@ const emptyForm = (dateKey) => ({
   event_date: dateKey,
   start_time: "09:00",
   end_time: "10:00",
-  color: "indigo",
+  color: "green",
 });
 
 function isShiftLinkNote(value) {
@@ -394,7 +394,7 @@ function Calendar() {
       event_date: event.event_date,
       start_time: event.start_time.slice(0, 5),
       end_time: event.end_time.slice(0, 5),
-      color: event.color ?? "indigo",
+      color: event.color ?? "green",
     });
     setFormModalClosing(false);
     setModalOpen(true);
@@ -442,7 +442,7 @@ function Calendar() {
       event_date: eventDate,
       start_time: startTime,
       end_time: endTime,
-      color: ["indigo", "pink", "orange", "green", "cyan"].includes(form.color)
+      color: ["green", "blue", "orange", "pink", "cyan"].includes(form.color)
         ? form.color
         : "indigo",
     };
@@ -465,7 +465,7 @@ function Calendar() {
         const message = getUserFacingError(dbError.message);
         setError(message);
         toastError(
-          editingEvent ? "Failed to edit event." : "Failed to upload event.",
+          editingEvent ? "Couldn't edit event." : "Couldn't save event.",
         );
         return;
       }
@@ -510,14 +510,14 @@ function Calendar() {
       toastSuccess(
         editingEvent
           ? "Event edited successfully."
-          : "Event uploaded successfully.",
+          : "Event saved.",
       );
       fetchEvents();
     } catch (err) {
       setSaving(false);
       setError(getUserFacingError(err.message));
       toastError(
-        editingEvent ? "Failed to edit event." : "Failed to upload event.",
+        editingEvent ? "Couldn't edit event." : "Couldn't save event.",
       );
     }
   };
@@ -566,7 +566,7 @@ function Calendar() {
 
       const removedId = deleteTarget.id;
       closeDeleteModal();
-      toastSuccess("event deleted successfully.");
+      toastSuccess("Event deleted.");
       setRemovingId(removedId);
 
       setTimeout(async () => {
@@ -652,9 +652,12 @@ function Calendar() {
     const grid = e.currentTarget;
     const rect = grid.getBoundingClientRect();
     const y = e.clientY - rect.top;
-    const hourOffset = Math.floor(y / HOUR_HEIGHT);
-    const hour = Math.min(DAY_START_HOUR + hourOffset, DAY_END_HOUR);
-    openAddModal(`${String(hour).padStart(2, "0")}:00`);
+    const totalMinutes = (y / HOUR_HEIGHT) * 60;
+    // Snap to nearest 30 minutes
+    const snappedMinutes = Math.round(totalMinutes / 30) * 30;
+    const hour = Math.min(DAY_START_HOUR + Math.floor(snappedMinutes / 60), DAY_END_HOUR);
+    const minute = snappedMinutes % 60;
+    openAddModal(`${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`);
   };
 
   const dayTitle = selectedDate.toLocaleDateString(undefined, {
@@ -880,7 +883,7 @@ function Calendar() {
                 if (!style) return null;
 
                 const colorInfo =
-                  EVENT_COLORS[event.color] ?? EVENT_COLORS.indigo;
+                  EVENT_COLORS[event.color] ?? EVENT_COLORS.green;
                 const isShort = parseInt(style.height, 10) < 44;
 
                 return (
@@ -1157,11 +1160,15 @@ function Calendar() {
                   <textarea
                     rows={3}
                     value={form.notes}
+                    maxLength={240}
                     onChange={(e) =>
                       setForm({ ...form, notes: e.target.value })
                     }
                     placeholder="Reminder details…"
                   />
+                  {form.notes.length > 0 && (
+                    <span className="calendar__char-count">{form.notes.length}/240</span>
+                  )}
                 </label>
 
                 <div className="calendar__form-actions">
