@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import Nav_Shifts from "../navbar/Nav_Shifts";
-import Nav_Calendar from "../navbar/Nav_Calendar";
-import Nav_Profile from "../navbar/Nav_Profile";
+import Nav_Shifts from "./Nav_Shifts";
+import Nav_Calendar from "./Nav_Calendar";
+import Nav_Profile from "./Nav_Profile";
 import "./Navbar.css";
 
 const NAV_ITEMS = [
