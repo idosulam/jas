@@ -1525,6 +1525,35 @@
   }
 }
 
+/* ── Deletion Animation ─────────────────────────────────────── */
+
+.shifts__card--removing {
+  animation: shiftsCardRemove 0.35s var(--ease-smooth) forwards;
+}
+
+@keyframes shiftsCardRemove {
+  0% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+    max-height: 200px;
+    margin-bottom: 0.65rem;
+    padding: 1rem 1.25rem;
+  }
+  50% {
+    opacity: 0;
+    transform: translateX(30px) scale(0.95);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(30px) scale(0.95);
+    max-height: 0;
+    margin-bottom: 0;
+    padding: 0;
+    border-width: 0;
+    overflow: hidden;
+  }
+}
+
 /* ── Reduced Motion ─────────────────────────────────────────── */
 
 @media (prefers-reduced-motion: reduce) {

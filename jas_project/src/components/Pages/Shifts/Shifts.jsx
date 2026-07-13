@@ -13,23 +13,12 @@ import {
 
 import { useGlassToast } from "../../../lib/glass_toast_provider.jsx";
 
-const PLACES = {
-  pasta: { label: "Pasta Via", rate: 50 },
-  coffee: { label: "Cafe Nimrod", rate: 34 },
-};
-
-// Calendar-related defaults — change these if you want different behaviour
-const CALENDAR_WAKEUP_BEFORE_MINUTES = 120; // minutes before earliest shift
-const CALENDAR_WALK_AFTER_WAKE_MINUTES = 30; // minutes after wakeup to go for a walk
+// Calendar-related defaults
+const CALENDAR_WAKEUP_BEFORE_MINUTES = 120;
+const CALENDAR_WALK_AFTER_WAKE_MINUTES = 30;
 const CALENDAR_WAKE_TITLE = "Wake up";
 const CALENDAR_WALK_TITLE = "Go for a walk";
 const CALENDAR_SHIFT_TITLE_PREFIX = "Shift: ";
-
-const PLACE_FILTERS = [
-  { id: "all", label: "All" },
-  { id: "pasta", label: "Pasta Via" },
-  { id: "coffee", label: "Cafe Nimrod" },
-];
 
 const PAY_TYPES = [
   { id: "hourly", label: "Hourly + tips" },
@@ -60,8 +49,8 @@ function getCurrentLocalTime() {
 
 const MODAL_EXIT_MS = 320;
 
-const emptyForm = () => ({
-  place: "pasta",
+const emptyForm = (firstPlace) => ({
+  place: firstPlace || "pasta",
   pay_type: "hourly",
   shift_date: new Date().toISOString().slice(0, 10),
   start_time: getCurrentLocalTime(),
@@ -115,6 +104,7 @@ function Shifts() {
   const [expandedNoteId, setExpandedNoteId] = useState(null);
   const [showFloatingActions, setShowFloatingActions] = useState(false);
   const [fieldErrors, setFieldErrors] = useState({});
+  const [workplaces, setWorkplaces] = useState([]);
   const [presets, setPresets] = useState([]);
   const [presetModalOpen, setPresetModalOpen] = useState(false);
   const [presetModalClosing, setPresetModalClosing] = useState(false);
@@ -122,6 +112,36 @@ function Shifts() {
   const [presetForm, setPresetForm] = useState({ label: "", place: "pasta", start_time: "09:00", end_time: "17:00", hours: "8", pay_type: "hourly" });
   const addBtnRef = useRef(null);
   const { success: toastSuccess, error: toastError } = useGlassToast();
+
+  // Build PLACES map from workplaces for backward compatibility
+  const PLACES = useMemo(() => {
+    const map = {};
+    workplaces.forEach((wp) => {
+      map[wp.slug] = { label: wp.label, rate: Number(wp.rate), color: wp.color };
+    });
+    return map;
+  }, [workplaces]);
+
+  const PLACE_FILTERS = useMemo(() => [
+    { id: "all", label: "All" },
+    ...workplaces.map((wp) => ({ id: wp.slug, label: wp.label })),
+  ], [workplaces]);
+
+  const fetchWorkplaces = useCallback(async () => {
+    try {
+      const supabase = getSupabaseClient();
+      const { data, error: fetchError } = await supabase
+        .from("workplaces")
+        .select("*")
+        .eq("active", true)
+        .order("created_at", { ascending: true });
+      if (!fetchError) setWorkplaces(data ?? []);
+    } catch {
+      // silent
+    }
+  }, []);
+
+  useEffect(() => { fetchWorkplaces(); }, [fetchWorkplaces]);
 
   const fetchPresets = useCallback(async () => {
     try {
@@ -327,7 +347,7 @@ function Shifts() {
 
   const openAddModal = () => {
     setEditingShift(null);
-    setForm(emptyForm());
+    setForm(emptyForm(workplaces[0]?.slug));
     setFormModalClosing(false);
     setModalOpen(true);
   };
@@ -354,7 +374,7 @@ function Shifts() {
       setModalOpen(false);
       setFormModalClosing(false);
       setEditingShift(null);
-      setForm(emptyForm());
+      setForm(emptyForm(workplaces[0]?.slug));
     }, MODAL_EXIT_MS);
   };
 
@@ -983,7 +1003,7 @@ function Shifts() {
                   setModalOpen(true);
                 }}
               >
-                <span className={`shifts__template-dot shifts__template-dot--${preset.place}`} />
+                <span className="shifts__template-dot" style={{ background: PLACES[preset.place]?.color || '#818cf8' }} />
                 {preset.label}
                 <span className="shifts__template-time">{preset.start_time}–{preset.end_time}</span>
               </button>
@@ -1081,7 +1101,7 @@ function Shifts() {
                 <div className="shifts__card-main">
                   <div className="shifts__card-top">
                     <span
-                      className={`shifts__badge shifts__badge--${shift.place}`}
+                      className="shifts__badge" style={{ background: `${PLACES[shift.place]?.color || '#818cf8'}15`, color: PLACES[shift.place]?.color || '#818cf8', border: `1px solid ${PLACES[shift.place]?.color || '#818cf8'}26` }}
                     >
                       {placeInfo?.label ?? shift.place}
                     </span>
@@ -1221,8 +1241,8 @@ function Shifts() {
                     className={fieldErrors.place ? "shifts__field-error" : ""}
                   >
                     {Object.entries(PLACES).map(([key, { label, rate }]) => (
-                      <option key={key} value={key}>
-                        {label} — ₪{rate}/hr
+                      <option key={wp.slug} value={wp.slug}>
+                        {wp.label} — ₪{Number(wp.rate)}/hr
                       </option>
                     ))}
                   </select>
@@ -1506,7 +1526,7 @@ function Shifts() {
 
               <div className="shifts__delete-preview">
                 <span
-                  className={`shifts__badge shifts__badge--${deleteTarget.place}`}
+                  className="shifts__badge" style={{ background: `${PLACES[deleteTarget.place]?.color || '#818cf8'}15`, color: PLACES[deleteTarget.place]?.color || '#818cf8', border: `1px solid ${PLACES[deleteTarget.place]?.color || '#818cf8'}26` }}
                 >
                   {deletePlaceInfo?.label}
                 </span>
@@ -1588,7 +1608,7 @@ function Shifts() {
                     onChange={(e) => setPresetForm((f) => ({ ...f, place: e.target.value }))}
                   >
                     {Object.entries(PLACES).map(([key, { label, rate }]) => (
-                      <option key={key} value={key}>{label} — ₪{rate}/hr</option>
+                      <option key={wp.slug} value={wp.slug}>{wp.label} — ₪{Number(wp.rate)}/hr</option>
                     ))}
                   </select>
                 </label>
