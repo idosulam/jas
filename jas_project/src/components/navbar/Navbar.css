@@ -38,7 +38,7 @@
   inset: 0;
   background: radial-gradient(
     ellipse 80% 60% at 50% -30%,
-    rgba(16, 185, 129, 0.08),
+    rgba(129, 140, 248, 0.08),
     transparent 70%
   );
   pointer-events: none;
@@ -81,12 +81,12 @@
   border-radius: var(--radius-pill);
   background: linear-gradient(
     135deg,
-    rgba(16, 185, 129, 0.2),
-    rgba(59, 130, 246, 0.12)
+    rgba(129, 140, 248, 0.2),
+    rgba(192, 132, 252, 0.12)
   );
-  border: 1px solid rgba(16, 185, 129, 0.25);
+  border: 1px solid rgba(129, 140, 248, 0.25);
   box-shadow:
-    0 2px 12px rgba(16, 185, 129, 0.15),
+    0 2px 12px rgba(129, 140, 248, 0.15),
     inset 0 1px 0 rgba(255, 255, 255, 0.08);
   transition:
     transform 0.45s var(--ease-spring),
@@ -130,7 +130,7 @@
   border-radius: inherit;
   background: radial-gradient(
     circle at center,
-    rgba(16, 185, 129, 0.25),
+    rgba(129, 140, 248, 0.25),
     transparent 70%
   );
   opacity: 0;
@@ -174,7 +174,7 @@
 
 .nav-option--active .nav-option__icon {
   animation: iconPop 0.4s var(--ease-spring) forwards;
-  filter: drop-shadow(0 0 8px rgba(16, 185, 129, 0.4));
+  filter: drop-shadow(0 0 8px rgba(129, 140, 248, 0.4));
 }
 
 .nav-option__label {

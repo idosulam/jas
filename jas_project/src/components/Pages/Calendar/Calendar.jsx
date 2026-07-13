@@ -652,9 +652,12 @@ function Calendar() {
     const grid = e.currentTarget;
     const rect = grid.getBoundingClientRect();
     const y = e.clientY - rect.top;
-    const hourOffset = Math.floor(y / HOUR_HEIGHT);
-    const hour = Math.min(DAY_START_HOUR + hourOffset, DAY_END_HOUR);
-    openAddModal(`${String(hour).padStart(2, "0")}:00`);
+    const totalMinutes = (y / HOUR_HEIGHT) * 60;
+    // Snap to nearest 30 minutes
+    const snappedMinutes = Math.round(totalMinutes / 30) * 30;
+    const hour = Math.min(DAY_START_HOUR + Math.floor(snappedMinutes / 60), DAY_END_HOUR);
+    const minute = snappedMinutes % 60;
+    openAddModal(`${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`);
   };
 
   const dayTitle = selectedDate.toLocaleDateString(undefined, {
@@ -1157,11 +1160,15 @@ function Calendar() {
                   <textarea
                     rows={3}
                     value={form.notes}
+                    maxLength={240}
                     onChange={(e) =>
                       setForm({ ...form, notes: e.target.value })
                     }
                     placeholder="Reminder details…"
                   />
+                  {form.notes.length > 0 && (
+                    <span className="calendar__char-count">{form.notes.length}/240</span>
+                  )}
                 </label>
 
                 <div className="calendar__form-actions">

@@ -36,6 +36,13 @@ const PAY_TYPES = [
   { id: "tips_only", label: "Tips only" },
 ];
 
+const SHIFT_TEMPLATES = [
+  { id: "pasta-morning", place: "pasta", label: "Pasta Morning", start_time: "08:00", end_time: "14:00", hours: "6", pay_type: "hourly" },
+  { id: "pasta-evening", place: "pasta", label: "Pasta Evening", start_time: "16:00", end_time: "23:00", hours: "7", pay_type: "hourly" },
+  { id: "coffee-morning", place: "coffee", label: "Cafe Morning", start_time: "07:00", end_time: "13:00", hours: "6", pay_type: "hourly" },
+  { id: "coffee-closing", place: "coffee", label: "Cafe Closing", start_time: "14:00", end_time: "22:00", hours: "8", pay_type: "hourly" },
+];
+
 const MONTHS = [
   "January",
   "February",
@@ -849,6 +856,35 @@ function Shifts() {
         </p>
       )}
 
+      <div className="shifts__templates animate-in animate-in--3">
+        {SHIFT_TEMPLATES.filter(t => placeFilter === "all" || t.place === placeFilter).map((tmpl) => (
+          <button
+            key={tmpl.id}
+            type="button"
+            className="shifts__template-chip"
+            onClick={() => {
+              setEditingShift(null);
+              setForm({
+                place: tmpl.place,
+                pay_type: tmpl.pay_type,
+                shift_date: new Date().toISOString().slice(0, 10),
+                start_time: tmpl.start_time,
+                end_time: tmpl.end_time,
+                hours: tmpl.hours,
+                tips: "",
+                notes: "",
+              });
+              setFormModalClosing(false);
+              setModalOpen(true);
+            }}
+          >
+            <span className={`shifts__template-dot shifts__template-dot--${tmpl.place}`} />
+            {tmpl.label}
+            <span className="shifts__template-time">{tmpl.start_time}–{tmpl.end_time}</span>
+          </button>
+        ))}
+      </div>
+
       <div className="shifts__list-header animate-in animate-in--4">
         <h2 className="shifts__list-title">
           {MONTHS[month]} {year}
@@ -983,6 +1019,28 @@ function Shifts() {
                   )}
                 </div>
                 <div className="shifts__card-actions">
+                  <button
+                    type="button"
+                    className="shifts__action shifts__action--copy"
+                    onClick={() => {
+                      setEditingShift(null);
+                      setForm({
+                        place: shift.place,
+                        pay_type: shift.pay_type === "tips_only" ? "tips_only" : "hourly",
+                        shift_date: new Date().toISOString().slice(0, 10),
+                        start_time: shift.start_time ?? "",
+                        end_time: shift.end_time ?? "",
+                        hours: String(shift.hours),
+                        tips: "",
+                        notes: shift.notes ?? "",
+                      });
+                      setFormModalClosing(false);
+                      setModalOpen(true);
+                    }}
+                    aria-label="Copy shift to today"
+                  >
+                    Copy
+                  </button>
                   <button
                     type="button"
                     className="shifts__action shifts__action--edit"
@@ -1204,6 +1262,9 @@ function Shifts() {
                       setForm({ ...form, notes: e.target.value })
                     }
                   />
+                  {form.notes.length > 0 && (
+                    <span className="shifts__char-count">{form.notes.length}/500</span>
+                  )}
                 </label>
 
                 {form.hours && (
