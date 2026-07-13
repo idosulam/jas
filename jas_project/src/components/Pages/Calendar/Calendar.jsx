@@ -347,7 +347,10 @@ function Calendar() {
 
   const handleCalendarFieldBlur = (fieldName) => {
     const errors = validateCalendarField(fieldName);
-    setFieldErrors((prev) => ({ ...prev, [fieldName]: errors[fieldName] || null }));
+    setFieldErrors((prev) => ({
+      ...prev,
+      [fieldName]: errors[fieldName] || null,
+    }));
   };
 
   const isCalendarFormValid = useMemo(() => {
@@ -418,7 +421,8 @@ function Calendar() {
     if (!eventDate) errors.event_date = "Pick a date";
     if (!startTime) errors.start_time = "Required";
     if (!endTime) errors.end_time = "Required";
-    if (startTime && endTime && endTime <= startTime) errors.end_time = "Must be after start";
+    if (startTime && endTime && endTime <= startTime)
+      errors.end_time = "Must be after start";
 
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors);
@@ -794,9 +798,15 @@ function Calendar() {
       </div>
 
       {loading ? (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
+        <div
+          style={{ display: "flex", flexDirection: "column", gap: "0.65rem" }}
+        >
           {[0, 1, 2].map((i) => (
-            <div key={i} className="skeleton skeleton--card" style={{ height: '4rem' }} />
+            <div
+              key={i}
+              className="skeleton skeleton--card"
+              style={{ height: "4rem" }}
+            />
           ))}
         </div>
       ) : (
@@ -1017,7 +1027,14 @@ function Calendar() {
 
               <form className="calendar__form" onSubmit={handleSubmit}>
                 <label className="calendar__field">
-                  <span>Title {fieldErrors.title && <span className="calendar__field-error-text">—{fieldErrors.title}</span>}</span>
+                  <span>
+                    Title{" "}
+                    {fieldErrors.title && (
+                      <span className="calendar__field-error-text">
+                        —{fieldErrors.title}
+                      </span>
+                    )}
+                  </span>
                   <input
                     type="text"
                     value={form.title}
@@ -1034,7 +1051,14 @@ function Calendar() {
                 </label>
 
                 <label className="calendar__field">
-                  <span>Date {fieldErrors.event_date && <span className="calendar__field-error-text">—{fieldErrors.event_date}</span>}</span>
+                  <span>
+                    Date{" "}
+                    {fieldErrors.event_date && (
+                      <span className="calendar__field-error-text">
+                        —{fieldErrors.event_date}
+                      </span>
+                    )}
+                  </span>
                   <input
                     type="date"
                     value={form.event_date}
@@ -1043,36 +1067,64 @@ function Calendar() {
                       setFieldErrors((prev) => ({ ...prev, event_date: null }));
                     }}
                     onBlur={() => handleCalendarFieldBlur("event_date")}
-                    className={fieldErrors.event_date ? "calendar__field-error" : ""}
+                    className={
+                      fieldErrors.event_date ? "calendar__field-error" : ""
+                    }
                     required
                   />
                 </label>
 
                 <label className="calendar__field">
-                  <span>Start {fieldErrors.start_time && <span className="calendar__field-error-text">—{fieldErrors.start_time}</span>}</span>
+                  <span>
+                    Start{" "}
+                    {fieldErrors.start_time && (
+                      <span className="calendar__field-error-text">
+                        —{fieldErrors.start_time}
+                      </span>
+                    )}
+                  </span>
                   <input
                     type="time"
                     value={form.start_time}
                     onChange={(e) => {
                       setForm({ ...form, start_time: e.target.value });
-                      setFieldErrors((prev) => ({ ...prev, start_time: null, end_time: null }));
+                      setFieldErrors((prev) => ({
+                        ...prev,
+                        start_time: null,
+                        end_time: null,
+                      }));
                     }}
                     onBlur={() => handleCalendarFieldBlur("start_time")}
-                    className={fieldErrors.start_time ? "calendar__field-error" : ""}
+                    className={
+                      fieldErrors.start_time ? "calendar__field-error" : ""
+                    }
                     required
                   />
                 </label>
                 <label className="calendar__field">
-                  <span>End {fieldErrors.end_time && <span className="calendar__field-error-text">—{fieldErrors.end_time}</span>}</span>
+                  <span>
+                    End{" "}
+                    {fieldErrors.end_time && (
+                      <span className="calendar__field-error-text">
+                        —{fieldErrors.end_time}
+                      </span>
+                    )}
+                  </span>
                   <input
                     type="time"
                     value={form.end_time}
                     onChange={(e) => {
                       setForm({ ...form, end_time: e.target.value });
-                      setFieldErrors((prev) => ({ ...prev, end_time: null, start_time: null }));
+                      setFieldErrors((prev) => ({
+                        ...prev,
+                        end_time: null,
+                        start_time: null,
+                      }));
                     }}
                     onBlur={() => handleCalendarFieldBlur("end_time")}
-                    className={fieldErrors.end_time ? "calendar__field-error" : ""}
+                    className={
+                      fieldErrors.end_time ? "calendar__field-error" : ""
+                    }
                     required
                   />
                 </label>

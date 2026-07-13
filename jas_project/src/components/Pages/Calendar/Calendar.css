@@ -1234,7 +1234,9 @@
 }
 
 @keyframes calendar-spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .calendar__btn--ghost {

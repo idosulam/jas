@@ -592,9 +592,16 @@
 }
 
 @keyframes shifts-field-shake {
-  0%, 100% { transform: translateX(0); }
-  25% { transform: translateX(-6px); }
-  75% { transform: translateX(6px); }
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-6px);
+  }
+  75% {
+    transform: translateX(6px);
+  }
 }
 
 .shifts__field input:focus,
@@ -685,7 +692,9 @@
 }
 
 @keyframes shifts-spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .shifts__btn:disabled {
@@ -847,7 +856,9 @@
 }
 
 @keyframes shifts-spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .shifts__btn--danger {

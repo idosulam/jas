@@ -816,7 +816,8 @@ function Profile() {
   }, [weightForm]);
 
   const isProfileFormValid = useMemo(() => {
-    if (!profileForm.display_name || !profileForm.display_name.trim()) return false;
+    if (!profileForm.display_name || !profileForm.display_name.trim())
+      return false;
     const age = sanitizeNumber(profileForm.age, 13, 120);
     if (profileForm.age && age == null) return false;
     return true;
@@ -825,8 +826,10 @@ function Profile() {
   const validateProfileField = (fieldName) => {
     switch (fieldName) {
       case "display_name": {
-        if (!profileForm.display_name || !profileForm.display_name.trim()) return "Name is required";
-        if (profileForm.display_name.trim().length > 40) return "Max 40 characters";
+        if (!profileForm.display_name || !profileForm.display_name.trim())
+          return "Name is required";
+        if (profileForm.display_name.trim().length > 40)
+          return "Max 40 characters";
         return null;
       }
       case "age": {
@@ -864,15 +867,19 @@ function Profile() {
         return null;
       }
       case "weight_kg": {
-        if (!weightForm.weight_kg && !weightForm.weight_lbs) return "Enter your weight";
+        if (!weightForm.weight_kg && !weightForm.weight_lbs)
+          return "Enter your weight";
         const kg = sanitizeNumber(weightForm.weight_kg, 1, 1000);
-        if (weightForm.weight_kg && kg == null) return "Must be between 1 and 1000";
+        if (weightForm.weight_kg && kg == null)
+          return "Must be between 1 and 1000";
         return null;
       }
       case "weight_lbs": {
-        if (!weightForm.weight_lbs && !weightForm.weight_kg) return "Enter your weight";
+        if (!weightForm.weight_lbs && !weightForm.weight_kg)
+          return "Enter your weight";
         const lbs = sanitizeNumber(weightForm.weight_lbs, 1, 2200);
-        if (weightForm.weight_lbs && lbs == null) return "Must be between 1 and 2200";
+        if (weightForm.weight_lbs && lbs == null)
+          return "Must be between 1 and 2200";
         return null;
       }
       default:
@@ -1155,8 +1162,11 @@ function Profile() {
           {[0, 1, 2, 3].map((i) => (
             <div key={i} className="skeleton skeleton--stat" />
           ))}
-          <div style={{ gridColumn: 'span 2' }}>
-            <div className="skeleton skeleton--card" style={{ height: '10rem', marginTop: '1rem' }} />
+          <div style={{ gridColumn: "span 2" }}>
+            <div
+              className="skeleton skeleton--card"
+              style={{ height: "10rem", marginTop: "1rem" }}
+            />
           </div>
         </div>
       ) : (
@@ -1373,7 +1383,15 @@ function Profile() {
                         onClick={() => openEditWeight(entry)}
                         aria-label="Edit weigh-in"
                       >
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <svg
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          aria-hidden="true"
+                        >
                           <path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
                           <path d="m15 5 4 4" />
                         </svg>
@@ -1387,7 +1405,15 @@ function Profile() {
                         }}
                         aria-label="Delete weigh-in"
                       >
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <svg
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          aria-hidden="true"
+                        >
                           <path d="M18 6 6 18" />
                           <path d="m6 6 12 12" />
                         </svg>
@@ -1422,22 +1448,40 @@ function Profile() {
               </h2>
               <form className="profile__form" onSubmit={saveWeight}>
                 <label className="profile__field">
-                  Date {weightFieldErrors.entry_date && <span className="profile__field-error-text">—{weightFieldErrors.entry_date}</span>}
+                  Date{" "}
+                  {weightFieldErrors.entry_date && (
+                    <span className="profile__field-error-text">
+                      —{weightFieldErrors.entry_date}
+                    </span>
+                  )}
                   <input
                     type="date"
                     value={weightForm.entry_date}
                     onChange={(e) => {
-                      setWeightForm((f) => ({ ...f, entry_date: e.target.value }));
-                      setWeightFieldErrors((prev) => ({ ...prev, entry_date: null }));
+                      setWeightForm((f) => ({
+                        ...f,
+                        entry_date: e.target.value,
+                      }));
+                      setWeightFieldErrors((prev) => ({
+                        ...prev,
+                        entry_date: null,
+                      }));
                     }}
                     onBlur={() => handleWeightFieldBlur("entry_date")}
-                    className={weightFieldErrors.entry_date ? "profile__field-error" : ""}
+                    className={
+                      weightFieldErrors.entry_date ? "profile__field-error" : ""
+                    }
                     required
                   />
                 </label>
                 <div className="profile__weight-row">
                   <label className="profile__field">
-                    Weight (kg) {weightFieldErrors.weight_kg && <span className="profile__field-error-text">—{weightFieldErrors.weight_kg}</span>}
+                    Weight (kg){" "}
+                    {weightFieldErrors.weight_kg && (
+                      <span className="profile__field-error-text">
+                        —{weightFieldErrors.weight_kg}
+                      </span>
+                    )}
                     <input
                       type="number"
                       step="0.1"
@@ -1446,15 +1490,28 @@ function Profile() {
                       value={weightForm.weight_kg}
                       onChange={(e) => {
                         handleWeightKgChange(e.target.value);
-                        setWeightFieldErrors((prev) => ({ ...prev, weight_kg: null, weight_lbs: null }));
+                        setWeightFieldErrors((prev) => ({
+                          ...prev,
+                          weight_kg: null,
+                          weight_lbs: null,
+                        }));
                       }}
                       onBlur={() => handleWeightFieldBlur("weight_kg")}
-                      className={weightFieldErrors.weight_kg ? "profile__field-error" : ""}
+                      className={
+                        weightFieldErrors.weight_kg
+                          ? "profile__field-error"
+                          : ""
+                      }
                       required
                     />
                   </label>
                   <label className="profile__field">
-                    Weight (lbs) {weightFieldErrors.weight_lbs && <span className="profile__field-error-text">—{weightFieldErrors.weight_lbs}</span>}
+                    Weight (lbs){" "}
+                    {weightFieldErrors.weight_lbs && (
+                      <span className="profile__field-error-text">
+                        —{weightFieldErrors.weight_lbs}
+                      </span>
+                    )}
                     <input
                       type="number"
                       step="0.1"
@@ -1463,10 +1520,18 @@ function Profile() {
                       value={weightForm.weight_lbs}
                       onChange={(e) => {
                         handleWeightLbsChange(e.target.value);
-                        setWeightFieldErrors((prev) => ({ ...prev, weight_lbs: null, weight_kg: null }));
+                        setWeightFieldErrors((prev) => ({
+                          ...prev,
+                          weight_lbs: null,
+                          weight_kg: null,
+                        }));
                       }}
                       onBlur={() => handleWeightFieldBlur("weight_lbs")}
-                      className={weightFieldErrors.weight_lbs ? "profile__field-error" : ""}
+                      className={
+                        weightFieldErrors.weight_lbs
+                          ? "profile__field-error"
+                          : ""
+                      }
                       required
                     />
                   </label>
@@ -1523,20 +1588,40 @@ function Profile() {
               </h2>
               <form className="profile__form" onSubmit={saveProfile}>
                 <label className="profile__field">
-                  Name {profileFieldErrors.display_name && <span className="profile__field-error-text">—{profileFieldErrors.display_name}</span>}
+                  Name{" "}
+                  {profileFieldErrors.display_name && (
+                    <span className="profile__field-error-text">
+                      —{profileFieldErrors.display_name}
+                    </span>
+                  )}
                   <input
                     type="text"
                     value={profileForm.display_name}
                     onChange={(e) => {
-                      setProfileForm((f) => ({ ...f, display_name: e.target.value }));
-                      setProfileFieldErrors((prev) => ({ ...prev, display_name: null }));
+                      setProfileForm((f) => ({
+                        ...f,
+                        display_name: e.target.value,
+                      }));
+                      setProfileFieldErrors((prev) => ({
+                        ...prev,
+                        display_name: null,
+                      }));
                     }}
                     onBlur={() => handleProfileFieldBlur("display_name")}
-                    className={profileFieldErrors.display_name ? "profile__field-error" : ""}
+                    className={
+                      profileFieldErrors.display_name
+                        ? "profile__field-error"
+                        : ""
+                    }
                   />
                 </label>
                 <label className="profile__field">
-                  Age {profileFieldErrors.age && <span className="profile__field-error-text">—{profileFieldErrors.age}</span>}
+                  Age{" "}
+                  {profileFieldErrors.age && (
+                    <span className="profile__field-error-text">
+                      —{profileFieldErrors.age}
+                    </span>
+                  )}
                   <input
                     type="number"
                     min="13"
@@ -1548,11 +1633,18 @@ function Profile() {
                       setProfileFieldErrors((prev) => ({ ...prev, age: null }));
                     }}
                     onBlur={() => handleProfileFieldBlur("age")}
-                    className={profileFieldErrors.age ? "profile__field-error" : ""}
+                    className={
+                      profileFieldErrors.age ? "profile__field-error" : ""
+                    }
                   />
                 </label>
                 <label className="profile__field">
-                  Height (cm) {profileFieldErrors.height_cm && <span className="profile__field-error-text">—{profileFieldErrors.height_cm}</span>}
+                  Height (cm){" "}
+                  {profileFieldErrors.height_cm && (
+                    <span className="profile__field-error-text">
+                      —{profileFieldErrors.height_cm}
+                    </span>
+                  )}
                   <input
                     type="number"
                     step="0.1"
@@ -1561,10 +1653,15 @@ function Profile() {
                     value={profileForm.height_cm}
                     onChange={(e) => {
                       handleHeightCmChange(e.target.value);
-                      setProfileFieldErrors((prev) => ({ ...prev, height_cm: null }));
+                      setProfileFieldErrors((prev) => ({
+                        ...prev,
+                        height_cm: null,
+                      }));
                     }}
                     onBlur={() => handleProfileFieldBlur("height_cm")}
-                    className={profileFieldErrors.height_cm ? "profile__field-error" : ""}
+                    className={
+                      profileFieldErrors.height_cm ? "profile__field-error" : ""
+                    }
                   />
                 </label>
                 <div className="profile__height-row">
@@ -1598,7 +1695,12 @@ function Profile() {
                 </div>
                 <div className="profile__weight-row">
                   <label className="profile__field">
-                    Goal weight (kg) {profileFieldErrors.goal_weight_kg && <span className="profile__field-error-text">—{profileFieldErrors.goal_weight_kg}</span>}
+                    Goal weight (kg){" "}
+                    {profileFieldErrors.goal_weight_kg && (
+                      <span className="profile__field-error-text">
+                        —{profileFieldErrors.goal_weight_kg}
+                      </span>
+                    )}
                     <input
                       type="number"
                       step="0.1"
@@ -1607,10 +1709,17 @@ function Profile() {
                       value={profileForm.goal_weight_kg}
                       onChange={(e) => {
                         handleGoalWeightKgChange(e.target.value);
-                        setProfileFieldErrors((prev) => ({ ...prev, goal_weight_kg: null }));
+                        setProfileFieldErrors((prev) => ({
+                          ...prev,
+                          goal_weight_kg: null,
+                        }));
                       }}
                       onBlur={() => handleProfileFieldBlur("goal_weight_kg")}
-                      className={profileFieldErrors.goal_weight_kg ? "profile__field-error" : ""}
+                      className={
+                        profileFieldErrors.goal_weight_kg
+                          ? "profile__field-error"
+                          : ""
+                      }
                     />
                   </label>
                   <label className="profile__field">
@@ -1740,13 +1849,31 @@ function Profile() {
                 </svg>
               </div>
               <h2 id="dup-date-title" className="profile__modal-title">
-                Already logged for {formatDateLabel(duplicateDateConfirm.existingEntry.entry_date)}
+                Already logged for{" "}
+                {formatDateLabel(duplicateDateConfirm.existingEntry.entry_date)}
               </h2>
               <p className="profile__dup-desc">
-                You have <strong>{formatWeight(toDisplayKg(Number(duplicateDateConfirm.existingEntry.weight_kg), unit), unitLabel)}</strong> recorded for this day.
+                You have{" "}
+                <strong>
+                  {formatWeight(
+                    toDisplayKg(
+                      Number(duplicateDateConfirm.existingEntry.weight_kg),
+                      unit,
+                    ),
+                    unitLabel,
+                  )}
+                </strong>{" "}
+                recorded for this day.
               </p>
               <p className="profile__dup-desc">
-                Updating to <strong>{formatWeight(toDisplayKg(duplicateDateConfirm.newWeight, unit), unitLabel)}</strong>?
+                Updating to{" "}
+                <strong>
+                  {formatWeight(
+                    toDisplayKg(duplicateDateConfirm.newWeight, unit),
+                    unitLabel,
+                  )}
+                </strong>
+                ?
               </p>
               <div className="profile__modal-actions">
                 <button

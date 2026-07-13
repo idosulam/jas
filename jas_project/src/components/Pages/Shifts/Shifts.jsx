@@ -116,8 +116,6 @@ function Shifts() {
   const addBtnRef = useRef(null);
   const { success: toastSuccess, error: toastError } = useGlassToast();
 
-
-
   const yearOptions = useMemo(() => {
     const current = now.getFullYear();
     return Array.from({ length: 11 }, (_, i) => current - 5 + i);
@@ -267,7 +265,12 @@ function Shifts() {
     if (nextForm.start_time && value) {
       const startMin = parseTimeToMinutes(nextForm.start_time);
       const hoursNum = parseFloat(value);
-      if (startMin != null && !isNaN(hoursNum) && hoursNum > 0 && hoursNum <= 24) {
+      if (
+        startMin != null &&
+        !isNaN(hoursNum) &&
+        hoursNum > 0 &&
+        hoursNum <= 24
+      ) {
         const endMin = startMin + Math.round(hoursNum * 60);
         nextForm.end_time = minutesToTime(endMin);
       }
@@ -333,7 +336,10 @@ function Shifts() {
 
   const handleFieldBlur = (fieldName) => {
     const error = validateField(fieldName, form[fieldName]);
-    setFieldErrors((prev) => ({ ...prev, [fieldName]: error ? error[fieldName] : null }));
+    setFieldErrors((prev) => ({
+      ...prev,
+      [fieldName]: error ? error[fieldName] : null,
+    }));
   };
 
   const isFormValid = useMemo(() => {
@@ -383,7 +389,10 @@ function Shifts() {
     if (shift.end_time && shift.hours) {
       const end = parseTimeToMinutes(shift.end_time);
       if (end != null) {
-        return Math.max(0, end - Math.round((parseFloat(shift.hours) || 0) * 60));
+        return Math.max(
+          0,
+          end - Math.round((parseFloat(shift.hours) || 0) * 60),
+        );
       }
     }
 
@@ -395,7 +404,11 @@ function Shifts() {
     return `${CALENDAR_SHIFT_TITLE_PREFIX}${placeLabel}`;
   }
 
-  async function removeShiftGeneratedCalendarEvents(supabase, dateKey, linkedShiftId = null) {
+  async function removeShiftGeneratedCalendarEvents(
+    supabase,
+    dateKey,
+    linkedShiftId = null,
+  ) {
     const { data: eventsOnDate = [] } = await supabase
       .from("events")
       .select("*")
@@ -463,7 +476,10 @@ function Shifts() {
       const starts = shiftsOnDate.map(estimateShiftStartMinutes);
       const earliest = Math.min(...starts);
 
-      const desiredWake = Math.max(0, earliest - CALENDAR_WAKEUP_BEFORE_MINUTES);
+      const desiredWake = Math.max(
+        0,
+        earliest - CALENDAR_WAKEUP_BEFORE_MINUTES,
+      );
       const desiredWalk = desiredWake + CALENDAR_WALK_AFTER_WAKE_MINUTES;
 
       const wakeStart = minutesToTime(desiredWake);
@@ -535,7 +551,8 @@ function Shifts() {
         const fallbackShiftEvent = (eventsOnDate || []).find(
           (event) =>
             event.title === shiftTitle &&
-            (typeof event.notes !== "string" || !event.notes.includes("Linked shift id:")),
+            (typeof event.notes !== "string" ||
+              !event.notes.includes("Linked shift id:")),
         );
 
         if (fallbackShiftEvent) {
@@ -571,7 +588,8 @@ function Shifts() {
     const errors = {};
     if (!shiftDate) errors.shift_date = "Pick a date";
     if (!hours || hours <= 0) errors.hours = "Enter hours worked";
-    if (form.pay_type !== "tips_only" && hours > 24) errors.hours = "Max 24 hours";
+    if (form.pay_type !== "tips_only" && hours > 24)
+      errors.hours = "Max 24 hours";
 
     if (form.start_time && form.end_time) {
       const start = parseTimeToMinutes(form.start_time);
@@ -698,8 +716,14 @@ function Shifts() {
           .eq("shift_date", shiftDate);
 
         if ((remainingShifts || []).length > 0) {
-          await removeShiftGeneratedCalendarEvents(supabase, shiftDate, removedId);
-          await Promise.all(remainingShifts.map((shift) => syncShiftToCalendar(shift)));
+          await removeShiftGeneratedCalendarEvents(
+            supabase,
+            shiftDate,
+            removedId,
+          );
+          await Promise.all(
+            remainingShifts.map((shift) => syncShiftToCalendar(shift)),
+          );
         } else {
           await removeShiftGeneratedCalendarEvents(supabase, shiftDate);
         }
@@ -713,7 +737,9 @@ function Shifts() {
       setRemovingId(removedId);
 
       if (typeof window !== "undefined") {
-        window.dispatchEvent(new CustomEvent("calendar:refresh", { detail: { date: shiftDate } }));
+        window.dispatchEvent(
+          new CustomEvent("calendar:refresh", { detail: { date: shiftDate } }),
+        );
       }
 
       setTimeout(() => {
@@ -844,7 +870,11 @@ function Shifts() {
       {loading ? (
         <div className="shifts__list">
           {[0, 1, 2].map((i) => (
-            <div key={i} className="skeleton skeleton--card" style={{ height: '5.5rem' }} />
+            <div
+              key={i}
+              className="skeleton skeleton--card"
+              style={{ height: "5.5rem" }}
+            />
           ))}
         </div>
       ) : filteredShifts.length === 0 ? (
@@ -852,7 +882,16 @@ function Shifts() {
           className="shifts__empty shifts__empty--fade glass-card shifts__stat shifts__empty-card"
           key={`empty-${placeFilter}`}
         >
-          <svg className="shifts__empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <svg
+            className="shifts__empty-icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
             <rect x="3" y="3" width="18" height="18" rx="2" />
             <path d="M3 9h18M9 3v18" />
           </svg>
@@ -861,7 +900,9 @@ function Shifts() {
               ? "No shifts this month"
               : `No ${PLACES[placeFilter]?.label} shifts`}
           </p>
-          <p className="shifts__empty-hint">Tap "+ Add shift" to log your first one.</p>
+          <p className="shifts__empty-hint">
+            Tap "+ Add shift" to log your first one.
+          </p>
         </div>
       ) : (
         <ul className="shifts__list" key={`list-${placeFilter}`}>
@@ -982,7 +1023,14 @@ function Shifts() {
 
               <form className="shifts__form" onSubmit={handleSubmit}>
                 <label className="shifts__field">
-                  <span>Place {fieldErrors.place && <span className="shifts__field-error-text">—{fieldErrors.place}</span>}</span>
+                  <span>
+                    Place{" "}
+                    {fieldErrors.place && (
+                      <span className="shifts__field-error-text">
+                        —{fieldErrors.place}
+                      </span>
+                    )}
+                  </span>
                   <select
                     value={form.place}
                     onChange={(e) => {
@@ -1018,7 +1066,14 @@ function Shifts() {
                 </div>
 
                 <label className="shifts__field">
-                  <span>Date {fieldErrors.shift_date && <span className="shifts__field-error-text">—{fieldErrors.shift_date}</span>}</span>
+                  <span>
+                    Date{" "}
+                    {fieldErrors.shift_date && (
+                      <span className="shifts__field-error-text">
+                        —{fieldErrors.shift_date}
+                      </span>
+                    )}
+                  </span>
                   <input
                     type="date"
                     value={form.shift_date}
@@ -1027,14 +1082,23 @@ function Shifts() {
                       setFieldErrors((prev) => ({ ...prev, shift_date: null }));
                     }}
                     onBlur={() => handleFieldBlur("shift_date")}
-                    className={fieldErrors.shift_date ? "shifts__field-error" : ""}
+                    className={
+                      fieldErrors.shift_date ? "shifts__field-error" : ""
+                    }
                     required
                   />
                 </label>
 
                 <div className="shifts__time-row">
                   <label className="shifts__field">
-                    <span>Start time {fieldErrors.start_time && <span className="shifts__field-error-text">—{fieldErrors.start_time}</span>}</span>
+                    <span>
+                      Start time{" "}
+                      {fieldErrors.start_time && (
+                        <span className="shifts__field-error-text">
+                          —{fieldErrors.start_time}
+                        </span>
+                      )}
+                    </span>
                     <input
                       type="time"
                       value={form.start_time}
@@ -1042,11 +1106,20 @@ function Shifts() {
                         handleTimeChange("start_time", e.target.value)
                       }
                       onBlur={() => handleFieldBlur("start_time")}
-                      className={fieldErrors.start_time ? "shifts__field-error" : ""}
+                      className={
+                        fieldErrors.start_time ? "shifts__field-error" : ""
+                      }
                     />
                   </label>
                   <label className="shifts__field">
-                    <span>End time {fieldErrors.end_time && <span className="shifts__field-error-text">—{fieldErrors.end_time}</span>}</span>
+                    <span>
+                      End time{" "}
+                      {fieldErrors.end_time && (
+                        <span className="shifts__field-error-text">
+                          —{fieldErrors.end_time}
+                        </span>
+                      )}
+                    </span>
                     <input
                       type="time"
                       value={form.end_time}
@@ -1054,14 +1127,17 @@ function Shifts() {
                         handleTimeChange("end_time", e.target.value)
                       }
                       onBlur={() => handleFieldBlur("end_time")}
-                      className={fieldErrors.end_time ? "shifts__field-error" : ""}
+                      className={
+                        fieldErrors.end_time ? "shifts__field-error" : ""
+                      }
                     />
                   </label>
                 </div>
 
                 {form.start_time && form.hours && !form.end_time && (
                   <p className="shifts__hint">
-                    End time will be {(() => {
+                    End time will be{" "}
+                    {(() => {
                       const startMin = parseTimeToMinutes(form.start_time);
                       const h = parseFloat(form.hours);
                       if (startMin != null && !isNaN(h) && h > 0) {
@@ -1074,14 +1150,21 @@ function Shifts() {
                 )}
 
                 <label className="shifts__field">
-                  <span>Hours {fieldErrors.hours && <span className="shifts__field-error-text">—{fieldErrors.hours}</span>}</span>
+                  <span>
+                    Hours{" "}
+                    {fieldErrors.hours && (
+                      <span className="shifts__field-error-text">
+                        —{fieldErrors.hours}
+                      </span>
+                    )}
+                  </span>
                   <input
                     type="number"
                     min="0.01"
                     step="any"
                     placeholder="e.g. 6.5"
                     value={form.hours}
-                    onChange={(e) => handleHoursChange(e.target.value)
+                    onChange={(e) => handleHoursChange(e.target.value)}
                     onBlur={() => handleFieldBlur("hours")}
                     className={fieldErrors.hours ? "shifts__field-error" : ""}
                     required
@@ -1091,7 +1174,11 @@ function Shifts() {
                 <label className="shifts__field">
                   <span>
                     Tips{form.pay_type === "tips_only" ? "" : " (optional)"}
-                    {fieldErrors.tips && <span className="shifts__field-error-text">—{fieldErrors.tips}</span>}
+                    {fieldErrors.tips && (
+                      <span className="shifts__field-error-text">
+                        —{fieldErrors.tips}
+                      </span>
+                    )}
                   </span>
                   <input
                     type="number"
@@ -1164,7 +1251,10 @@ function Shifts() {
                   >
                     {saving ? (
                       <>
-                        <span className="shifts__btn-spinner" aria-hidden="true" />
+                        <span
+                          className="shifts__btn-spinner"
+                          aria-hidden="true"
+                        />
                         Saving…
                       </>
                     ) : editingShift ? (
@@ -1252,7 +1342,10 @@ function Shifts() {
                 >
                   {deleting ? (
                     <>
-                      <span className="shifts__btn-spinner" aria-hidden="true" />
+                      <span
+                        className="shifts__btn-spinner"
+                        aria-hidden="true"
+                      />
                       Deleting…
                     </>
                   ) : (
