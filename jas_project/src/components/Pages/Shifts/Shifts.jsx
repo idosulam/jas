@@ -341,14 +341,30 @@ function Shifts() {
       const supabase = getSupabaseClient();
       const dateKey = shiftRecord.shift_date;
 
-      // Fetch all shifts for that date to find earliest start
-      const { data: shiftsOnDate } = await supabase
+      const { data: shiftsOnDate = [] } = await supabase
         .from("shifts")
         .select("*")
         .eq("shift_date", dateKey);
 
-      if (!shiftsOnDate || shiftsOnDate.length === 0) {
-        await removeShiftGeneratedCalendarEvents(supabase, dateKey);
+      const { data: eventsOnDate = [] } = await supabase
+        .from("events")
+        .select("*")
+        .eq("event_date", dateKey);
+
+      if (!shiftsOnDate.length) {
+        const idsToDelete = (eventsOnDate || [])
+          .filter(
+            (event) =>
+              event.title === CALENDAR_WAKE_TITLE ||
+              event.title === CALENDAR_WALK_TITLE ||
+              (typeof event.notes === "string" &&
+                event.notes.startsWith("Linked shift id:")),
+          )
+          .map((event) => event.id);
+
+        if (idsToDelete.length > 0) {
+          await supabase.from("events").delete().in("id", idsToDelete);
+        }
         return;
       }
 
@@ -358,56 +374,51 @@ function Shifts() {
       const desiredWake = Math.max(0, earliest - CALENDAR_WAKEUP_BEFORE_MINUTES);
       const desiredWalk = desiredWake + CALENDAR_WALK_AFTER_WAKE_MINUTES;
 
-      // Fetch existing events for that date
-      const { data: eventsOnDate } = await supabase
-        .from("events")
-        .select("*")
-        .eq("event_date", dateKey);
-
-      const existingWake = (eventsOnDate || []).find((e) => e.title === CALENDAR_WAKE_TITLE);
-      const existingWalk = (eventsOnDate || []).find((e) => e.title === CALENDAR_WALK_TITLE);
-
       const wakeStart = minutesToTime(desiredWake);
       const wakeEnd = minutesToTime(desiredWake + 15);
       const walkStart = minutesToTime(desiredWalk);
       const walkEnd = minutesToTime(desiredWalk + 30);
 
-      if (existingWake) {
-        await supabase
-          .from("events")
-          .update({ start_time: wakeStart, end_time: wakeEnd })
-          .eq("id", existingWake.id);
-      } else {
-        await supabase.from("events").insert({
-          title: CALENDAR_WAKE_TITLE,
-          notes: null,
-          event_date: dateKey,
-          start_time: wakeStart,
-          end_time: wakeEnd,
-          color: "pink",
-        });
+      const generatedIds = (eventsOnDate || [])
+        .filter(
+          (event) =>
+            event.title === CALENDAR_WAKE_TITLE ||
+            event.title === CALENDAR_WALK_TITLE,
+        )
+        .map((event) => event.id);
+
+      if (generatedIds.length > 0) {
+        await supabase.from("events").delete().in("id", generatedIds);
       }
 
-      if (existingWalk) {
-        await supabase
-          .from("events")
-          .update({ start_time: walkStart, end_time: walkEnd })
-          .eq("id", existingWalk.id);
-      } else {
-        await supabase.from("events").insert({
-          title: CALENDAR_WALK_TITLE,
-          notes: null,
-          event_date: dateKey,
-          start_time: walkStart,
-          end_time: walkEnd,
-          color: "green",
-        });
-      }
+      await supabase.from("events").insert({
+        title: CALENDAR_WAKE_TITLE,
+        notes: null,
+        event_date: dateKey,
+        start_time: wakeStart,
+        end_time: wakeEnd,
+        color: "pink",
+      });
 
-      // Ensure shift event exists in calendar
+      await supabase.from("events").insert({
+        title: CALENDAR_WALK_TITLE,
+        notes: null,
+        event_date: dateKey,
+        start_time: walkStart,
+        end_time: walkEnd,
+        color: "green",
+      });
+
       const shiftTitle = getShiftEventTitle(shiftRecord);
-      const shiftStart = shiftRecord.start_time || minutesToTime(estimateShiftStartMinutes(shiftRecord));
-      const shiftEnd = shiftRecord.end_time || minutesToTime(estimateShiftStartMinutes(shiftRecord) + Math.round((parseFloat(shiftRecord.hours) || 0) * 60));
+      const shiftStart =
+        shiftRecord.start_time ||
+        minutesToTime(estimateShiftStartMinutes(shiftRecord));
+      const shiftEnd =
+        shiftRecord.end_time ||
+        minutesToTime(
+          estimateShiftStartMinutes(shiftRecord) +
+            Math.round((parseFloat(shiftRecord.hours) || 0) * 60),
+        );
 
       const existingShiftEvent = (eventsOnDate || []).find((event) => {
         const notes = typeof event.notes === "string" ? event.notes : "";
@@ -445,7 +456,6 @@ function Shifts() {
         }
       }
     } catch (err) {
-      // Non-fatal: log and show a toast
       try {
         toastError?.("Failed to sync shift to calendar.");
       } catch (e) {

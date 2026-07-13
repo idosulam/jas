@@ -37,6 +37,15 @@ const emptyForm = (dateKey) => ({
   color: "indigo",
 });
 
+function isShiftLinkNote(value) {
+  return typeof value === "string" && value.startsWith("Linked shift id:");
+}
+
+function getVisibleEventNotes(value) {
+  if (isShiftLinkNote(value)) return "";
+  return value ?? "";
+}
+
 function Calendar() {
   const today = useMemo(() => new Date(), []);
   const [selectedDate, setSelectedDate] = useState(today);
@@ -241,7 +250,7 @@ function Calendar() {
     setEditingEvent(event);
     setForm({
       title: event.title,
-      notes: event.notes ?? "",
+      notes: getVisibleEventNotes(event.notes),
       event_date: event.event_date,
       start_time: event.start_time.slice(0, 5),
       end_time: event.end_time.slice(0, 5),
@@ -280,9 +289,13 @@ function Calendar() {
     setSaving(true);
     setError(null);
 
+    const nextNotes = sanitizeText(form.notes, 240) || null;
     const payload = {
       title,
-      notes: sanitizeText(form.notes, 240) || null,
+      notes:
+        editingEvent && isShiftLinkNote(editingEvent.notes)
+          ? editingEvent.notes
+          : nextNotes,
       event_date: eventDate,
       start_time: startTime,
       end_time: endTime,
