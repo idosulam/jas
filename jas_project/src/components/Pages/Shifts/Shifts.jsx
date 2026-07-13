@@ -315,6 +315,8 @@ function Shifts() {
           errors[fieldName] = "Enter hours worked";
         } else if (hours > 24) {
           errors[fieldName] = "Max 24 hours";
+        } else if (hours > 0 && hours < 0.01) {
+          errors[fieldName] = "Minimum 0.01 hours";
         }
         break;
       }
@@ -1075,11 +1077,11 @@ function Shifts() {
                   <span>Hours {fieldErrors.hours && <span className="shifts__field-error-text">—{fieldErrors.hours}</span>}</span>
                   <input
                     type="number"
-                    min="0.1"
-                    step="0.1"
-                    placeholder="e.g. 6"
+                    min="0.01"
+                    step="any"
+                    placeholder="e.g. 6.5"
                     value={form.hours}
-                    onChange={(e) => handleHoursChange(e.target.value)}
+                    onChange={(e) => handleHoursChange(e.target.value)
                     onBlur={() => handleFieldBlur("hours")}
                     className={fieldErrors.hours ? "shifts__field-error" : ""}
                     required
