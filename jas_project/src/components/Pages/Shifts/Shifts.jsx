@@ -75,9 +75,9 @@ function calculateHoursFromTimes(startTime, endTime) {
   return Number((diffMinutes / 60).toFixed(2));
 }
 
-function calcPay(place, hours, payType = "hourly") {
+function calcPay(places, place, hours, payType = "hourly") {
   if (payType === "tips_only") return 0;
-  return (PLACES[place]?.rate ?? 0) * (parseFloat(hours) || 0);
+  return (places[place]?.rate ?? 0) * (parseFloat(hours) || 0);
 }
 
 function formatMoney(amount) {
@@ -342,7 +342,7 @@ function Shifts() {
   const totals = useMemo(() => {
     return filteredShifts.reduce(
       (acc, shift) => {
-        const pay = calcPay(shift.place, shift.hours, shift.pay_type);
+        const pay = calcPay(PLACES, shift.place, shift.hours, shift.pay_type);
         const tips = parseFloat(shift.tips) || 0;
         acc.hours += parseFloat(shift.hours) || 0;
         acc.pay += pay;
@@ -894,10 +894,10 @@ function Shifts() {
     }
   };
 
-  const previewPay = calcPay(form.place, form.hours, form.pay_type);
+  const previewPay = calcPay(PLACES, form.place, form.hours, form.pay_type);
 
   const deletePay = deleteTarget
-    ? calcPay(deleteTarget.place, deleteTarget.hours, deleteTarget.pay_type)
+    ? calcPay(PLACES, deleteTarget.place, deleteTarget.hours, deleteTarget.pay_type)
     : 0;
   const deleteTips = deleteTarget ? parseFloat(deleteTarget.tips) || 0 : 0;
   const deletePlaceInfo = deleteTarget ? PLACES[deleteTarget.place] : null;
@@ -1095,7 +1095,7 @@ function Shifts() {
       ) : (
         <ul className="shifts__list" key={`list-${placeFilter}`}>
           {filteredShifts.map((shift, index) => {
-            const pay = calcPay(shift.place, shift.hours, shift.pay_type);
+            const pay = calcPay(PLACES, shift.place, shift.hours, shift.pay_type);
             const tips = parseFloat(shift.tips) || 0;
             const placeInfo = PLACES[shift.place];
             const isRemoving = removingId === shift.id;
