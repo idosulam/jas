@@ -56,7 +56,7 @@
   inset: -20%;
   background: radial-gradient(
     ellipse at 70% 0%,
-    rgba(139, 92, 246, 0.18),
+    rgba(59, 130, 246, 0.18),
     transparent 55%
   );
   opacity: 1;
@@ -149,13 +149,13 @@
 }
 
 .glass-toast__close:hover {
-  background: rgba(139, 92, 246, 0.22);
-  border-color: rgba(139, 92, 246, 0.4);
+  background: rgba(59, 130, 246, 0.22);
+  border-color: rgba(59, 130, 246, 0.4);
   color: rgba(255, 255, 255, 0.9);
 }
 
 .glass-toast__close:focus-visible {
-  outline: 2px solid var(--color-primary, #6366f1);
+  outline: 2px solid var(--color-primary, #10b981);
   outline-offset: 2px;
 }
 
@@ -190,16 +190,16 @@
 .glass-toast--default .glass-toast__icon {
   background: linear-gradient(
     135deg,
-    rgba(139, 92, 246, 0.32),
+    rgba(59, 130, 246, 0.32),
     rgba(109, 40, 217, 0.18)
   );
-  border-color: rgba(139, 92, 246, 0.3);
-  color: #ddd6fe;
+  border-color: rgba(59, 130, 246, 0.3);
+  color: #bfdbfe;
 }
 
 .glass-toast--default .glass-toast__timer-fill {
-  background: linear-gradient(90deg, #a78bfa, #7c3aed);
-  color: #a78bfa;
+  background: linear-gradient(90deg, #93c5fd, #2563eb);
+  color: #93c5fd;
 }
 
 /* ── Entrance animation ─────────────────────────────────────── */

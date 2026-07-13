@@ -42,7 +42,7 @@ const emptyForm = (dateKey) => ({
   event_date: dateKey,
   start_time: "09:00",
   end_time: "10:00",
-  color: "indigo",
+  color: "green",
 });
 
 function isShiftLinkNote(value) {
@@ -394,7 +394,7 @@ function Calendar() {
       event_date: event.event_date,
       start_time: event.start_time.slice(0, 5),
       end_time: event.end_time.slice(0, 5),
-      color: event.color ?? "indigo",
+      color: event.color ?? "green",
     });
     setFormModalClosing(false);
     setModalOpen(true);
@@ -442,7 +442,7 @@ function Calendar() {
       event_date: eventDate,
       start_time: startTime,
       end_time: endTime,
-      color: ["indigo", "pink", "orange", "green", "cyan"].includes(form.color)
+      color: ["green", "blue", "orange", "pink", "cyan"].includes(form.color)
         ? form.color
         : "indigo",
     };
@@ -465,7 +465,7 @@ function Calendar() {
         const message = getUserFacingError(dbError.message);
         setError(message);
         toastError(
-          editingEvent ? "Failed to edit event." : "Failed to upload event.",
+          editingEvent ? "Couldn't edit event." : "Couldn't save event.",
         );
         return;
       }
@@ -510,14 +510,14 @@ function Calendar() {
       toastSuccess(
         editingEvent
           ? "Event edited successfully."
-          : "Event uploaded successfully.",
+          : "Event saved.",
       );
       fetchEvents();
     } catch (err) {
       setSaving(false);
       setError(getUserFacingError(err.message));
       toastError(
-        editingEvent ? "Failed to edit event." : "Failed to upload event.",
+        editingEvent ? "Couldn't edit event." : "Couldn't save event.",
       );
     }
   };
@@ -566,7 +566,7 @@ function Calendar() {
 
       const removedId = deleteTarget.id;
       closeDeleteModal();
-      toastSuccess("event deleted successfully.");
+      toastSuccess("Event deleted.");
       setRemovingId(removedId);
 
       setTimeout(async () => {
@@ -880,7 +880,7 @@ function Calendar() {
                 if (!style) return null;
 
                 const colorInfo =
-                  EVENT_COLORS[event.color] ?? EVENT_COLORS.indigo;
+                  EVENT_COLORS[event.color] ?? EVENT_COLORS.green;
                 const isShort = parseInt(style.height, 10) < 44;
 
                 return (

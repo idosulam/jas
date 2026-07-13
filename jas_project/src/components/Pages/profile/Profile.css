@@ -25,7 +25,7 @@
   border-radius: 50%;
   background: linear-gradient(
     135deg,
-    rgba(99, 102, 241, 0.7),
+    rgba(16, 185, 129, 0.7),
     rgba(236, 72, 153, 0.6)
   );
   border: 2px solid rgba(255, 255, 255, 0.35);
@@ -101,10 +101,10 @@
   transform: translateX(100%);
   background: linear-gradient(
     135deg,
-    rgba(99, 102, 241, 0.55),
-    rgba(168, 85, 247, 0.45)
+    rgba(16, 185, 129, 0.55),
+    rgba(59, 130, 246, 0.45)
   );
-  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.25);
+  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.25);
 }
 
 .profile__error {
@@ -221,14 +221,14 @@
 }
 
 .profile__chart-line {
-  stroke: #818cf8;
+  stroke: #10b981;
   stroke-width: 2.5;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
 
 .profile__chart-dot {
-  fill: #6366f1;
+  fill: #10b981;
   stroke: #fff;
   stroke-width: 1.5;
   transition:
@@ -239,7 +239,7 @@
 }
 
 .profile__chart-dot--active {
-  filter: drop-shadow(0 0 6px rgba(99, 102, 241, 0.65));
+  filter: drop-shadow(0 0 6px rgba(16, 185, 129, 0.65));
 }
 
 .profile__chart-goal-line {
@@ -256,7 +256,7 @@
 }
 
 .profile__chart-hover-guide {
-  stroke: rgba(99, 102, 241, 0.35);
+  stroke: rgba(16, 185, 129, 0.35);
   stroke-width: 1;
   stroke-dasharray: 3 3;
   pointer-events: none;
@@ -349,7 +349,7 @@
 .profile__goal-bar-fill {
   height: 100%;
   border-radius: 999px;
-  background: linear-gradient(90deg, #6366f1, #ec4899);
+  background: linear-gradient(90deg, #10b981, #ec4899);
   background-size: 200% 100%;
   transition: width 0.6s var(--ease-spring);
   animation: goalShimmer 3s linear infinite;
@@ -424,7 +424,7 @@
   background: rgba(255, 255, 255, 0.04);
   transform: translateX(4px);
   border-color: rgba(255, 255, 255, 0.28);
-  box-shadow: -4px 0 20px rgba(99, 102, 241, 0.12);
+  box-shadow: -4px 0 20px rgba(16, 185, 129, 0.12);
 }
 
 .profile__history-item--removing {
@@ -492,7 +492,7 @@
   background: rgba(255, 255, 255, 0.08);
   color: #fff;
   transform: scale(1.1);
-  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.25);
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.25);
 }
 
 .profile__icon-btn--danger:hover {
@@ -553,7 +553,7 @@
   );
   color: #fff;
   box-shadow:
-    0 6px 20px rgba(129, 140, 248, 0.35),
+    0 6px 20px rgba(16, 185, 129, 0.35),
     inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
 
@@ -769,9 +769,9 @@
 .profile__field input:focus,
 .profile__field select:focus {
   outline: none;
-  border-color: rgba(99, 102, 241, 0.55);
+  border-color: rgba(16, 185, 129, 0.55);
   background: rgba(255, 255, 255, 0.1);
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
 }
 
 .profile__field input:focus-visible,
@@ -834,14 +834,14 @@
   font-weight: 700;
   color: #fff;
   box-shadow:
-    0 4px 16px rgba(129, 140, 248, 0.3),
+    0 4px 16px rgba(16, 185, 129, 0.3),
     inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
 
 .profile__btn--primary:not(:disabled):hover {
   transform: translateY(-2px);
   box-shadow:
-    0 8px 20px rgba(129, 140, 248, 0.4),
+    0 8px 20px rgba(16, 185, 129, 0.4),
     inset 0 1px 0 rgba(255, 255, 255, 0.15);
 }
 
@@ -885,7 +885,7 @@
 }
 
 .page.profile::before {
-  background: radial-gradient(circle, #6366f1, transparent 70%);
+  background: radial-gradient(circle, #10b981, transparent 70%);
   top: -180px;
   left: -120px;
 }
@@ -908,7 +908,7 @@
 .profile__stat:hover {
   transform: translateY(-6px) scale(1.03);
   border-color: rgba(255, 255, 255, 0.3);
-  box-shadow: 0 12px 28px rgba(99, 102, 241, 0.25);
+  box-shadow: 0 12px 28px rgba(16, 185, 129, 0.25);
 }
 
 .profile__stat-value--good {

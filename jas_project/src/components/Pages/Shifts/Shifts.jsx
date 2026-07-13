@@ -7,6 +7,8 @@ import {
   sanitizeDate,
   sanitizeNumber,
   sanitizeText,
+  formatDateFriendly,
+  formatTimeFriendly,
 } from "../../../lib/security";
 
 import { useGlassToast } from "../../../lib/glass_toast_provider.jsx";
@@ -649,7 +651,7 @@ function Shifts() {
         const message = getUserFacingError(dbError.message);
         setError(message);
         toastError(
-          editingShift ? "Failed to edit shift." : "Shift upload failed.",
+          editingShift ? "Couldn't edit shift." : "Couldn't save shift.",
         );
         return;
       }
@@ -672,15 +674,15 @@ function Shifts() {
       closeFormModal();
       toastSuccess(
         editingShift
-          ? "Shift edited successfully."
-          : "Shift uploaded successfully.",
+          ? "Shift updated."
+          : "Shift saved.",
       );
       fetchShifts();
     } catch (err) {
       setSaving(false);
       setError(getUserFacingError(err.message));
       toastError(
-        editingShift ? "Failed to edit shift." : "Shift upload failed.",
+        editingShift ? "Couldn't edit shift." : "Couldn't save shift.",
       );
     }
   };
@@ -927,7 +929,7 @@ function Shifts() {
                       {placeInfo?.label ?? shift.place}
                     </span>
                     <div className="shifts__card-top-right">
-                      <span className="shifts__date">{shift.shift_date}</span>
+                      <span className="shifts__date">{formatDateFriendly(shift.shift_date)}</span>
                       {shift.notes && (
                         <button
                           type="button"
@@ -1318,7 +1320,7 @@ function Shifts() {
                   {deletePlaceInfo?.label}
                 </span>
                 <span className="shifts__delete-date">
-                  {deleteTarget.shift_date}
+                  {formatDateFriendly(deleteTarget.shift_date)}
                 </span>
                 <span className="shifts__delete-amount">
                   {formatMoney(deletePay + deleteTips)}

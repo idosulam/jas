@@ -4,18 +4,18 @@ export const DAY_END_HOUR = 23;
 export const TOTAL_HOURS = DAY_END_HOUR - DAY_START_HOUR + 1;
 
 export const EVENT_COLORS = {
-  indigo: {
-    label: "Indigo",
-    accent: "#818cf8",
-    bg: "rgba(99, 102, 241, 0.28)",
+  green: {
+    label: "Green",
+    accent: "#34d399",
+    bg: "rgba(16, 185, 129, 0.28)",
   },
-  pink: { label: "Pink", accent: "#f472b6", bg: "rgba(236, 72, 153, 0.28)" },
+  blue: { label: "Blue", accent: "#60a5fa", bg: "rgba(59, 130, 246, 0.28)" },
   orange: {
     label: "Orange",
     accent: "#fb923c",
     bg: "rgba(251, 146, 60, 0.28)",
   },
-  green: { label: "Green", accent: "#4ade80", bg: "rgba(34, 197, 94, 0.28)" },
+  pink: { label: "Pink", accent: "#f472b6", bg: "rgba(236, 72, 153, 0.28)" },
   cyan: { label: "Cyan", accent: "#22d3ee", bg: "rgba(6, 182, 212, 0.28)" },
 };
 

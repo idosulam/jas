@@ -371,8 +371,8 @@ function WeightChart({ entries, unit, goalKg }) {
       >
         <defs>
           <linearGradient id="profileChartFill" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="rgba(99, 102, 241, 0.45)" />
-            <stop offset="100%" stopColor="rgba(99, 102, 241, 0)" />
+            <stop offset="0%" stopColor="rgba(16, 185, 129, 0.45)" />
+            <stop offset="100%" stopColor="rgba(16, 185, 129, 0)" />
           </linearGradient>
         </defs>
 
@@ -970,17 +970,17 @@ function Profile() {
 
       if (saveError) {
         setError(getUserFacingError(saveError.message));
-        toastError("Failed to save profile.");
+        toastError("Couldn't save profile.");
         return;
       }
 
       closeProfileModal();
-      toastSuccess("Profile saved successfully.");
+      toastSuccess("Profile saved.");
       fetchData();
     } catch (err) {
       setSaving(false);
       setError(getUserFacingError(err.message));
-      toastError("Failed to save profile.");
+      toastError("Couldn't save profile.");
     }
   };
 
@@ -1013,12 +1013,12 @@ function Profile() {
         return;
       }
 
-      toastSuccess("Weight entry deleted successfully.");
+      toastSuccess("Entry deleted.");
       fetchData(); // quiet background resync, no loading flash now
     } catch (err) {
       setDeleting(false);
       setError(getUserFacingError(err.message));
-      toastError("Failed to delete weight entry.");
+      toastError("Couldn't delete entry.");
       fetchData();
     }
   };

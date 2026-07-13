@@ -1,50 +1,51 @@
 @import url("https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700;800&family=Barlow:wght@300;400;500;600;700&display=swap");
 
 :root {
-  /* ── Brand Colors ── */
-  --color-primary: #818cf8;
-  --color-primary-hover: #a5b4fc;
-  --color-primary-glow: rgba(129, 140, 248, 0.4);
-  --color-secondary: #c084fc;
-  --color-accent: #f472b6;
+  /* ── Brand Colors (Vital Green palette — 2025/2026 fitness trend) ── */
+  --color-primary: #10b981;
+  --color-primary-hover: #34d399;
+  --color-primary-glow: rgba(16, 185, 129, 0.35);
+  --color-secondary: #3b82f6;
+  --color-accent: #f59e0b;
   --color-success: #34d399;
   --color-danger: #f87171;
   --color-warning: #fbbf24;
 
-  /* ── Surfaces ── */
+  /* ── Surfaces (dark mode elevation model) ── */
   --surface: rgba(255, 255, 255, 0.04);
   --surface-hover: rgba(255, 255, 255, 0.07);
+  --surface-elevated: rgba(255, 255, 255, 0.06);
   --surface-glass: linear-gradient(
     135deg,
-    rgba(255, 255, 255, 0.1) 0%,
-    rgba(255, 255, 255, 0.03) 100%
+    rgba(255, 255, 255, 0.08) 0%,
+    rgba(255, 255, 255, 0.02) 100%
   );
 
-  /* ── Borders ── */
-  --border: rgba(255, 255, 255, 0.08);
-  --border-hover: rgba(255, 255, 255, 0.16);
-  --border-strong: rgba(255, 255, 255, 0.2);
+  /* ── Borders (opacity-based for dark mode) ── */
+  --border: rgba(255, 255, 255, 0.06);
+  --border-hover: rgba(255, 255, 255, 0.12);
+  --border-strong: rgba(255, 255, 255, 0.18);
 
   /* ── Text ── */
   --text: #f1f5f9;
-  --text-muted: rgba(241, 245, 249, 0.55);
-  --text-dim: rgba(255, 255, 255, 0.35);
+  --text-muted: rgba(241, 245, 249, 0.5);
+  --text-dim: rgba(255, 255, 255, 0.3);
 
   /* ── Glassmorphism ── */
-  --blur: blur(20px);
+  --blur: blur(20px) saturate(180%);
   --blur-heavy: blur(40px) saturate(200%);
 
   /* ── Shadows ── */
   --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.2);
-  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 8px 32px rgba(0, 0, 0, 0.3);
   --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.4);
-  --shadow-glow: 0 0 30px rgba(129, 140, 248, 0.15);
+  --shadow-glow: 0 0 30px rgba(16, 185, 129, 0.12);
 
   /* ── Radius ── */
-  --radius-sm: 0.625rem;
-  --radius: 1rem;
-  --radius-lg: 1.25rem;
-  --radius-xl: 1.5rem;
+  --radius-sm: 0.5rem;
+  --radius: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.25rem;
   --radius-pill: 999px;
 
   /* ── Typography ── */
@@ -65,7 +66,7 @@
   /* ── Sheet / Modal ── */
   --sheet-ease: cubic-bezier(0.32, 0.72, 0, 1);
   --sheet-overlay-bg: rgba(0, 0, 0, 0.6);
-  --sheet-border: rgba(255, 255, 255, 0.1);
+  --sheet-border: rgba(255, 255, 255, 0.08);
   --sheet-shadow: 0 -4px 32px rgba(0, 0, 0, 0.5),
     0 -1px 0 rgba(255, 255, 255, 0.06) inset;
 }
@@ -89,11 +90,11 @@ body {
   min-height: 100dvh;
   font-family: var(--font-body);
   color: var(--text);
-  background: #070b14;
+  background: #0f172a;
   overflow-x: hidden;
 }
 
-/* ── Ambient gradient orbs ── */
+/* ── Ambient gradient orbs (green/blue — fitness vibe) ── */
 body::before,
 body::after {
   content: "";
@@ -101,6 +102,7 @@ body::after {
   border-radius: 50%;
   pointer-events: none;
   will-change: transform;
+  z-index: -1;
 }
 
 body::before {
@@ -110,8 +112,8 @@ body::before {
   left: -15%;
   background: radial-gradient(
     circle,
-    rgba(99, 102, 241, 0.2) 0%,
-    rgba(139, 92, 246, 0.08) 40%,
+    rgba(16, 185, 129, 0.15) 0%,
+    rgba(59, 130, 246, 0.06) 40%,
     transparent 70%
   );
   filter: blur(60px);
@@ -125,8 +127,8 @@ body::after {
   right: -10%;
   background: radial-gradient(
     circle,
-    rgba(236, 72, 153, 0.15) 0%,
-    rgba(168, 85, 247, 0.06) 40%,
+    rgba(59, 130, 246, 0.12) 0%,
+    rgba(16, 185, 129, 0.05) 40%,
     transparent 70%
   );
   filter: blur(60px);
