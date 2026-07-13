@@ -153,6 +153,7 @@ function Calendar() {
   const [removingId, setRemovingId] = useState(null);
   const [nowTick, setNowTick] = useState(() => Date.now());
   const [showFloatingActions, setShowFloatingActions] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState({});
   const addBtnRef = useRef(null);
   const { success: toastSuccess, error: toastError } = useGlassToast();
 
@@ -868,14 +869,6 @@ function Calendar() {
                     <div className="calendar__event-actions">
                       <button
                         type="button"
-                        className="calendar__event-action"
-                        onClick={() => openEditModal(event)}
-                        aria-label={`Edit ${event.title}`}
-                      >
-                        Edit
-                      </button>
-                      <button
-                        type="button"
                         className="calendar__event-action calendar__event-action--delete"
                         onClick={() => {
                           setDeleteModalClosing(false);
@@ -1060,6 +1053,7 @@ function Calendar() {
                     type="button"
                     className="calendar__btn calendar__btn--ghost"
                     onClick={closeFormModal}
+                    disabled={saving}
                   >
                     Cancel
                   </button>
@@ -1068,11 +1062,19 @@ function Calendar() {
                     className="calendar__btn calendar__btn--primary"
                     disabled={saving}
                   >
-                    {saving
-                      ? "Saving…"
-                      : editingEvent
-                        ? "Save changes"
-                        : "Add event"}
+                    {saving ? (
+                      <>
+                        <span
+                          className="calendar__btn-spinner"
+                          aria-hidden="true"
+                        />
+                        Saving…
+                      </>
+                    ) : editingEvent ? (
+                      "Save changes"
+                    ) : (
+                      "Add event"
+                    )}
                   </button>
                 </div>
               </form>
@@ -1134,7 +1136,17 @@ function Calendar() {
                   onClick={confirmDelete}
                   disabled={deleting}
                 >
-                  {deleting ? "Deleting…" : "Delete event"}
+                  {deleting ? (
+                    <>
+                      <span
+                        className="calendar__btn-spinner"
+                        aria-hidden="true"
+                      />
+                      Deleting…
+                    </>
+                  ) : (
+                    "Delete event"
+                  )}
                 </button>
               </div>
             </div>

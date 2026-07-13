@@ -1172,6 +1172,36 @@
   cursor: not-allowed;
 }
 
+.calendar__btn--ghost:disabled {
+  background: rgba(255, 255, 255, 0.05) !important;
+}
+
+.calendar__btn--primary:disabled {
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.calendar__btn--danger:disabled {
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.calendar__btn-spinner {
+  display: inline-block;
+  width: 0.65rem;
+  height: 0.65rem;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: calendar-spin 0.8s linear infinite;
+  margin-right: 0.4rem;
+  vertical-align: middle;
+}
+
+@keyframes calendar-spin {
+  to { transform: rotate(360deg); }
+}
+
 .calendar__btn--ghost {
   background: rgba(255, 255, 255, 0.08);
   color: var(--text-muted);

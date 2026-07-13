@@ -112,6 +112,7 @@ function Shifts() {
   const [deleting, setDeleting] = useState(false);
   const [expandedNoteId, setExpandedNoteId] = useState(null);
   const [showFloatingActions, setShowFloatingActions] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState({});
   const addBtnRef = useRef(null);
   const { success: toastSuccess, error: toastError } = useGlassToast();
 
@@ -257,6 +258,48 @@ function Shifts() {
       nextForm.hours = String(computedHours);
     }
     setForm(nextForm);
+    if (fieldErrors[field]) {
+      setFieldErrors((prev) => ({ ...prev, [field]: null }));
+    }
+  };
+
+  const validateField = (fieldName, value) => {
+    const errors = {};
+    switch (fieldName) {
+      case "start_time":
+      case "end_time": {
+        if (value && form.start_time && form.end_time) {
+          const start = parseTimeToMinutes(form.start_time);
+          const end = parseTimeToMinutes(form.end_time);
+          if (start != null && end != null && start === end) {
+            errors[fieldName] = "Start and end time cannot be the same";
+          }
+        }
+        break;
+      }
+      case "hours": {
+        const hours = parseFloat(value);
+        if (value && (isNaN(hours) || hours <= 0 || hours > 24)) {
+          errors[fieldName] = "Hours must be between 0 and 24";
+        }
+        break;
+      }
+      case "tips": {
+        const tips = parseFloat(value);
+        if (value && (isNaN(tips) || tips < 0)) {
+          errors[fieldName] = "Tips cannot be negative";
+        }
+        break;
+      }
+    }
+    return Object.keys(errors).length > 0 ? errors : null;
+  };
+
+  const handleFieldBlur = (fieldName) => {
+    const error = validateField(fieldName, form[fieldName]);
+    if (error) {
+      setFieldErrors((prev) => ({ ...prev, ...error }));
+    }
   };
 
   const openDeleteModal = (shift) => {
@@ -475,10 +518,28 @@ function Shifts() {
     const tips = sanitizeNumber(form.tips, 0, 10000) ?? 0;
     const notes = form.notes.trim() ? sanitizeText(form.notes, 500) : null;
 
-    if (!shiftDate || !form.place || !hours || hours <= 0) {
-      setError("Please fill in place, date, and valid hours.");
+    // Validate all fields
+    const errors = {};
+    if (!shiftDate) errors.shift_date = "Please select a date";
+    if (!form.place) errors.place = "Please select a place";
+    if (!hours || hours <= 0) errors.hours = "Hours must be greater than 0";
+
+    if (form.start_time && form.end_time) {
+      const start = parseTimeToMinutes(form.start_time);
+      const end = parseTimeToMinutes(form.end_time);
+      if (start != null && end != null && start === end) {
+        errors.start_time = "Start and end time cannot be the same";
+      }
+    }
+
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      setError("Please fix the errors below before saving.");
+      toastError("Please check your shift details");
       return;
     }
+
+    setFieldErrors({});
 
     setSaving(true);
     setError(null);
@@ -866,12 +927,14 @@ function Shifts() {
 
               <form className="shifts__form" onSubmit={handleSubmit}>
                 <label className="shifts__field">
-                  <span>Place</span>
+                  <span>Place {fieldErrors.place && <span style={{color: 'var(--error-color, #ff6b6b)', fontSize: '0.85em'}}>—{fieldErrors.place}</span>}</span>
                   <select
                     value={form.place}
-                    onChange={(e) =>
-                      setForm({ ...form, place: e.target.value })
-                    }
+                    onChange={(e) => {
+                      setForm({ ...form, place: e.target.value });
+                      setFieldErrors((prev) => ({ ...prev, place: null }));
+                    }}
+                    className={fieldErrors.place ? "shifts__field-error" : ""}
                   >
                     {Object.entries(PLACES).map(([key, { label, rate }]) => (
                       <option key={key} value={key}>
@@ -900,13 +963,15 @@ function Shifts() {
                 </div>
 
                 <label className="shifts__field">
-                  <span>Date</span>
+                  <span>Date {fieldErrors.shift_date && <span style={{color: 'var(--error-color, #ff6b6b)', fontSize: '0.85em'}}>—{fieldErrors.shift_date}</span>}</span>
                   <input
                     type="date"
                     value={form.shift_date}
-                    onChange={(e) =>
-                      setForm({ ...form, shift_date: e.target.value })
-                    }
+                    onChange={(e) => {
+                      setForm({ ...form, shift_date: e.target.value });
+                      setFieldErrors((prev) => ({ ...prev, shift_date: null }));
+                    }}
+                    className={fieldErrors.shift_date ? "shifts__field-error" : ""}
                     required
                   />
                 </label>
@@ -1011,6 +1076,7 @@ function Shifts() {
                     type="button"
                     className="shifts__btn shifts__btn--ghost"
                     onClick={closeFormModal}
+                    disabled={saving}
                   >
                     Cancel
                   </button>
@@ -1019,11 +1085,16 @@ function Shifts() {
                     className="shifts__btn shifts__btn--primary"
                     disabled={saving}
                   >
-                    {saving
-                      ? "Saving…"
-                      : editingShift
-                        ? "Save changes"
-                        : "Add shift"}
+                    {saving ? (
+                      <>
+                        <span className="shifts__btn-spinner" aria-hidden="true" />
+                        Saving…
+                      </>
+                    ) : editingShift ? (
+                      "Save changes"
+                    ) : (
+                      "Add shift"
+                    )}
                   </button>
                 </div>
               </form>
@@ -1102,7 +1173,14 @@ function Shifts() {
                   onClick={confirmDelete}
                   disabled={deleting}
                 >
-                  {deleting ? "Deleting…" : "Delete shift"}
+                  {deleting ? (
+                    <>
+                      <span className="shifts__btn-spinner" aria-hidden="true" />
+                      Deleting…
+                    </>
+                  ) : (
+                    "Delete shift"
+                  )}
                 </button>
               </div>
             </div>
