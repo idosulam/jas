@@ -303,20 +303,25 @@ function Shifts() {
     return `${CALENDAR_SHIFT_TITLE_PREFIX}${placeLabel}`;
   }
 
-  async function removeShiftGeneratedCalendarEvents(supabase, dateKey) {
+  async function removeShiftGeneratedCalendarEvents(supabase, dateKey, linkedShiftId = null) {
     const { data: eventsOnDate = [] } = await supabase
       .from("events")
       .select("*")
       .eq("event_date", dateKey);
 
     const idsToDelete = (eventsOnDate || [])
-      .filter(
-        (event) =>
+      .filter((event) => {
+        const notes = typeof event.notes === "string" ? event.notes : "";
+        const isWakeOrWalk =
           event.title === CALENDAR_WAKE_TITLE ||
-          event.title === CALENDAR_WALK_TITLE ||
-          (typeof event.notes === "string" &&
-            event.notes.startsWith("Linked shift id:")),
-      )
+          event.title === CALENDAR_WALK_TITLE;
+        const isLinkedShiftEvent =
+          linkedShiftId == null
+            ? notes.startsWith("Linked shift id:")
+            : notes.includes(`Linked shift id: ${linkedShiftId}`);
+
+        return isWakeOrWalk || isLinkedShiftEvent;
+      })
       .map((event) => event.id);
 
     if (idsToDelete.length > 0) {
@@ -404,19 +409,40 @@ function Shifts() {
       const shiftStart = shiftRecord.start_time || minutesToTime(estimateShiftStartMinutes(shiftRecord));
       const shiftEnd = shiftRecord.end_time || minutesToTime(estimateShiftStartMinutes(shiftRecord) + Math.round((parseFloat(shiftRecord.hours) || 0) * 60));
 
-      const existingShiftEvent = (eventsOnDate || []).find(
-        (e) => e.title === shiftTitle && (e.start_time?.slice?.(0,5) ?? e.start_time) === (shiftStart?.slice?.(0,5) ?? shiftStart),
-      );
+      const existingShiftEvent = (eventsOnDate || []).find((event) => {
+        const notes = typeof event.notes === "string" ? event.notes : "";
+        return notes.includes(`Linked shift id: ${shiftRecord.id}`);
+      });
 
-      if (!existingShiftEvent) {
-        await supabase.from("events").insert({
-          title: shiftTitle,
-          notes: `Linked shift id: ${shiftRecord.id}`,
-          event_date: dateKey,
-          start_time: shiftStart,
-          end_time: shiftEnd,
-          color: "cyan",
-        });
+      const shiftEventPayload = {
+        title: shiftTitle,
+        notes: `Linked shift id: ${shiftRecord.id}`,
+        event_date: dateKey,
+        start_time: shiftStart,
+        end_time: shiftEnd,
+        color: "cyan",
+      };
+
+      if (existingShiftEvent) {
+        await supabase
+          .from("events")
+          .update(shiftEventPayload)
+          .eq("id", existingShiftEvent.id);
+      } else {
+        const fallbackShiftEvent = (eventsOnDate || []).find(
+          (event) =>
+            event.title === shiftTitle &&
+            (typeof event.notes !== "string" || !event.notes.includes("Linked shift id:")),
+        );
+
+        if (fallbackShiftEvent) {
+          await supabase
+            .from("events")
+            .update(shiftEventPayload)
+            .eq("id", fallbackShiftEvent.id);
+        } else {
+          await supabase.from("events").insert(shiftEventPayload);
+        }
       }
     } catch (err) {
       // Non-fatal: log and show a toast
@@ -548,7 +574,17 @@ function Shifts() {
       const shiftDate = deleteTarget.shift_date;
 
       try {
-        await removeShiftGeneratedCalendarEvents(supabase, shiftDate);
+        const { data: remainingShifts = [] } = await supabase
+          .from("shifts")
+          .select("*")
+          .eq("shift_date", shiftDate);
+
+        if ((remainingShifts || []).length > 0) {
+          await removeShiftGeneratedCalendarEvents(supabase, shiftDate, removedId);
+          await Promise.all(remainingShifts.map((shift) => syncShiftToCalendar(shift)));
+        } else {
+          await removeShiftGeneratedCalendarEvents(supabase, shiftDate);
+        }
       } catch (cleanupError) {
         // ignore cleanup errors
       }
