@@ -28,6 +28,14 @@ import { useGlassToast } from "../../../lib/glass_toast_provider.jsx";
 const MODAL_EXIT_MS = 260;
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
+// Wake/walk generation defaults — mirrors the logic in Shifts.jsx so that
+// editing a shift-linked event directly on the Calendar page keeps the
+// linked shift and the generated Wake up / Go for a walk events in sync.
+const CALENDAR_WAKEUP_BEFORE_MINUTES = 120;
+const CALENDAR_WALK_AFTER_WAKE_MINUTES = 30;
+const CALENDAR_WAKE_TITLE = "Wake up";
+const CALENDAR_WALK_TITLE = "Go for a walk";
+
 const emptyForm = (dateKey) => ({
   title: "",
   notes: "",
@@ -36,6 +44,94 @@ const emptyForm = (dateKey) => ({
   end_time: "10:00",
   color: "indigo",
 });
+
+function isShiftLinkNote(value) {
+  return typeof value === "string" && value.startsWith("Linked shift id:");
+}
+
+function getVisibleEventNotes(value) {
+  if (isShiftLinkNote(value)) return "";
+  return value ?? "";
+}
+
+function minutesToTime(min) {
+  const total = Math.max(0, Math.floor(min));
+  const h = Math.floor(total / 60) % 24;
+  const m = total % 60;
+  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+}
+
+// Recomputes the Wake up / Go for a walk events for a given date based on
+// whatever shifts currently exist that day. Deletes the old generated
+// events and inserts fresh ones. Safe to call even if there are no shifts
+// (it will just clean up any stale wake/walk events).
+async function recalcWakeWalkForDate(supabase, dateKey) {
+  const { data: shiftsOnDate = [] } = await supabase
+    .from("shifts")
+    .select("*")
+    .eq("shift_date", dateKey);
+
+  const { data: eventsOnDate = [] } = await supabase
+    .from("events")
+    .select("*")
+    .eq("event_date", dateKey);
+
+  const generatedIds = eventsOnDate
+    .filter(
+      (e) => e.title === CALENDAR_WAKE_TITLE || e.title === CALENDAR_WALK_TITLE,
+    )
+    .map((e) => e.id);
+
+  if (!shiftsOnDate.length) {
+    if (generatedIds.length > 0) {
+      await supabase.from("events").delete().in("id", generatedIds);
+    }
+    return;
+  }
+
+  const starts = shiftsOnDate.map((shift) => {
+    if (shift.start_time) {
+      const m = parseTimeToMinutes(shift.start_time);
+      if (m != null) return m;
+    }
+    if (shift.end_time && shift.hours) {
+      const end = parseTimeToMinutes(shift.end_time);
+      if (end != null) {
+        return Math.max(
+          0,
+          end - Math.round((parseFloat(shift.hours) || 0) * 60),
+        );
+      }
+    }
+    return 9 * 60;
+  });
+
+  const earliest = Math.min(...starts);
+  const desiredWake = Math.max(0, earliest - CALENDAR_WAKEUP_BEFORE_MINUTES);
+  const desiredWalk = desiredWake + CALENDAR_WALK_AFTER_WAKE_MINUTES;
+
+  if (generatedIds.length > 0) {
+    await supabase.from("events").delete().in("id", generatedIds);
+  }
+
+  await supabase.from("events").insert({
+    title: CALENDAR_WAKE_TITLE,
+    notes: null,
+    event_date: dateKey,
+    start_time: minutesToTime(desiredWake),
+    end_time: minutesToTime(desiredWake + 15),
+    color: "pink",
+  });
+
+  await supabase.from("events").insert({
+    title: CALENDAR_WALK_TITLE,
+    notes: null,
+    event_date: dateKey,
+    start_time: minutesToTime(desiredWalk),
+    end_time: minutesToTime(desiredWalk + 30),
+    color: "green",
+  });
+}
 
 function Calendar() {
   const today = useMemo(() => new Date(), []);
@@ -95,6 +191,9 @@ function Calendar() {
 
   const isWakeEvent = (e) =>
     typeof e.title === "string" && e.title.toLowerCase().includes("wake");
+
+  const isGeneratedWakeEvent = (event) =>
+    event?.title === "Wake up" || event?.title === "Go for a walk";
 
   const pendingCount = useMemo(
     () => events.filter((event) => !event.is_completed).length,
@@ -158,6 +257,20 @@ function Calendar() {
   useEffect(() => {
     fetchEvents();
   }, [fetchEvents]);
+
+  useEffect(() => {
+    const handleCalendarRefresh = (event) => {
+      const refreshedDate = event?.detail?.date;
+      if (refreshedDate && refreshedDate === selectedKey) {
+        fetchEvents();
+      }
+    };
+
+    window.addEventListener("calendar:refresh", handleCalendarRefresh);
+    return () => {
+      window.removeEventListener("calendar:refresh", handleCalendarRefresh);
+    };
+  }, [fetchEvents, selectedKey]);
 
   useEffect(() => {
     const timer = setInterval(() => setNowTick(Date.now()), 60_000);
@@ -224,7 +337,7 @@ function Calendar() {
     setEditingEvent(event);
     setForm({
       title: event.title,
-      notes: event.notes ?? "",
+      notes: getVisibleEventNotes(event.notes),
       event_date: event.event_date,
       start_time: event.start_time.slice(0, 5),
       end_time: event.end_time.slice(0, 5),
@@ -263,9 +376,13 @@ function Calendar() {
     setSaving(true);
     setError(null);
 
+    const nextNotes = sanitizeText(form.notes, 240) || null;
     const payload = {
       title,
-      notes: sanitizeText(form.notes, 240) || null,
+      notes:
+        editingEvent && isShiftLinkNote(editingEvent.notes)
+          ? editingEvent.notes
+          : nextNotes,
       event_date: eventDate,
       start_time: startTime,
       end_time: endTime,
@@ -297,6 +414,42 @@ function Calendar() {
         return;
       }
 
+      // If this event is linked to a shift, mirror the new time back onto
+      // the shift record and recompute Wake up / Go for a walk for the day
+      // so editing from the Calendar page stays in sync with the Shifts page.
+      if (editingEvent && isShiftLinkNote(editingEvent.notes)) {
+        const linkedShiftId = editingEvent.notes.match(
+          /Linked shift id:\s*([a-zA-Z0-9-]+)/,
+        )?.[1];
+
+        if (linkedShiftId) {
+          try {
+            const startMin = parseTimeToMinutes(startTime);
+            const endMin = parseTimeToMinutes(endTime);
+            const hours =
+              startMin != null && endMin != null
+                ? Number(((endMin - startMin) / 60).toFixed(2))
+                : null;
+
+            await supabase
+              .from("shifts")
+              .update({
+                start_time: startTime,
+                end_time: endTime,
+                ...(hours != null ? { hours } : {}),
+              })
+              .eq("id", linkedShiftId);
+
+            await recalcWakeWalkForDate(supabase, eventDate);
+            window.dispatchEvent(new CustomEvent("shifts:refresh"));
+          } catch (syncErr) {
+            toastError(
+              "Event saved, but syncing the linked shift and wake/walk times failed.",
+            );
+          }
+        }
+      }
+
       closeFormModal();
       toastSuccess(
         editingEvent
@@ -321,6 +474,12 @@ function Calendar() {
 
     try {
       const supabase = getSupabaseClient();
+      const eventDate = deleteTarget.event_date;
+      const linkedShiftId =
+        typeof deleteTarget.notes === "string"
+          ? deleteTarget.notes.match(/Linked shift id:\s*([a-zA-Z0-9-]+)/)?.[1]
+          : null;
+
       const { error: dbError } = await supabase
         .from("events")
         .delete()
@@ -334,15 +493,58 @@ function Calendar() {
         return;
       }
 
+      if (linkedShiftId) {
+        const { error: shiftDeleteError } = await supabase
+          .from("shifts")
+          .delete()
+          .eq("id", linkedShiftId);
+
+        if (shiftDeleteError) {
+          toastError(
+            "Deleted calendar event, but the linked shift could not be removed.",
+          );
+        } else {
+          window.dispatchEvent(new CustomEvent("shifts:refresh"));
+        }
+      }
+
       const removedId = deleteTarget.id;
       closeDeleteModal();
       toastSuccess("event deleted successfully.");
       setRemovingId(removedId);
 
-      setTimeout(() => {
-        setEvents((prev) => prev.filter((item) => item.id !== removedId));
-        setAllEvents((prev) => prev.filter((item) => item.id !== removedId));
+      setTimeout(async () => {
+        const { data: remainingEvents = [] } = await supabase
+          .from("events")
+          .select("*")
+          .eq("event_date", eventDate);
+
+        let generatedIds = [];
+        const shouldRemoveGenerated = remainingEvents.every(
+          (event) => isGeneratedWakeEvent(event) || event.id === removedId,
+        );
+
+        if (shouldRemoveGenerated) {
+          generatedIds = (remainingEvents || [])
+            .filter((event) => isGeneratedWakeEvent(event))
+            .map((event) => event.id);
+
+          if (generatedIds.length > 0) {
+            await supabase.from("events").delete().in("id", generatedIds);
+          }
+        }
+
+        const idsToRemove = [removedId, ...generatedIds];
+        setEvents((prev) =>
+          prev.filter((item) => !idsToRemove.includes(item.id)),
+        );
+        setAllEvents((prev) =>
+          prev.filter((item) => !idsToRemove.includes(item.id)),
+        );
         setRemovingId(null);
+        window.dispatchEvent(
+          new CustomEvent("calendar:refresh", { detail: { date: eventDate } }),
+        );
       }, 380);
     } catch (err) {
       setDeleting(false);
@@ -604,7 +806,9 @@ function Calendar() {
                       style={{ top: `${top}px` }}
                       aria-hidden="true"
                     >
-                      <span className="calendar__wake-label">{event.title}</span>
+                      <span className="calendar__wake-label">
+                        {event.title}
+                      </span>
                     </div>
                   );
                 }
@@ -702,48 +906,50 @@ function Calendar() {
           {events
             .filter((event) => !isWakeEvent(event))
             .map((event) => (
-            <li
-              key={`list-${event.id}`}
-              className={`calendar__reminder${event.is_completed ? " calendar__reminder--done" : ""}${removingId === event.id ? " calendar__reminder--removing" : ""}`}
-            >
-              <button
-                type="button"
-                className="calendar__check calendar__check--list"
-                onClick={() => toggleComplete(event)}
-                disabled={togglingId === event.id}
-                aria-label={
-                  event.is_completed
-                    ? `Mark ${event.title} as pending`
-                    : `Mark ${event.title} as done`
-                }
-                aria-pressed={event.is_completed}
+              <li
+                key={`list-${event.id}`}
+                className={`calendar__reminder${event.is_completed ? " calendar__reminder--done" : ""}${removingId === event.id ? " calendar__reminder--removing" : ""}`}
               >
-                <span className="calendar__check-icon" aria-hidden="true" />
-              </button>
-              <button
-                type="button"
-                className="calendar__reminder-main"
-                onClick={() => openEditModal(event)}
-              >
-                <span className="calendar__reminder-title">{event.title}</span>
-                <span className="calendar__reminder-time">
-                  {formatTime12(event.start_time)} –{" "}
-                  {formatTime12(event.end_time)}
-                </span>
-              </button>
-              <button
-                type="button"
-                className="calendar__reminder-delete"
-                onClick={() => {
-                  setDeleteModalClosing(false);
-                  setDeleteTarget(event);
-                }}
-                aria-label={`Delete ${event.title}`}
-              >
-                Delete
-              </button>
-            </li>
-          ))}
+                <button
+                  type="button"
+                  className="calendar__check calendar__check--list"
+                  onClick={() => toggleComplete(event)}
+                  disabled={togglingId === event.id}
+                  aria-label={
+                    event.is_completed
+                      ? `Mark ${event.title} as pending`
+                      : `Mark ${event.title} as done`
+                  }
+                  aria-pressed={event.is_completed}
+                >
+                  <span className="calendar__check-icon" aria-hidden="true" />
+                </button>
+                <button
+                  type="button"
+                  className="calendar__reminder-main"
+                  onClick={() => openEditModal(event)}
+                >
+                  <span className="calendar__reminder-title">
+                    {event.title}
+                  </span>
+                  <span className="calendar__reminder-time">
+                    {formatTime12(event.start_time)} –{" "}
+                    {formatTime12(event.end_time)}
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  className="calendar__reminder-delete"
+                  onClick={() => {
+                    setDeleteModalClosing(false);
+                    setDeleteTarget(event);
+                  }}
+                  aria-label={`Delete ${event.title}`}
+                >
+                  Delete
+                </button>
+              </li>
+            ))}
         </ul>
       )}
 

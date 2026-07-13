@@ -412,6 +412,31 @@
   animation: shiftsSheetOut var(--duration-normal) var(--sheet-ease) both;
 }
 
+@media (min-width: 768px) {
+  .shifts__overlay {
+    align-items: center;
+    padding: 1.5rem;
+  }
+
+  .shifts__overlay--delete {
+    align-items: center;
+  }
+
+  .shifts__modal {
+    border-radius: 1.25rem;
+    transform-origin: center;
+    animation-name: shiftsModalCenterIn;
+  }
+
+  .shifts__modal--delete {
+    border-radius: 1.25rem;
+  }
+
+  .shifts__modal--closing {
+    animation-name: shiftsModalCenterOut;
+  }
+}
+
 .shifts__modal-title {
   font-family: var(--font-heading);
   font-size: 1.6rem;
@@ -837,6 +862,28 @@
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes shiftsModalCenterIn {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes shiftsModalCenterOut {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(18px) scale(0.96);
   }
 }
 

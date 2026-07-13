@@ -566,6 +566,7 @@
   );
   z-index: 18;
   pointer-events: none;
+  animation: calendarWakeIn 0.26s ease both;
 }
 
 .calendar__wake-label {
@@ -602,6 +603,7 @@
     box-shadow var(--duration-fast) ease,
     opacity 0.2s ease;
   z-index: 2;
+  animation: calendarEventIn 0.24s ease both;
 }
 
 .calendar__event:hover {
@@ -987,7 +989,7 @@
   animation: calendarOverlayIn 0.28s ease;
 }
 
-@media (min-width: 640px) {
+@media (min-width: 768px) {
   .calendar__overlay {
     align-items: center;
     padding: 1.5rem;
@@ -1015,19 +1017,18 @@
   will-change: transform, opacity;
 }
 
-@media (min-width: 640px) {
+@media (min-width: 768px) {
   .calendar__modal {
     border-radius: 1.25rem;
     animation-name: calendarModalIn;
     padding: 1.25rem 1.25rem max(1.25rem, env(safe-area-inset-bottom));
-    bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px));
+    transform-origin: center;
   }
 }
 
 .calendar__modal--delete {
   text-align: center;
   border-color: rgba(239, 68, 68, 0.4);
-  bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px));
 }
 
 .calendar__modal--closing {
@@ -1376,6 +1377,28 @@
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes calendarWakeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes calendarEventIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
   }
 }
 

@@ -156,6 +156,17 @@ function Shifts() {
   }, [fetchShifts]);
 
   useEffect(() => {
+    const handleShiftsRefresh = () => {
+      fetchShifts();
+    };
+
+    window.addEventListener("shifts:refresh", handleShiftsRefresh);
+    return () => {
+      window.removeEventListener("shifts:refresh", handleShiftsRefresh);
+    };
+  }, [fetchShifts]);
+
+  useEffect(() => {
     if (modalOpen || deleteTarget) {
       const previousOverflow = document.body.style.overflow;
       document.body.style.overflow = "hidden";
@@ -287,19 +298,75 @@ function Shifts() {
     return 9 * 60; // fallback 09:00
   }
 
+  function getShiftEventTitle(shiftRecord) {
+    const placeLabel = PLACES[shiftRecord.place]?.label ?? shiftRecord.place;
+    return `${CALENDAR_SHIFT_TITLE_PREFIX}${placeLabel}`;
+  }
+
+  async function removeShiftGeneratedCalendarEvents(supabase, dateKey, linkedShiftId = null) {
+    const { data: eventsOnDate = [] } = await supabase
+      .from("events")
+      .select("*")
+      .eq("event_date", dateKey);
+
+    const idsToDelete = (eventsOnDate || [])
+      .filter((event) => {
+        const notes = typeof event.notes === "string" ? event.notes : "";
+        const isWakeOrWalk =
+          event.title === CALENDAR_WAKE_TITLE ||
+          event.title === CALENDAR_WALK_TITLE;
+        const isLinkedShiftEvent =
+          linkedShiftId == null
+            ? notes.startsWith("Linked shift id:")
+            : notes.includes(`Linked shift id: ${linkedShiftId}`);
+
+        return isWakeOrWalk || isLinkedShiftEvent;
+      })
+      .map((event) => event.id);
+
+    if (idsToDelete.length > 0) {
+      await supabase.from("events").delete().in("id", idsToDelete);
+    }
+  }
+
+  const notifyCalendarRefresh = () => {
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new CustomEvent("calendar:refresh"));
+    }
+  };
+
   async function syncShiftToCalendar(shiftRecord) {
     if (!shiftRecord) return;
     try {
       const supabase = getSupabaseClient();
       const dateKey = shiftRecord.shift_date;
 
-      // Fetch all shifts for that date to find earliest start
-      const { data: shiftsOnDate } = await supabase
+      const { data: shiftsOnDate = [] } = await supabase
         .from("shifts")
         .select("*")
         .eq("shift_date", dateKey);
 
-      if (!shiftsOnDate || shiftsOnDate.length === 0) return;
+      const { data: eventsOnDate = [] } = await supabase
+        .from("events")
+        .select("*")
+        .eq("event_date", dateKey);
+
+      if (!shiftsOnDate.length) {
+        const idsToDelete = (eventsOnDate || [])
+          .filter(
+            (event) =>
+              event.title === CALENDAR_WAKE_TITLE ||
+              event.title === CALENDAR_WALK_TITLE ||
+              (typeof event.notes === "string" &&
+                event.notes.startsWith("Linked shift id:")),
+          )
+          .map((event) => event.id);
+
+        if (idsToDelete.length > 0) {
+          await supabase.from("events").delete().in("id", idsToDelete);
+        }
+        return;
+      }
 
       const starts = shiftsOnDate.map(estimateShiftStartMinutes);
       const earliest = Math.min(...starts);
@@ -307,77 +374,88 @@ function Shifts() {
       const desiredWake = Math.max(0, earliest - CALENDAR_WAKEUP_BEFORE_MINUTES);
       const desiredWalk = desiredWake + CALENDAR_WALK_AFTER_WAKE_MINUTES;
 
-      // Fetch existing events for that date
-      const { data: eventsOnDate } = await supabase
-        .from("events")
-        .select("*")
-        .eq("event_date", dateKey);
+      const wakeStart = minutesToTime(desiredWake);
+      const wakeEnd = minutesToTime(desiredWake + 15);
+      const walkStart = minutesToTime(desiredWalk);
+      const walkEnd = minutesToTime(desiredWalk + 30);
 
-      const existingWake = (eventsOnDate || []).find((e) => e.title === CALENDAR_WAKE_TITLE);
-      const existingWalk = (eventsOnDate || []).find((e) => e.title === CALENDAR_WALK_TITLE);
+      const generatedIds = (eventsOnDate || [])
+        .filter(
+          (event) =>
+            event.title === CALENDAR_WAKE_TITLE ||
+            event.title === CALENDAR_WALK_TITLE,
+        )
+        .map((event) => event.id);
 
-      // Upsert wake event
-      if (existingWake) {
-        const existingWakeMin = parseTimeToMinutes(existingWake.start_time?.slice?.(0,5) ?? existingWake.start_time);
-        if (existingWakeMin == null || existingWakeMin > desiredWake) {
-          await supabase
-            .from("events")
-            .update({ start_time: minutesToTime(desiredWake), end_time: minutesToTime(desiredWake + 15) })
-            .eq("id", existingWake.id);
-        }
-      } else {
-        await supabase.from("events").insert({
-          title: CALENDAR_WAKE_TITLE,
-          notes: null,
-          event_date: dateKey,
-          start_time: minutesToTime(desiredWake),
-          end_time: minutesToTime(desiredWake + 15),
-          color: "pink",
-        });
+      if (generatedIds.length > 0) {
+        await supabase.from("events").delete().in("id", generatedIds);
       }
 
-      // Upsert walk event (ensure it's after wake)
-      if (existingWalk) {
-        const existingWalkMin = parseTimeToMinutes(existingWalk.start_time?.slice?.(0,5) ?? existingWalk.start_time);
-        if (existingWalkMin == null || Math.abs(existingWalkMin - desiredWalk) > 2) {
+      await supabase.from("events").insert({
+        title: CALENDAR_WAKE_TITLE,
+        notes: null,
+        event_date: dateKey,
+        start_time: wakeStart,
+        end_time: wakeEnd,
+        color: "pink",
+      });
+
+      await supabase.from("events").insert({
+        title: CALENDAR_WALK_TITLE,
+        notes: null,
+        event_date: dateKey,
+        start_time: walkStart,
+        end_time: walkEnd,
+        color: "green",
+      });
+
+      const shiftTitle = getShiftEventTitle(shiftRecord);
+      const shiftStart =
+        shiftRecord.start_time ||
+        minutesToTime(estimateShiftStartMinutes(shiftRecord));
+      const shiftEnd =
+        shiftRecord.end_time ||
+        minutesToTime(
+          estimateShiftStartMinutes(shiftRecord) +
+            Math.round((parseFloat(shiftRecord.hours) || 0) * 60),
+        );
+
+      const existingShiftEvent = (eventsOnDate || []).find((event) => {
+        const notes = typeof event.notes === "string" ? event.notes : "";
+        return notes.includes(`Linked shift id: ${shiftRecord.id}`);
+      });
+
+      const shiftEventPayload = {
+        title: shiftTitle,
+        notes: `Linked shift id: ${shiftRecord.id}`,
+        event_date: dateKey,
+        start_time: shiftStart,
+        end_time: shiftEnd,
+        color: "cyan",
+      };
+
+      if (existingShiftEvent) {
+        await supabase
+          .from("events")
+          .update(shiftEventPayload)
+          .eq("id", existingShiftEvent.id);
+      } else {
+        const fallbackShiftEvent = (eventsOnDate || []).find(
+          (event) =>
+            event.title === shiftTitle &&
+            (typeof event.notes !== "string" || !event.notes.includes("Linked shift id:")),
+        );
+
+        if (fallbackShiftEvent) {
           await supabase
             .from("events")
-            .update({ start_time: minutesToTime(desiredWalk), end_time: minutesToTime(desiredWalk + 30) })
-            .eq("id", existingWalk.id);
+            .update(shiftEventPayload)
+            .eq("id", fallbackShiftEvent.id);
+        } else {
+          await supabase.from("events").insert(shiftEventPayload);
         }
-      } else {
-        await supabase.from("events").insert({
-          title: CALENDAR_WALK_TITLE,
-          notes: null,
-          event_date: dateKey,
-          start_time: minutesToTime(desiredWalk),
-          end_time: minutesToTime(desiredWalk + 30),
-          color: "green",
-        });
-      }
-
-      // Ensure shift event exists in calendar
-      const placeLabel = PLACES[shiftRecord.place]?.label ?? shiftRecord.place;
-      const shiftTitle = `${CALENDAR_SHIFT_TITLE_PREFIX}${placeLabel}`;
-      const shiftStart = shiftRecord.start_time || minutesToTime(estimateShiftStartMinutes(shiftRecord));
-      const shiftEnd = shiftRecord.end_time || minutesToTime(estimateShiftStartMinutes(shiftRecord) + Math.round((parseFloat(shiftRecord.hours) || 0) * 60));
-
-      const existingShiftEvent = (eventsOnDate || []).find(
-        (e) => e.title === shiftTitle && (e.start_time?.slice?.(0,5) ?? e.start_time) === (shiftStart?.slice?.(0,5) ?? shiftStart),
-      );
-
-      if (!existingShiftEvent) {
-        await supabase.from("events").insert({
-          title: shiftTitle,
-          notes: `Linked shift id: ${shiftRecord.id}`,
-          event_date: dateKey,
-          start_time: shiftStart,
-          end_time: shiftEnd,
-          color: "cyan",
-        });
       }
     } catch (err) {
-      // Non-fatal: log and show a toast
       try {
         toastError?.("Failed to sync shift to calendar.");
       } catch (e) {
@@ -453,6 +531,14 @@ function Shifts() {
       // Sync to calendar (best-effort)
       try {
         await syncShiftToCalendar(savedShift);
+        notifyCalendarRefresh();
+        if (typeof window !== "undefined") {
+          window.dispatchEvent(
+            new CustomEvent("calendar:refresh", {
+              detail: { date: savedShift?.shift_date ?? shiftDate },
+            }),
+          );
+        }
       } catch (e) {
         // ignore sync errors
       }
@@ -495,9 +581,32 @@ function Shifts() {
       }
 
       const removedId = deleteTarget.id;
+      const shiftDate = deleteTarget.shift_date;
+
+      try {
+        const { data: remainingShifts = [] } = await supabase
+          .from("shifts")
+          .select("*")
+          .eq("shift_date", shiftDate);
+
+        if ((remainingShifts || []).length > 0) {
+          await removeShiftGeneratedCalendarEvents(supabase, shiftDate, removedId);
+          await Promise.all(remainingShifts.map((shift) => syncShiftToCalendar(shift)));
+        } else {
+          await removeShiftGeneratedCalendarEvents(supabase, shiftDate);
+        }
+      } catch (cleanupError) {
+        // ignore cleanup errors
+      }
+
       closeDeleteModal();
+      notifyCalendarRefresh();
       toastSuccess("Shift deleted successfully.");
       setRemovingId(removedId);
+
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("calendar:refresh", { detail: { date: shiftDate } }));
+      }
 
       setTimeout(() => {
         setShifts((prev) => prev.filter((s) => s.id !== removedId));
