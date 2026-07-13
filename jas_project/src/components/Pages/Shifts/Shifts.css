@@ -540,6 +540,18 @@
   resize: vertical;
 }
 
+.shifts__field-error {
+  border-color: #ff6b6b !important;
+  background: rgba(255, 107, 107, 0.08) !important;
+  animation: shifts-field-shake 0.4s ease-in-out;
+}
+
+@keyframes shifts-field-shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-6px); }
+  75% { transform: translateX(6px); }
+}
+
 .shifts__field input:focus,
 .shifts__field select:focus,
 .shifts__field textarea:focus {
@@ -613,6 +625,35 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1rem;
   margin-top: 0.5rem;
+}
+
+.shifts__btn-spinner {
+  display: inline-block;
+  width: 0.75rem;
+  height: 0.75rem;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: shifts-spin 0.8s linear infinite;
+  margin-right: 0.5rem;
+  vertical-align: middle;
+}
+
+@keyframes shifts-spin {
+  to { transform: rotate(360deg); }
+}
+
+.shifts__btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.shifts__btn--primary:disabled {
+  background: rgba(139, 92, 246, 0.5) !important;
+}
+
+.shifts__btn--ghost:disabled {
+  background: rgba(255, 255, 255, 0.05) !important;
 }
 
 /* ── Buttons ────────────────────────────────────────────────── */
@@ -708,6 +749,14 @@
   outline-offset: 2px;
 }
 
+.shifts__btn--primary:disabled,
+.shifts__btn--primary[disabled] {
+  opacity: 0.7;
+  transform: none !important;
+  box-shadow: none !important;
+  cursor: not-allowed;
+}
+
 .shifts__btn--ghost {
   background: var(--surface);
   color: var(--text-muted);
@@ -734,6 +783,28 @@
   outline-offset: 2px;
 }
 
+.shifts__btn--ghost:disabled,
+.shifts__btn--ghost[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.shifts__btn-spinner {
+  display: inline-block;
+  width: 0.75rem;
+  height: 0.75rem;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: shifts-spin 0.8s linear infinite;
+  margin-right: 0.5rem;
+  vertical-align: middle;
+}
+
+@keyframes shifts-spin {
+  to { transform: rotate(360deg); }
+}
+
 .shifts__btn--danger {
   background: var(--color-danger);
   color: #fff;
@@ -756,6 +827,14 @@
 
 .shifts__btn--danger:active {
   transform: scale(0.98);
+}
+
+.shifts__btn--danger:disabled,
+.shifts__btn--danger[disabled] {
+  opacity: 0.6;
+  transform: none !important;
+  box-shadow: none !important;
+  cursor: not-allowed;
 }
 
 .shifts__btn--danger:focus-visible {
