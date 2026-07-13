@@ -496,6 +496,13 @@ function Shifts() {
       try {
         await syncShiftToCalendar(savedShift);
         notifyCalendarRefresh();
+        if (typeof window !== "undefined") {
+          window.dispatchEvent(
+            new CustomEvent("calendar:refresh", {
+              detail: { date: savedShift?.shift_date ?? shiftDate },
+            }),
+          );
+        }
       } catch (e) {
         // ignore sync errors
       }
