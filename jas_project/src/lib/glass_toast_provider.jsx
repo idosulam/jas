@@ -11,6 +11,7 @@ import {
 const ToastContext = createContext(null);
 const TICK_MS = 40;
 const DEFAULT_DURATION = 4800;
+const MAX_VISIBLE = 3;
 
 function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
@@ -149,19 +150,23 @@ export function ToastProvider({ children }) {
   const push = useCallback(
     ({ type = "success", title, message, duration = DEFAULT_DURATION }) => {
       const id = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-      setToasts((current) => [
-        ...current,
-        {
-          id,
-          type,
-          title:
-            title ?? (type === "success" ? "Done" : "Something went wrong"),
-          message,
-          duration,
-          remaining: duration,
-          paused: false,
-        },
-      ]);
+      setToasts((current) => {
+        const next = [
+          ...current,
+          {
+            id,
+            type,
+            title:
+              title ?? (type === "success" ? "Done" : "Something went wrong"),
+            message,
+            duration,
+            remaining: duration,
+            paused: false,
+          },
+        ];
+        // Keep only the newest MAX_VISIBLE toasts
+        return next.length > MAX_VISIBLE ? next.slice(next.length - MAX_VISIBLE) : next;
+      });
       return id;
     },
     [],

@@ -522,6 +522,26 @@
   background-size: 100% 56px;
 }
 
+.calendar__grid::after {
+  content: "+ Click to add event";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: var(--font-heading);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: rgba(255, 255, 255, 0.18);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+.calendar__grid:hover::after {
+  opacity: 1;
+}
+
 .calendar__grid:focus-visible {
   outline: 2px solid var(--color-primary);
   outline-offset: -2px;

@@ -120,7 +120,7 @@ function Shifts() {
 
   const yearOptions = useMemo(() => {
     const current = now.getFullYear();
-    return Array.from({ length: 101 }, (_, i) => current + i);
+    return Array.from({ length: 11 }, (_, i) => current - 5 + i);
   }, []);
 
   const fetchShifts = useCallback(async () => {
@@ -795,19 +795,27 @@ function Shifts() {
       </div>
 
       {loading ? (
-        <div className="shifts__loading">
-          <span className="shifts__spinner" aria-hidden="true" />
-          <p className="shifts__empty">Loading shifts…</p>
+        <div className="shifts__list">
+          {[0, 1, 2].map((i) => (
+            <div key={i} className="skeleton skeleton--card" style={{ height: '5.5rem' }} />
+          ))}
         </div>
       ) : filteredShifts.length === 0 ? (
-        <p
-          className="shifts__empty shifts__empty--fade glass-card shifts__stat"
+        <div
+          className="shifts__empty shifts__empty--fade glass-card shifts__stat shifts__empty-card"
           key={`empty-${placeFilter}`}
         >
-          {placeFilter === "all"
-            ? "No shifts this month. Add one to get started."
-            : `No ${PLACES[placeFilter]?.label} shifts this month.`}
-        </p>
+          <svg className="shifts__empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <rect x="3" y="3" width="18" height="18" rx="2" />
+            <path d="M3 9h18M9 3v18" />
+          </svg>
+          <p className="shifts__empty-text">
+            {placeFilter === "all"
+              ? "No shifts this month"
+              : `No ${PLACES[placeFilter]?.label} shifts`}
+          </p>
+          <p className="shifts__empty-hint">Tap "+ Add shift" to log your first one.</p>
+        </div>
       ) : (
         <ul className="shifts__list" key={`list-${placeFilter}`}>
           {filteredShifts.map((shift, index) => {

@@ -743,9 +743,10 @@ function Calendar() {
       </div>
 
       {loading ? (
-        <div className="calendar__loading">
-          <span className="calendar__spinner" aria-hidden="true" />
-          <p className="calendar__empty">Loading events…</p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
+          {[0, 1, 2].map((i) => (
+            <div key={i} className="skeleton skeleton--card" style={{ height: '4rem' }} />
+          ))}
         </div>
       ) : (
         <div className="calendar__day animate-in animate-in--4">

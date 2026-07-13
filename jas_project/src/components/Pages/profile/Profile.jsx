@@ -513,6 +513,7 @@ function Profile() {
   const [editingEntry, setEditingEntry] = useState(null);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [duplicateDateConfirm, setDuplicateDateConfirm] = useState(null);
   const hasLoadedOnce = useRef(false);
   const [showFloatingActions, setShowFloatingActions] = useState(false);
   const logWeightBtnRef = useRef(null);
@@ -729,8 +730,7 @@ function Profile() {
     });
   };
 
-  const saveWeight = async (e) => {
-    e.preventDefault();
+  const performSaveWeight = async () => {
     const weightKg =
       sanitizeNumber(weightForm.weight_kg, 1, 1000) ??
       lbsToKg(weightForm.weight_lbs);
@@ -743,6 +743,7 @@ function Profile() {
 
     setSaving(true);
     setError(null);
+    setDuplicateDateConfirm(null);
 
     const payload = {
       entry_date: entryDate,
@@ -765,31 +766,79 @@ function Profile() {
       setSaving(false);
 
       if (saveError) {
-        setError(getUserFacingError(saveError.message));
-        toastError(
-          editingEntry
-            ? "Failed to edit weight entry."
-            : "Failed to upload weight entry.",
-        );
+        const rawMsg = saveError.message || "";
+        // Supabase returns this when the unique constraint is missing
+        if (/on conflict|no unique/i.test(rawMsg)) {
+          const existing = entries.find((e) => e.entry_date === entryDate);
+          if (existing) {
+            setDuplicateDateConfirm({
+              existingEntry: existing,
+              newWeight: weightKg,
+              newNotes: notes,
+            });
+            return;
+          }
+        }
+        const friendly = /permission|duplicate|conflict/i.test(rawMsg)
+          ? `Could not save — there's already an entry for ${formatDateLabel(entryDate)}. Edit the existing one instead.`
+          : getUserFacingError(rawMsg);
+        setError(friendly);
+        toastError(friendly);
         return;
       }
 
+      const isUpdate = !!editingEntry || !!duplicateDateConfirm;
       closeWeightModal();
       toastSuccess(
-        editingEntry
-          ? "Weight entry edited successfully."
-          : "Weight entry uploaded successfully.",
+        isUpdate
+          ? `Weight updated for ${formatDateLabel(entryDate)}.`
+          : `Weight logged for ${formatDateLabel(entryDate)}.`,
       );
       fetchData();
     } catch (err) {
       setSaving(false);
       setError(getUserFacingError(err.message));
-      toastError(
-        editingEntry
-          ? "Failed to edit weight entry."
-          : "Failed to upload weight entry.",
-      );
+      toastError("Something went wrong. Please try again.");
     }
+  };
+
+  const saveWeight = async (e) => {
+    e.preventDefault();
+    const weightKg =
+      sanitizeNumber(weightForm.weight_kg, 1, 1000) ??
+      lbsToKg(weightForm.weight_lbs);
+    const entryDate = sanitizeDate(
+      weightForm.entry_date,
+      emptyWeightForm().entry_date,
+    );
+    if (!weightKg || weightKg <= 0 || !entryDate) return;
+
+    // If adding (not editing), check for an existing entry on the same date
+    if (!editingEntry) {
+      const existing = entries.find((e) => e.entry_date === entryDate);
+      if (existing) {
+        setDuplicateDateConfirm({
+          existingEntry: existing,
+          newWeight: weightKg,
+          newNotes: sanitizeText(weightForm.notes, 240),
+        });
+        return;
+      }
+    }
+
+    performSaveWeight();
+  };
+
+  const confirmDuplicateSave = () => {
+    // User confirmed — switch to edit mode on the existing entry
+    if (duplicateDateConfirm?.existingEntry) {
+      setEditingEntry(duplicateDateConfirm.existingEntry);
+    }
+    performSaveWeight();
+  };
+
+  const closeDuplicateConfirm = () => {
+    setDuplicateDateConfirm(null);
   };
 
   const saveProfile = async (e) => {
@@ -1019,7 +1068,14 @@ function Profile() {
       )}
 
       {loading ? (
-        <p className="profile__loading">Loading your stats…</p>
+        <div className="profile__summary">
+          {[0, 1, 2, 3].map((i) => (
+            <div key={i} className="skeleton skeleton--stat" />
+          ))}
+          <div style={{ gridColumn: 'span 2' }}>
+            <div className="skeleton skeleton--card" style={{ height: '10rem', marginTop: '1rem' }} />
+          </div>
+        </div>
       ) : (
         <>
           <div className="profile__summary">
@@ -1544,6 +1600,63 @@ function Profile() {
                   disabled={deleting}
                 >
                   {deleting ? "Deleting…" : "Delete"}
+                </button>
+              </div>
+            </div>
+          </div>,
+          document.body,
+        )}
+
+      {duplicateDateConfirm &&
+        createPortal(
+          <div
+            className="profile__overlay"
+            onClick={closeDuplicateConfirm}
+            role="presentation"
+          >
+            <div
+              className="profile__modal profile__modal--compact"
+              onClick={(e) => e.stopPropagation()}
+              role="alertdialog"
+              aria-modal="true"
+              aria-labelledby="dup-date-title"
+            >
+              <div className="profile__dup-icon" aria-hidden="true">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.75"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
+                </svg>
+              </div>
+              <h2 id="dup-date-title" className="profile__modal-title">
+                Already logged for {formatDateLabel(duplicateDateConfirm.existingEntry.entry_date)}
+              </h2>
+              <p className="profile__dup-desc">
+                You have <strong>{formatWeight(toDisplayKg(Number(duplicateDateConfirm.existingEntry.weight_kg), unit), unitLabel)}</strong> recorded for this day.
+              </p>
+              <p className="profile__dup-desc">
+                Updating to <strong>{formatWeight(toDisplayKg(duplicateDateConfirm.newWeight, unit), unitLabel)}</strong>?
+              </p>
+              <div className="profile__modal-actions">
+                <button
+                  type="button"
+                  className="profile__btn profile__btn--ghost"
+                  onClick={closeDuplicateConfirm}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  className="profile__btn profile__btn--primary"
+                  onClick={confirmDuplicateSave}
+                  disabled={saving}
+                >
+                  {saving ? "Updating…" : "Update entry"}
                 </button>
               </div>
             </div>

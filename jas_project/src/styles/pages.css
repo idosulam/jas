@@ -117,3 +117,62 @@
 .animate-scale {
   animation: scaleIn 0.45s var(--ease-spring) backwards;
 }
+
+/* ── Loading Skeletons ── */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.04) 25%,
+    rgba(255, 255, 255, 0.08) 50%,
+    rgba(255, 255, 255, 0.04) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s ease-in-out infinite;
+  border-radius: var(--radius);
+}
+
+.skeleton--text {
+  height: 0.85rem;
+  border-radius: 0.3rem;
+}
+
+.skeleton--title {
+  height: 1.6rem;
+  width: 60%;
+  border-radius: 0.4rem;
+}
+
+.skeleton--card {
+  height: 5rem;
+  border-radius: var(--radius-lg);
+}
+
+.skeleton--stat {
+  height: 4.5rem;
+  border-radius: var(--radius-lg);
+}
+
+.skeleton--badge {
+  height: 1.4rem;
+  width: 5rem;
+  border-radius: var(--radius-sm);
+}
+
+.skeleton-row {
+  display: flex;
+  gap: 0.65rem;
+  margin-bottom: 0.65rem;
+}
+
+.skeleton-row > * {
+  flex: 1;
+}
+
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}

@@ -648,6 +648,34 @@
   line-height: 1.5;
 }
 
+.profile__dup-icon {
+  width: 3rem;
+  height: 3rem;
+  margin: 0 auto 1rem;
+  display: grid;
+  place-items: center;
+  background: rgba(251, 191, 36, 0.12);
+  color: #fbbf24;
+  border-radius: 50%;
+}
+
+.profile__dup-icon svg {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.profile__dup-desc {
+  margin-bottom: 0.75rem;
+  font-size: 0.88rem;
+  color: rgba(255, 255, 255, 0.6);
+  line-height: 1.5;
+  text-align: center;
+}
+
+.profile__dup-desc strong {
+  color: #fff;
+}
+
 .profile__form {
   display: flex;
   flex-direction: column;
