@@ -306,8 +306,60 @@ function Calendar() {
       setFormModalClosing(false);
       setEditingEvent(null);
       setForm(emptyForm(selectedKey));
+      setFieldErrors({});
     }, MODAL_EXIT_MS);
   };
+
+  const validateCalendarField = (fieldName) => {
+    const errors = {};
+    switch (fieldName) {
+      case "title": {
+        if (!form.title || !form.title.trim()) {
+          errors[fieldName] = "Give it a name";
+        }
+        break;
+      }
+      case "event_date": {
+        if (!form.event_date) {
+          errors[fieldName] = "Pick a date";
+        }
+        break;
+      }
+      case "start_time": {
+        if (!form.start_time) {
+          errors[fieldName] = "Required";
+        } else if (form.end_time && form.start_time >= form.end_time) {
+          errors[fieldName] = "Must be before end";
+        }
+        break;
+      }
+      case "end_time": {
+        if (!form.end_time) {
+          errors[fieldName] = "Required";
+        } else if (form.start_time && form.end_time <= form.start_time) {
+          errors[fieldName] = "Must be after start";
+        }
+        break;
+      }
+    }
+    return errors;
+  };
+
+  const handleCalendarFieldBlur = (fieldName) => {
+    const errors = validateCalendarField(fieldName);
+    setFieldErrors((prev) => ({
+      ...prev,
+      [fieldName]: errors[fieldName] || null,
+    }));
+  };
+
+  const isCalendarFormValid = useMemo(() => {
+    if (!form.title || !form.title.trim()) return false;
+    if (!form.event_date) return false;
+    if (!form.start_time || !form.end_time) return false;
+    if (form.start_time >= form.end_time) return false;
+    return true;
+  }, [form]);
 
   const shiftSelectedDate = (direction) => {
     const delta = direction === "next" ? 1 : -1;
@@ -364,13 +416,16 @@ function Calendar() {
     const startTime = sanitizeTime(form.start_time, "09:00");
     const endTime = sanitizeTime(form.end_time, "10:00");
 
-    if (!title || !eventDate || !startTime || !endTime) {
-      setError("Please fill in title, date, and times.");
-      return;
-    }
+    const errors = {};
+    if (!title) errors.title = "Give it a name";
+    if (!eventDate) errors.event_date = "Pick a date";
+    if (!startTime) errors.start_time = "Required";
+    if (!endTime) errors.end_time = "Required";
+    if (startTime && endTime && endTime <= startTime)
+      errors.end_time = "Must be after start";
 
-    if (endTime <= startTime) {
-      setError("End time must be after start time.");
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
       return;
     }
 
@@ -743,9 +798,16 @@ function Calendar() {
       </div>
 
       {loading ? (
-        <div className="calendar__loading">
-          <span className="calendar__spinner" aria-hidden="true" />
-          <p className="calendar__empty">Loading events…</p>
+        <div
+          style={{ display: "flex", flexDirection: "column", gap: "0.65rem" }}
+        >
+          {[0, 1, 2].map((i) => (
+            <div
+              key={i}
+              className="skeleton skeleton--card"
+              style={{ height: "4rem" }}
+            />
+          ))}
         </div>
       ) : (
         <div className="calendar__day animate-in animate-in--4">
@@ -965,49 +1027,103 @@ function Calendar() {
 
               <form className="calendar__form" onSubmit={handleSubmit}>
                 <label className="calendar__field">
-                  <span>Title</span>
+                  <span>
+                    Title{" "}
+                    {fieldErrors.title && (
+                      <span className="calendar__field-error-text">
+                        —{fieldErrors.title}
+                      </span>
+                    )}
+                  </span>
                   <input
                     type="text"
                     value={form.title}
-                    onChange={(e) =>
-                      setForm({ ...form, title: e.target.value })
-                    }
+                    onChange={(e) => {
+                      setForm({ ...form, title: e.target.value });
+                      setFieldErrors((prev) => ({ ...prev, title: null }));
+                    }}
+                    onBlur={() => handleCalendarFieldBlur("title")}
                     placeholder="Workout, meeting…"
+                    className={fieldErrors.title ? "calendar__field-error" : ""}
                     required
                     autoComplete="off"
                   />
                 </label>
 
                 <label className="calendar__field">
-                  <span>Date</span>
+                  <span>
+                    Date{" "}
+                    {fieldErrors.event_date && (
+                      <span className="calendar__field-error-text">
+                        —{fieldErrors.event_date}
+                      </span>
+                    )}
+                  </span>
                   <input
                     type="date"
                     value={form.event_date}
-                    onChange={(e) =>
-                      setForm({ ...form, event_date: e.target.value })
+                    onChange={(e) => {
+                      setForm({ ...form, event_date: e.target.value });
+                      setFieldErrors((prev) => ({ ...prev, event_date: null }));
+                    }}
+                    onBlur={() => handleCalendarFieldBlur("event_date")}
+                    className={
+                      fieldErrors.event_date ? "calendar__field-error" : ""
                     }
                     required
                   />
                 </label>
 
                 <label className="calendar__field">
-                  <span>Start</span>
+                  <span>
+                    Start{" "}
+                    {fieldErrors.start_time && (
+                      <span className="calendar__field-error-text">
+                        —{fieldErrors.start_time}
+                      </span>
+                    )}
+                  </span>
                   <input
                     type="time"
                     value={form.start_time}
-                    onChange={(e) =>
-                      setForm({ ...form, start_time: e.target.value })
+                    onChange={(e) => {
+                      setForm({ ...form, start_time: e.target.value });
+                      setFieldErrors((prev) => ({
+                        ...prev,
+                        start_time: null,
+                        end_time: null,
+                      }));
+                    }}
+                    onBlur={() => handleCalendarFieldBlur("start_time")}
+                    className={
+                      fieldErrors.start_time ? "calendar__field-error" : ""
                     }
                     required
                   />
                 </label>
                 <label className="calendar__field">
-                  <span>End</span>
+                  <span>
+                    End{" "}
+                    {fieldErrors.end_time && (
+                      <span className="calendar__field-error-text">
+                        —{fieldErrors.end_time}
+                      </span>
+                    )}
+                  </span>
                   <input
                     type="time"
                     value={form.end_time}
-                    onChange={(e) =>
-                      setForm({ ...form, end_time: e.target.value })
+                    onChange={(e) => {
+                      setForm({ ...form, end_time: e.target.value });
+                      setFieldErrors((prev) => ({
+                        ...prev,
+                        end_time: null,
+                        start_time: null,
+                      }));
+                    }}
+                    onBlur={() => handleCalendarFieldBlur("end_time")}
+                    className={
+                      fieldErrors.end_time ? "calendar__field-error" : ""
                     }
                     required
                   />
@@ -1060,7 +1176,7 @@ function Calendar() {
                   <button
                     type="submit"
                     className="calendar__btn calendar__btn--primary"
-                    disabled={saving}
+                    disabled={saving || !isCalendarFormValid}
                   >
                     {saving ? (
                       <>

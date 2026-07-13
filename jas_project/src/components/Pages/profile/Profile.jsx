@@ -513,6 +513,9 @@ function Profile() {
   const [editingEntry, setEditingEntry] = useState(null);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [duplicateDateConfirm, setDuplicateDateConfirm] = useState(null);
+  const [profileFieldErrors, setProfileFieldErrors] = useState({});
+  const [weightFieldErrors, setWeightFieldErrors] = useState({});
   const hasLoadedOnce = useRef(false);
   const [showFloatingActions, setShowFloatingActions] = useState(false);
   const logWeightBtnRef = useRef(null);
@@ -599,6 +602,7 @@ function Profile() {
       setWeightModalClosing(false);
       setEditingEntry(null);
       setWeightForm(emptyWeightForm());
+      setWeightFieldErrors({});
     }, MODAL_EXIT_MS);
   };
 
@@ -607,6 +611,7 @@ function Profile() {
     setTimeout(() => {
       setProfileModalOpen(false);
       setProfileModalClosing(false);
+      setProfileFieldErrors({});
     }, MODAL_EXIT_MS);
   };
 
@@ -729,8 +734,7 @@ function Profile() {
     });
   };
 
-  const saveWeight = async (e) => {
-    e.preventDefault();
+  const performSaveWeight = async () => {
     const weightKg =
       sanitizeNumber(weightForm.weight_kg, 1, 1000) ??
       lbsToKg(weightForm.weight_lbs);
@@ -743,6 +747,7 @@ function Profile() {
 
     setSaving(true);
     setError(null);
+    setDuplicateDateConfirm(null);
 
     const payload = {
       entry_date: entryDate,
@@ -765,31 +770,165 @@ function Profile() {
       setSaving(false);
 
       if (saveError) {
-        setError(getUserFacingError(saveError.message));
-        toastError(
-          editingEntry
-            ? "Failed to edit weight entry."
-            : "Failed to upload weight entry.",
-        );
+        const rawMsg = saveError.message || "";
+        // Supabase returns this when the unique constraint is missing
+        if (/on conflict|no unique/i.test(rawMsg)) {
+          const existing = entries.find((e) => e.entry_date === entryDate);
+          if (existing) {
+            setDuplicateDateConfirm({
+              existingEntry: existing,
+              newWeight: weightKg,
+              newNotes: notes,
+            });
+            return;
+          }
+        }
+        const friendly = /permission|duplicate|conflict/i.test(rawMsg)
+          ? `Could not save — there's already an entry for ${formatDateLabel(entryDate)}. Edit the existing one instead.`
+          : getUserFacingError(rawMsg);
+        setError(friendly);
+        toastError(friendly);
         return;
       }
 
+      const isUpdate = !!editingEntry || !!duplicateDateConfirm;
       closeWeightModal();
       toastSuccess(
-        editingEntry
-          ? "Weight entry edited successfully."
-          : "Weight entry uploaded successfully.",
+        isUpdate
+          ? `Weight updated for ${formatDateLabel(entryDate)}.`
+          : `Weight logged for ${formatDateLabel(entryDate)}.`,
       );
       fetchData();
     } catch (err) {
       setSaving(false);
       setError(getUserFacingError(err.message));
-      toastError(
-        editingEntry
-          ? "Failed to edit weight entry."
-          : "Failed to upload weight entry.",
-      );
+      toastError("Something went wrong. Please try again.");
     }
+  };
+
+  const isWeightFormValid = useMemo(() => {
+    if (!weightForm.entry_date) return false;
+    const weightKg =
+      sanitizeNumber(weightForm.weight_kg, 1, 1000) ??
+      lbsToKg(weightForm.weight_lbs);
+    if (!weightKg || weightKg <= 0) return false;
+    return true;
+  }, [weightForm]);
+
+  const isProfileFormValid = useMemo(() => {
+    if (!profileForm.display_name || !profileForm.display_name.trim())
+      return false;
+    const age = sanitizeNumber(profileForm.age, 13, 120);
+    if (profileForm.age && age == null) return false;
+    return true;
+  }, [profileForm]);
+
+  const validateProfileField = (fieldName) => {
+    switch (fieldName) {
+      case "display_name": {
+        if (!profileForm.display_name || !profileForm.display_name.trim())
+          return "Name is required";
+        if (profileForm.display_name.trim().length > 40)
+          return "Max 40 characters";
+        return null;
+      }
+      case "age": {
+        if (!profileForm.age) return null; // age is optional
+        const age = sanitizeNumber(profileForm.age, 13, 120);
+        if (age == null) return "Enter a valid age (13–120)";
+        return null;
+      }
+      case "height_cm": {
+        if (!profileForm.height_cm) return null; // optional
+        const cm = sanitizeNumber(profileForm.height_cm, 1, 300);
+        if (cm == null) return "Enter a valid height";
+        return null;
+      }
+      case "goal_weight_kg": {
+        if (!profileForm.goal_weight_kg) return null; // optional
+        const kg = sanitizeNumber(profileForm.goal_weight_kg, 1, 1000);
+        if (kg == null) return "Enter a valid weight";
+        return null;
+      }
+      default:
+        return null;
+    }
+  };
+
+  const handleProfileFieldBlur = (fieldName) => {
+    const error = validateProfileField(fieldName);
+    setProfileFieldErrors((prev) => ({ ...prev, [fieldName]: error }));
+  };
+
+  const validateWeightField = (fieldName) => {
+    switch (fieldName) {
+      case "entry_date": {
+        if (!weightForm.entry_date) return "Pick a date";
+        return null;
+      }
+      case "weight_kg": {
+        if (!weightForm.weight_kg && !weightForm.weight_lbs)
+          return "Enter your weight";
+        const kg = sanitizeNumber(weightForm.weight_kg, 1, 1000);
+        if (weightForm.weight_kg && kg == null)
+          return "Must be between 1 and 1000";
+        return null;
+      }
+      case "weight_lbs": {
+        if (!weightForm.weight_lbs && !weightForm.weight_kg)
+          return "Enter your weight";
+        const lbs = sanitizeNumber(weightForm.weight_lbs, 1, 2200);
+        if (weightForm.weight_lbs && lbs == null)
+          return "Must be between 1 and 2200";
+        return null;
+      }
+      default:
+        return null;
+    }
+  };
+
+  const handleWeightFieldBlur = (fieldName) => {
+    const error = validateWeightField(fieldName);
+    setWeightFieldErrors((prev) => ({ ...prev, [fieldName]: error }));
+  };
+
+  const saveWeight = async (e) => {
+    e.preventDefault();
+    const weightKg =
+      sanitizeNumber(weightForm.weight_kg, 1, 1000) ??
+      lbsToKg(weightForm.weight_lbs);
+    const entryDate = sanitizeDate(
+      weightForm.entry_date,
+      emptyWeightForm().entry_date,
+    );
+    if (!weightKg || weightKg <= 0 || !entryDate) return;
+
+    // If adding (not editing), check for an existing entry on the same date
+    if (!editingEntry) {
+      const existing = entries.find((e) => e.entry_date === entryDate);
+      if (existing) {
+        setDuplicateDateConfirm({
+          existingEntry: existing,
+          newWeight: weightKg,
+          newNotes: sanitizeText(weightForm.notes, 240),
+        });
+        return;
+      }
+    }
+
+    performSaveWeight();
+  };
+
+  const confirmDuplicateSave = () => {
+    // User confirmed — switch to edit mode on the existing entry
+    if (duplicateDateConfirm?.existingEntry) {
+      setEditingEntry(duplicateDateConfirm.existingEntry);
+    }
+    performSaveWeight();
+  };
+
+  const closeDuplicateConfirm = () => {
+    setDuplicateDateConfirm(null);
   };
 
   const saveProfile = async (e) => {
@@ -1019,7 +1158,17 @@ function Profile() {
       )}
 
       {loading ? (
-        <p className="profile__loading">Loading your stats…</p>
+        <div className="profile__summary">
+          {[0, 1, 2, 3].map((i) => (
+            <div key={i} className="skeleton skeleton--stat" />
+          ))}
+          <div style={{ gridColumn: "span 2" }}>
+            <div
+              className="skeleton skeleton--card"
+              style={{ height: "10rem", marginTop: "1rem" }}
+            />
+          </div>
+        </div>
       ) : (
         <>
           <div className="profile__summary">
@@ -1234,7 +1383,15 @@ function Profile() {
                         onClick={() => openEditWeight(entry)}
                         aria-label="Edit weigh-in"
                       >
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <svg
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          aria-hidden="true"
+                        >
                           <path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
                           <path d="m15 5 4 4" />
                         </svg>
@@ -1248,7 +1405,15 @@ function Profile() {
                         }}
                         aria-label="Delete weigh-in"
                       >
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <svg
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          aria-hidden="true"
+                        >
                           <path d="M18 6 6 18" />
                           <path d="m6 6 12 12" />
                         </svg>
@@ -1283,41 +1448,90 @@ function Profile() {
               </h2>
               <form className="profile__form" onSubmit={saveWeight}>
                 <label className="profile__field">
-                  Date
+                  Date{" "}
+                  {weightFieldErrors.entry_date && (
+                    <span className="profile__field-error-text">
+                      —{weightFieldErrors.entry_date}
+                    </span>
+                  )}
                   <input
                     type="date"
                     value={weightForm.entry_date}
-                    onChange={(e) =>
+                    onChange={(e) => {
                       setWeightForm((f) => ({
                         ...f,
                         entry_date: e.target.value,
-                      }))
+                      }));
+                      setWeightFieldErrors((prev) => ({
+                        ...prev,
+                        entry_date: null,
+                      }));
+                    }}
+                    onBlur={() => handleWeightFieldBlur("entry_date")}
+                    className={
+                      weightFieldErrors.entry_date ? "profile__field-error" : ""
                     }
                     required
                   />
                 </label>
                 <div className="profile__weight-row">
                   <label className="profile__field">
-                    Weight (kg)
+                    Weight (kg){" "}
+                    {weightFieldErrors.weight_kg && (
+                      <span className="profile__field-error-text">
+                        —{weightFieldErrors.weight_kg}
+                      </span>
+                    )}
                     <input
                       type="number"
                       step="0.1"
                       min="1"
                       placeholder="62.5"
                       value={weightForm.weight_kg}
-                      onChange={(e) => handleWeightKgChange(e.target.value)}
+                      onChange={(e) => {
+                        handleWeightKgChange(e.target.value);
+                        setWeightFieldErrors((prev) => ({
+                          ...prev,
+                          weight_kg: null,
+                          weight_lbs: null,
+                        }));
+                      }}
+                      onBlur={() => handleWeightFieldBlur("weight_kg")}
+                      className={
+                        weightFieldErrors.weight_kg
+                          ? "profile__field-error"
+                          : ""
+                      }
                       required
                     />
                   </label>
                   <label className="profile__field">
-                    Weight (lbs)
+                    Weight (lbs){" "}
+                    {weightFieldErrors.weight_lbs && (
+                      <span className="profile__field-error-text">
+                        —{weightFieldErrors.weight_lbs}
+                      </span>
+                    )}
                     <input
                       type="number"
                       step="0.1"
                       min="1"
                       placeholder="137.8"
                       value={weightForm.weight_lbs}
-                      onChange={(e) => handleWeightLbsChange(e.target.value)}
+                      onChange={(e) => {
+                        handleWeightLbsChange(e.target.value);
+                        setWeightFieldErrors((prev) => ({
+                          ...prev,
+                          weight_lbs: null,
+                          weight_kg: null,
+                        }));
+                      }}
+                      onBlur={() => handleWeightFieldBlur("weight_lbs")}
+                      className={
+                        weightFieldErrors.weight_lbs
+                          ? "profile__field-error"
+                          : ""
+                      }
                       required
                     />
                   </label>
@@ -1344,7 +1558,7 @@ function Profile() {
                   <button
                     type="submit"
                     className="profile__btn profile__btn--primary"
-                    disabled={saving}
+                    disabled={saving || !isWeightFormValid}
                   >
                     {saving ? "Saving…" : "Save"}
                   </button>
@@ -1374,40 +1588,80 @@ function Profile() {
               </h2>
               <form className="profile__form" onSubmit={saveProfile}>
                 <label className="profile__field">
-                  Name
+                  Name{" "}
+                  {profileFieldErrors.display_name && (
+                    <span className="profile__field-error-text">
+                      —{profileFieldErrors.display_name}
+                    </span>
+                  )}
                   <input
                     type="text"
                     value={profileForm.display_name}
-                    onChange={(e) =>
+                    onChange={(e) => {
                       setProfileForm((f) => ({
                         ...f,
                         display_name: e.target.value,
-                      }))
+                      }));
+                      setProfileFieldErrors((prev) => ({
+                        ...prev,
+                        display_name: null,
+                      }));
+                    }}
+                    onBlur={() => handleProfileFieldBlur("display_name")}
+                    className={
+                      profileFieldErrors.display_name
+                        ? "profile__field-error"
+                        : ""
                     }
                   />
                 </label>
                 <label className="profile__field">
-                  Age
+                  Age{" "}
+                  {profileFieldErrors.age && (
+                    <span className="profile__field-error-text">
+                      —{profileFieldErrors.age}
+                    </span>
+                  )}
                   <input
                     type="number"
                     min="13"
                     max="120"
                     placeholder="26"
                     value={profileForm.age}
-                    onChange={(e) =>
-                      setProfileForm((f) => ({ ...f, age: e.target.value }))
+                    onChange={(e) => {
+                      setProfileForm((f) => ({ ...f, age: e.target.value }));
+                      setProfileFieldErrors((prev) => ({ ...prev, age: null }));
+                    }}
+                    onBlur={() => handleProfileFieldBlur("age")}
+                    className={
+                      profileFieldErrors.age ? "profile__field-error" : ""
                     }
                   />
                 </label>
                 <label className="profile__field">
-                  Height (cm)
+                  Height (cm){" "}
+                  {profileFieldErrors.height_cm && (
+                    <span className="profile__field-error-text">
+                      —{profileFieldErrors.height_cm}
+                    </span>
+                  )}
                   <input
                     type="number"
                     step="0.1"
                     min="1"
                     placeholder="165"
                     value={profileForm.height_cm}
-                    onChange={(e) => handleHeightCmChange(e.target.value)}
+                    onChange={(e) => {
+                      handleHeightCmChange(e.target.value);
+                      setProfileFieldErrors((prev) => ({
+                        ...prev,
+                        height_cm: null,
+                      }));
+                    }}
+                    onBlur={() => handleProfileFieldBlur("height_cm")}
+                    className={
+                      profileFieldErrors.height_cm ? "profile__field-error" : ""
+                    }
                   />
                 </label>
                 <div className="profile__height-row">
@@ -1441,14 +1695,31 @@ function Profile() {
                 </div>
                 <div className="profile__weight-row">
                   <label className="profile__field">
-                    Goal weight (kg)
+                    Goal weight (kg){" "}
+                    {profileFieldErrors.goal_weight_kg && (
+                      <span className="profile__field-error-text">
+                        —{profileFieldErrors.goal_weight_kg}
+                      </span>
+                    )}
                     <input
                       type="number"
                       step="0.1"
                       min="1"
                       placeholder="58"
                       value={profileForm.goal_weight_kg}
-                      onChange={(e) => handleGoalWeightKgChange(e.target.value)}
+                      onChange={(e) => {
+                        handleGoalWeightKgChange(e.target.value);
+                        setProfileFieldErrors((prev) => ({
+                          ...prev,
+                          goal_weight_kg: null,
+                        }));
+                      }}
+                      onBlur={() => handleProfileFieldBlur("goal_weight_kg")}
+                      className={
+                        profileFieldErrors.goal_weight_kg
+                          ? "profile__field-error"
+                          : ""
+                      }
                     />
                   </label>
                   <label className="profile__field">
@@ -1493,7 +1764,7 @@ function Profile() {
                   <button
                     type="submit"
                     className="profile__btn profile__btn--primary"
-                    disabled={saving}
+                    disabled={saving || !isProfileFormValid}
                   >
                     {saving ? "Saving…" : "Save profile"}
                   </button>
@@ -1544,6 +1815,81 @@ function Profile() {
                   disabled={deleting}
                 >
                   {deleting ? "Deleting…" : "Delete"}
+                </button>
+              </div>
+            </div>
+          </div>,
+          document.body,
+        )}
+
+      {duplicateDateConfirm &&
+        createPortal(
+          <div
+            className="profile__overlay"
+            onClick={closeDuplicateConfirm}
+            role="presentation"
+          >
+            <div
+              className="profile__modal profile__modal--compact"
+              onClick={(e) => e.stopPropagation()}
+              role="alertdialog"
+              aria-modal="true"
+              aria-labelledby="dup-date-title"
+            >
+              <div className="profile__dup-icon" aria-hidden="true">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.75"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
+                </svg>
+              </div>
+              <h2 id="dup-date-title" className="profile__modal-title">
+                Already logged for{" "}
+                {formatDateLabel(duplicateDateConfirm.existingEntry.entry_date)}
+              </h2>
+              <p className="profile__dup-desc">
+                You have{" "}
+                <strong>
+                  {formatWeight(
+                    toDisplayKg(
+                      Number(duplicateDateConfirm.existingEntry.weight_kg),
+                      unit,
+                    ),
+                    unitLabel,
+                  )}
+                </strong>{" "}
+                recorded for this day.
+              </p>
+              <p className="profile__dup-desc">
+                Updating to{" "}
+                <strong>
+                  {formatWeight(
+                    toDisplayKg(duplicateDateConfirm.newWeight, unit),
+                    unitLabel,
+                  )}
+                </strong>
+                ?
+              </p>
+              <div className="profile__modal-actions">
+                <button
+                  type="button"
+                  className="profile__btn profile__btn--ghost"
+                  onClick={closeDuplicateConfirm}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  className="profile__btn profile__btn--primary"
+                  onClick={confirmDuplicateSave}
+                  disabled={saving}
+                >
+                  {saving ? "Updating…" : "Update entry"}
                 </button>
               </div>
             </div>

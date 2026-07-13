@@ -205,6 +205,39 @@
   box-shadow: 0 0 20px rgba(129, 140, 248, 0.08);
 }
 
+/* ── Empty State ────────────────────────────────────────────── */
+
+.shifts__empty-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 2.5rem 1.5rem;
+  text-align: center;
+  animation: fadeUp 0.5s var(--ease-out) backwards;
+}
+
+.shifts__empty-icon {
+  width: 2.5rem;
+  height: 2.5rem;
+  color: rgba(255, 255, 255, 0.15);
+  margin-bottom: 0.25rem;
+}
+
+.shifts__empty-text {
+  font-family: var(--font-heading);
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0;
+}
+
+.shifts__empty-hint {
+  font-size: 0.82rem;
+  color: rgba(255, 255, 255, 0.35);
+  margin: 0;
+}
+
 /* ── List & Cards ───────────────────────────────────────────── */
 
 .shifts__list {
@@ -546,10 +579,29 @@
   animation: shifts-field-shake 0.4s ease-in-out;
 }
 
+.shifts__field-error-text {
+  color: #ff6b6b;
+  font-size: 0.85em;
+}
+
+.shifts__hint {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.4);
+  margin-top: -0.5rem;
+  padding-left: 0.25rem;
+}
+
 @keyframes shifts-field-shake {
-  0%, 100% { transform: translateX(0); }
-  25% { transform: translateX(-6px); }
-  75% { transform: translateX(6px); }
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-6px);
+  }
+  75% {
+    transform: translateX(6px);
+  }
 }
 
 .shifts__field input:focus,
@@ -640,7 +692,9 @@
 }
 
 @keyframes shifts-spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .shifts__btn:disabled {
@@ -802,7 +856,9 @@
 }
 
 @keyframes shifts-spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .shifts__btn--danger {

@@ -522,6 +522,26 @@
   background-size: 100% 56px;
 }
 
+.calendar__grid::after {
+  content: "+ Click to add event";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: var(--font-heading);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: rgba(255, 255, 255, 0.18);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+.calendar__grid:hover::after {
+  opacity: 1;
+}
+
 .calendar__grid:focus-visible {
   outline: 2px solid var(--color-primary);
   outline-offset: -2px;
@@ -1117,6 +1137,21 @@
   min-height: 5rem;
 }
 
+.calendar__field-error {
+  border-color: #ff6b6b !important;
+  background: rgba(255, 107, 107, 0.08) !important;
+}
+
+.calendar__field-error:focus {
+  border-color: #ff6b6b !important;
+  box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.2) !important;
+}
+
+.calendar__field-error-text {
+  color: #ff6b6b;
+  font-size: 0.85em;
+}
+
 .calendar__colors {
   display: flex;
   gap: 0.65rem;
@@ -1199,7 +1234,9 @@
 }
 
 @keyframes calendar-spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .calendar__btn--ghost {
