@@ -362,42 +362,39 @@ function Shifts() {
       const existingWake = (eventsOnDate || []).find((e) => e.title === CALENDAR_WAKE_TITLE);
       const existingWalk = (eventsOnDate || []).find((e) => e.title === CALENDAR_WALK_TITLE);
 
-      // Upsert wake event
+      const wakeStart = minutesToTime(desiredWake);
+      const wakeEnd = minutesToTime(desiredWake + 15);
+      const walkStart = minutesToTime(desiredWalk);
+      const walkEnd = minutesToTime(desiredWalk + 30);
+
       if (existingWake) {
-        const existingWakeMin = parseTimeToMinutes(existingWake.start_time?.slice?.(0,5) ?? existingWake.start_time);
-        if (existingWakeMin == null || existingWakeMin > desiredWake) {
-          await supabase
-            .from("events")
-            .update({ start_time: minutesToTime(desiredWake), end_time: minutesToTime(desiredWake + 15) })
-            .eq("id", existingWake.id);
-        }
+        await supabase
+          .from("events")
+          .update({ start_time: wakeStart, end_time: wakeEnd })
+          .eq("id", existingWake.id);
       } else {
         await supabase.from("events").insert({
           title: CALENDAR_WAKE_TITLE,
           notes: null,
           event_date: dateKey,
-          start_time: minutesToTime(desiredWake),
-          end_time: minutesToTime(desiredWake + 15),
+          start_time: wakeStart,
+          end_time: wakeEnd,
           color: "pink",
         });
       }
 
-      // Upsert walk event (ensure it's after wake)
       if (existingWalk) {
-        const existingWalkMin = parseTimeToMinutes(existingWalk.start_time?.slice?.(0,5) ?? existingWalk.start_time);
-        if (existingWalkMin == null || Math.abs(existingWalkMin - desiredWalk) > 2) {
-          await supabase
-            .from("events")
-            .update({ start_time: minutesToTime(desiredWalk), end_time: minutesToTime(desiredWalk + 30) })
-            .eq("id", existingWalk.id);
-        }
+        await supabase
+          .from("events")
+          .update({ start_time: walkStart, end_time: walkEnd })
+          .eq("id", existingWalk.id);
       } else {
         await supabase.from("events").insert({
           title: CALENDAR_WALK_TITLE,
           notes: null,
           event_date: dateKey,
-          start_time: minutesToTime(desiredWalk),
-          end_time: minutesToTime(desiredWalk + 30),
+          start_time: walkStart,
+          end_time: walkEnd,
           color: "green",
         });
       }
