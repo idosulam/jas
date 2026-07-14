@@ -60,6 +60,7 @@ const emptyForm = (firstPlace) => ({
   hours: "",
   tips: "",
   notes: "",
+  color: "",
 });
 
 function parseTimeToMinutes(value) {
@@ -363,7 +364,9 @@ function Shifts({ onNavigate }) {
 
   const openAddModal = () => {
     setEditingShift(null);
-    setForm(emptyForm(effectiveWorkplaces[0]?.slug));
+    const base = emptyForm(effectiveWorkplaces[0]?.slug);
+    base.color = firstColor;
+    setForm(base);
     setFormModalClosing(false);
     setModalOpen(true);
   };
@@ -379,6 +382,7 @@ function Shifts({ onNavigate }) {
       hours: String(shift.hours),
       tips: shift.tips ? String(shift.tips) : "",
       notes: shift.notes ?? "",
+      color: shift.color || PLACES[shift.place]?.color || firstColor,
     });
     setFormModalClosing(false);
     setModalOpen(true);
@@ -766,7 +770,7 @@ function Shifts({ onNavigate }) {
       hours: Number(hours.toFixed(2)),
       tips: Number(tips.toFixed(2)),
       notes,
-      color: PLACES[form.place]?.color || null,
+      color: form.color || PLACES[form.place]?.color || null,
     };
 
     try {
@@ -951,21 +955,27 @@ function Shifts({ onNavigate }) {
         role="group"
         aria-label="Filter by place"
       >
-        {PLACE_FILTERS.map(({ id, label }) => (
-          <button
-            key={id}
-            type="button"
-            className={`shifts__place-btn${placeFilter === id ? " shifts__place-btn--active" : ""}${id !== "all" ? ` shifts__place-btn--${id}` : ""}`}
-            onClick={() => setPlaceFilter(id)}
-            aria-pressed={placeFilter === id}
-          >
-            {label}
-          </button>
-        ))}
-        <span
-          className={`shifts__place-indicator shifts__place-indicator--${placeFilter}`}
-          aria-hidden="true"
-        />
+        <div className="shifts__place-scroll">
+          {PLACE_FILTERS.map(({ id, label }, index) => (
+            <button
+              key={id}
+              type="button"
+              className={`shifts__place-btn${placeFilter === id ? " shifts__place-btn--active" : ""}${id !== "all" ? ` shifts__place-btn--${id}` : ""}`}
+              onClick={() => setPlaceFilter(id)}
+              aria-pressed={placeFilter === id}
+            >
+              {label}
+            </button>
+          ))}
+          <span
+            className="shifts__place-indicator"
+            style={{
+              width: `calc((100% - 0.3rem * ${PLACE_FILTERS.length}) / ${PLACE_FILTERS.length})`,
+              transform: `translateX(calc(${PLACE_FILTERS.indexOf(placeFilter)} * (100% + 0.3rem)))`,
+            }}
+            aria-hidden="true"
+          />
+        </div>
       </div>
 
       <div
@@ -1222,7 +1232,7 @@ function Shifts({ onNavigate }) {
                   </button>
                   <button
                     type="button"
-                    className="shifts__action shifts__action--delete"
+                    className="shifts__action shifts__action--deactivate"
                     onClick={() => openDeleteModal(shift)}
                     aria-label="Delete shift"
                   >
@@ -1420,6 +1430,14 @@ function Shifts({ onNavigate }) {
                     onChange={(e) => setForm({ ...form, tips: e.target.value })}
                     onBlur={() => handleFieldBlur("tips")}
                     className={fieldErrors.tips ? "shifts__field-error" : ""}
+                  />
+                </label>
+
+                <label className="shifts__field">
+                  <span>Color</span>
+                  <ColorPalettePicker
+                    value={form.color || ''}
+                    onChange={(hex) => setForm({ ...form, color: hex })}
                   />
                 </label>
 
