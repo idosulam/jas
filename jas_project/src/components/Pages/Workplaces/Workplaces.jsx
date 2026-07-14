@@ -7,24 +7,11 @@ import { useGlassToast } from "../../../lib/glass_toast_provider.jsx";
 
 const MODAL_EXIT_MS = 320;
 
-const PRESET_COLORS = [
-  "#fb923c", // orange
-  "#a78bfa", // purple
-  "#34d399", // green
-  "#60a5fa", // blue
-  "#f472b6", // pink
-  "#fbbf24", // yellow
-  "#f87171", // red
-  "#2dd4bf", // teal
-  "#818cf8", // indigo
-  "#c084fc", // violet
-];
-
 const emptyForm = () => ({
   slug: "",
   label: "",
   rate: "",
-  color: PRESET_COLORS[0],
+  color: "#818cf8",
 });
 
 function formatMoney(amount) {
@@ -489,18 +476,22 @@ function Workplaces({ onNavigate, returnTo }) {
 
                 <label className="workplaces__field">
                   <span>Color</span>
-                  <div className="workplaces__colors" role="radiogroup" aria-label="Workplace color">
-                    {PRESET_COLORS.map((c) => (
-                      <button
-                        key={c}
-                        type="button"
-                        className={`workplaces__color-btn${form.color === c ? " workplaces__color-btn--active" : ""}`}
-                        style={{ "--swatch": c }}
-                        onClick={() => setForm({ ...form, color: c })}
-                        aria-label={c}
-                        aria-pressed={form.color === c}
-                      />
-                    ))}
+                  <div className="workplaces__color-input-row">
+                    <input
+                      type="color"
+                      value={form.color}
+                      onChange={(e) => setForm({ ...form, color: e.target.value })}
+                      className="workplaces__color-native"
+                      aria-label="Pick a color"
+                    />
+                    <input
+                      type="text"
+                      value={form.color}
+                      onChange={(e) => setForm({ ...form, color: e.target.value })}
+                      placeholder="#818cf8"
+                      maxLength={7}
+                      className="workplaces__color-hex"
+                    />
                   </div>
                 </label>
 
