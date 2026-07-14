@@ -50,7 +50,7 @@ function getCurrentLocalTime() {
 const MODAL_EXIT_MS = 320;
 
 const emptyForm = (firstPlace) => ({
-  place: firstPlace || "pasta",
+  place: firstPlace || "",
   pay_type: "hourly",
   shift_date: new Date().toISOString().slice(0, 10),
   start_time: getCurrentLocalTime(),
@@ -84,7 +84,7 @@ function formatMoney(amount) {
   return `₪${amount.toFixed(2)}`;
 }
 
-function Shifts() {
+function Shifts({ onNavigate }) {
   const now = new Date();
   const [month, setMonth] = useState(now.getMonth());
   const [year, setYear] = useState(now.getFullYear());
@@ -109,18 +109,12 @@ function Shifts() {
   const [presetModalOpen, setPresetModalOpen] = useState(false);
   const [presetModalClosing, setPresetModalClosing] = useState(false);
   const [editingPreset, setEditingPreset] = useState(null);
-  const [presetForm, setPresetForm] = useState({ label: "", place: "pasta", start_time: "09:00", end_time: "17:00", hours: "8", pay_type: "hourly" });
+  const [presetForm, setPresetForm] = useState({ label: "", place: "", start_time: "09:00", end_time: "17:00", hours: "8", pay_type: "hourly" });
   const addBtnRef = useRef(null);
   const { success: toastSuccess, error: toastError } = useGlassToast();
 
-  // Fallback workplaces when Supabase table doesn't exist yet
-  const DEFAULT_WORKPLACES = useMemo(() => [
-    { slug: "pasta", label: "Pasta Via", rate: 50, color: "#fb923c" },
-    { slug: "coffee", label: "Cafe Nimrod", rate: 34, color: "#a78bfa" },
-  ], []);
-
-  // Use Supabase data if available, otherwise fall back to defaults
-  const effectiveWorkplaces = workplaces.length > 0 ? workplaces : DEFAULT_WORKPLACES;
+  // All workplaces come from the DB — no hardcoded fallback
+  const effectiveWorkplaces = workplaces;
 
   // Build PLACES map from workplaces for backward compatibility
   const PLACES = useMemo(() => {
@@ -751,7 +745,7 @@ function Shifts() {
     setError(null);
 
     const payload = {
-      place: ["pasta", "coffee"].includes(form.place) ? form.place : "pasta",
+      place: form.place,
       pay_type: form.pay_type === "tips_only" ? "tips_only" : "hourly",
       shift_date: shiftDate,
       start_time: form.start_time || null,
@@ -958,6 +952,16 @@ function Shifts() {
           className={`shifts__place-indicator shifts__place-indicator--${placeFilter}`}
           aria-hidden="true"
         />
+        {onNavigate && (
+          <button
+            type="button"
+            className="shifts__manage-link"
+            onClick={() => onNavigate("Workplaces")}
+            title="Manage workplaces"
+          >
+            ⚙
+          </button>
+        )}
       </div>
 
       <div

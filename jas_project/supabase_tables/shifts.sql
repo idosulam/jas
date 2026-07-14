@@ -2,7 +2,7 @@
 
 CREATE TABLE IF NOT EXISTS public.shifts (
   id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  place       TEXT NOT NULL CHECK (place IN ('pasta', 'coffee')),
+  place       TEXT NOT NULL,
   pay_type    TEXT NOT NULL DEFAULT 'hourly' CHECK (pay_type IN ('hourly', 'tips_only')),
   shift_date  DATE NOT NULL,
   start_time  TIME NULL,
@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS public.shifts (
 CREATE INDEX IF NOT EXISTS idx_shifts_shift_date ON public.shifts (shift_date);
 
 COMMENT ON TABLE public.shifts IS 'Work shifts — pay rates are hardcoded in the app (pasta=50, coffee=34).';
-COMMENT ON COLUMN public.shifts.place IS 'Workplace: pasta or coffee';
+COMMENT ON COLUMN public.shifts.place IS 'References workplaces.slug'
 COMMENT ON COLUMN public.shifts.pay_type IS 'How this shift is paid: hourly (rate x hours) or tips_only (pay is just tips)';
 COMMENT ON COLUMN public.shifts.start_time IS 'Optional shift start time';
 COMMENT ON COLUMN public.shifts.end_time IS 'Optional shift end time';

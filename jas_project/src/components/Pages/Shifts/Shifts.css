@@ -1554,6 +1554,27 @@
   }
 }
 
+/* ── Manage workplaces link ── */
+
+.shifts__manage-link {
+  background: none;
+  border: none;
+  color: var(--color-text-muted, #94a3b8);
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 0.25rem;
+  margin-left: 0.35rem;
+  border-radius: 6px;
+  transition: color 0.15s ease, background 0.15s ease;
+  line-height: 1;
+  vertical-align: middle;
+}
+
+.shifts__manage-link:hover {
+  color: var(--color-text, #e2e8f0);
+  background: rgba(255, 255, 255, 0.06);
+}
+
 /* ── Reduced Motion ─────────────────────────────────────────── */
 
 @media (prefers-reduced-motion: reduce) {
