@@ -181,12 +181,16 @@ function Shifts({ onNavigate }) {
       width: aRect.width,
     });
   }, [placeFilter]);
-
   useEffect(() => {
-    updatePlaceIndicator();
+    // Wait a tick so the DOM has the up-to-date set of pills
+    // (e.g. after effectiveWorkplaces loads asynchronously) before measuring.
+    const id = requestAnimationFrame(updatePlaceIndicator);
     window.addEventListener("resize", updatePlaceIndicator);
-    return () => window.removeEventListener("resize", updatePlaceIndicator);
-  }, [updatePlaceIndicator]);
+    return () => {
+      cancelAnimationFrame(id);
+      window.removeEventListener("resize", updatePlaceIndicator);
+    };
+  }, [updatePlaceIndicator, effectiveWorkplaces]);
 
   const fetchPresets = useCallback(async () => {
     try {
