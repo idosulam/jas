@@ -25,6 +25,8 @@ import {
 } from "../../../lib/security";
 
 import { useGlassToast } from "../../../lib/glass_toast_provider.jsx";
+import ColorPalettePicker from "../../../lib/ColorPalettePicker.jsx";
+import { loadPalette } from "../../../lib/color_palette.js";
 
 const MODAL_EXIT_MS = 260;
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -43,7 +45,7 @@ const emptyForm = (dateKey) => ({
   event_date: dateKey,
   start_time: "09:00",
   end_time: "10:00",
-  color: "green",
+  color: "#818cf8",
 });
 
 function isShiftLinkNote(value) {
@@ -155,29 +157,11 @@ function Calendar() {
   const [nowTick, setNowTick] = useState(() => Date.now());
   const [showFloatingActions, setShowFloatingActions] = useState(false);
   const [fieldErrors, setFieldErrors] = useState({});
-  const [workplaces, setWorkplaces] = useState([]);
   const addBtnRef = useRef(null);
   const { success: toastSuccess, error: toastError } = useGlassToast();
 
   const selectedKey = toDateKey(selectedDate);
   const isToday = selectedKey === toDateKey(today);
-
-  // Fetch workplaces for color palette
-  useEffect(() => {
-    (async () => {
-      try {
-        const supabase = getSupabaseClient();
-        const { data } = await supabase
-          .from("workplaces")
-          .select("slug, label, color")
-          .eq("active", true)
-          .order("created_at", { ascending: true });
-        if (data) setWorkplaces(data);
-      } catch {
-        // silent
-      }
-    })();
-  }, []);
 
   const weekDays = useMemo(() => {
     const start = startOfWeek(selectedDate);
@@ -396,8 +380,10 @@ function Calendar() {
     const [h] = startTime.split(":").map(Number);
     const endHour = Math.min(h + 1, DAY_END_HOUR);
     setEditingEvent(null);
+    const palette = loadPalette();
     setForm({
       ...emptyForm(selectedKey),
+      color: palette[0]?.hex || "#818cf8",
       start_time: startTime,
       end_time: `${String(endHour).padStart(2, "0")}:00`,
     });
@@ -461,9 +447,7 @@ function Calendar() {
       event_date: eventDate,
       start_time: startTime,
       end_time: endTime,
-      color: EVENT_COLORS[form.color] || (form.color && form.color.startsWith("#"))
-        ? form.color
-        : "indigo",
+      color: (form.color && form.color.startsWith("#")) ? form.color : (EVENT_COLORS[form.color] ? form.color : "#818cf8"),
     };
 
     try {
@@ -1153,40 +1137,10 @@ function Calendar() {
 
                 <label className="calendar__field">
                   <span>Color</span>
-                  <div
-                    className="calendar__colors"
-                    role="radiogroup"
-                    aria-label="Event color"
-                  >
-                    {Object.entries(EVENT_COLORS).map(
-                      ([key, { label, accent }]) => (
-                        <button
-                          key={key}
-                          type="button"
-                          className={`calendar__color${form.color === key ? " calendar__color--active" : ""}`}
-                          style={{ "--swatch": accent }}
-                          onClick={() => setForm({ ...form, color: key })}
-                          aria-label={label}
-                          aria-pressed={form.color === key}
-                        />
-                      ),
-                    )}
-                    {workplaces.length > 0 && (
-                      <span className="calendar__color-divider" aria-hidden="true" />
-                    )}
-                    {workplaces.map((wp) => (
-                      <button
-                        key={wp.slug}
-                        type="button"
-                        className={`calendar__color${form.color === wp.color ? " calendar__color--active" : ""}`}
-                        style={{ "--swatch": wp.color }}
-                        onClick={() => setForm({ ...form, color: wp.color })}
-                        aria-label={wp.label}
-                        aria-pressed={form.color === wp.color}
-                        title={wp.label}
-                      />
-                    ))}
-                  </div>
+                  <ColorPalettePicker
+                    value={form.color}
+                    onChange={(hex) => setForm({ ...form, color: hex })}
+                  />
                 </label>
 
                 <label className="calendar__field">
