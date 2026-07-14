@@ -115,7 +115,7 @@ function Shifts({ onNavigate }) {
   const [presetModalOpen, setPresetModalOpen] = useState(false);
   const [presetModalClosing, setPresetModalClosing] = useState(false);
   const [editingPreset, setEditingPreset] = useState(null);
-  const [presetForm, setPresetForm] = useState({ label: "", place: "", start_time: "09:00", end_time: "17:00", hours: "8", pay_type: "hourly" });
+  const [presetForm, setPresetForm] = useState({ label: "", place: "", start_time: "09:00", end_time: "17:00", hours: "8", pay_type: "hourly", color: "#818cf8" });
   const addBtnRef = useRef(null);
   const { success: toastSuccess, error: toastError } = useGlassToast();
 
@@ -177,6 +177,7 @@ function Shifts({ onNavigate }) {
       end_time: presetForm.end_time,
       hours: Number(Number(presetForm.hours).toFixed(2)),
       pay_type: presetForm.pay_type,
+      color: presetForm.color || null,
     };
     try {
       const supabase = getSupabaseClient();
@@ -223,10 +224,12 @@ function Shifts({ onNavigate }) {
         end_time: preset.end_time,
         hours: preset.hours,
         pay_type: preset.pay_type,
+        color: preset.color || "#818cf8",
       });
     } else {
+      const palette = loadPalette();
       setEditingPreset(null);
-      setPresetForm({ label: "", place: form.place || effectiveWorkplaces[0]?.slug || "pasta", start_time: "09:00", end_time: "17:00", hours: "8", pay_type: "hourly" });
+      setPresetForm({ label: "", place: form.place || effectiveWorkplaces[0]?.slug || "pasta", start_time: "09:00", end_time: "17:00", hours: "8", pay_type: "hourly", color: palette[0]?.hex || "#818cf8" });
     }
     setPresetModalClosing(false);
     setPresetModalOpen(true);
@@ -252,6 +255,7 @@ function Shifts({ onNavigate }) {
       end_time: form.end_time || "17:00",
       hours: form.hours || "8",
       pay_type: form.pay_type,
+      color: form.color || "#818cf8",
     });
     setPresetModalClosing(false);
     setPresetModalOpen(true);
@@ -1010,12 +1014,13 @@ function Shifts({ onNavigate }) {
                     hours: preset.hours,
                     tips: "",
                     notes: "",
+                    color: preset.color || "#818cf8",
                   });
                   setFormModalClosing(false);
                   setModalOpen(true);
                 }}
               >
-                <span className="shifts__template-dot" style={{ background: PLACES[preset.place]?.color || '#818cf8' }} />
+                <span className="shifts__template-dot" style={{ background: preset.color || PLACES[preset.place]?.color || '#818cf8' }} />
                 {preset.label}
                 <span className="shifts__template-time">{preset.start_time}–{preset.end_time}</span>
               </button>
@@ -1671,6 +1676,13 @@ function Shifts({ onNavigate }) {
                 <label className="shifts__field">
                   <span>Hours</span>
                   <input type="number" min="0.01" step="any" value={presetForm.hours} onChange={(e) => setPresetForm((f) => ({ ...f, hours: e.target.value }))} placeholder="8" />
+                </label>
+                <label className="shifts__field">
+                  <span>Color</span>
+                  <ColorPalettePicker
+                    value={presetForm.color}
+                    onChange={(hex) => setPresetForm((f) => ({ ...f, color: hex }))}
+                  />
                 </label>
                 <div className="shifts__form-actions">
                   {editingPreset && (
