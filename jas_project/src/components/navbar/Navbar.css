@@ -81,13 +81,13 @@
   border-radius: var(--radius-pill);
   background: linear-gradient(
     135deg,
-    rgba(129, 140, 248, 0.2),
-    rgba(192, 132, 252, 0.12)
+    rgba(129, 140, 248, 0.28),
+    rgba(192, 132, 252, 0.18)
   );
-  border: 1px solid rgba(129, 140, 248, 0.25);
+  border: 1px solid rgba(129, 140, 248, 0.35);
   box-shadow:
-    0 2px 12px rgba(129, 140, 248, 0.15),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    0 2px 16px rgba(129, 140, 248, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
   transition:
     transform 0.45s var(--ease-spring),
     width 0.35s var(--ease-spring);
@@ -164,6 +164,7 @@
 
 .nav-option--active {
   color: #fff;
+  background: rgba(129, 140, 248, 0.12);
 }
 
 .nav-option__icon {
