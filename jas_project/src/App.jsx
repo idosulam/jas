@@ -23,10 +23,16 @@ const PAGES = {
 function App() {
   const [activeNav, setActiveNav] = useState("Shifts");
   const [direction, setDirection] = useState("forward");
+  const [returnTo, setReturnTo] = useState("Shifts");
   const prevNavRef = useRef("Shifts");
 
   const handleNavChange = (id) => {
     if (id === activeNav) return;
+
+    // When navigating to Workplaces, remember where we came from
+    if (id === "Workplaces") {
+      setReturnTo(activeNav);
+    }
 
     const prevIndex = TAB_ORDER.indexOf(prevNavRef.current);
     const nextIndex = TAB_ORDER.indexOf(id);
@@ -42,7 +48,7 @@ function App() {
       <div className="app app--glassy">
         <main className="app__content">
           <Page_transition pageKey={activeNav} direction={direction}>
-            <ActivePage onNavigate={handleNavChange} />
+            <ActivePage onNavigate={handleNavChange} returnTo={returnTo} />
           </Page_transition>
         </main>
         <Navbar activeId={activeNav} onChange={handleNavChange} />

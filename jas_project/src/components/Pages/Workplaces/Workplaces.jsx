@@ -31,7 +31,7 @@ function formatMoney(amount) {
   return `₪${Number(amount).toFixed(2)}`;
 }
 
-function Workplaces({ onNavigate }) {
+function Workplaces({ onNavigate, returnTo }) {
   const [workplaces, setWorkplaces] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -279,9 +279,9 @@ function Workplaces({ onNavigate }) {
           <button
             type="button"
             className="workplaces__back-btn"
-            onClick={() => onNavigate("Shifts")}
+            onClick={() => onNavigate(returnTo || "Shifts")}
           >
-            ← Back to Shifts
+            ← Back to {returnTo || "Shifts"}
           </button>
         )}
         <p className="page__eyebrow">Settings</p>
