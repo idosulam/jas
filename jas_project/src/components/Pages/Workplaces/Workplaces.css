@@ -176,6 +176,20 @@
 
 .workplaces__action--reactivate:hover {
   background: rgba(52, 211, 153, 0.18);
+  transform: scale(1.06);
+}
+
+.workplaces__action--delete {
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.15);
+  color: rgba(239, 68, 68, 0.5);
+}
+
+.workplaces__action--delete:hover {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.4);
+  color: #fca5a5;
+  transform: scale(1.06);
 }
 
 /* ── Section ── */
@@ -279,7 +293,26 @@
   max-width: min(100%, 560px);
   padding: 1.5rem;
   text-align: center;
+}
+
+.workplaces__modal--delete {
   border-color: rgba(239, 68, 68, 0.4);
+}
+
+.workplaces__modal-title--delete {
+  color: #f87171;
+}
+
+.workplaces__delete-icon {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 0.75rem;
+  color: #f87171;
+}
+
+.workplaces__delete-icon svg {
+  width: 2.5rem;
+  height: 2.5rem;
 }
 
 .workplaces__modal--closing {
