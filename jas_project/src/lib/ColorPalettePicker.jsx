@@ -11,6 +11,7 @@ import {
   addPaletteColor,
   updatePaletteColor,
   deletePaletteColor,
+  clearPalette,
 } from "./color_palette";
 import "./ColorPalettePicker.css";
 
@@ -86,6 +87,12 @@ export default function ColorPalettePicker({ value, onChange }) {
     [value, onChange, closePicker],
   );
 
+  const handleClearAll = useCallback(async () => {
+    await clearPalette();
+    setPalette([]);
+    onChange("");
+  }, [onChange]);
+
   return (
     <div className="cpp__container">
       <div className="cpp__swatches" role="radiogroup" aria-label="Color palette">
@@ -119,6 +126,17 @@ export default function ColorPalettePicker({ value, onChange }) {
         >
           +
         </button>
+        {palette.length > 0 && (
+          <button
+            type="button"
+            className="cpp__clear-btn"
+            onClick={handleClearAll}
+            aria-label="Clear all colors"
+            title="Clear all colors"
+          >
+            ✕
+          </button>
+        )}
       </div>
 
       {pickerOpen &&

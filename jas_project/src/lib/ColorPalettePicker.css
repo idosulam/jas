@@ -92,6 +92,27 @@
   background: rgba(255, 255, 255, 0.04);
 }
 
+.cpp__clear-btn {
+  width: 2.2rem;
+  height: 2.2rem;
+  border: 2px solid rgba(248, 113, 113, 0.25);
+  border-radius: 50%;
+  background: transparent;
+  color: rgba(248, 113, 113, 0.5);
+  font-size: 0.85rem;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition: all 0.15s ease;
+  line-height: 1;
+}
+
+.cpp__clear-btn:hover {
+  border-color: rgba(248, 113, 113, 0.5);
+  color: #f87171;
+  background: rgba(248, 113, 113, 0.08);
+}
+
 /* ── Overlay & Modal (matches app modal style) ── */
 
 .cpp__overlay {

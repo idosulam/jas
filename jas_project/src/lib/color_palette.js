@@ -79,3 +79,17 @@ export async function deletePaletteColor(id) {
     return false;
   }
 }
+
+export async function clearPalette() {
+  try {
+    const supabase = getSupabaseClient();
+    const { error } = await supabase
+      .from("color_palettes")
+      .delete()
+      .neq("id", ""); // delete all rows
+
+    return !error;
+  } catch {
+    return false;
+  }
+}
