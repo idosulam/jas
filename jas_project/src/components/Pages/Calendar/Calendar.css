@@ -1193,6 +1193,14 @@
   outline-offset: 2px;
 }
 
+.calendar__color-divider {
+  width: 1px;
+  height: 1.6rem;
+  background: rgba(255, 255, 255, 0.15);
+  align-self: center;
+  margin: 0 0.15rem;
+}
+
 .calendar__form-actions {
   display: flex;
   gap: 0.85rem;

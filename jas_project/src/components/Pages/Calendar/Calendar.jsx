@@ -8,6 +8,7 @@ import {
   DAY_START_HOUR,
   EVENT_COLORS,
   eventStyle,
+  resolveColor,
   parseTimeToMinutes,
   formatTime12,
   HOUR_HEIGHT,
@@ -154,11 +155,29 @@ function Calendar() {
   const [nowTick, setNowTick] = useState(() => Date.now());
   const [showFloatingActions, setShowFloatingActions] = useState(false);
   const [fieldErrors, setFieldErrors] = useState({});
+  const [workplaces, setWorkplaces] = useState([]);
   const addBtnRef = useRef(null);
   const { success: toastSuccess, error: toastError } = useGlassToast();
 
   const selectedKey = toDateKey(selectedDate);
   const isToday = selectedKey === toDateKey(today);
+
+  // Fetch workplaces for color palette
+  useEffect(() => {
+    (async () => {
+      try {
+        const supabase = getSupabaseClient();
+        const { data } = await supabase
+          .from("workplaces")
+          .select("slug, label, color")
+          .eq("active", true)
+          .order("created_at", { ascending: true });
+        if (data) setWorkplaces(data);
+      } catch {
+        // silent
+      }
+    })();
+  }, []);
 
   const weekDays = useMemo(() => {
     const start = startOfWeek(selectedDate);
@@ -442,7 +461,7 @@ function Calendar() {
       event_date: eventDate,
       start_time: startTime,
       end_time: endTime,
-      color: ["green", "blue", "orange", "pink", "cyan"].includes(form.color)
+      color: EVENT_COLORS[form.color] || (form.color && form.color.startsWith("#"))
         ? form.color
         : "indigo",
     };
@@ -883,7 +902,7 @@ function Calendar() {
                 if (!style) return null;
 
                 const colorInfo =
-                  EVENT_COLORS[event.color] ?? EVENT_COLORS.green;
+                  resolveColor(event.color);
                 const isShort = parseInt(style.height, 10) < 44;
 
                 return (
@@ -1152,6 +1171,21 @@ function Calendar() {
                         />
                       ),
                     )}
+                    {workplaces.length > 0 && (
+                      <span className="calendar__color-divider" aria-hidden="true" />
+                    )}
+                    {workplaces.map((wp) => (
+                      <button
+                        key={wp.slug}
+                        type="button"
+                        className={`calendar__color${form.color === wp.color ? " calendar__color--active" : ""}`}
+                        style={{ "--swatch": wp.color }}
+                        onClick={() => setForm({ ...form, color: wp.color })}
+                        aria-label={wp.label}
+                        aria-pressed={form.color === wp.color}
+                        title={wp.label}
+                      />
+                    ))}
                   </div>
                 </label>
 
