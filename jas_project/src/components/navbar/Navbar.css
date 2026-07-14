@@ -164,6 +164,14 @@
 
 .nav-option--active {
   color: #fff;
+  background: linear-gradient(
+    135deg,
+    var(--color-primary),
+    var(--color-secondary)
+  );
+  box-shadow:
+    0 4px 16px rgba(129, 140, 248, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
 }
 
 .nav-option__icon {
