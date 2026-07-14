@@ -114,6 +114,8 @@ function Shifts({ onNavigate }) {
   const [editingPreset, setEditingPreset] = useState(null);
   const [presetForm, setPresetForm] = useState({ label: "", place: "", start_time: "09:00", end_time: "17:00", hours: "8", pay_type: "hourly", color: "#818cf8" });
   const addBtnRef = useRef(null);
+  const placeFilterRef = useRef(null);
+  const [placeIndicator, setPlaceIndicator] = useState({ left: 0, width: 0 });
   const { success: toastSuccess, error: toastError } = useGlassToast();
 
   // All workplaces come from the DB — no hardcoded fallback
@@ -148,6 +150,26 @@ function Shifts({ onNavigate }) {
   }, []);
 
   useEffect(() => { fetchWorkplaces(); }, [fetchWorkplaces]);
+
+  // Sliding indicator for place filter
+  const updatePlaceIndicator = useCallback(() => {
+    const container = placeFilterRef.current;
+    if (!container) return;
+    const active = container.querySelector(".shifts__place-btn--active");
+    if (!active) return;
+    const cRect = container.getBoundingClientRect();
+    const aRect = active.getBoundingClientRect();
+    setPlaceIndicator({
+      left: aRect.left - cRect.left - container.scrollLeft,
+      width: aRect.width,
+    });
+  }, [placeFilter]);
+
+  useEffect(() => {
+    updatePlaceIndicator();
+    window.addEventListener("resize", updatePlaceIndicator);
+    return () => window.removeEventListener("resize", updatePlaceIndicator);
+  }, [updatePlaceIndicator]);
 
   const fetchPresets = useCallback(async () => {
     try {
@@ -951,11 +973,13 @@ function Shifts({ onNavigate }) {
         className="shifts__place-filter animate-in animate-in--2"
         role="group"
         aria-label="Filter by place"
+        ref={placeFilterRef}
       >
         {PLACE_FILTERS.map(({ id, label }) => (
           <button
             key={id}
             type="button"
+            data-place={id}
             className={`shifts__place-btn${placeFilter === id ? " shifts__place-btn--active" : ""}${id !== "all" ? ` shifts__place-btn--${id}` : ""}`}
             onClick={() => setPlaceFilter(id)}
             aria-pressed={placeFilter === id}
@@ -963,6 +987,14 @@ function Shifts({ onNavigate }) {
             {label}
           </button>
         ))}
+        <span
+          className="shifts__place-indicator"
+          style={{
+            transform: `translateX(${placeIndicator.left}px)`,
+            width: placeIndicator.width,
+          }}
+          aria-hidden="true"
+        />
       </div>
 
       <div

@@ -91,6 +91,7 @@
 /* ── Place Filter Pills ─────────────────────────────────────── */
 
 .shifts__place-filter {
+  position: relative;
   display: flex;
   padding: 0.3rem;
   margin-bottom: 1.25rem;
@@ -108,6 +109,8 @@
 }
 
 .shifts__place-btn {
+  position: relative;
+  z-index: 1;
   flex: 1 1 0;
   min-width: 0;
   padding: 0.55rem 0.75rem;
@@ -120,9 +123,7 @@
   font-weight: 600;
   cursor: pointer;
   transition:
-    color 0.3s ease,
-    background 0.3s ease,
-    box-shadow 0.3s ease;
+    color 0.3s ease;
   white-space: nowrap;
   flex-shrink: 0;
 }
@@ -133,21 +134,39 @@
 
 .shifts__place-btn--active {
   color: #fff;
-  background: linear-gradient(
-    135deg,
-    var(--color-primary),
-    var(--color-secondary)
-  );
-  box-shadow:
-    0 4px 16px rgba(129, 140, 248, 0.35),
-    inset 0 1px 0 rgba(255, 255, 255, 0.15);
-  animation: placeBubble 0.35s var(--ease-spring, cubic-bezier(0.34, 1.56, 0.64, 1)) both,
-             placeGlow 0.5s ease both;
 }
 
 .shifts__place-btn:focus-visible {
   outline: 2px solid var(--color-primary);
   outline-offset: 2px;
+}
+
+.shifts__place-indicator {
+  position: absolute;
+  top: 0.3rem;
+  left: 0.3rem;
+  height: calc(100% - 0.6rem);
+  border-radius: var(--radius-pill);
+  background: linear-gradient(
+    135deg,
+    var(--color-primary),
+    var(--color-secondary)
+  );
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow:
+    0 4px 16px rgba(129, 140, 248, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  transition:
+    transform 0.45s var(--ease-spring),
+    width 0.35s var(--ease-spring);
+  pointer-events: none;
+  z-index: 0;
+  will-change: transform;
+}
+
+.shifts__place-btn {
+  position: relative;
+  z-index: 1;
 }
 
 /* ── Summary ────────────────────────────────────────────────── */
