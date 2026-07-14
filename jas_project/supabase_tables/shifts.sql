@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS public.shifts (
 
 CREATE INDEX IF NOT EXISTS idx_shifts_shift_date ON public.shifts (shift_date);
 
-COMMENT ON TABLE public.shifts IS 'Work shifts — pay rates are hardcoded in the app (pasta=50, coffee=34).';
+COMMENT ON TABLE public.shifts IS 'Work shifts — workplaces and rates loaded from the workplaces table.';
 COMMENT ON COLUMN public.shifts.place IS 'References workplaces.slug'
 COMMENT ON COLUMN public.shifts.pay_type IS 'How this shift is paid: hourly (rate x hours) or tips_only (pay is just tips)';
 COMMENT ON COLUMN public.shifts.start_time IS 'Optional shift start time';
