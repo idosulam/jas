@@ -27,9 +27,8 @@ const PAY_TYPES = [
   { id: "tips_only", label: "Tips only" },
 ];
 
-// Threshold for switching from inline pills to a bottom-sheet picker.
-// Set to 0 to always use the picker (recommended for mobile-first UX).
-const MAX_INLINE_FILTERS = 0;
+// Breakpoint for pills (desktop) vs picker sheet (mobile).
+const FILTER_PICKER_BREAKPOINT = 768;
 
 const MONTHS = [
   "January",
@@ -130,7 +129,21 @@ function Shifts({ onNavigate }) {
   const [placeIndicator, setPlaceIndicator] = useState({ left: 0, width: 0 });
   const [placePickerOpen, setPlacePickerOpen] = useState(false);
   const [placePickerClosing, setPlacePickerClosing] = useState(false);
+  const [isMobile, setIsMobile] = useState(
+    () => window.innerWidth < FILTER_PICKER_BREAKPOINT,
+  );
   const { success: toastSuccess, error: toastError } = useGlassToast();
+
+  // Track viewport width for responsive filter layout
+  useEffect(() => {
+    const mql = window.matchMedia(
+      `(max-width: ${FILTER_PICKER_BREAKPOINT - 1}px)`,
+    );
+    const handler = (e) => setIsMobile(e.matches);
+    mql.addEventListener("change", handler);
+    setIsMobile(mql.matches);
+    return () => mql.removeEventListener("change", handler);
+  }, []);
 
   // All workplaces come from the DB — no hardcoded fallback
   const effectiveWorkplaces = workplaces;
@@ -174,7 +187,7 @@ function Shifts({ onNavigate }) {
     fetchWorkplaces();
   }, [fetchWorkplaces]);
 
-  const useInlineFilters = PLACE_FILTERS.length <= MAX_INLINE_FILTERS;
+  const useInlineFilters = !isMobile;
 
   // Sliding indicator for place filter (only when inline pills are shown)
   const updatePlaceIndicator = useCallback(() => {
