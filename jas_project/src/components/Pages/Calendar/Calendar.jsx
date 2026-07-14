@@ -240,13 +240,61 @@ function Calendar() {
         ? addDays(rangeStart, 6)
         : new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 0);
 
+    const startKey = toDateKey(rangeStart);
+    const endKey = toDateKey(rangeEnd);
+
     try {
       const supabase = getSupabaseClient();
+
+      // Sync any shifts that don't have calendar events yet
+      try {
+        const { data: shiftsInRange = [] } = await supabase
+          .from("shifts")
+          .select("*")
+          .gte("shift_date", startKey)
+          .lte("shift_date", endKey);
+
+        const { data: existingEvents = [] } = await supabase
+          .from("events")
+          .select("id, notes")
+          .gte("event_date", startKey)
+          .lte("event_date", endKey);
+
+        const linkedShiftIds = new Set(
+          (existingEvents || [])
+            .map((e) => {
+              const m = typeof e.notes === "string" ? e.notes.match(/Linked shift id:\s*([a-zA-Z0-9-]+)/) : null;
+              return m ? m[1] : null;
+            })
+            .filter(Boolean),
+        );
+
+        const unsynced = (shiftsInRange || []).filter((s) => !linkedShiftIds.has(s.id));
+        if (unsynced.length > 0) {
+          for (const shift of unsynced) {
+            const dateKey = shift.shift_date;
+            const title = `Shift: ${shift.place}`;
+            const start = shift.start_time || "09:00";
+            const end = shift.end_time || "17:00";
+            await supabase.from("events").insert({
+              title,
+              notes: `Linked shift id: ${shift.id}`,
+              event_date: dateKey,
+              start_time: start,
+              end_time: end,
+              color: shift.color || "cyan",
+            });
+          }
+        }
+      } catch (syncErr) {
+        // non-critical, continue fetching
+      }
+
       const { data, error: fetchError } = await supabase
         .from("events")
         .select("*")
-        .gte("event_date", toDateKey(rangeStart))
-        .lte("event_date", toDateKey(rangeEnd))
+        .gte("event_date", startKey)
+        .lte("event_date", endKey)
         .order("start_time", { ascending: true });
 
       if (fetchError) {
