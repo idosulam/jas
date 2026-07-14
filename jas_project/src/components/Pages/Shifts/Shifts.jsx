@@ -12,6 +12,8 @@ import {
 } from "../../../lib/security";
 
 import { useGlassToast } from "../../../lib/glass_toast_provider.jsx";
+import ColorPalettePicker from "../../../lib/ColorPalettePicker.jsx";
+import { fetchPalette } from "../../../lib/color_palette.js";
 
 // Calendar-related defaults
 const CALENDAR_WAKEUP_BEFORE_MINUTES = 120;
@@ -50,7 +52,7 @@ function getCurrentLocalTime() {
 const MODAL_EXIT_MS = 320;
 
 const emptyForm = (firstPlace) => ({
-  place: firstPlace || "pasta",
+  place: firstPlace || "",
   pay_type: "hourly",
   shift_date: new Date().toISOString().slice(0, 10),
   start_time: getCurrentLocalTime(),
@@ -84,7 +86,7 @@ function formatMoney(amount) {
   return `₪${amount.toFixed(2)}`;
 }
 
-function Shifts() {
+function Shifts({ onNavigate }) {
   const now = new Date();
   const [month, setMonth] = useState(now.getMonth());
   const [year, setYear] = useState(now.getFullYear());
@@ -105,22 +107,17 @@ function Shifts() {
   const [showFloatingActions, setShowFloatingActions] = useState(false);
   const [fieldErrors, setFieldErrors] = useState({});
   const [workplaces, setWorkplaces] = useState([]);
+  const [palette, setPalette] = useState([]);
   const [presets, setPresets] = useState([]);
   const [presetModalOpen, setPresetModalOpen] = useState(false);
   const [presetModalClosing, setPresetModalClosing] = useState(false);
   const [editingPreset, setEditingPreset] = useState(null);
-  const [presetForm, setPresetForm] = useState({ label: "", place: "pasta", start_time: "09:00", end_time: "17:00", hours: "8", pay_type: "hourly" });
+  const [presetForm, setPresetForm] = useState({ label: "", place: "", start_time: "09:00", end_time: "17:00", hours: "8", pay_type: "hourly", color: "#818cf8" });
   const addBtnRef = useRef(null);
   const { success: toastSuccess, error: toastError } = useGlassToast();
 
-  // Fallback workplaces when Supabase table doesn't exist yet
-  const DEFAULT_WORKPLACES = useMemo(() => [
-    { slug: "pasta", label: "Pasta Via", rate: 50, color: "#fb923c" },
-    { slug: "coffee", label: "Cafe Nimrod", rate: 34, color: "#a78bfa" },
-  ], []);
-
-  // Use Supabase data if available, otherwise fall back to defaults
-  const effectiveWorkplaces = workplaces.length > 0 ? workplaces : DEFAULT_WORKPLACES;
+  // All workplaces come from the DB — no hardcoded fallback
+  const effectiveWorkplaces = workplaces;
 
   // Build PLACES map from workplaces for backward compatibility
   const PLACES = useMemo(() => {
@@ -167,6 +164,13 @@ function Shifts() {
 
   useEffect(() => { fetchPresets(); }, [fetchPresets]);
 
+  // Load color palette from DB
+  useEffect(() => {
+    fetchPalette().then(setPalette);
+  }, []);
+
+  const firstColor = palette[0]?.hex || "#818cf8";
+
   const savePreset = useCallback(async () => {
     const label = presetForm.label.trim();
     if (!label) return;
@@ -177,6 +181,7 @@ function Shifts() {
       end_time: presetForm.end_time,
       hours: Number(Number(presetForm.hours).toFixed(2)),
       pay_type: presetForm.pay_type,
+      color: presetForm.color || null,
     };
     try {
       const supabase = getSupabaseClient();
@@ -223,10 +228,11 @@ function Shifts() {
         end_time: preset.end_time,
         hours: preset.hours,
         pay_type: preset.pay_type,
+        color: preset.color || "#818cf8",
       });
     } else {
       setEditingPreset(null);
-      setPresetForm({ label: "", place: form.place || effectiveWorkplaces[0]?.slug || "pasta", start_time: "09:00", end_time: "17:00", hours: "8", pay_type: "hourly" });
+      setPresetForm({ label: "", place: form.place || effectiveWorkplaces[0]?.slug || "pasta", start_time: "09:00", end_time: "17:00", hours: "8", pay_type: "hourly", color: firstColor });
     }
     setPresetModalClosing(false);
     setPresetModalOpen(true);
@@ -252,6 +258,7 @@ function Shifts() {
       end_time: form.end_time || "17:00",
       hours: form.hours || "8",
       pay_type: form.pay_type,
+      color: form.color || "#818cf8",
     });
     setPresetModalClosing(false);
     setPresetModalOpen(true);
@@ -680,7 +687,7 @@ function Shifts() {
         event_date: dateKey,
         start_time: shiftStart,
         end_time: shiftEnd,
-        color: "cyan",
+        color: shiftRecord.color || "cyan",
       };
 
       if (existingShiftEvent) {
@@ -751,7 +758,7 @@ function Shifts() {
     setError(null);
 
     const payload = {
-      place: ["pasta", "coffee"].includes(form.place) ? form.place : "pasta",
+      place: form.place,
       pay_type: form.pay_type === "tips_only" ? "tips_only" : "hourly",
       shift_date: shiftDate,
       start_time: form.start_time || null,
@@ -759,6 +766,7 @@ function Shifts() {
       hours: Number(hours.toFixed(2)),
       tips: Number(tips.toFixed(2)),
       notes,
+      color: PLACES[form.place]?.color || null,
     };
 
     try {
@@ -1007,12 +1015,13 @@ function Shifts() {
                     hours: preset.hours,
                     tips: "",
                     notes: "",
+                    color: preset.color || "#818cf8",
                   });
                   setFormModalClosing(false);
                   setModalOpen(true);
                 }}
               >
-                <span className="shifts__template-dot" style={{ background: PLACES[preset.place]?.color || '#818cf8' }} />
+                <span className="shifts__template-dot" style={{ background: preset.color || PLACES[preset.place]?.color || '#818cf8' }} />
                 {preset.label}
                 <span className="shifts__template-time">{preset.start_time}–{preset.end_time}</span>
               </button>
@@ -1045,14 +1054,26 @@ function Shifts() {
             </span>
           )}
         </h2>
-        <button
-          type="button"
-          className="shifts__add-btn"
-          onClick={openAddModal}
-          ref={addBtnRef}
-        >
-          + Add shift
-        </button>
+        <div className="shifts__header-actions">
+          {onNavigate && (
+            <button
+              type="button"
+              className="shifts__manage-link"
+              onClick={() => onNavigate("Workplaces")}
+              title="Manage workplaces"
+            >
+              ⚙ Workplaces
+            </button>
+          )}
+          <button
+            type="button"
+            className="shifts__add-btn"
+            onClick={openAddModal}
+            ref={addBtnRef}
+          >
+            + Add shift
+          </button>
+        </div>
       </div>
 
       {loading ? (
@@ -1110,7 +1131,7 @@ function Shifts() {
                 <div className="shifts__card-main">
                   <div className="shifts__card-top">
                     <span
-                      className="shifts__badge" style={{ background: `${PLACES[shift.place]?.color || '#818cf8'}15`, color: PLACES[shift.place]?.color || '#818cf8', border: `1px solid ${PLACES[shift.place]?.color || '#818cf8'}26` }}
+                      className="shifts__badge" style={{ background: `${shift.color || PLACES[shift.place]?.color || '#818cf8'}15`, color: shift.color || PLACES[shift.place]?.color || '#818cf8', border: `1px solid ${shift.color || PLACES[shift.place]?.color || '#818cf8'}26` }}
                     >
                       {placeInfo?.label ?? shift.place}
                     </span>
@@ -1535,7 +1556,7 @@ function Shifts() {
 
               <div className="shifts__delete-preview">
                 <span
-                  className="shifts__badge" style={{ background: `${PLACES[deleteTarget.place]?.color || '#818cf8'}15`, color: PLACES[deleteTarget.place]?.color || '#818cf8', border: `1px solid ${PLACES[deleteTarget.place]?.color || '#818cf8'}26` }}
+                  className="shifts__badge" style={{ background: `${deleteTarget.color || PLACES[deleteTarget.place]?.color || '#818cf8'}15`, color: deleteTarget.color || PLACES[deleteTarget.place]?.color || '#818cf8', border: `1px solid ${deleteTarget.color || PLACES[deleteTarget.place]?.color || '#818cf8'}26` }}
                 >
                   {deletePlaceInfo?.label}
                 </span>
@@ -1647,6 +1668,13 @@ function Shifts() {
                 <label className="shifts__field">
                   <span>Hours</span>
                   <input type="number" min="0.01" step="any" value={presetForm.hours} onChange={(e) => setPresetForm((f) => ({ ...f, hours: e.target.value }))} placeholder="8" />
+                </label>
+                <label className="shifts__field">
+                  <span>Color</span>
+                  <ColorPalettePicker
+                    value={presetForm.color}
+                    onChange={(hex) => setPresetForm((f) => ({ ...f, color: hex }))}
+                  />
                 </label>
                 <div className="shifts__form-actions">
                   {editingPreset && (

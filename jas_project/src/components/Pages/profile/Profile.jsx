@@ -493,7 +493,7 @@ function WeightChart({ entries, unit, goalKg }) {
   );
 }
 
-function Profile() {
+function Profile({ onNavigate }) {
   const [removingId, setRemovingId] = useState(null);
   const [unit, setUnit] = useState(loadUnit);
   const [profile, setProfile] = useState(null);
@@ -1350,6 +1350,15 @@ function Profile() {
               >
                 Edit profile
               </button>
+              {onNavigate && (
+                <button
+                  type="button"
+                  className="profile__text-btn"
+                  onClick={() => onNavigate("Workplaces")}
+                >
+                  ⚙ Workplaces
+                </button>
+              )}
             </div>
             {analytics.sorted.length === 0 ? (
               <p className="profile__empty">

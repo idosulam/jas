@@ -4,6 +4,7 @@ import Page_transition from "./components/Page_transition.jsx";
 import Shifts from "./components/Pages/Shifts/Shifts.jsx";
 import Calendar from "./components/Pages/Calendar/Calendar.jsx";
 import Profile from "./components/Pages/profile/Profile.jsx";
+import Workplaces from "./components/Pages/Workplaces/Workplaces.jsx";
 import "./styles/pages.css";
 import "./styles/animations.css";
 
@@ -16,15 +17,22 @@ const PAGES = {
   Shifts: Shifts,
   Calendar: Calendar,
   Profile: Profile,
+  Workplaces: Workplaces,
 };
 
 function App() {
   const [activeNav, setActiveNav] = useState("Shifts");
   const [direction, setDirection] = useState("forward");
+  const [returnTo, setReturnTo] = useState("Shifts");
   const prevNavRef = useRef("Shifts");
 
   const handleNavChange = (id) => {
     if (id === activeNav) return;
+
+    // When navigating to Workplaces, remember where we came from
+    if (id === "Workplaces") {
+      setReturnTo(activeNav);
+    }
 
     const prevIndex = TAB_ORDER.indexOf(prevNavRef.current);
     const nextIndex = TAB_ORDER.indexOf(id);
@@ -40,7 +48,7 @@ function App() {
       <div className="app app--glassy">
         <main className="app__content">
           <Page_transition pageKey={activeNav} direction={direction}>
-            <ActivePage />
+            <ActivePage onNavigate={handleNavChange} returnTo={returnTo} />
           </Page_transition>
         </main>
         <Navbar activeId={activeNav} onChange={handleNavChange} />

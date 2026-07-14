@@ -998,14 +998,15 @@
 .calendar__overlay {
   position: fixed;
   inset: 0;
-  z-index: 200;
+  z-index: 100;
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  padding: 1rem;
-  padding-bottom: max(1rem, env(safe-area-inset-bottom));
-  background: rgba(0, 0, 0, 0.65);
-  backdrop-filter: blur(8px);
+  padding: 0.75rem;
+  padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   animation: calendarOverlayIn 0.28s ease;
 }
 
@@ -1023,15 +1024,15 @@
 .calendar__modal {
   position: relative;
   width: min(100%, 640px);
-  max-height: min(120svh, calc(100svh - 24px - env(safe-area-inset-bottom)));
+  max-height: min(84svh, calc(100svh - 24px - env(safe-area-inset-bottom)));
   overflow-y: auto;
   overscroll-behavior: contain;
   margin: 0;
   padding: 2rem;
-  background: rgba(20, 18, 48, 0.98);
-  border: 1px solid var(--sheet-border);
+  background: linear-gradient(160deg, #1a1a2e 0%, #16213e 100%);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 26px 26px 0 0;
-  box-shadow: var(--sheet-shadow);
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.45);
   transform-origin: bottom center;
   animation: calendarModalSlideUp 0.38s var(--ease-spring);
   will-change: transform, opacity;
@@ -1047,6 +1048,8 @@
 }
 
 .calendar__modal--delete {
+  width: min(100%, 560px);
+  padding: 1.5rem;
   text-align: center;
   border-color: rgba(239, 68, 68, 0.4);
 }
@@ -1067,7 +1070,7 @@
 .calendar__delete-desc {
   margin-bottom: 1.5rem;
   font-size: 0.9rem;
-  color: var(--text-muted);
+  color: rgba(255, 255, 255, 0.5);
   line-height: 1.55;
 }
 
@@ -1188,6 +1191,14 @@
 .calendar__color:focus-visible {
   outline: 2px solid var(--color-primary);
   outline-offset: 2px;
+}
+
+.calendar__color-divider {
+  width: 1px;
+  height: 1.6rem;
+  background: rgba(255, 255, 255, 0.15);
+  align-self: center;
+  margin: 0 0.15rem;
 }
 
 .calendar__form-actions {

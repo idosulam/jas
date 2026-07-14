@@ -19,6 +19,21 @@ export const EVENT_COLORS = {
   cyan: { label: "Cyan", accent: "#22d3ee", bg: "rgba(6, 182, 212, 0.28)" },
 };
 
+/**
+ * Resolve a color key (named or hex) to accent/bg values.
+ * Named keys look up EVENT_COLORS; hex values generate accent + bg directly.
+ */
+export function resolveColor(colorKey) {
+  if (EVENT_COLORS[colorKey]) return EVENT_COLORS[colorKey];
+  // Treat as hex color
+  const hex = colorKey && colorKey.startsWith("#") ? colorKey : "#818cf8";
+  return {
+    label: "Custom",
+    accent: hex,
+    bg: hex + "44", // hex with ~27% alpha
+  };
+}
+
 export function parseTimeToMinutes(timeStr) {
   const [h, m] = timeStr.slice(0, 5).split(":").map(Number);
   return h * 60 + m;

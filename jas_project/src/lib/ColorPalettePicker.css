@@ -1,0 +1,389 @@
+/* Color Palette Picker — inline swatches + modal */
+
+.cpp__container {
+  width: 100%;
+}
+
+/* ── Swatches row ── */
+
+.cpp__swatches {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.cpp__swatch-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.cpp__swatch {
+  width: 2.2rem;
+  height: 2.2rem;
+  border: 2.5px solid transparent;
+  border-radius: 50%;
+  background: var(--swatch);
+  cursor: pointer;
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+
+.cpp__swatch:hover {
+  transform: scale(1.12);
+}
+
+.cpp__swatch--active {
+  border-color: #fff;
+  box-shadow: 0 0 0 2px var(--swatch), 0 0 10px rgba(0, 0, 0, 0.25);
+  transform: scale(1.12);
+}
+
+.cpp__edit-btn {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(30, 27, 60, 0.9);
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.55rem;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  z-index: 2;
+  line-height: 1;
+}
+
+.cpp__swatch-wrap:hover .cpp__edit-btn {
+  opacity: 1;
+}
+
+.cpp__edit-btn:hover {
+  background: rgba(99, 102, 241, 0.6);
+  color: #fff;
+}
+
+/* ── Add button ── */
+
+.cpp__add-btn {
+  width: 2.2rem;
+  height: 2.2rem;
+  border: 2px dashed rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 1.1rem;
+  font-weight: 300;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition: all 0.15s ease;
+  line-height: 1;
+}
+
+.cpp__add-btn:hover {
+  border-color: rgba(255, 255, 255, 0.4);
+  color: rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.cpp__clear-btn {
+  width: 2.2rem;
+  height: 2.2rem;
+  border: 2px solid rgba(248, 113, 113, 0.25);
+  border-radius: 50%;
+  background: transparent;
+  color: rgba(248, 113, 113, 0.5);
+  font-size: 0.85rem;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition: all 0.15s ease;
+  line-height: 1;
+}
+
+.cpp__clear-btn:hover {
+  border-color: rgba(248, 113, 113, 0.5);
+  color: #f87171;
+  background: rgba(248, 113, 113, 0.08);
+}
+
+/* ── Overlay & Modal (matches app modal style) ── */
+
+.cpp__overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0.75rem;
+  padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  animation: cppOverlayIn 0.28s ease;
+}
+
+.cpp__overlay--closing {
+  animation: cppOverlayOut 0.26s ease forwards;
+}
+
+.cpp__modal {
+  width: 100%;
+  max-width: 26rem;
+  max-height: min(92dvh, 42rem);
+  overflow-y: auto;
+  padding: 1.4rem 1.4rem max(1.4rem, env(safe-area-inset-bottom));
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 1.2rem 1.2rem 0 0;
+  background: linear-gradient(160deg, #1a1a2e 0%, #16213e 100%);
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.45);
+  transform-origin: bottom center;
+  animation: cppModalSlideUp 0.38s var(--ease-spring, cubic-bezier(0.34, 1.56, 0.64, 1));
+  will-change: transform, opacity;
+}
+
+.cpp__modal--closing {
+  animation: cppModalSlideDown 0.26s cubic-bezier(0.55, 0, 1, 0.45) forwards;
+}
+
+@media (min-width: 768px) {
+  .cpp__overlay {
+    align-items: center;
+    padding: 1.5rem;
+  }
+
+  .cpp__modal {
+    border-radius: 1.25rem;
+    transform-origin: center;
+    animation-name: cppModalCenterIn;
+  }
+
+  .cpp__modal--closing {
+    animation-name: cppModalCenterOut;
+  }
+}
+
+.cpp__modal-title {
+  font-family: var(--font-heading);
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-bottom: 1.25rem;
+  text-align: center;
+  color: #fff;
+}
+
+/* ── Preview row ── */
+
+.cpp__preview-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.cpp__preview-swatch {
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 0.85rem;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  flex-shrink: 0;
+}
+
+.cpp__native-picker {
+  width: 100%;
+  height: 2.8rem;
+  border: none;
+  border-radius: 0.65rem;
+  cursor: pointer;
+  background: transparent;
+  padding: 0;
+}
+
+.cpp__native-picker::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+.cpp__native-picker::-webkit-color-swatch {
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 0.65rem;
+}
+
+/* ── Fields ── */
+
+.cpp__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.55);
+  margin-bottom: 0.85rem;
+}
+
+.cpp__field input {
+  padding: 0.65rem 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 0.65rem;
+  background: rgba(255, 255, 255, 0.08);
+  color: #f5f5f7;
+  font-family: inherit;
+  font-size: 0.9rem;
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.cpp__field input:focus {
+  outline: none;
+  border-color: rgba(99, 102, 241, 0.55);
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+}
+
+.cpp__hex-input {
+  font-family: var(--font-mono, monospace);
+  letter-spacing: 0.05em;
+}
+
+/* ── Buttons ── */
+
+.cpp__form-actions {
+  display: flex;
+  gap: 0.65rem;
+  margin-top: 0.35rem;
+}
+
+.cpp__btn {
+  flex: 1;
+  padding: 0.7rem 1rem;
+  border: none;
+  border-radius: 0.65rem;
+  font-family: inherit;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s var(--ease-spring, cubic-bezier(0.34, 1.56, 0.64, 1)),
+    box-shadow 0.2s ease;
+}
+
+.cpp__btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.cpp__btn--ghost {
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.cpp__btn--ghost:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.cpp__btn--primary {
+  background: linear-gradient(135deg, var(--color-primary, #818cf8), var(--color-secondary, #a78bfa));
+  color: #fff;
+  font-weight: 700;
+  box-shadow:
+    0 4px 16px rgba(129, 140, 248, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+.cpp__btn--primary:not(:disabled):hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 6px 24px rgba(129, 140, 248, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+.cpp__btn--danger {
+  background: rgba(248, 113, 113, 0.12);
+  color: #f87171;
+  border: 1px solid rgba(248, 113, 113, 0.2);
+}
+
+.cpp__btn--danger:hover {
+  background: rgba(248, 113, 113, 0.22);
+}
+
+/* ── Animations ── */
+
+@keyframes cppOverlayIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes cppOverlayOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes cppModalSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(110%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes cppModalSlideDown {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(110%);
+  }
+}
+
+@keyframes cppModalCenterIn {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes cppModalCenterOut {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(18px) scale(0.96);
+  }
+}
+
+/* ── Reduced Motion ── */
+
+@media (prefers-reduced-motion: reduce) {
+  .cpp__overlay,
+  .cpp__modal,
+  .cpp__swatch,
+  .cpp__btn,
+  .cpp__add-btn {
+    animation: none !important;
+    transition: none !important;
+  }
+}
