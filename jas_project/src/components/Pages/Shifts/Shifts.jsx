@@ -27,8 +27,9 @@ const PAY_TYPES = [
   { id: "tips_only", label: "Tips only" },
 ];
 
-// Show inline pills up to this many filter options; beyond that, use a picker sheet.
-const MAX_INLINE_FILTERS = 4;
+// Threshold for switching from inline pills to a bottom-sheet picker.
+// Set to 0 to always use the picker (recommended for mobile-first UX).
+const MAX_INLINE_FILTERS = 0;
 
 const MONTHS = [
   "January",
