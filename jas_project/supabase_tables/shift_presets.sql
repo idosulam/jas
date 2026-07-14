@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS public.shift_presets (
 
 COMMENT ON TABLE public.shift_presets IS 'Reusable shift templates created by the user for quick-add.';
 COMMENT ON COLUMN public.shift_presets.label IS 'Display name for the preset (e.g. "Morning shift")';
-COMMENT ON COLUMN public.shift_presets.place IS 'References workplaces.slug'
+COMMENT ON COLUMN public.shift_presets.place IS 'References workplaces.slug';
 COMMENT ON COLUMN public.shift_presets.pay_type IS 'Pay type: hourly or tips_only';
 COMMENT ON COLUMN public.shift_presets.start_time IS 'Default start time for this preset';
 COMMENT ON COLUMN public.shift_presets.end_time IS 'Default end time for this preset';
