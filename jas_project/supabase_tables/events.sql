@@ -7,8 +7,7 @@ CREATE TABLE IF NOT EXISTS public.events (
   event_date    DATE NOT NULL,
   start_time    TIME NOT NULL,
   end_time      TIME NOT NULL,
-  color         TEXT NOT NULL DEFAULT 'indigo'
-                CHECK (color IN ('indigo', 'pink', 'orange', 'green', 'cyan')),
+  color         TEXT NOT NULL DEFAULT '#818cf8',
   is_completed  BOOLEAN NOT NULL DEFAULT false,
   completed_at  TIMESTAMPTZ,
   created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -20,7 +19,7 @@ CREATE INDEX IF NOT EXISTS idx_events_date_time ON public.events (event_date, st
 
 COMMENT ON TABLE public.events IS 'Calendar events & reminders — one row per timed block on a given day.';
 COMMENT ON COLUMN public.events.is_completed IS 'Checked off when the reminder/event is done.';
-COMMENT ON COLUMN public.events.color IS 'UI accent: indigo, pink, orange, green, cyan';
+COMMENT ON COLUMN public.events.color IS 'Hex color from the palette';
 
 ALTER TABLE public.events ENABLE ROW LEVEL SECURITY;
 
