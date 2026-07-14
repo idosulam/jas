@@ -13,7 +13,7 @@ import {
 
 import { useGlassToast } from "../../../lib/glass_toast_provider.jsx";
 import ColorPalettePicker from "../../../lib/ColorPalettePicker.jsx";
-import { loadPalette } from "../../../lib/color_palette.js";
+import { fetchPalette } from "../../../lib/color_palette.js";
 
 // Calendar-related defaults
 const CALENDAR_WAKEUP_BEFORE_MINUTES = 120;
@@ -51,20 +51,17 @@ function getCurrentLocalTime() {
 
 const MODAL_EXIT_MS = 320;
 
-const emptyForm = (firstPlace) => {
-  const palette = loadPalette();
-  return {
-    place: firstPlace || "",
-    pay_type: "hourly",
-    shift_date: new Date().toISOString().slice(0, 10),
-    start_time: getCurrentLocalTime(),
-    end_time: "",
-    hours: "",
-    tips: "",
-    notes: "",
-    color: palette[0]?.hex || "#818cf8",
-  };
-};
+const emptyForm = (firstPlace, defaultColor) => ({
+  place: firstPlace || "",
+  pay_type: "hourly",
+  shift_date: new Date().toISOString().slice(0, 10),
+  start_time: getCurrentLocalTime(),
+  end_time: "",
+  hours: "",
+  tips: "",
+  notes: "",
+  color: defaultColor || "#818cf8",
+});
 
 function parseTimeToMinutes(value) {
   if (!value) return null;
@@ -111,6 +108,7 @@ function Shifts({ onNavigate }) {
   const [showFloatingActions, setShowFloatingActions] = useState(false);
   const [fieldErrors, setFieldErrors] = useState({});
   const [workplaces, setWorkplaces] = useState([]);
+  const [palette, setPalette] = useState([]);
   const [presets, setPresets] = useState([]);
   const [presetModalOpen, setPresetModalOpen] = useState(false);
   const [presetModalClosing, setPresetModalClosing] = useState(false);
@@ -166,6 +164,13 @@ function Shifts({ onNavigate }) {
   }, []);
 
   useEffect(() => { fetchPresets(); }, [fetchPresets]);
+
+  // Load color palette from DB
+  useEffect(() => {
+    fetchPalette().then(setPalette);
+  }, []);
+
+  const firstColor = palette[0]?.hex || "#818cf8";
 
   const savePreset = useCallback(async () => {
     const label = presetForm.label.trim();
@@ -227,9 +232,8 @@ function Shifts({ onNavigate }) {
         color: preset.color || "#818cf8",
       });
     } else {
-      const palette = loadPalette();
       setEditingPreset(null);
-      setPresetForm({ label: "", place: form.place || effectiveWorkplaces[0]?.slug || "pasta", start_time: "09:00", end_time: "17:00", hours: "8", pay_type: "hourly", color: palette[0]?.hex || "#818cf8" });
+      setPresetForm({ label: "", place: form.place || effectiveWorkplaces[0]?.slug || "pasta", start_time: "09:00", end_time: "17:00", hours: "8", pay_type: "hourly", color: firstColor });
     }
     setPresetModalClosing(false);
     setPresetModalOpen(true);
@@ -360,14 +364,13 @@ function Shifts({ onNavigate }) {
 
   const openAddModal = () => {
     setEditingShift(null);
-    setForm(emptyForm(effectiveWorkplaces[0]?.slug));
+    setForm(emptyForm(effectiveWorkplaces[0]?.slug, firstColor));
     setFormModalClosing(false);
     setModalOpen(true);
   };
 
   const openEditModal = (shift) => {
     setEditingShift(shift);
-    const palette = loadPalette();
     setForm({
       place: shift.place,
       pay_type: shift.pay_type === "tips_only" ? "tips_only" : "hourly",
@@ -377,7 +380,7 @@ function Shifts({ onNavigate }) {
       hours: String(shift.hours),
       tips: shift.tips ? String(shift.tips) : "",
       notes: shift.notes ?? "",
-      color: shift.color || palette[0]?.hex || "#818cf8",
+      color: shift.color || firstColor,
     });
     setFormModalClosing(false);
     setModalOpen(true);
@@ -389,7 +392,7 @@ function Shifts({ onNavigate }) {
       setModalOpen(false);
       setFormModalClosing(false);
       setEditingShift(null);
-      setForm(emptyForm(effectiveWorkplaces[0]?.slug));
+      setForm(emptyForm(effectiveWorkplaces[0]?.slug, firstColor));
     }, MODAL_EXIT_MS);
   };
 

@@ -26,7 +26,7 @@ import {
 
 import { useGlassToast } from "../../../lib/glass_toast_provider.jsx";
 import ColorPalettePicker from "../../../lib/ColorPalettePicker.jsx";
-import { loadPalette } from "../../../lib/color_palette.js";
+import { fetchPalette } from "../../../lib/color_palette.js";
 
 const MODAL_EXIT_MS = 260;
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -157,11 +157,19 @@ function Calendar() {
   const [nowTick, setNowTick] = useState(() => Date.now());
   const [showFloatingActions, setShowFloatingActions] = useState(false);
   const [fieldErrors, setFieldErrors] = useState({});
+  const [palette, setPalette] = useState([]);
   const addBtnRef = useRef(null);
   const { success: toastSuccess, error: toastError } = useGlassToast();
 
   const selectedKey = toDateKey(selectedDate);
   const isToday = selectedKey === toDateKey(today);
+
+  // Load color palette from DB
+  useEffect(() => {
+    fetchPalette().then(setPalette);
+  }, []);
+
+  const firstColor = palette[0]?.hex || "#818cf8";
 
   const weekDays = useMemo(() => {
     const start = startOfWeek(selectedDate);
@@ -380,10 +388,9 @@ function Calendar() {
     const [h] = startTime.split(":").map(Number);
     const endHour = Math.min(h + 1, DAY_END_HOUR);
     setEditingEvent(null);
-    const palette = loadPalette();
     setForm({
       ...emptyForm(selectedKey),
-      color: palette[0]?.hex || "#818cf8",
+      color: firstColor,
       start_time: startTime,
       end_time: `${String(endHour).padStart(2, "0")}:00`,
     });

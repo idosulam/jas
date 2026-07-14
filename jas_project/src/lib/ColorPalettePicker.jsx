@@ -1,26 +1,32 @@
 /**
  * Inline color palette picker — used inside form modals.
- * Shows palette swatches + "+" to add. Long-press or ✎ button to edit.
+ * Shows palette swatches + "+" to add. Hover ✎ to edit.
  * Manages its own add/edit modal internally.
+ * Colors stored in Supabase color_palettes table.
  */
 import { useCallback, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { loadPalette, addColor, updateColor, deleteColor } from "./color_palette";
+import {
+  fetchPalette,
+  addPaletteColor,
+  updatePaletteColor,
+  deletePaletteColor,
+} from "./color_palette";
 import "./ColorPalettePicker.css";
 
 const MODAL_EXIT_MS = 260;
 
 export default function ColorPalettePicker({ value, onChange }) {
-  const [palette, setPalette] = useState(() => loadPalette());
+  const [palette, setPalette] = useState([]);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [pickerClosing, setPickerClosing] = useState(false);
-  const [editing, setEditing] = useState(null); // null = adding, {id,hex,label} = editing
+  const [editing, setEditing] = useState(null);
   const [hex, setHex] = useState("#818cf8");
   const [label, setLabel] = useState("");
+  const [saving, setSaving] = useState(false);
 
-  // Sync palette from localStorage on mount
   useEffect(() => {
-    setPalette(loadPalette());
+    fetchPalette().then(setPalette);
   }, []);
 
   const openAdd = useCallback(() => {
@@ -48,27 +54,30 @@ export default function ColorPalettePicker({ value, onChange }) {
     }, MODAL_EXIT_MS);
   }, []);
 
-  const handleSave = useCallback(() => {
+  const handleSave = useCallback(async () => {
     const cleanHex = hex.trim();
     if (!cleanHex || !cleanHex.startsWith("#")) return;
 
+    setSaving(true);
+
     if (editing) {
-      updateColor(editing.id, cleanHex, label.trim() || cleanHex);
+      await updatePaletteColor(editing.id, cleanHex, label.trim() || cleanHex);
     } else {
-      const entry = addColor(cleanHex, label.trim() || cleanHex);
-      // Auto-select the new color
-      onChange(entry.hex);
+      const entry = await addPaletteColor(cleanHex, label.trim() || cleanHex);
+      if (entry) onChange(entry.hex);
     }
 
-    setPalette(loadPalette());
+    const updated = await fetchPalette();
+    setPalette(updated);
+    setSaving(false);
     closePicker();
   }, [hex, label, editing, onChange, closePicker]);
 
   const handleDelete = useCallback(
-    (id) => {
-      const updated = deleteColor(id);
+    async (id) => {
+      await deletePaletteColor(id);
+      const updated = await fetchPalette();
       setPalette(updated);
-      // If deleted color was selected, reset to first available
       if (value && !updated.some((c) => c.hex === value) && updated.length > 0) {
         onChange(updated[0].hex);
       }
@@ -188,9 +197,9 @@ export default function ColorPalettePicker({ value, onChange }) {
                   type="button"
                   className="cpp__btn cpp__btn--primary"
                   onClick={handleSave}
-                  disabled={!hex || !hex.startsWith("#") || hex.length < 4}
+                  disabled={saving || !hex || !hex.startsWith("#") || hex.length < 4}
                 >
-                  {editing ? "Save" : "Add"}
+                  {saving ? "Saving…" : editing ? "Save" : "Add"}
                 </button>
               </div>
             </div>
