@@ -952,27 +952,17 @@ function Shifts({ onNavigate }) {
         role="group"
         aria-label="Filter by place"
       >
-        <div className="shifts__place-scroll">
-          {PLACE_FILTERS.map(({ id, label }, index) => (
-            <button
-              key={id}
-              type="button"
-              className={`shifts__place-btn${placeFilter === id ? " shifts__place-btn--active" : ""}${id !== "all" ? ` shifts__place-btn--${id}` : ""}`}
-              onClick={() => setPlaceFilter(id)}
-              aria-pressed={placeFilter === id}
-            >
-              {label}
-            </button>
-          ))}
-          <span
-            className="shifts__place-indicator"
-            style={{
-              width: `calc((100% - 0.3rem * ${PLACE_FILTERS.length}) / ${PLACE_FILTERS.length})`,
-              transform: `translateX(calc(${PLACE_FILTERS.indexOf(placeFilter)} * (100% + 0.3rem)))`,
-            }}
-            aria-hidden="true"
-          />
-        </div>
+        {PLACE_FILTERS.map(({ id, label }) => (
+          <button
+            key={id}
+            type="button"
+            className={`shifts__place-btn${placeFilter === id ? " shifts__place-btn--active" : ""}${id !== "all" ? ` shifts__place-btn--${id}` : ""}`}
+            onClick={() => setPlaceFilter(id)}
+            aria-pressed={placeFilter === id}
+          >
+            {label}
+          </button>
+        ))}
       </div>
 
       <div

@@ -91,7 +91,6 @@
 /* ── Place Filter Pills ─────────────────────────────────────── */
 
 .shifts__place-filter {
-  position: relative;
   display: flex;
   padding: 0.3rem;
   margin-bottom: 1.25rem;
@@ -99,26 +98,16 @@
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.04);
   min-width: 0;
-  overflow: hidden;
-}
-
-.shifts__place-scroll {
-  display: flex;
-  position: relative;
-  width: 100%;
   overflow-x: auto;
   scrollbar-width: none;
   -ms-overflow-style: none;
-  -webkit-overflow-scrolling: touch;
 }
 
-.shifts__place-scroll::-webkit-scrollbar {
+.shifts__place-filter::-webkit-scrollbar {
   display: none;
 }
 
 .shifts__place-btn {
-  position: relative;
-  z-index: 1;
   flex: 1 1 0;
   min-width: 0;
   padding: 0.55rem 0.75rem;
@@ -132,7 +121,8 @@
   cursor: pointer;
   transition:
     color 0.3s ease,
-    background 0.3s ease;
+    background 0.3s ease,
+    box-shadow 0.3s ease;
   white-space: nowrap;
   flex-shrink: 0;
 }
@@ -143,30 +133,19 @@
 
 .shifts__place-btn--active {
   color: #fff;
-}
-
-.shifts__place-btn:focus-visible {
-  outline: 2px solid var(--color-primary);
-  outline-offset: 2px;
-}
-
-.shifts__place-indicator {
-  position: absolute;
-  top: 0;
-  left: 0;
-  height: 100%;
-  border-radius: var(--radius-pill);
   background: linear-gradient(
     135deg,
     var(--color-primary),
     var(--color-secondary)
   );
-  border: 1px solid rgba(255, 255, 255, 0.15);
   box-shadow:
-    0 2px 12px rgba(129, 140, 248, 0.3),
+    0 4px 16px rgba(129, 140, 248, 0.35),
     inset 0 1px 0 rgba(255, 255, 255, 0.15);
-  transition: transform 0.45s var(--ease-spring), width 0.3s ease;
-  pointer-events: none;
+}
+
+.shifts__place-btn:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
 }
 
 /* ── Summary ────────────────────────────────────────────────── */
@@ -1292,14 +1271,6 @@
     border-radius: 1rem;
   }
 
-  .shifts__place-scroll {
-    gap: 0.2rem;
-  }
-
-  .shifts__place-btn {
-    flex-shrink: 0;
-  }
-
   .shifts__place-btn {
     min-height: 44px;
     padding: 0.65rem 0.45rem;
@@ -1619,7 +1590,6 @@
   .shifts__card,
   .shifts__overlay,
   .shifts__modal,
-  .shifts__place-indicator,
   .shifts__action,
   .shifts__btn--primary,
   .shifts__btn--ghost,
