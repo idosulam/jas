@@ -60,7 +60,6 @@ const emptyForm = (firstPlace) => ({
   hours: "",
   tips: "",
   notes: "",
-  color: "",
 });
 
 function parseTimeToMinutes(value) {
@@ -364,9 +363,7 @@ function Shifts({ onNavigate }) {
 
   const openAddModal = () => {
     setEditingShift(null);
-    const base = emptyForm(effectiveWorkplaces[0]?.slug);
-    base.color = firstColor;
-    setForm(base);
+    setForm(emptyForm(effectiveWorkplaces[0]?.slug));
     setFormModalClosing(false);
     setModalOpen(true);
   };
@@ -382,7 +379,7 @@ function Shifts({ onNavigate }) {
       hours: String(shift.hours),
       tips: shift.tips ? String(shift.tips) : "",
       notes: shift.notes ?? "",
-      color: shift.color || PLACES[shift.place]?.color || firstColor,
+      color: shift.color || PLACES[shift.place]?.color || "",
     });
     setFormModalClosing(false);
     setModalOpen(true);
@@ -770,7 +767,7 @@ function Shifts({ onNavigate }) {
       hours: Number(hours.toFixed(2)),
       tips: Number(tips.toFixed(2)),
       notes,
-      color: form.color || PLACES[form.place]?.color || null,
+      color: PLACES[form.place]?.color || null,
     };
 
     try {
@@ -1430,14 +1427,6 @@ function Shifts({ onNavigate }) {
                     onChange={(e) => setForm({ ...form, tips: e.target.value })}
                     onBlur={() => handleFieldBlur("tips")}
                     className={fieldErrors.tips ? "shifts__field-error" : ""}
-                  />
-                </label>
-
-                <label className="shifts__field">
-                  <span>Color</span>
-                  <ColorPalettePicker
-                    value={form.color || ''}
-                    onChange={(hex) => setForm({ ...form, color: hex })}
                   />
                 </label>
 
