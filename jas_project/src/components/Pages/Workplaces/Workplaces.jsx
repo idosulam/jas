@@ -30,6 +30,9 @@ function Workplaces({ onNavigate, returnTo }) {
   const [deactivateTarget, setDeactivateTarget] = useState(null);
   const [deactivateModalClosing, setDeactivateModalClosing] = useState(false);
   const [deactivating, setDeactivating] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [deleteModalClosing, setDeleteModalClosing] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [fieldErrors, setFieldErrors] = useState({});
   const { success: toastSuccess, error: toastError } = useGlassToast();
 
@@ -259,6 +262,50 @@ function Workplaces({ onNavigate, returnTo }) {
     }
   };
 
+  const openDeleteModal = (wp) => {
+    setDeleteModalClosing(false);
+    setDeleteTarget(wp);
+  };
+
+  const closeDeleteModal = () => {
+    setDeleteModalClosing(true);
+    setTimeout(() => {
+      setDeleteTarget(null);
+      setDeleteModalClosing(false);
+    }, MODAL_EXIT_MS);
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+
+    setDeleting(true);
+    setError(null);
+
+    try {
+      const supabase = getSupabaseClient();
+      const { error: dbError } = await supabase
+        .from("workplaces")
+        .delete()
+        .eq("id", deleteTarget.id);
+
+      setDeleting(false);
+
+      if (dbError) {
+        setError(getUserFacingError(dbError.message));
+        toastError("Failed to delete workplace.");
+        return;
+      }
+
+      closeDeleteModal();
+      toastSuccess(`${deleteTarget.label} deleted.`);
+      fetchWorkplaces();
+    } catch (err) {
+      setDeleting(false);
+      setError(getUserFacingError(err.message));
+      toastError("Failed to delete workplace.");
+    }
+  };
+
   return (
     <section className="workplaces page">
       <header className="workplaces__header animate-in">
@@ -359,13 +406,22 @@ function Workplaces({ onNavigate, returnTo }) {
                     </div>
                     <div className="workplaces__card-right">
                       <span className="workplaces__card-rate">{formatMoney(wp.rate)}/hr</span>
-                      <button
-                        type="button"
-                        className="workplaces__action workplaces__action--reactivate"
-                        onClick={() => reactivateWorkplace(wp)}
-                      >
-                        Reactivate
-                      </button>
+                      <div className="workplaces__card-actions">
+                        <button
+                          type="button"
+                          className="workplaces__action workplaces__action--reactivate"
+                          onClick={() => reactivateWorkplace(wp)}
+                        >
+                          Reactivate
+                        </button>
+                        <button
+                          type="button"
+                          className="workplaces__action workplaces__action--delete"
+                          onClick={() => openDeleteModal(wp)}
+                        >
+                          Delete
+                        </button>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -534,7 +590,7 @@ function Workplaces({ onNavigate, returnTo }) {
             onClick={closeDeactivateModal}
           >
             <div
-              className={`workplaces__modal workplaces__modal--compact${deactivateModalClosing ? " workplaces__modal--closing" : ""}`}
+              className={`workplaces__modal workplaces__modal--compact workplaces__modal--delete${deactivateModalClosing ? " workplaces__modal--closing" : ""}`}
               onClick={(e) => e.stopPropagation()}
               role="alertdialog"
               aria-modal="true"
@@ -563,6 +619,73 @@ function Workplaces({ onNavigate, returnTo }) {
                   disabled={deactivating}
                 >
                   {deactivating ? "Deactivating…" : "Deactivate"}
+                </button>
+              </div>
+            </div>
+          </div>,
+          document.body,
+        )}
+
+      {deleteTarget &&
+        createPortal(
+          <div
+            className={`workplaces__overlay${deleteModalClosing ? " workplaces__overlay--closing" : ""}`}
+            onClick={closeDeleteModal}
+          >
+            <div
+              className={`workplaces__modal workplaces__modal--compact workplaces__modal--delete${deleteModalClosing ? " workplaces__modal--closing" : ""}`}
+              onClick={(e) => e.stopPropagation()}
+              role="alertdialog"
+              aria-modal="true"
+              aria-labelledby="delete-workplace-title"
+              aria-describedby="delete-workplace-desc"
+            >
+              <div className="workplaces__delete-icon" aria-hidden="true">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.75"
+                >
+                  <path
+                    d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6h14Z"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path d="M10 11v6M14 11v6" strokeLinecap="round" />
+                </svg>
+              </div>
+              <h2 id="delete-workplace-title" className="workplaces__modal-title workplaces__modal-title--delete">
+                Delete {deleteTarget.label}?
+              </h2>
+              <p id="delete-workplace-desc" className="workplaces__deactivate-desc">
+                This will permanently remove the workplace and all its data.
+                Existing shifts will keep their records but lose the workplace reference.
+                This cannot be undone.
+              </p>
+              <div className="workplaces__form-actions">
+                <button
+                  type="button"
+                  className="workplaces__btn workplaces__btn--ghost"
+                  onClick={closeDeleteModal}
+                  disabled={deleting}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  className="workplaces__btn workplaces__btn--danger"
+                  onClick={confirmDelete}
+                  disabled={deleting}
+                >
+                  {deleting ? (
+                    <>
+                      <span className="workplaces__btn-spinner" aria-hidden="true" />
+                      Deleting…
+                    </>
+                  ) : (
+                    "Delete workplace"
+                  )}
                 </button>
               </div>
             </div>
