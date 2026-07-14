@@ -29,11 +29,4 @@ CREATE POLICY "Allow public update on color_palettes"
 CREATE POLICY "Allow public delete on color_palettes"
   ON public.color_palettes FOR DELETE USING (true);
 
--- Seed default colors
-INSERT INTO public.color_palettes (hex, label, sort_order) VALUES
-  ('#818cf8', 'Indigo', 1),
-  ('#f472b6', 'Pink',   2),
-  ('#fb923c', 'Orange', 3),
-  ('#4ade80', 'Green',  4),
-  ('#22d3ee', 'Cyan',   5)
-ON CONFLICT DO NOTHING;
+-- No default colors seeded — user adds their own via the app.
