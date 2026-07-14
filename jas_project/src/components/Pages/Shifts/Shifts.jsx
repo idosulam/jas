@@ -51,7 +51,7 @@ function getCurrentLocalTime() {
 
 const MODAL_EXIT_MS = 320;
 
-const emptyForm = (firstPlace, defaultColor) => ({
+const emptyForm = (firstPlace) => ({
   place: firstPlace || "",
   pay_type: "hourly",
   shift_date: new Date().toISOString().slice(0, 10),
@@ -60,7 +60,6 @@ const emptyForm = (firstPlace, defaultColor) => ({
   hours: "",
   tips: "",
   notes: "",
-  color: defaultColor || "#818cf8",
 });
 
 function parseTimeToMinutes(value) {
@@ -364,7 +363,7 @@ function Shifts({ onNavigate }) {
 
   const openAddModal = () => {
     setEditingShift(null);
-    setForm(emptyForm(effectiveWorkplaces[0]?.slug, firstColor));
+    setForm(emptyForm(effectiveWorkplaces[0]?.slug));
     setFormModalClosing(false);
     setModalOpen(true);
   };
@@ -380,7 +379,6 @@ function Shifts({ onNavigate }) {
       hours: String(shift.hours),
       tips: shift.tips ? String(shift.tips) : "",
       notes: shift.notes ?? "",
-      color: shift.color || firstColor,
     });
     setFormModalClosing(false);
     setModalOpen(true);
@@ -392,7 +390,7 @@ function Shifts({ onNavigate }) {
       setModalOpen(false);
       setFormModalClosing(false);
       setEditingShift(null);
-      setForm(emptyForm(effectiveWorkplaces[0]?.slug, firstColor));
+      setForm(emptyForm(effectiveWorkplaces[0]?.slug));
     }, MODAL_EXIT_MS);
   };
 
@@ -768,7 +766,7 @@ function Shifts({ onNavigate }) {
       hours: Number(hours.toFixed(2)),
       tips: Number(tips.toFixed(2)),
       notes,
-      color: form.color || null,
+      color: PLACES[form.place]?.color || null,
     };
 
     try {
@@ -1206,7 +1204,6 @@ function Shifts({ onNavigate }) {
                         hours: String(shift.hours),
                         tips: "",
                         notes: shift.notes ?? "",
-                        color: shift.color || "#818cf8",
                       });
                       setFormModalClosing(false);
                       setModalOpen(true);
@@ -1439,14 +1436,6 @@ function Shifts({ onNavigate }) {
                   {form.notes.length > 0 && (
                     <span className="shifts__char-count">{form.notes.length}/500</span>
                   )}
-                </label>
-
-                <label className="shifts__field">
-                  <span>Color</span>
-                  <ColorPalettePicker
-                    value={form.color}
-                    onChange={(hex) => setForm({ ...form, color: hex })}
-                  />
                 </label>
 
                 {form.hours && (
