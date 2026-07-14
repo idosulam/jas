@@ -1048,6 +1048,8 @@
 }
 
 .calendar__modal--delete {
+  width: min(100%, 560px);
+  padding: 1.5rem;
   text-align: center;
   border-color: rgba(239, 68, 68, 0.4);
 }
@@ -1068,7 +1070,7 @@
 .calendar__delete-desc {
   margin-bottom: 1.5rem;
   font-size: 0.9rem;
-  color: var(--text-muted);
+  color: rgba(255, 255, 255, 0.5);
   line-height: 1.55;
 }
 

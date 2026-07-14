@@ -617,8 +617,8 @@
 .shifts__modal--delete {
   width: min(100%, 560px);
   padding: 1.5rem;
-  background: linear-gradient(160deg, #1a1a2e 0%, #16213e 100%);
   text-align: center;
+  border-color: rgba(239, 68, 68, 0.4);
 }
 
 .shifts__modal--closing {
@@ -679,8 +679,8 @@
   gap: 0.5rem;
   padding: 1rem;
   margin-bottom: 1.5rem;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 1rem;
 }
 
@@ -1049,7 +1049,7 @@
 }
 
 .shifts__btn--danger {
-  background: var(--color-danger);
+  background: linear-gradient(135deg, var(--color-danger), #dc2626);
   color: #fff;
   border: none;
   padding: 0.7rem;
@@ -1065,7 +1065,7 @@
 
 .shifts__btn--danger:hover {
   transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(248, 113, 113, 0.4);
+  box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
 }
 
 .shifts__btn--danger:active {
