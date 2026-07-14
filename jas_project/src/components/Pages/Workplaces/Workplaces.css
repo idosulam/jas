@@ -225,35 +225,36 @@
 .workplaces__overlay {
   position: fixed;
   inset: 0;
-  z-index: 999;
+  z-index: 100;
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  padding: 14px 12px calc(12px + env(safe-area-inset-bottom));
-  background: var(--sheet-overlay-bg, rgba(0, 0, 0, 0.5));
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
-  animation: wpOverlayIn 0.25s ease both;
+  padding: 0.75rem;
+  padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  animation: wpOverlayIn 0.28s ease;
 }
 
 .workplaces__overlay--closing {
-  animation: wpOverlayOut 0.25s ease both;
+  animation: wpOverlayOut 0.26s ease forwards;
 }
 
 .workplaces__modal {
   position: relative;
-  width: min(100%, 640px);
-  max-height: min(84svh, calc(100svh - 24px - env(safe-area-inset-bottom)));
+  width: 100%;
+  max-width: 26rem;
+  max-height: min(92dvh, 42rem);
   overflow-y: auto;
-  overscroll-behavior: contain;
-  margin: 0;
-  padding: 2rem;
-  background: rgba(20, 18, 48, 0.98);
-  border: 1px solid var(--sheet-border, rgba(255, 255, 255, 0.08));
-  border-radius: 26px 26px 0 0;
-  box-shadow: var(--sheet-shadow, 0 -4px 40px rgba(0, 0, 0, 0.4));
+  -webkit-overflow-scrolling: touch;
+  padding: 1.4rem 1.4rem max(1.4rem, env(safe-area-inset-bottom));
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 1.2rem 1.2rem 0 0;
+  background: linear-gradient(160deg, #1a1a2e 0%, #16213e 100%);
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.45);
   transform-origin: bottom center;
-  animation: wpModalSlideUp 0.38s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  animation: wpModalSlideUp 0.38s var(--ease-spring) both;
   will-change: transform, opacity;
 }
 
@@ -264,7 +265,7 @@
 }
 
 .workplaces__modal--closing {
-  animation: wpSheetOut 0.25s ease both;
+  animation: wpModalSlideDown 0.26s cubic-bezier(0.55, 0, 1, 0.45) forwards;
 }
 
 @media (min-width: 768px) {
@@ -285,10 +286,11 @@
 }
 
 .workplaces__modal-title {
-  font-family: var(--font-heading, inherit);
-  font-size: 1.6rem;
-  font-weight: 800;
-  margin-bottom: 1.5rem;
+  font-family: var(--font-heading);
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-bottom: 1.25rem;
   color: #fff;
   text-align: center;
 }
@@ -317,19 +319,24 @@
 }
 
 .workplaces__field input {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  padding: 0.65rem 0.9rem;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 0.65rem;
+  background: rgba(255, 255, 255, 0.08);
+  color: #f5f5f7;
+  font-family: inherit;
   font-size: 0.9rem;
-  color: var(--text, #e2e8f0);
-  outline: none;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .workplaces__field input:focus {
-  border-color: #818cf8;
-  box-shadow: 0 0 0 2px rgba(129, 140, 248, 0.15);
+  outline: none;
+  border-color: rgba(99, 102, 241, 0.55);
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
 }
 
 .workplaces__field input:disabled {
@@ -392,34 +399,51 @@
 }
 
 .workplaces__btn {
+  flex: 1;
   border: none;
-  border-radius: 12px;
-  padding: 0.65rem 1.4rem;
-  font-size: 0.88rem;
-  font-weight: 700;
+  border-radius: 0.65rem;
+  padding: 0.7rem 1rem;
+  font-family: inherit;
+  font-size: 0.875rem;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s var(--ease-spring, cubic-bezier(0.34, 1.56, 0.64, 1)),
+    box-shadow 0.2s ease;
 }
 
 .workplaces__btn--ghost {
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--surface, rgba(255, 255, 255, 0.06));
   color: var(--text-muted, #94a3b8);
+  border: 1px solid var(--border, rgba(255, 255, 255, 0.1));
 }
 
 .workplaces__btn--ghost:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--surface-hover, rgba(255, 255, 255, 0.1));
   color: var(--text, #e2e8f0);
+  border-color: var(--border-hover, rgba(255, 255, 255, 0.18));
 }
 
 .workplaces__btn--primary {
-  background: linear-gradient(135deg, #818cf8, #a78bfa);
+  background: linear-gradient(
+    135deg,
+    var(--color-primary, #818cf8),
+    var(--color-secondary, #a78bfa)
+  );
+  border: none;
+  font-weight: 700;
   color: #fff;
-  box-shadow: 0 2px 12px rgba(129, 140, 248, 0.3);
+  box-shadow:
+    0 4px 16px rgba(129, 140, 248, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
 
-.workplaces__btn--primary:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 20px rgba(129, 140, 248, 0.45);
+.workplaces__btn--primary:not(:disabled):hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 6px 24px rgba(129, 140, 248, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
 
 .workplaces__btn--primary:disabled {
@@ -474,14 +498,14 @@
   }
 }
 
-@keyframes wpSheetOut {
+@keyframes wpModalSlideDown {
   from {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: translateY(0);
   }
   to {
     opacity: 0;
-    transform: translateY(24px) scale(0.992);
+    transform: translateY(110%);
   }
 }
 

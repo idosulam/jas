@@ -577,13 +577,16 @@
 .shifts__overlay {
   position: fixed;
   inset: 0;
-  z-index: 999;
+  z-index: 100;
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  padding: 14px 12px calc(12px + env(safe-area-inset-bottom));
-  background: var(--sheet-overlay-bg);
-  animation: shiftsOverlayIn var(--duration-normal) ease both;
+  padding: 0.75rem;
+  padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  animation: shiftsOverlayIn 0.28s ease;
 }
 
 .shifts__overlay--delete {
@@ -591,7 +594,7 @@
 }
 
 .shifts__overlay--closing {
-  animation: shiftsOverlayOut var(--duration-normal) ease both;
+  animation: shiftsOverlayOut 0.26s ease forwards;
 }
 
 .shifts__modal {
@@ -602,10 +605,10 @@
   overscroll-behavior: contain;
   margin: 0;
   padding: 2rem;
-  background: rgba(20, 18, 48, 0.98);
-  border: 1px solid var(--sheet-border);
+  background: linear-gradient(160deg, #1a1a2e 0%, #16213e 100%);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 26px 26px 0 0;
-  box-shadow: var(--sheet-shadow);
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.45);
   transform-origin: bottom center;
   animation: shiftsModalSlideUp 0.38s var(--ease-spring);
   will-change: transform, opacity;
@@ -614,12 +617,12 @@
 .shifts__modal--delete {
   width: min(100%, 560px);
   padding: 1.5rem;
-  background: rgba(20, 18, 48, 0.95);
+  background: linear-gradient(160deg, #1a1a2e 0%, #16213e 100%);
   text-align: center;
 }
 
 .shifts__modal--closing {
-  animation: shiftsSheetOut var(--duration-normal) var(--sheet-ease) both;
+  animation: shiftsSheetOut 0.26s cubic-bezier(0.55, 0, 1, 0.45) forwards;
 }
 
 @media (min-width: 768px) {
