@@ -263,13 +263,18 @@ function Calendar() {
         const linkedShiftIds = new Set(
           (existingEvents || [])
             .map((e) => {
-              const m = typeof e.notes === "string" ? e.notes.match(/Linked shift id:\s*([a-zA-Z0-9-]+)/) : null;
+              const m =
+                typeof e.notes === "string"
+                  ? e.notes.match(/Linked shift id:\s*([a-zA-Z0-9-]+)/)
+                  : null;
               return m ? m[1] : null;
             })
             .filter(Boolean),
         );
 
-        const unsynced = (shiftsInRange || []).filter((s) => !linkedShiftIds.has(s.id));
+        const unsynced = (shiftsInRange || []).filter(
+          (s) => !linkedShiftIds.has(s.id),
+        );
         if (unsynced.length > 0) {
           for (const shift of unsynced) {
             const dateKey = shift.shift_date;
@@ -502,7 +507,12 @@ function Calendar() {
       event_date: eventDate,
       start_time: startTime,
       end_time: endTime,
-      color: (form.color && form.color.startsWith("#")) ? form.color : (EVENT_COLORS[form.color] ? form.color : "#818cf8"),
+      color:
+        form.color && form.color.startsWith("#")
+          ? form.color
+          : EVENT_COLORS[form.color]
+            ? form.color
+            : "#818cf8",
     };
 
     try {
@@ -566,9 +576,7 @@ function Calendar() {
 
       closeFormModal();
       toastSuccess(
-        editingEvent
-          ? "Event edited successfully."
-          : "Event saved.",
+        editingEvent ? "Event edited successfully." : "Event saved.",
       );
       fetchEvents();
     } catch (err) {
@@ -713,9 +721,14 @@ function Calendar() {
     const totalMinutes = (y / HOUR_HEIGHT) * 60;
     // Snap to nearest 30 minutes
     const snappedMinutes = Math.round(totalMinutes / 30) * 30;
-    const hour = Math.min(DAY_START_HOUR + Math.floor(snappedMinutes / 60), DAY_END_HOUR);
+    const hour = Math.min(
+      DAY_START_HOUR + Math.floor(snappedMinutes / 60),
+      DAY_END_HOUR,
+    );
     const minute = snappedMinutes % 60;
-    openAddModal(`${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`);
+    openAddModal(
+      `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`,
+    );
   };
 
   const dayTitle = selectedDate.toLocaleDateString(undefined, {
@@ -940,8 +953,7 @@ function Calendar() {
                 const style = eventStyle(event);
                 if (!style) return null;
 
-                const colorInfo =
-                  resolveColor(event.color);
+                const colorInfo = resolveColor(event.color);
                 const isShort = parseInt(style.height, 10) < 44;
 
                 return (
@@ -1210,7 +1222,9 @@ function Calendar() {
                     placeholder="Reminder details…"
                   />
                   {form.notes.length > 0 && (
-                    <span className="calendar__char-count">{form.notes.length}/240</span>
+                    <span className="calendar__char-count">
+                      {form.notes.length}/240
+                    </span>
                   )}
                 </label>
 

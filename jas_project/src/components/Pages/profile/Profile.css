@@ -402,12 +402,30 @@
   animation: confettiFall 1.5s ease-out forwards;
 }
 
-.profile__confetti--0 { background: #34d399; left: 10%; }
-.profile__confetti--1 { background: #60a5fa; left: 25%; }
-.profile__confetti--2 { background: #fbbf24; left: 40%; }
-.profile__confetti--3 { background: #f472b6; left: 55%; }
-.profile__confetti--4 { background: #a78bfa; left: 70%; }
-.profile__confetti--5 { background: #22d3ee; left: 85%; }
+.profile__confetti--0 {
+  background: #34d399;
+  left: 10%;
+}
+.profile__confetti--1 {
+  background: #60a5fa;
+  left: 25%;
+}
+.profile__confetti--2 {
+  background: #fbbf24;
+  left: 40%;
+}
+.profile__confetti--3 {
+  background: #f472b6;
+  left: 55%;
+}
+.profile__confetti--4 {
+  background: #a78bfa;
+  left: 70%;
+}
+.profile__confetti--5 {
+  background: #22d3ee;
+  left: 85%;
+}
 
 @keyframes confettiFall {
   0% {
@@ -421,7 +439,8 @@
 }
 
 @keyframes goalPulse {
-  0%, 100% {
+  0%,
+  100% {
     box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.4);
   }
   50% {

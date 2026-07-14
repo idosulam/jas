@@ -1249,7 +1249,9 @@ function Profile({ onNavigate }) {
               <h2 id="profile-goal-title" className="profile__panel-title">
                 Goal progress
               </h2>
-              <div className={`profile__goal-bar-wrap${analytics.remainingKg != null && analytics.remainingKg <= 0 ? " profile__goal-reached" : ""}`}>
+              <div
+                className={`profile__goal-bar-wrap${analytics.remainingKg != null && analytics.remainingKg <= 0 ? " profile__goal-reached" : ""}`}
+              >
                 <div
                   className="profile__goal-bar"
                   role="progressbar"
@@ -1260,7 +1262,9 @@ function Profile({ onNavigate }) {
                 >
                   <div
                     className="profile__goal-bar-fill"
-                    style={{ width: `${Math.min(analytics.goalProgress ?? 0, 100)}%` }}
+                    style={{
+                      width: `${Math.min(analytics.goalProgress ?? 0, 100)}%`,
+                    }}
                   />
                 </div>
                 <div className="profile__goal-meta">
@@ -1281,13 +1285,18 @@ function Profile({ onNavigate }) {
                     </span>
                   )}
                 </div>
-                {analytics.remainingKg != null && analytics.remainingKg <= 0 && (
-                  <div className="profile__celebration" aria-hidden="true">
-                    {[...Array(12)].map((_, i) => (
-                      <span key={i} className={`profile__confetti profile__confetti--${i % 6}`} style={{ animationDelay: `${i * 0.1}s` }} />
-                    ))}
-                  </div>
-                )}
+                {analytics.remainingKg != null &&
+                  analytics.remainingKg <= 0 && (
+                    <div className="profile__celebration" aria-hidden="true">
+                      {[...Array(12)].map((_, i) => (
+                        <span
+                          key={i}
+                          className={`profile__confetti profile__confetti--${i % 6}`}
+                          style={{ animationDelay: `${i * 0.1}s` }}
+                        />
+                      ))}
+                    </div>
+                  )}
               </div>
             </section>
           )}
