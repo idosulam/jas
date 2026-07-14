@@ -5,18 +5,21 @@
 }
 
 .workplaces__back-btn {
-  background: none;
-  border: none;
-  color: var(--color-text-muted, #94a3b8);
-  font-size: 0.85rem;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--color-border, rgba(255, 255, 255, 0.1));
+  color: var(--color-text, #e2e8f0);
+  font-size: 0.88rem;
+  font-weight: 500;
   cursor: pointer;
-  padding: 0;
-  margin-bottom: 0.5rem;
-  transition: color 0.15s ease;
+  padding: 0.5rem 1rem;
+  border-radius: 10px;
+  margin-bottom: 1rem;
+  transition: all 0.15s ease;
 }
 
 .workplaces__back-btn:hover {
-  color: var(--color-text, #e2e8f0);
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.18);
 }
 
 .workplaces__error {

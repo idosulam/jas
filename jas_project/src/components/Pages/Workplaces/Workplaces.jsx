@@ -279,9 +279,9 @@ function Workplaces({ onNavigate }) {
           <button
             type="button"
             className="workplaces__back-btn"
-            onClick={() => onNavigate("Profile")}
+            onClick={() => onNavigate("Shifts")}
           >
-            ← Back
+            ← Back to Shifts
           </button>
         )}
         <p className="page__eyebrow">Settings</p>

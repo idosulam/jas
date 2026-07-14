@@ -952,16 +952,6 @@ function Shifts({ onNavigate }) {
           className={`shifts__place-indicator shifts__place-indicator--${placeFilter}`}
           aria-hidden="true"
         />
-        {onNavigate && (
-          <button
-            type="button"
-            className="shifts__manage-link"
-            onClick={() => onNavigate("Workplaces")}
-            title="Manage workplaces"
-          >
-            ⚙
-          </button>
-        )}
       </div>
 
       <div
@@ -1049,14 +1039,26 @@ function Shifts({ onNavigate }) {
             </span>
           )}
         </h2>
-        <button
-          type="button"
-          className="shifts__add-btn"
-          onClick={openAddModal}
-          ref={addBtnRef}
-        >
-          + Add shift
-        </button>
+        <div className="shifts__header-actions">
+          {onNavigate && (
+            <button
+              type="button"
+              className="shifts__manage-link"
+              onClick={() => onNavigate("Workplaces")}
+              title="Manage workplaces"
+            >
+              ⚙ Workplaces
+            </button>
+          )}
+          <button
+            type="button"
+            className="shifts__add-btn"
+            onClick={openAddModal}
+            ref={addBtnRef}
+          >
+            + Add shift
+          </button>
+        </div>
       </div>
 
       {loading ? (

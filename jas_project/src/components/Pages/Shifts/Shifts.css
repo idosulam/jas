@@ -1554,25 +1554,33 @@
   }
 }
 
+/* ── Header actions ── */
+
+.shifts__header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
 /* ── Manage workplaces link ── */
 
 .shifts__manage-link {
-  background: none;
-  border: none;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--color-border, rgba(255, 255, 255, 0.1));
   color: var(--color-text-muted, #94a3b8);
-  font-size: 1rem;
+  font-size: 0.8rem;
+  font-weight: 500;
   cursor: pointer;
-  padding: 0.25rem;
-  margin-left: 0.35rem;
-  border-radius: 6px;
-  transition: color 0.15s ease, background 0.15s ease;
-  line-height: 1;
-  vertical-align: middle;
+  padding: 0.45rem 0.85rem;
+  border-radius: 10px;
+  transition: color 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+  white-space: nowrap;
 }
 
 .shifts__manage-link:hover {
   color: var(--color-text, #e2e8f0);
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.18);
 }
 
 /* ── Reduced Motion ─────────────────────────────────────────── */
