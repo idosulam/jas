@@ -164,7 +164,15 @@
 
 .nav-option--active {
   color: #fff;
-  background: rgba(129, 140, 248, 0.12);
+  background: linear-gradient(
+    135deg,
+    rgba(129, 140, 248, 0.35),
+    rgba(168, 85, 247, 0.25)
+  );
+  border-radius: var(--radius-pill);
+  box-shadow:
+    0 2px 16px rgba(129, 140, 248, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
 
 .nav-option__icon {
