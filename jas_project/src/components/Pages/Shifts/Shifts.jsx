@@ -12,6 +12,8 @@ import {
 } from "../../../lib/security";
 
 import { useGlassToast } from "../../../lib/glass_toast_provider.jsx";
+import ColorPalettePicker from "../../../lib/ColorPalettePicker.jsx";
+import { loadPalette } from "../../../lib/color_palette.js";
 
 // Calendar-related defaults
 const CALENDAR_WAKEUP_BEFORE_MINUTES = 120;
@@ -49,16 +51,20 @@ function getCurrentLocalTime() {
 
 const MODAL_EXIT_MS = 320;
 
-const emptyForm = (firstPlace) => ({
-  place: firstPlace || "",
-  pay_type: "hourly",
-  shift_date: new Date().toISOString().slice(0, 10),
-  start_time: getCurrentLocalTime(),
-  end_time: "",
-  hours: "",
-  tips: "",
-  notes: "",
-});
+const emptyForm = (firstPlace) => {
+  const palette = loadPalette();
+  return {
+    place: firstPlace || "",
+    pay_type: "hourly",
+    shift_date: new Date().toISOString().slice(0, 10),
+    start_time: getCurrentLocalTime(),
+    end_time: "",
+    hours: "",
+    tips: "",
+    notes: "",
+    color: palette[0]?.hex || "#818cf8",
+  };
+};
 
 function parseTimeToMinutes(value) {
   if (!value) return null;
@@ -357,6 +363,7 @@ function Shifts({ onNavigate }) {
 
   const openEditModal = (shift) => {
     setEditingShift(shift);
+    const palette = loadPalette();
     setForm({
       place: shift.place,
       pay_type: shift.pay_type === "tips_only" ? "tips_only" : "hourly",
@@ -366,6 +373,7 @@ function Shifts({ onNavigate }) {
       hours: String(shift.hours),
       tips: shift.tips ? String(shift.tips) : "",
       notes: shift.notes ?? "",
+      color: shift.color || palette[0]?.hex || "#818cf8",
     });
     setFormModalClosing(false);
     setModalOpen(true);
@@ -674,7 +682,7 @@ function Shifts({ onNavigate }) {
         event_date: dateKey,
         start_time: shiftStart,
         end_time: shiftEnd,
-        color: "cyan",
+        color: shiftRecord.color || "cyan",
       };
 
       if (existingShiftEvent) {
@@ -753,6 +761,7 @@ function Shifts({ onNavigate }) {
       hours: Number(hours.toFixed(2)),
       tips: Number(tips.toFixed(2)),
       notes,
+      color: form.color || null,
     };
 
     try {
@@ -1116,7 +1125,7 @@ function Shifts({ onNavigate }) {
                 <div className="shifts__card-main">
                   <div className="shifts__card-top">
                     <span
-                      className="shifts__badge" style={{ background: `${PLACES[shift.place]?.color || '#818cf8'}15`, color: PLACES[shift.place]?.color || '#818cf8', border: `1px solid ${PLACES[shift.place]?.color || '#818cf8'}26` }}
+                      className="shifts__badge" style={{ background: `${shift.color || PLACES[shift.place]?.color || '#818cf8'}15`, color: shift.color || PLACES[shift.place]?.color || '#818cf8', border: `1px solid ${shift.color || PLACES[shift.place]?.color || '#818cf8'}26` }}
                     >
                       {placeInfo?.label ?? shift.place}
                     </span>
@@ -1189,6 +1198,7 @@ function Shifts({ onNavigate }) {
                         hours: String(shift.hours),
                         tips: "",
                         notes: shift.notes ?? "",
+                        color: shift.color || "#818cf8",
                       });
                       setFormModalClosing(false);
                       setModalOpen(true);
@@ -1423,6 +1433,14 @@ function Shifts({ onNavigate }) {
                   )}
                 </label>
 
+                <label className="shifts__field">
+                  <span>Color</span>
+                  <ColorPalettePicker
+                    value={form.color}
+                    onChange={(hex) => setForm({ ...form, color: hex })}
+                  />
+                </label>
+
                 {form.hours && (
                   <p className="shifts__preview shifts__preview--pop">
                     {form.pay_type === "tips_only" ? (
@@ -1541,7 +1559,7 @@ function Shifts({ onNavigate }) {
 
               <div className="shifts__delete-preview">
                 <span
-                  className="shifts__badge" style={{ background: `${PLACES[deleteTarget.place]?.color || '#818cf8'}15`, color: PLACES[deleteTarget.place]?.color || '#818cf8', border: `1px solid ${PLACES[deleteTarget.place]?.color || '#818cf8'}26` }}
+                  className="shifts__badge" style={{ background: `${deleteTarget.color || PLACES[deleteTarget.place]?.color || '#818cf8'}15`, color: deleteTarget.color || PLACES[deleteTarget.place]?.color || '#818cf8', border: `1px solid ${deleteTarget.color || PLACES[deleteTarget.place]?.color || '#818cf8'}26` }}
                 >
                   {deletePlaceInfo?.label}
                 </span>

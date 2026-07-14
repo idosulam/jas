@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS public.shifts (
   hours       NUMERIC(5, 2) NOT NULL CHECK (hours > 0),
   tips        NUMERIC(10, 2) NOT NULL DEFAULT 0 CHECK (tips >= 0),
   notes       TEXT NULL,
+  color       TEXT NULL,
   created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
@@ -23,6 +24,8 @@ COMMENT ON COLUMN public.shifts.end_time IS 'Optional shift end time';
 COMMENT ON COLUMN public.shifts.hours IS 'Hours worked on this shift (supports decimal values such as 4.1)';
 COMMENT ON COLUMN public.shifts.tips IS 'Tips earned (optional, defaults to 0)';
 COMMENT ON COLUMN public.shifts.notes IS 'Optional free-text note about the shift';
+COMMENT ON COLUMN public.shifts.color IS 'Optional hex color from the palette';
+COMMENT ON COLUMN public.shifts.created_at IS 'Row creation timestamp';
 
 -- Row Level Security (adjust if you add auth later)
 ALTER TABLE public.shifts ENABLE ROW LEVEL SECURITY;
