@@ -27,6 +27,9 @@ const PAY_TYPES = [
   { id: "tips_only", label: "Tips only" },
 ];
 
+// Show inline pills up to this many filter options; beyond that, use a picker sheet.
+const MAX_INLINE_FILTERS = 4;
+
 const MONTHS = [
   "January",
   "February",
@@ -124,6 +127,8 @@ function Shifts({ onNavigate }) {
   const addBtnRef = useRef(null);
   const placeFilterRef = useRef(null);
   const [placeIndicator, setPlaceIndicator] = useState({ left: 0, width: 0 });
+  const [placePickerOpen, setPlacePickerOpen] = useState(false);
+  const [placePickerClosing, setPlacePickerClosing] = useState(false);
   const { success: toastSuccess, error: toastError } = useGlassToast();
 
   // All workplaces come from the DB — no hardcoded fallback
@@ -168,8 +173,11 @@ function Shifts({ onNavigate }) {
     fetchWorkplaces();
   }, [fetchWorkplaces]);
 
-  // Sliding indicator for place filter
+  const useInlineFilters = PLACE_FILTERS.length <= MAX_INLINE_FILTERS;
+
+  // Sliding indicator for place filter (only when inline pills are shown)
   const updatePlaceIndicator = useCallback(() => {
+    if (!useInlineFilters) return;
     const container = placeFilterRef.current;
     if (!container) return;
     const active = container.querySelector(".shifts__place-btn--active");
@@ -180,7 +188,7 @@ function Shifts({ onNavigate }) {
       left: aRect.left - cRect.left - container.scrollLeft,
       width: aRect.width,
     });
-  }, [placeFilter]);
+  }, [placeFilter, useInlineFilters]);
   useEffect(() => {
     // Wait a tick so the DOM has the up-to-date set of pills
     // (e.g. after effectiveWorkplaces loads asynchronously) before measuring.
@@ -191,6 +199,27 @@ function Shifts({ onNavigate }) {
       window.removeEventListener("resize", updatePlaceIndicator);
     };
   }, [updatePlaceIndicator, effectiveWorkplaces]);
+
+  const openPlacePicker = useCallback(() => {
+    setPlacePickerClosing(false);
+    setPlacePickerOpen(true);
+  }, []);
+
+  const closePlacePicker = useCallback(() => {
+    setPlacePickerClosing(true);
+    setTimeout(() => {
+      setPlacePickerOpen(false);
+      setPlacePickerClosing(false);
+    }, MODAL_EXIT_MS);
+  }, []);
+
+  const selectPlaceFilter = useCallback(
+    (id) => {
+      setPlaceFilter(id);
+      closePlacePicker();
+    },
+    [closePlacePicker],
+  );
 
   const fetchPresets = useCallback(async () => {
     try {
@@ -1018,33 +1047,57 @@ function Shifts({ onNavigate }) {
         </label>
       </div>
 
-      <div
-        className="shifts__place-filter animate-in animate-in--2"
-        role="group"
-        aria-label="Filter by place"
-        ref={placeFilterRef}
-      >
-        {PLACE_FILTERS.map(({ id, label }) => (
-          <button
-            key={id}
-            type="button"
-            data-place={id}
-            className={`shifts__place-btn${placeFilter === id ? " shifts__place-btn--active" : ""}${id !== "all" ? ` shifts__place-btn--${id}` : ""}`}
-            onClick={() => setPlaceFilter(id)}
-            aria-pressed={placeFilter === id}
-          >
-            {label}
-          </button>
-        ))}
-        <span
-          className="shifts__place-indicator"
-          style={{
-            transform: `translateX(${placeIndicator.left}px)`,
-            width: placeIndicator.width,
-          }}
-          aria-hidden="true"
-        />
-      </div>
+      {useInlineFilters ? (
+        <div
+          className="shifts__place-filter animate-in animate-in--2"
+          role="group"
+          aria-label="Filter by place"
+          ref={placeFilterRef}
+        >
+          {PLACE_FILTERS.map(({ id, label }) => (
+            <button
+              key={id}
+              type="button"
+              data-place={id}
+              className={`shifts__place-btn${placeFilter === id ? " shifts__place-btn--active" : ""}${id !== "all" ? ` shifts__place-btn--${id}` : ""}`}
+              onClick={() => setPlaceFilter(id)}
+              aria-pressed={placeFilter === id}
+            >
+              {label}
+            </button>
+          ))}
+          <span
+            className="shifts__place-indicator"
+            style={{
+              transform: `translateX(${placeIndicator.left}px)`,
+              width: placeIndicator.width,
+            }}
+            aria-hidden="true"
+          />
+        </div>
+      ) : (
+        <button
+          type="button"
+          className="shifts__place-trigger animate-in animate-in--2"
+          onClick={openPlacePicker}
+          aria-haspopup="listbox"
+          aria-expanded={placePickerOpen}
+        >
+          <span
+            className="shifts__place-trigger-dot"
+            style={{
+              background:
+                placeFilter === "all"
+                  ? "var(--color-primary, #818cf8)"
+                  : PLACES[placeFilter]?.color || "var(--color-primary, #818cf8)",
+            }}
+          />
+          {PLACE_FILTERS.find((f) => f.id === placeFilter)?.label || "All"}
+          <span className="shifts__place-trigger-chevron" aria-hidden="true">
+            ▾
+          </span>
+        </button>
+      )}
 
       <div
         className="shifts__summary animate-in animate-in--3"
@@ -1614,6 +1667,58 @@ function Shifts({ onNavigate }) {
                   </button>
                 </div>
               </form>
+            </div>
+          </div>,
+          document.body,
+        )}
+
+      {placePickerOpen &&
+        createPortal(
+          <div
+            className={`shifts__overlay shifts__overlay--picker${placePickerClosing ? " shifts__overlay--closing" : ""}`}
+            onClick={closePlacePicker}
+          >
+            <div
+              className={`shifts__modal shifts__modal--picker${placePickerClosing ? " shifts__modal--closing" : ""}`}
+              onClick={(e) => e.stopPropagation()}
+              role="listbox"
+              aria-label="Filter by place"
+              aria-modal="true"
+            >
+              <h2 className="shifts__modal-title shifts__modal-title--picker">
+                Filter by workplace
+              </h2>
+              <ul className="shifts__picker-list">
+                {PLACE_FILTERS.map(({ id, label }) => {
+                  const isActive = placeFilter === id;
+                  const color =
+                    id === "all"
+                      ? "var(--color-primary, #818cf8)"
+                      : PLACES[id]?.color || "var(--color-primary, #818cf8)";
+                  return (
+                    <li key={id}>
+                      <button
+                        type="button"
+                        className={`shifts__picker-item${isActive ? " shifts__picker-item--active" : ""}`}
+                        onClick={() => selectPlaceFilter(id)}
+                        role="option"
+                        aria-selected={isActive}
+                      >
+                        <span
+                          className="shifts__picker-dot"
+                          style={{ background: color }}
+                        />
+                        <span className="shifts__picker-label">{label}</span>
+                        {isActive && (
+                          <span className="shifts__picker-check" aria-hidden="true">
+                            ✓
+                          </span>
+                        )}
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
             </div>
           </div>,
           document.body,
