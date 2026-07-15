@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { getSupabaseClient } from "../../../lib/superbase";
-import { useGlassToast } from "../../../lib/glass_toast_provider.jsx";
+import { getSupabaseClient } from "../../lib/superbase.jsx";
+import { useGlassToast } from "../../lib/glass_toast_provider.jsx";
 import "./Auth.css";
 
 const MODES = { LOGIN: "login", REGISTER: "register", FORGOT: "forgot" };
