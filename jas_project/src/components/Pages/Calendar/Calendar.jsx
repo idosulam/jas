@@ -1,6 +1,5 @@
 import "./Calendar.css";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { createPortal } from "react-dom";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { getSupabaseClient } from "../../../lib/superbase";
 import { useUserId } from "../../../lib/AuthContext.jsx";
 import {
@@ -28,21 +27,24 @@ import {
   isShiftLinkNote,
   getVisibleEventNotes,
   recalcWakeWalkForDate,
-  WAKE_TITLE,
-  WALK_TITLE,
 } from "../../../lib/calendarSync";
-import { useBodyScrollLock } from "../../../hooks";
+import { useBodyScrollLock, useModal, useFloatingActions } from "../../../hooks";
+import {
+  SheetModal,
+  ConfirmModal,
+  FormField,
+  EmptyState,
+  LoadingSkeleton,
+  PageHeader,
+  GlassCard,
+  FAB,
+} from "../../../components";
 import { useGlassToast } from "../../../lib/glass_toast_provider.jsx";
 import ColorPalettePicker from "../../../lib/ColorPalettePicker.jsx";
 import { fetchPalette } from "../../../lib/color_palette.js";
 
 const MODAL_EXIT_MS = 260;
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-
-// Wake/walk generation defaults — mirrors the logic in Shifts.jsx so that
-// editing a shift-linked event directly on the Calendar page keeps the
-// linked shift and the generated Wake up / Go for a walk events in sync.
-
 
 const emptyForm = (dateKey) => ({
   title: "",
@@ -53,8 +55,6 @@ const emptyForm = (dateKey) => ({
   color: "#818cf8",
 });
 
-
-
 function Calendar() {
   const userId = useUserId();
   const today = useMemo(() => new Date(), []);
@@ -64,10 +64,7 @@ function Calendar() {
   const [allEvents, setAllEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [formModalClosing, setFormModalClosing] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
-  const [deleteModalClosing, setDeleteModalClosing] = useState(false);
   const [editingEvent, setEditingEvent] = useState(null);
   const [form, setForm] = useState(() => emptyForm(toDateKey(today)));
   const [saving, setSaving] = useState(false);
@@ -75,10 +72,12 @@ function Calendar() {
   const [togglingId, setTogglingId] = useState(null);
   const [removingId, setRemovingId] = useState(null);
   const [nowTick, setNowTick] = useState(() => Date.now());
-  const [showFloatingActions, setShowFloatingActions] = useState(false);
   const [fieldErrors, setFieldErrors] = useState({});
   const [palette, setPalette] = useState([]);
-  const addBtnRef = useRef(null);
+
+  const formModal = useModal(MODAL_EXIT_MS);
+  const deleteModal = useModal(MODAL_EXIT_MS);
+  const { ref: addBtnRef, visible: showFloatingActions } = useFloatingActions();
   const { success: toastSuccess, error: toastError } = useGlassToast();
 
   const selectedKey = toDateKey(selectedDate);
@@ -267,29 +266,7 @@ function Calendar() {
     return () => clearInterval(timer);
   }, []);
 
-  useBodyScrollLock(modalOpen, deleteTarget);
-
-  useEffect(() => {
-    const target = addBtnRef.current;
-    if (!target) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => setShowFloatingActions(!entry.isIntersecting),
-      { threshold: 0 },
-    );
-    observer.observe(target);
-    return () => observer.disconnect();
-  }, []);
-
-  const closeFormModal = () => {
-    setFormModalClosing(true);
-    setTimeout(() => {
-      setModalOpen(false);
-      setFormModalClosing(false);
-      setEditingEvent(null);
-      setForm(emptyForm(selectedKey));
-      setFieldErrors({});
-    }, MODAL_EXIT_MS);
-  };
+  useBodyScrollLock(formModal.open, deleteTarget);
 
   const validateCalendarField = (fieldName) => {
     const errors = {};
@@ -364,8 +341,8 @@ function Calendar() {
       start_time: startTime,
       end_time: `${String(endHour).padStart(2, "0")}:00`,
     });
-    setFormModalClosing(false);
-    setModalOpen(true);
+    setFieldErrors({});
+    formModal.openModal();
   };
 
   const openEditModal = (event) => {
@@ -378,15 +355,23 @@ function Calendar() {
       end_time: event.end_time.slice(0, 5),
       color: event.color ?? "green",
     });
-    setFormModalClosing(false);
-    setModalOpen(true);
+    setFieldErrors({});
+    formModal.openModal();
+  };
+
+  const closeFormModal = () => {
+    formModal.closeModal();
+    setTimeout(() => {
+      setEditingEvent(null);
+      setForm(emptyForm(selectedKey));
+      setFieldErrors({});
+    }, MODAL_EXIT_MS);
   };
 
   const closeDeleteModal = () => {
-    setDeleteModalClosing(true);
+    deleteModal.closeModal();
     setTimeout(() => {
       setDeleteTarget(null);
-      setDeleteModalClosing(false);
     }, MODAL_EXIT_MS);
   };
 
@@ -632,6 +617,7 @@ function Calendar() {
       setError(getUserFacingError(err.message));
     }
   };
+
   const handleGridClick = (e) => {
     const grid = e.currentTarget;
     const rect = grid.getBoundingClientRect();
@@ -657,10 +643,11 @@ function Calendar() {
 
   return (
     <section className="calendar page">
-      <header className="calendar__header animate-in">
-        <p className="page__eyebrow">Daily planner</p>
-        <h1 className="page__title">Calendar</h1>
-      </header>
+      <PageHeader
+        className="calendar__header animate-in"
+        eyebrow="Daily planner"
+        title="Calendar"
+      />
 
       <div className="calendar__nav animate-in animate-in--1">
         <button
@@ -761,14 +748,8 @@ function Calendar() {
       </div>
 
       <div className="calendar__summary animate-in animate-in--3">
-        <div className="glass-card calendar__stat">
-          <span className="glass-card__value">{events.length}</span>
-          <span className="glass-card__label">Events</span>
-        </div>
-        <div className="glass-card calendar__stat">
-          <span className="glass-card__value">{pendingCount}</span>
-          <span className="glass-card__label">Pending</span>
-        </div>
+        <GlassCard className="calendar__stat" value={events.length} label="Events" />
+        <GlassCard className="calendar__stat" value={pendingCount} label="Pending" />
       </div>
 
       {error && (
@@ -790,17 +771,7 @@ function Calendar() {
       </div>
 
       {loading ? (
-        <div
-          style={{ display: "flex", flexDirection: "column", gap: "0.65rem" }}
-        >
-          {[0, 1, 2].map((i) => (
-            <div
-              key={i}
-              className="skeleton skeleton--card"
-              style={{ height: "4rem" }}
-            />
-          ))}
-        </div>
+        <LoadingSkeleton count={3} height="4rem" />
       ) : (
         <div className="calendar__day animate-in animate-in--4">
           <div className="calendar__timeline">
@@ -924,8 +895,8 @@ function Calendar() {
                         type="button"
                         className="calendar__event-action calendar__event-action--delete"
                         onClick={() => {
-                          setDeleteModalClosing(false);
                           setDeleteTarget(event);
+                          deleteModal.openModal();
                         }}
                         aria-label={`Delete ${event.title}`}
                       >
@@ -939,14 +910,14 @@ function Calendar() {
           </div>
         </div>
       )}
-      {events.length === 0 && (
-        <p
-          className="calendar__empty calendar__reminder"
-          style={{ marginTop: "1rem" }}
-        >
-          No events today. Tap the timeline or + Add event.
-        </p>
+
+      {events.length === 0 && !loading && (
+        <EmptyState
+          text="No events today. Tap the timeline or + Add event."
+          className="animate-in"
+        />
       )}
+
       {events.length > 0 && (
         <ul className="calendar__reminders animate-in animate-in--4">
           {events
@@ -987,8 +958,8 @@ function Calendar() {
                   type="button"
                   className="calendar__reminder-delete"
                   onClick={() => {
-                    setDeleteModalClosing(false);
                     setDeleteTarget(event);
+                    deleteModal.openModal();
                   }}
                   aria-label={`Delete ${event.title}`}
                 >
@@ -999,305 +970,153 @@ function Calendar() {
         </ul>
       )}
 
-      {modalOpen &&
-        createPortal(
-          <div
-            className={`calendar__overlay${formModalClosing ? " calendar__overlay--closing" : ""}`}
-            onClick={closeFormModal}
+      <SheetModal
+        open={formModal.open}
+        closing={formModal.closing}
+        onClose={closeFormModal}
+        title={editingEvent ? "Edit event" : "Add event"}
+      >
+        <form className="calendar__form" onSubmit={handleSubmit}>
+          <FormField label="Title" error={fieldErrors.title}>
+            <input
+              type="text"
+              value={form.title}
+              onChange={(e) => {
+                setForm({ ...form, title: e.target.value });
+                setFieldErrors((prev) => ({ ...prev, title: null }));
+              }}
+              onBlur={() => handleCalendarFieldBlur("title")}
+              placeholder="Workout, meeting…"
+              required
+              autoComplete="off"
+            />
+          </FormField>
+
+          <FormField label="Date" error={fieldErrors.event_date}>
+            <input
+              type="date"
+              value={form.event_date}
+              onChange={(e) => {
+                setForm({ ...form, event_date: e.target.value });
+                setFieldErrors((prev) => ({ ...prev, event_date: null }));
+              }}
+              onBlur={() => handleCalendarFieldBlur("event_date")}
+              required
+            />
+          </FormField>
+
+          <FormField label="Start" error={fieldErrors.start_time}>
+            <input
+              type="time"
+              value={form.start_time}
+              onChange={(e) => {
+                setForm({ ...form, start_time: e.target.value });
+                setFieldErrors((prev) => ({
+                  ...prev,
+                  start_time: null,
+                  end_time: null,
+                }));
+              }}
+              onBlur={() => handleCalendarFieldBlur("start_time")}
+              required
+            />
+          </FormField>
+
+          <FormField label="End" error={fieldErrors.end_time}>
+            <input
+              type="time"
+              value={form.end_time}
+              onChange={(e) => {
+                setForm({ ...form, end_time: e.target.value });
+                setFieldErrors((prev) => ({
+                  ...prev,
+                  end_time: null,
+                  start_time: null,
+                }));
+              }}
+              onBlur={() => handleCalendarFieldBlur("end_time")}
+              required
+            />
+          </FormField>
+
+          <FormField label="Color">
+            <ColorPalettePicker
+              value={form.color}
+              onChange={(hex) => setForm({ ...form, color: hex })}
+            />
+          </FormField>
+
+          <FormField
+            label="Notes"
+            optional
+            charCount={form.notes.length}
+            maxChars={240}
           >
-            <div
-              className={`calendar__modal${formModalClosing ? " calendar__modal--closing" : ""}`}
-              onClick={(e) => e.stopPropagation()}
-              role="dialog"
-              aria-modal="true"
-              aria-labelledby="event-modal-title"
-            >
-              <h2 id="event-modal-title" className="calendar__modal-title">
-                {editingEvent ? "Edit event" : "Add event"}
-              </h2>
+            <textarea
+              rows={3}
+              value={form.notes}
+              maxLength={240}
+              onChange={(e) =>
+                setForm({ ...form, notes: e.target.value })
+              }
+              placeholder="Reminder details…"
+            />
+          </FormField>
 
-              <form className="calendar__form" onSubmit={handleSubmit}>
-                <label className="calendar__field">
-                  <span>
-                    Title{" "}
-                    {fieldErrors.title && (
-                      <span className="calendar__field-error-text">
-                        —{fieldErrors.title}
-                      </span>
-                    )}
-                  </span>
-                  <input
-                    type="text"
-                    value={form.title}
-                    onChange={(e) => {
-                      setForm({ ...form, title: e.target.value });
-                      setFieldErrors((prev) => ({ ...prev, title: null }));
-                    }}
-                    onBlur={() => handleCalendarFieldBlur("title")}
-                    placeholder="Workout, meeting…"
-                    className={fieldErrors.title ? "calendar__field-error" : ""}
-                    required
-                    autoComplete="off"
-                  />
-                </label>
-
-                <label className="calendar__field">
-                  <span>
-                    Date{" "}
-                    {fieldErrors.event_date && (
-                      <span className="calendar__field-error-text">
-                        —{fieldErrors.event_date}
-                      </span>
-                    )}
-                  </span>
-                  <input
-                    type="date"
-                    value={form.event_date}
-                    onChange={(e) => {
-                      setForm({ ...form, event_date: e.target.value });
-                      setFieldErrors((prev) => ({ ...prev, event_date: null }));
-                    }}
-                    onBlur={() => handleCalendarFieldBlur("event_date")}
-                    className={
-                      fieldErrors.event_date ? "calendar__field-error" : ""
-                    }
-                    required
-                  />
-                </label>
-
-                <label className="calendar__field">
-                  <span>
-                    Start{" "}
-                    {fieldErrors.start_time && (
-                      <span className="calendar__field-error-text">
-                        —{fieldErrors.start_time}
-                      </span>
-                    )}
-                  </span>
-                  <input
-                    type="time"
-                    value={form.start_time}
-                    onChange={(e) => {
-                      setForm({ ...form, start_time: e.target.value });
-                      setFieldErrors((prev) => ({
-                        ...prev,
-                        start_time: null,
-                        end_time: null,
-                      }));
-                    }}
-                    onBlur={() => handleCalendarFieldBlur("start_time")}
-                    className={
-                      fieldErrors.start_time ? "calendar__field-error" : ""
-                    }
-                    required
-                  />
-                </label>
-                <label className="calendar__field">
-                  <span>
-                    End{" "}
-                    {fieldErrors.end_time && (
-                      <span className="calendar__field-error-text">
-                        —{fieldErrors.end_time}
-                      </span>
-                    )}
-                  </span>
-                  <input
-                    type="time"
-                    value={form.end_time}
-                    onChange={(e) => {
-                      setForm({ ...form, end_time: e.target.value });
-                      setFieldErrors((prev) => ({
-                        ...prev,
-                        end_time: null,
-                        start_time: null,
-                      }));
-                    }}
-                    onBlur={() => handleCalendarFieldBlur("end_time")}
-                    className={
-                      fieldErrors.end_time ? "calendar__field-error" : ""
-                    }
-                    required
-                  />
-                </label>
-
-                <label className="calendar__field">
-                  <span>Color</span>
-                  <ColorPalettePicker
-                    value={form.color}
-                    onChange={(hex) => setForm({ ...form, color: hex })}
-                  />
-                </label>
-
-                <label className="calendar__field">
-                  <span>Notes (optional)</span>
-                  <textarea
-                    rows={3}
-                    value={form.notes}
-                    maxLength={240}
-                    onChange={(e) =>
-                      setForm({ ...form, notes: e.target.value })
-                    }
-                    placeholder="Reminder details…"
-                  />
-                  {form.notes.length > 0 && (
-                    <span className="calendar__char-count">
-                      {form.notes.length}/240
-                    </span>
-                  )}
-                </label>
-
-                <div className="calendar__form-actions">
-                  <button
-                    type="button"
-                    className="calendar__btn calendar__btn--ghost"
-                    onClick={closeFormModal}
-                    disabled={saving}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="calendar__btn calendar__btn--primary"
-                    disabled={saving || !isCalendarFormValid}
-                  >
-                    {saving ? (
-                      <>
-                        <span
-                          className="calendar__btn-spinner"
-                          aria-hidden="true"
-                        />
-                        Saving…
-                      </>
-                    ) : editingEvent ? (
-                      "Save changes"
-                    ) : (
-                      "Add event"
-                    )}
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>,
-          document.body,
-        )}
-
-      {deleteTarget &&
-        createPortal(
-          <div
-            className={`calendar__overlay calendar__overlay--delete${deleteModalClosing ? " calendar__overlay--closing" : ""}`}
-            onClick={closeDeleteModal}
-          >
-            <div
-              className={`calendar__modal calendar__modal--delete${deleteModalClosing ? " calendar__modal--closing" : ""}`}
-              onClick={(e) => e.stopPropagation()}
-              role="alertdialog"
-              aria-modal="true"
-              aria-labelledby="delete-event-title"
-            >
-              {" "}
-              <div className="calendar__delete-icon" aria-hidden="true">
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.75"
-                >
-                  <path
-                    d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6h14Z"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                  <path d="M10 11v6M14 11v6" strokeLinecap="round" />
-                </svg>
-              </div>
-              <h2 id="delete-event-title" className="calendar__modal-title">
-                Delete this event?
-              </h2>
-              <p className="calendar__delete-desc">
-                <strong>{deleteTarget.title}</strong> on{" "}
-                {deleteTarget.event_date} (
-                {formatTime12(deleteTarget.start_time)} –{" "}
-                {formatTime12(deleteTarget.end_time)})
-              </p>
-              <div className="calendar__form-actions">
-                <button
-                  type="button"
-                  className="calendar__btn calendar__btn--ghost"
-                  onClick={closeDeleteModal}
-                  disabled={deleting}
-                >
-                  Keep it
-                </button>
-                <button
-                  type="button"
-                  className="calendar__btn calendar__btn--danger"
-                  onClick={confirmDelete}
-                  disabled={deleting}
-                >
-                  {deleting ? (
-                    <>
-                      <span
-                        className="calendar__btn-spinner"
-                        aria-hidden="true"
-                      />
-                      Deleting…
-                    </>
-                  ) : (
-                    "Delete event"
-                  )}
-                </button>
-              </div>
-            </div>
-          </div>,
-          document.body,
-        )}
-
-      {showFloatingActions &&
-        createPortal(
-          <div className="calendar__fab-stack">
+          <div className="btn-row">
             <button
               type="button"
-              className="calendar__fab calendar__fab--up"
-              onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-              aria-label="Scroll to top"
+              className="btn btn--ghost"
+              onClick={closeFormModal}
+              disabled={saving}
             >
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                aria-hidden="true"
-              >
-                <path
-                  d="M12 19V5M5 12l7-7 7 7"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
+              Cancel
             </button>
             <button
-              type="button"
-              className="calendar__fab calendar__fab--add"
-              onClick={() => openAddModal()}
-              aria-label="Add event"
+              type="submit"
+              className="btn btn--primary"
+              disabled={saving || !isCalendarFormValid}
             >
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                aria-hidden="true"
-              >
-                <path
-                  d="M12 5v14M5 12h14"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
+              {saving ? (
+                <>
+                  <span className="btn__spinner" aria-hidden="true" />
+                  Saving…
+                </>
+              ) : editingEvent ? (
+                "Save changes"
+              ) : (
+                "Add event"
+              )}
             </button>
-          </div>,
-          document.body,
-        )}
+          </div>
+        </form>
+      </SheetModal>
+
+      <ConfirmModal
+        open={!!deleteTarget && deleteModal.open}
+        closing={deleteModal.closing}
+        onClose={closeDeleteModal}
+        onConfirm={confirmDelete}
+        loading={deleting}
+        title="Delete this event?"
+        preview={
+          deleteTarget && (
+            <strong>
+              {deleteTarget.title} on {deleteTarget.event_date} (
+              {formatTime12(deleteTarget.start_time)} –{" "}
+              {formatTime12(deleteTarget.end_time)})
+            </strong>
+          )
+        }
+        confirmLabel="Delete event"
+      />
+
+      <FAB
+        visible={showFloatingActions}
+        onScrollTop={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+        onAdd={() => openAddModal()}
+        addLabel="Add event"
+      />
     </section>
   );
 }

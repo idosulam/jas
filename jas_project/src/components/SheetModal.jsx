@@ -15,6 +15,8 @@ export default function SheetModal({
   variant = "default", // "default" | "danger" | "warning"
   className = "",
   overlayClassName = "",
+  swipeBind,
+  swipeStyle,
 }) {
   if (!open && !closing) return null;
 
@@ -43,6 +45,8 @@ export default function SheetModal({
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
+        {...swipeBind}
+        style={swipeStyle}
       >
         {title && (
           <h2 className={`sheet-modal__title${compact ? " sheet-modal__title--compact" : ""}`}>

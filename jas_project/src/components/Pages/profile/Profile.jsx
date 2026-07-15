@@ -1,6 +1,5 @@
 import "./Profile.css";
 import { useCallback, useEffect, useMemo, useState, useRef } from "react";
-import { createPortal } from "react-dom";
 import { getSupabaseClient } from "../../../lib/superbase";
 import { useUserId } from "../../../lib/AuthContext.jsx";
 import {
@@ -11,7 +10,21 @@ import {
 } from "../../../lib/security";
 
 import { useGlassToast } from "../../../lib/glass_toast_provider.jsx";
-import { useBodyScrollLock, useSwipeDownToClose } from "../../../hooks";
+import {
+  SheetModal,
+  ConfirmModal,
+  FormField,
+  GlassCard,
+  PageHeader,
+  FAB,
+  LoadingSkeleton,
+} from "../../../components";
+import {
+  useBodyScrollLock,
+  useModal,
+  useFloatingActions,
+  useSwipeDownToClose,
+} from "../../../hooks";
 
 const UNIT_STORAGE_KEY = "profile_weight_unit";
 const KG_TO_LBS = 2.20462;
@@ -45,12 +58,6 @@ function loadUnit() {
 
 function toDisplayKg(kg, unit) {
   return unit === "lbs" ? kg * KG_TO_LBS : kg;
-}
-
-function fromDisplayToKg(value, unit) {
-  const n = parseFloat(value);
-  if (Number.isNaN(n)) return null;
-  return unit === "lbs" ? n / KG_TO_LBS : n;
 }
 
 function formatWeight(value, unit, digits = 1) {
@@ -419,12 +426,11 @@ function Profile({ onNavigate }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const [weightModalOpen, setWeightModalOpen] = useState(false);
-  const [weightModalClosing, setWeightModalClosing] = useState(false);
-  const [profileModalOpen, setProfileModalOpen] = useState(false);
-  const [profileModalClosing, setProfileModalClosing] = useState(false);
+  const weightModal = useModal(MODAL_EXIT_MS);
+  const profileModal = useModal(MODAL_EXIT_MS);
+  const deleteModal = useModal(MODAL_EXIT_MS);
+
   const [deleteTarget, setDeleteTarget] = useState(null);
-  const [deleteModalClosing, setDeleteModalClosing] = useState(false);
 
   const [weightForm, setWeightForm] = useState(emptyWeightForm);
   const [profileForm, setProfileForm] = useState(emptyProfileForm);
@@ -435,9 +441,10 @@ function Profile({ onNavigate }) {
   const [profileFieldErrors, setProfileFieldErrors] = useState({});
   const [weightFieldErrors, setWeightFieldErrors] = useState({});
   const hasLoadedOnce = useRef(false);
-  const [showFloatingActions, setShowFloatingActions] = useState(false);
-  const logWeightBtnRef = useRef(null);
   const { success: toastSuccess, error: toastError } = useGlassToast();
+
+  const { ref: logWeightBtnRef, visible: showFloatingActions } =
+    useFloatingActions();
 
   const fetchData = useCallback(async () => {
     if (!userId) return;
@@ -482,18 +489,14 @@ function Profile({ onNavigate }) {
     fetchData();
   }, [fetchData]);
 
-  useBodyScrollLock(weightModalOpen, profileModalOpen, deleteTarget);
-
-  useEffect(() => {
-    const target = logWeightBtnRef.current;
-    if (!target) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => setShowFloatingActions(!entry.isIntersecting),
-      { threshold: 0 },
-    );
-    observer.observe(target);
-    return () => observer.disconnect();
-  }, []);
+  useBodyScrollLock(
+    weightModal.open,
+    weightModal.closing,
+    profileModal.open,
+    profileModal.closing,
+    deleteModal.open,
+    deleteModal.closing,
+  );
 
   const handleUnitChange = (nextUnit) => {
     setUnit(nextUnit);
@@ -504,39 +507,11 @@ function Profile({ onNavigate }) {
     }
   };
 
-  const closeWeightModal = () => {
-    setWeightModalClosing(true);
-    setTimeout(() => {
-      setWeightModalOpen(false);
-      setWeightModalClosing(false);
-      setEditingEntry(null);
-      setWeightForm(emptyWeightForm());
-      setWeightFieldErrors({});
-    }, MODAL_EXIT_MS);
-  };
-
-  const closeProfileModal = () => {
-    setProfileModalClosing(true);
-    setTimeout(() => {
-      setProfileModalOpen(false);
-      setProfileModalClosing(false);
-      setProfileFieldErrors({});
-    }, MODAL_EXIT_MS);
-  };
-
-  const closeDeleteModal = () => {
-    setDeleteModalClosing(true);
-    setTimeout(() => {
-      setDeleteTarget(null);
-      setDeleteModalClosing(false);
-    }, MODAL_EXIT_MS);
-  };
-
   const openAddWeight = () => {
     setEditingEntry(null);
     setWeightForm(emptyWeightForm());
-    setWeightModalClosing(false);
-    setWeightModalOpen(true);
+    setWeightFieldErrors({});
+    weightModal.openModal();
   };
 
   const openEditWeight = (entry) => {
@@ -548,8 +523,17 @@ function Profile({ onNavigate }) {
       weight_lbs: String(kgToLbs(weightKg)?.toFixed(1) ?? ""),
       notes: entry.notes ?? "",
     });
-    setWeightModalClosing(false);
-    setWeightModalOpen(true);
+    setWeightFieldErrors({});
+    weightModal.openModal();
+  };
+
+  const closeWeightModal = () => {
+    weightModal.closeModal();
+    setTimeout(() => {
+      setEditingEntry(null);
+      setWeightForm(emptyWeightForm());
+      setWeightFieldErrors({});
+    }, MODAL_EXIT_MS);
   };
 
   const openProfileEdit = () => {
@@ -573,8 +557,27 @@ function Profile({ onNavigate }) {
     } else {
       setProfileForm(emptyProfileForm());
     }
-    setProfileModalClosing(false);
-    setProfileModalOpen(true);
+    setProfileFieldErrors({});
+    profileModal.openModal();
+  };
+
+  const closeProfileModal = () => {
+    profileModal.closeModal();
+    setTimeout(() => {
+      setProfileFieldErrors({});
+    }, MODAL_EXIT_MS);
+  };
+
+  const openDeleteConfirm = (entry) => {
+    setDeleteTarget(entry);
+    deleteModal.openModal();
+  };
+
+  const closeDeleteModal = () => {
+    deleteModal.closeModal();
+    setTimeout(() => {
+      setDeleteTarget(null);
+    }, MODAL_EXIT_MS);
   };
 
   const handleHeightCmChange = (value) => {
@@ -1005,34 +1008,22 @@ function Profile({ onNavigate }) {
   const unitLabel = unit === "kg" ? "kg" : "lbs";
 
   const weightSwipe = useSwipeDownToClose(
-    weightModalOpen,
-    weightModalClosing,
+    weightModal.open,
+    weightModal.closing,
     closeWeightModal,
   );
 
-  const profileSwipe = useSwipeDownToClose(
-    profileModalOpen,
-    profileModalClosing,
-    closeProfileModal,
-  );
-
-  const deleteSwipe = useSwipeDownToClose(
-    Boolean(deleteTarget),
-    deleteModalClosing,
-    closeDeleteModal,
-  );
   return (
     <section>
-      <header className="profile__header">
+      <PageHeader
+        className="profile__header"
+        eyebrow="Your progress"
+        title={displayName}
+        subtitle="Weight loss analytics tuned for your training."
+      >
         <div className="profile__avatar" aria-hidden="true">
           {displayName.charAt(0).toUpperCase()}
         </div>
-        <p className="page__eyebrow">Your progress</p>
-        <h1 className="page__title">{displayName}</h1>
-        <p className="page__subtitle">
-          Weight loss analytics tuned for your training.
-        </p>
-
         <div
           className="profile__unit-toggle"
           role="group"
@@ -1059,7 +1050,7 @@ function Profile({ onNavigate }) {
             lbs
           </button>
         </div>
-      </header>
+      </PageHeader>
 
       {error && (
         <p className="profile__error profile__error--glass" role="alert">
@@ -1069,62 +1060,54 @@ function Profile({ onNavigate }) {
 
       {loading ? (
         <div className="profile__summary">
-          {[0, 1, 2, 3].map((i) => (
-            <div key={i} className="skeleton skeleton--stat" />
-          ))}
-          <div style={{ gridColumn: "span 2" }}>
-            <div
-              className="skeleton skeleton--card"
-              style={{ height: "10rem", marginTop: "1rem" }}
-            />
+          <LoadingSkeleton count={4} variant="stat" contents />
+          <div style={{ gridColumn: "span 2", marginTop: "1rem" }}>
+            <LoadingSkeleton count={1} variant="card" height="10rem" />
           </div>
         </div>
       ) : (
         <>
           <div className="profile__summary">
-            <article className="glass-card profile__stat">
-              <span className="glass-card__value">
-                {formatWeight(
-                  analytics.currentKg != null
-                    ? toDisplayKg(analytics.currentKg, unit)
-                    : null,
-                  unitLabel,
-                )}
-              </span>
-              <span className="glass-card__label">Current weight</span>
-            </article>
-            <article className="glass-card profile__stat">
-              <span
-                className={`glass-card__value${analytics.totalChangeKg != null && analytics.totalChangeKg < 0 ? " profile__stat-value--good" : ""}`}
-              >
-                {analytics.totalChangeKg != null
+            <GlassCard
+              className="profile__stat"
+              value={formatWeight(
+                analytics.currentKg != null
+                  ? toDisplayKg(analytics.currentKg, unit)
+                  : null,
+                unitLabel,
+              )}
+              label="Current weight"
+            />
+            <GlassCard
+              className="profile__stat"
+              valueClassName={analytics.totalChangeKg != null && analytics.totalChangeKg < 0 ? "profile__stat-value--good" : ""}
+              value={
+                analytics.totalChangeKg != null
                   ? formatSignedDelta(
                       toDisplayKg(analytics.totalChangeKg, unit),
                       unitLabel,
                     )
-                  : "—"}
-              </span>
-              <span className="glass-card__label">Total change</span>
-            </article>
-            <article className="glass-card profile__stat">
-              <span className="glass-card__value">
-                {analytics.weeklyChangeKg != null
+                  : "—"
+              }
+              label="Total change"
+            />
+            <GlassCard
+              className="profile__stat"
+              value={
+                analytics.weeklyChangeKg != null
                   ? formatSignedDelta(
                       toDisplayKg(analytics.weeklyChangeKg, unit),
                       `${unitLabel}/wk`,
                     )
-                  : "—"}
-              </span>
-              <span className="glass-card__label">Weekly pace</span>
-            </article>
-            <article className="glass-card profile__stat">
-              <span className="glass-card__value">
-                {analytics.bmi != null ? analytics.bmi.toFixed(1) : "—"}
-              </span>
-              <span className="glass-card__label">
-                BMI{analytics.bmiCategory ? ` · ${analytics.bmiCategory}` : ""}
-              </span>
-            </article>
+                  : "—"
+              }
+              label="Weekly pace"
+            />
+            <GlassCard
+              className="profile__stat"
+              value={analytics.bmi != null ? analytics.bmi.toFixed(1) : "—"}
+              label={`BMI${analytics.bmiCategory ? ` · ${analytics.bmiCategory}` : ""}`}
+            />
           </div>
 
           <section
@@ -1334,10 +1317,7 @@ function Profile({ onNavigate }) {
                       <button
                         type="button"
                         className="profile__icon-btn profile__icon-btn--danger"
-                        onClick={() => {
-                          setDeleteTarget(entry);
-                          setDeleteModalClosing(false);
-                        }}
+                        onClick={() => openDeleteConfirm(entry)}
                         aria-label="Delete weigh-in"
                       >
                         <svg
@@ -1362,522 +1342,369 @@ function Profile({ onNavigate }) {
         </>
       )}
 
-      {weightModalOpen &&
-        createPortal(
-          <div
-            className={`profile__overlay${weightModalClosing ? " profile__overlay--closing" : ""}`}
-            onClick={closeWeightModal}
-            role="presentation"
+      {/* Weight Log/Edit Modal */}
+      <SheetModal
+        open={weightModal.open}
+        closing={weightModal.closing}
+        onClose={closeWeightModal}
+        title={editingEntry ? "Edit weigh-in" : "Log weigh-in"}
+        className={weightSwipe.dragging ? "sheet-modal--dragging" : ""}
+        swipeBind={weightSwipe.bind}
+        swipeStyle={weightSwipe.style}
+      >
+        <form className="profile__form" onSubmit={saveWeight}>
+          <FormField
+            label="Date"
+            error={weightFieldErrors.entry_date}
           >
-            <div
-              className={`profile__modal${weightModalClosing ? " profile__modal--closing" : ""}${weightSwipe.dragging ? " profile__modal--dragging" : ""}`}
-              onClick={(e) => e.stopPropagation()}
-              role="dialog"
-              aria-modal="true"
-              aria-labelledby="weight-modal-title"
-              {...weightSwipe.bind}
-              style={weightSwipe.style}
+            <input
+              type="date"
+              value={weightForm.entry_date}
+              onChange={(e) => {
+                setWeightForm((f) => ({
+                  ...f,
+                  entry_date: e.target.value,
+                }));
+                setWeightFieldErrors((prev) => ({
+                  ...prev,
+                  entry_date: null,
+                }));
+              }}
+              onBlur={() => handleWeightFieldBlur("entry_date")}
+              required
+            />
+          </FormField>
+          <div className="profile__weight-row">
+            <FormField
+              label="Weight (kg)"
+              error={weightFieldErrors.weight_kg}
             >
-              <h2 id="weight-modal-title" className="profile__modal-title">
-                {editingEntry ? "Edit weigh-in" : "Log weigh-in"}
-              </h2>
-              <form className="profile__form" onSubmit={saveWeight}>
-                <label className="profile__field">
-                  Date{" "}
-                  {weightFieldErrors.entry_date && (
-                    <span className="profile__field-error-text">
-                      —{weightFieldErrors.entry_date}
-                    </span>
-                  )}
-                  <input
-                    type="date"
-                    value={weightForm.entry_date}
-                    onChange={(e) => {
-                      setWeightForm((f) => ({
-                        ...f,
-                        entry_date: e.target.value,
-                      }));
-                      setWeightFieldErrors((prev) => ({
-                        ...prev,
-                        entry_date: null,
-                      }));
-                    }}
-                    onBlur={() => handleWeightFieldBlur("entry_date")}
-                    className={
-                      weightFieldErrors.entry_date ? "profile__field-error" : ""
-                    }
-                    required
-                  />
-                </label>
-                <div className="profile__weight-row">
-                  <label className="profile__field">
-                    Weight (kg){" "}
-                    {weightFieldErrors.weight_kg && (
-                      <span className="profile__field-error-text">
-                        —{weightFieldErrors.weight_kg}
-                      </span>
-                    )}
-                    <input
-                      type="number"
-                      step="0.1"
-                      min="1"
-                      placeholder="62.5"
-                      value={weightForm.weight_kg}
-                      onChange={(e) => {
-                        handleWeightKgChange(e.target.value);
-                        setWeightFieldErrors((prev) => ({
-                          ...prev,
-                          weight_kg: null,
-                          weight_lbs: null,
-                        }));
-                      }}
-                      onBlur={() => handleWeightFieldBlur("weight_kg")}
-                      className={
-                        weightFieldErrors.weight_kg
-                          ? "profile__field-error"
-                          : ""
-                      }
-                      required
-                    />
-                  </label>
-                  <label className="profile__field">
-                    Weight (lbs){" "}
-                    {weightFieldErrors.weight_lbs && (
-                      <span className="profile__field-error-text">
-                        —{weightFieldErrors.weight_lbs}
-                      </span>
-                    )}
-                    <input
-                      type="number"
-                      step="0.1"
-                      min="1"
-                      placeholder="137.8"
-                      value={weightForm.weight_lbs}
-                      onChange={(e) => {
-                        handleWeightLbsChange(e.target.value);
-                        setWeightFieldErrors((prev) => ({
-                          ...prev,
-                          weight_lbs: null,
-                          weight_kg: null,
-                        }));
-                      }}
-                      onBlur={() => handleWeightFieldBlur("weight_lbs")}
-                      className={
-                        weightFieldErrors.weight_lbs
-                          ? "profile__field-error"
-                          : ""
-                      }
-                      required
-                    />
-                  </label>
-                </div>
-                <label className="profile__field">
-                  Notes <span className="profile__optional">(optional)</span>
-                  <input
-                    type="text"
-                    placeholder="Post-leg day, morning fasted…"
-                    value={weightForm.notes}
-                    onChange={(e) =>
-                      setWeightForm((f) => ({ ...f, notes: e.target.value }))
-                    }
-                  />
-                </label>
-                <div className="profile__modal-actions">
-                  <button
-                    type="button"
-                    className="profile__btn profile__btn--ghost"
-                    onClick={closeWeightModal}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="profile__btn profile__btn--primary"
-                    disabled={saving || !isWeightFormValid}
-                  >
-                    {saving ? "Saving…" : "Save"}
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>,
-          document.body,
-        )}
-
-      {profileModalOpen &&
-        createPortal(
-          <div
-            className={`profile__overlay${profileModalClosing ? " profile__overlay--closing" : ""}`}
-            onClick={closeProfileModal}
-            role="presentation"
-          >
-            <div
-              className={`profile__modal${profileModalClosing ? " profile__modal--closing" : ""}`}
-              onClick={(e) => e.stopPropagation()}
-              role="dialog"
-              aria-modal="true"
-              aria-labelledby="profile-modal-title"
+              <input
+                type="number"
+                step="0.1"
+                min="1"
+                placeholder="62.5"
+                value={weightForm.weight_kg}
+                onChange={(e) => {
+                  handleWeightKgChange(e.target.value);
+                  setWeightFieldErrors((prev) => ({
+                    ...prev,
+                    weight_kg: null,
+                    weight_lbs: null,
+                  }));
+                }}
+                onBlur={() => handleWeightFieldBlur("weight_kg")}
+                required
+              />
+            </FormField>
+            <FormField
+              label="Weight (lbs)"
+              error={weightFieldErrors.weight_lbs}
             >
-              <h2 id="profile-modal-title" className="profile__modal-title">
-                Edit profile
-              </h2>
-              <form className="profile__form" onSubmit={saveProfile}>
-                <label className="profile__field">
-                  Name{" "}
-                  {profileFieldErrors.display_name && (
-                    <span className="profile__field-error-text">
-                      —{profileFieldErrors.display_name}
-                    </span>
-                  )}
-                  <input
-                    type="text"
-                    value={profileForm.display_name}
-                    onChange={(e) => {
-                      setProfileForm((f) => ({
-                        ...f,
-                        display_name: e.target.value,
-                      }));
-                      setProfileFieldErrors((prev) => ({
-                        ...prev,
-                        display_name: null,
-                      }));
-                    }}
-                    onBlur={() => handleProfileFieldBlur("display_name")}
-                    className={
-                      profileFieldErrors.display_name
-                        ? "profile__field-error"
-                        : ""
-                    }
-                  />
-                </label>
-                <label className="profile__field">
-                  Age{" "}
-                  {profileFieldErrors.age && (
-                    <span className="profile__field-error-text">
-                      —{profileFieldErrors.age}
-                    </span>
-                  )}
-                  <input
-                    type="number"
-                    min="13"
-                    max="120"
-                    placeholder="26"
-                    value={profileForm.age}
-                    onChange={(e) => {
-                      setProfileForm((f) => ({ ...f, age: e.target.value }));
-                      setProfileFieldErrors((prev) => ({ ...prev, age: null }));
-                    }}
-                    onBlur={() => handleProfileFieldBlur("age")}
-                    className={
-                      profileFieldErrors.age ? "profile__field-error" : ""
-                    }
-                  />
-                </label>
-                <label className="profile__field">
-                  Height (cm){" "}
-                  {profileFieldErrors.height_cm && (
-                    <span className="profile__field-error-text">
-                      —{profileFieldErrors.height_cm}
-                    </span>
-                  )}
-                  <input
-                    type="number"
-                    step="0.1"
-                    min="1"
-                    placeholder="165"
-                    value={profileForm.height_cm}
-                    onChange={(e) => {
-                      handleHeightCmChange(e.target.value);
-                      setProfileFieldErrors((prev) => ({
-                        ...prev,
-                        height_cm: null,
-                      }));
-                    }}
-                    onBlur={() => handleProfileFieldBlur("height_cm")}
-                    className={
-                      profileFieldErrors.height_cm ? "profile__field-error" : ""
-                    }
-                  />
-                </label>
-                <div className="profile__height-row">
-                  <label className="profile__field">
-                    Feet
-                    <input
-                      type="number"
-                      min="0"
-                      max="9"
-                      placeholder="5"
-                      value={profileForm.height_ft}
-                      onChange={(e) =>
-                        handleHeightImperialChange("height_ft", e.target.value)
-                      }
-                    />
-                  </label>
-                  <label className="profile__field">
-                    Inches
-                    <input
-                      type="number"
-                      min="0"
-                      max="11"
-                      step="0.1"
-                      placeholder="5"
-                      value={profileForm.height_in}
-                      onChange={(e) =>
-                        handleHeightImperialChange("height_in", e.target.value)
-                      }
-                    />
-                  </label>
-                </div>
-                <div className="profile__weight-row">
-                  <label className="profile__field">
-                    Goal weight (kg){" "}
-                    {profileFieldErrors.goal_weight_kg && (
-                      <span className="profile__field-error-text">
-                        —{profileFieldErrors.goal_weight_kg}
-                      </span>
-                    )}
-                    <input
-                      type="number"
-                      step="0.1"
-                      min="1"
-                      placeholder="58"
-                      value={profileForm.goal_weight_kg}
-                      onChange={(e) => {
-                        handleGoalWeightKgChange(e.target.value);
-                        setProfileFieldErrors((prev) => ({
-                          ...prev,
-                          goal_weight_kg: null,
-                        }));
-                      }}
-                      onBlur={() => handleProfileFieldBlur("goal_weight_kg")}
-                      className={
-                        profileFieldErrors.goal_weight_kg
-                          ? "profile__field-error"
-                          : ""
-                      }
-                    />
-                  </label>
-                  <label className="profile__field">
-                    Goal weight (lbs)
-                    <input
-                      type="number"
-                      step="0.1"
-                      min="1"
-                      placeholder="128"
-                      value={profileForm.goal_weight_lbs}
-                      onChange={(e) =>
-                        handleGoalWeightLbsChange(e.target.value)
-                      }
-                    />
-                  </label>
-                </div>
-                <label className="profile__field">
-                  Gender
-                  <select
-                    value={profileForm.gender}
-                    onChange={(e) =>
-                      setProfileForm((f) => ({ ...f, gender: e.target.value }))
-                    }
-                  >
-                    <option value="female">Female</option>
-                    <option value="male">Male</option>
-                    <option value="other">Other</option>
-                  </select>
-                </label>
-                <p className="profile__form-hint">
-                  Enter height in centimeters or feet and inches. Weight fields
-                  follow your {unitLabel} toggle.
-                </p>
-                <div className="profile__modal-actions">
-                  <button
-                    type="button"
-                    className="profile__btn profile__btn--ghost"
-                    onClick={closeProfileModal}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="profile__btn profile__btn--primary"
-                    disabled={saving || !isProfileFormValid}
-                  >
-                    {saving ? "Saving…" : "Save profile"}
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>,
-          document.body,
-        )}
-
-      {deleteTarget &&
-        createPortal(
-          <div
-            className={`profile__overlay${deleteModalClosing ? " profile__overlay--closing" : ""}`}
-            onClick={closeDeleteModal}
-            role="presentation"
-          >
-            <div
-              className={`profile__modal profile__modal--compact${deleteModalClosing ? " profile__modal--closing" : ""}`}
-              onClick={(e) => e.stopPropagation()}
-              role="alertdialog"
-              aria-modal="true"
-              aria-labelledby="delete-modal-title"
-            >
-              <h2 id="delete-modal-title" className="profile__modal-title">
-                Delete weigh-in?
-              </h2>
-              <p className="profile__delete-text">
-                Remove {formatDateLabel(deleteTarget.entry_date)} (
-                {formatWeight(
-                  toDisplayKg(Number(deleteTarget.weight_kg), unit),
-                  unitLabel,
-                )}
-                )?
-              </p>
-              <div className="profile__modal-actions">
-                <button
-                  type="button"
-                  className="profile__btn profile__btn--ghost"
-                  onClick={closeDeleteModal}
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  className="profile__btn profile__btn--danger"
-                  onClick={confirmDelete}
-                  disabled={deleting}
-                >
-                  {deleting ? "Deleting…" : "Delete"}
-                </button>
-              </div>
-            </div>
-          </div>,
-          document.body,
-        )}
-
-      {duplicateDateConfirm &&
-        createPortal(
-          <div
-            className="profile__overlay"
-            onClick={closeDuplicateConfirm}
-            role="presentation"
-          >
-            <div
-              className="profile__modal profile__modal--compact"
-              onClick={(e) => e.stopPropagation()}
-              role="alertdialog"
-              aria-modal="true"
-              aria-labelledby="dup-date-title"
-            >
-              <div className="profile__dup-icon" aria-hidden="true">
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.75"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
-                </svg>
-              </div>
-              <h2 id="dup-date-title" className="profile__modal-title">
-                Already logged for{" "}
-                {formatDateLabel(duplicateDateConfirm.existingEntry.entry_date)}
-              </h2>
-              <p className="profile__dup-desc">
-                You have{" "}
-                <strong>
-                  {formatWeight(
-                    toDisplayKg(
-                      Number(duplicateDateConfirm.existingEntry.weight_kg),
-                      unit,
-                    ),
-                    unitLabel,
-                  )}
-                </strong>{" "}
-                recorded for this day.
-              </p>
-              <p className="profile__dup-desc">
-                Updating to{" "}
-                <strong>
-                  {formatWeight(
-                    toDisplayKg(duplicateDateConfirm.newWeight, unit),
-                    unitLabel,
-                  )}
-                </strong>
-                ?
-              </p>
-              <div className="profile__modal-actions">
-                <button
-                  type="button"
-                  className="profile__btn profile__btn--ghost"
-                  onClick={closeDuplicateConfirm}
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  className="profile__btn profile__btn--primary"
-                  onClick={confirmDuplicateSave}
-                  disabled={saving}
-                >
-                  {saving ? "Updating…" : "Update entry"}
-                </button>
-              </div>
-            </div>
-          </div>,
-          document.body,
-        )}
-
-      {showFloatingActions &&
-        createPortal(
-          <div className="profile__fab-stack">
+              <input
+                type="number"
+                step="0.1"
+                min="1"
+                placeholder="137.8"
+                value={weightForm.weight_lbs}
+                onChange={(e) => {
+                  handleWeightLbsChange(e.target.value);
+                  setWeightFieldErrors((prev) => ({
+                    ...prev,
+                    weight_lbs: null,
+                    weight_kg: null,
+                  }));
+                }}
+                onBlur={() => handleWeightFieldBlur("weight_lbs")}
+                required
+              />
+            </FormField>
+          </div>
+          <FormField label="Notes" optional>
+            <input
+              type="text"
+              placeholder="Post-leg day, morning fasted…"
+              value={weightForm.notes}
+              onChange={(e) =>
+                setWeightForm((f) => ({ ...f, notes: e.target.value }))
+              }
+            />
+          </FormField>
+          <div className="btn-row">
             <button
               type="button"
-              className="profile__fab profile__fab--up"
-              onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-              aria-label="Scroll to top"
+              className="btn btn--ghost"
+              onClick={closeWeightModal}
             >
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                aria-hidden="true"
-              >
-                <path
-                  d="M12 19V5M5 12l7-7 7 7"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="btn btn--primary"
+              disabled={saving || !isWeightFormValid}
+            >
+              {saving ? "Saving…" : "Save"}
+            </button>
+          </div>
+        </form>
+      </SheetModal>
+
+      {/* Profile Edit Modal */}
+      <SheetModal
+        open={profileModal.open}
+        closing={profileModal.closing}
+        onClose={closeProfileModal}
+        title="Edit profile"
+      >
+        <form className="profile__form" onSubmit={saveProfile}>
+          <FormField
+            label="Name"
+            error={profileFieldErrors.display_name}
+          >
+            <input
+              type="text"
+              value={profileForm.display_name}
+              onChange={(e) => {
+                setProfileForm((f) => ({
+                  ...f,
+                  display_name: e.target.value,
+                }));
+                setProfileFieldErrors((prev) => ({
+                  ...prev,
+                  display_name: null,
+                }));
+              }}
+              onBlur={() => handleProfileFieldBlur("display_name")}
+            />
+          </FormField>
+          <FormField
+            label="Age"
+            error={profileFieldErrors.age}
+            optional
+          >
+            <input
+              type="number"
+              min="13"
+              max="120"
+              placeholder="26"
+              value={profileForm.age}
+              onChange={(e) => {
+                setProfileForm((f) => ({ ...f, age: e.target.value }));
+                setProfileFieldErrors((prev) => ({ ...prev, age: null }));
+              }}
+              onBlur={() => handleProfileFieldBlur("age")}
+            />
+          </FormField>
+          <FormField
+            label="Height (cm)"
+            error={profileFieldErrors.height_cm}
+            optional
+          >
+            <input
+              type="number"
+              step="0.1"
+              min="1"
+              placeholder="165"
+              value={profileForm.height_cm}
+              onChange={(e) => {
+                handleHeightCmChange(e.target.value);
+                setProfileFieldErrors((prev) => ({
+                  ...prev,
+                  height_cm: null,
+                }));
+              }}
+              onBlur={() => handleProfileFieldBlur("height_cm")}
+            />
+          </FormField>
+          <div className="profile__height-row">
+            <FormField label="Feet">
+              <input
+                type="number"
+                min="0"
+                max="9"
+                placeholder="5"
+                value={profileForm.height_ft}
+                onChange={(e) =>
+                  handleHeightImperialChange("height_ft", e.target.value)
+                }
+              />
+            </FormField>
+            <FormField label="Inches">
+              <input
+                type="number"
+                min="0"
+                max="11"
+                step="0.1"
+                placeholder="5"
+                value={profileForm.height_in}
+                onChange={(e) =>
+                  handleHeightImperialChange("height_in", e.target.value)
+                }
+              />
+            </FormField>
+          </div>
+          <div className="profile__weight-row">
+            <FormField
+              label="Goal weight (kg)"
+              error={profileFieldErrors.goal_weight_kg}
+              optional
+            >
+              <input
+                type="number"
+                step="0.1"
+                min="1"
+                placeholder="58"
+                value={profileForm.goal_weight_kg}
+                onChange={(e) => {
+                  handleGoalWeightKgChange(e.target.value);
+                  setProfileFieldErrors((prev) => ({
+                    ...prev,
+                    goal_weight_kg: null,
+                  }));
+                }}
+                onBlur={() => handleProfileFieldBlur("goal_weight_kg")}
+              />
+            </FormField>
+            <FormField label="Goal weight (lbs)" optional>
+              <input
+                type="number"
+                step="0.1"
+                min="1"
+                placeholder="128"
+                value={profileForm.goal_weight_lbs}
+                onChange={(e) =>
+                  handleGoalWeightLbsChange(e.target.value)
+                }
+              />
+            </FormField>
+          </div>
+          <FormField label="Gender">
+            <select
+              value={profileForm.gender}
+              onChange={(e) =>
+                setProfileForm((f) => ({ ...f, gender: e.target.value }))
+              }
+            >
+              <option value="female">Female</option>
+              <option value="male">Male</option>
+              <option value="other">Other</option>
+            </select>
+          </FormField>
+          <p className="profile__form-hint">
+            Enter height in centimeters or feet and inches. Weight fields
+            follow your {unitLabel} toggle.
+          </p>
+          <div className="btn-row">
+            <button
+              type="button"
+              className="btn btn--ghost"
+              onClick={closeProfileModal}
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="btn btn--primary"
+              disabled={saving || !isProfileFormValid}
+            >
+              {saving ? "Saving…" : "Save profile"}
+            </button>
+          </div>
+        </form>
+      </SheetModal>
+
+      {/* Delete Confirmation Modal */}
+      {deleteTarget && (
+        <ConfirmModal
+          open={deleteModal.open}
+          closing={deleteModal.closing}
+          onClose={closeDeleteModal}
+          onConfirm={confirmDelete}
+          loading={deleting}
+          title="Delete weigh-in?"
+          description={`Remove ${formatDateLabel(deleteTarget.entry_date)} (${formatWeight(
+            toDisplayKg(Number(deleteTarget.weight_kg), unit),
+            unitLabel,
+          )})?`}
+          confirmLabel="Delete"
+          variant="danger"
+        />
+      )}
+
+      {/* Duplicate Date Confirmation */}
+      {duplicateDateConfirm && (
+        <SheetModal
+          open={!!duplicateDateConfirm}
+          closing={false}
+          onClose={closeDuplicateConfirm}
+          compact
+          variant="warning"
+        >
+          <div className="profile__dup-icon" aria-hidden="true">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.75"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
+            </svg>
+          </div>
+          <h2 className="sheet-modal__title sheet-modal__title--compact">
+            Already logged for{" "}
+            {formatDateLabel(duplicateDateConfirm.existingEntry.entry_date)}
+          </h2>
+          <p className="profile__dup-desc">
+            You have{" "}
+            <strong>
+              {formatWeight(
+                toDisplayKg(
+                  Number(duplicateDateConfirm.existingEntry.weight_kg),
+                  unit,
+                ),
+                unitLabel,
+              )}
+            </strong>{" "}
+            recorded for this day.
+          </p>
+          <p className="profile__dup-desc">
+            Updating to{" "}
+            <strong>
+              {formatWeight(
+                toDisplayKg(duplicateDateConfirm.newWeight, unit),
+                unitLabel,
+              )}
+            </strong>
+            ?
+          </p>
+          <div className="btn-row">
+            <button
+              type="button"
+              className="btn btn--ghost"
+              onClick={closeDuplicateConfirm}
+            >
+              Cancel
             </button>
             <button
               type="button"
-              className="profile__fab profile__fab--add"
-              onClick={openAddWeight}
-              aria-label="Log weight"
+              className="btn btn--primary"
+              onClick={confirmDuplicateSave}
+              disabled={saving}
             >
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                aria-hidden="true"
-              >
-                <path
-                  d="M12 5v14M5 12h14"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
+              {saving ? "Updating…" : "Update entry"}
             </button>
-          </div>,
-          document.body,
-        )}
+          </div>
+        </SheetModal>
+      )}
+
+      <FAB
+        visible={showFloatingActions}
+        onScrollTop={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+        onAdd={openAddWeight}
+        addLabel="Log weight"
+      />
     </section>
   );
 }

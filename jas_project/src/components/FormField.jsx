@@ -9,7 +9,6 @@ export default function FormField({
   maxChars,
   children,
   className = "",
-  fieldClassName = "",
   optional = false,
 }) {
   const hasError = !!error;
