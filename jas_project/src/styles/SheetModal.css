@@ -1,0 +1,153 @@
+/* ============================================================
+   SheetModal.css — Shared bottom-sheet modal overlay
+   Used by all page modals (add/edit/delete/picker)
+   ============================================================ */
+
+.sheet-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0.75rem;
+  padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  animation: sheetOverlayIn 0.28s ease;
+}
+
+.sheet-overlay--closing {
+  animation: sheetOverlayOut 0.26s ease forwards;
+}
+
+.sheet-modal {
+  position: relative;
+  width: min(100%, 640px);
+  max-height: min(84svh, calc(100svh - 24px - env(safe-area-inset-bottom)));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  margin: 0;
+  padding: 2rem;
+  background: linear-gradient(160deg, #1a1a2e 0%, #16213e 100%);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 26px 26px 0 0;
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.45);
+  transform-origin: bottom center;
+  animation: sheetModalSlideUp 0.38s var(--ease-spring);
+  will-change: transform, opacity;
+}
+
+.sheet-modal--compact {
+  width: min(100%, 560px);
+  padding: 1.5rem;
+  text-align: center;
+}
+
+.sheet-modal--danger {
+  border-color: rgba(239, 68, 68, 0.4);
+}
+
+.sheet-modal--warning {
+  border-color: rgba(251, 191, 36, 0.4);
+}
+
+.sheet-modal--closing {
+  animation: sheetSheetOut 0.26s cubic-bezier(0.55, 0, 1, 0.45) forwards;
+}
+
+/* Desktop: center the modal */
+@media (min-width: 768px) {
+  .sheet-overlay {
+    align-items: center;
+    padding: 1.5rem;
+  }
+
+  .sheet-modal {
+    border-radius: 1.25rem;
+    transform-origin: center;
+    animation-name: sheetModalCenterIn;
+  }
+
+  .sheet-modal--closing {
+    animation-name: sheetModalCenterOut;
+  }
+}
+
+/* ── Modal title ── */
+.sheet-modal__title {
+  font-family: var(--font-heading);
+  font-size: 1.6rem;
+  font-weight: 800;
+  margin-bottom: 1.5rem;
+  color: #fff;
+  text-align: center;
+}
+
+.sheet-modal__title--compact {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+/* ── Description text (for confirm modals) ── */
+.sheet-modal__desc {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.5);
+  margin-bottom: 1.5rem;
+  line-height: 1.5;
+}
+
+/* ── Preview row (badge + date + amount in delete confirmations) ── */
+.sheet-modal__preview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+/* ── Delete icon ── */
+.sheet-modal__icon {
+  margin-bottom: 0.75rem;
+  color: rgba(255, 255, 255, 0.6);
+  text-align: center;
+}
+
+.sheet-modal__icon svg {
+  width: 40px;
+  height: 40px;
+}
+
+/* ── Keyframes ── */
+@keyframes sheetOverlayIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes sheetOverlayOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes sheetModalSlideUp {
+  from { opacity: 0; transform: translateY(110%); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes sheetSheetOut {
+  from { opacity: 1; transform: translateY(0) scale(1); }
+  to { opacity: 0; transform: translateY(30%) scale(0.95); }
+}
+
+@keyframes sheetModalCenterIn {
+  from { opacity: 0; transform: translateY(18px) scale(0.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes sheetModalCenterOut {
+  from { opacity: 1; transform: translateY(0) scale(1); }
+  to { opacity: 0; transform: translateY(18px) scale(0.96); }
+}

@@ -1,12 +1,12 @@
 import "./Workplaces.css";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { createPortal } from "react-dom";
 import { getSupabaseClient } from "../../../lib/superbase";
 import { useUserId } from "../../../lib/AuthContext.jsx";
 import { getUserFacingError, sanitizeText, sanitizeNumber } from "../../../lib/security";
 import { useGlassToast } from "../../../lib/glass_toast_provider.jsx";
-
-const MODAL_EXIT_MS = 320;
+import { SheetModal, FormField, PageHeader, ConfirmModal, EmptyState, LoadingSkeleton } from "../../../components";
+import { useBodyScrollLock, useModal } from "../../../hooks";
+import { TrashIcon } from "../../../components/ConfirmModal";
 
 const emptyForm = () => ({
   slug: "",
@@ -24,19 +24,21 @@ function Workplaces({ onNavigate, returnTo }) {
   const [workplaces, setWorkplaces] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [modalClosing, setModalClosing] = useState(false);
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
   const [deactivateTarget, setDeactivateTarget] = useState(null);
-  const [deactivateModalClosing, setDeactivateModalClosing] = useState(false);
   const [deactivating, setDeactivating] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
-  const [deleteModalClosing, setDeleteModalClosing] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [fieldErrors, setFieldErrors] = useState({});
   const { success: toastSuccess, error: toastError } = useGlassToast();
+
+  const formModal = useModal(320);
+  const deactivateModal = useModal(320);
+  const deleteModal = useModal(320);
+
+  useBodyScrollLock(formModal.open, deactivateTarget, deleteTarget);
 
   const fetchWorkplaces = useCallback(async () => {
     if (!userId) return;
@@ -81,8 +83,7 @@ function Workplaces({ onNavigate, returnTo }) {
     setEditing(null);
     setForm(emptyForm());
     setFieldErrors({});
-    setModalClosing(false);
-    setModalOpen(true);
+    formModal.openModal();
   };
 
   const openEditModal = (wp) => {
@@ -94,18 +95,15 @@ function Workplaces({ onNavigate, returnTo }) {
       color: wp.color,
     });
     setFieldErrors({});
-    setModalClosing(false);
-    setModalOpen(true);
+    formModal.openModal();
   };
 
   const closeModal = () => {
-    setModalClosing(true);
+    formModal.closeModal();
     setTimeout(() => {
-      setModalOpen(false);
-      setModalClosing(false);
       setEditing(null);
       setForm(emptyForm());
-    }, MODAL_EXIT_MS);
+    }, 320);
   };
 
   const validateField = (name, value) => {
@@ -114,10 +112,7 @@ function Workplaces({ onNavigate, returnTo }) {
         if (!value.trim()) return "Slug is required";
         if (!/^[a-z0-9_-]+$/.test(value.trim()))
           return "Lowercase letters, numbers, hyphens, underscores only";
-        if (
-          !editing &&
-          workplaces.some((wp) => wp.slug === value.trim())
-        )
+        if (!editing && workplaces.some((wp) => wp.slug === value.trim()))
           return "This slug already exists";
         return null;
       }
@@ -199,19 +194,6 @@ function Workplaces({ onNavigate, returnTo }) {
     }
   };
 
-  const openDeactivateModal = (wp) => {
-    setDeactivateModalClosing(false);
-    setDeactivateTarget(wp);
-  };
-
-  const closeDeactivateModal = () => {
-    setDeactivateModalClosing(true);
-    setTimeout(() => {
-      setDeactivateTarget(null);
-      setDeactivateModalClosing(false);
-    }, MODAL_EXIT_MS);
-  };
-
   const confirmDeactivate = async () => {
     if (!deactivateTarget) return;
 
@@ -233,7 +215,8 @@ function Workplaces({ onNavigate, returnTo }) {
         return;
       }
 
-      closeDeactivateModal();
+      deactivateModal.closeModal();
+      setTimeout(() => setDeactivateTarget(null), 320);
       toastSuccess("Workplace deactivated.");
       fetchWorkplaces();
     } catch (err) {
@@ -266,19 +249,6 @@ function Workplaces({ onNavigate, returnTo }) {
     }
   };
 
-  const openDeleteModal = (wp) => {
-    setDeleteModalClosing(false);
-    setDeleteTarget(wp);
-  };
-
-  const closeDeleteModal = () => {
-    setDeleteModalClosing(true);
-    setTimeout(() => {
-      setDeleteTarget(null);
-      setDeleteModalClosing(false);
-    }, MODAL_EXIT_MS);
-  };
-
   const confirmDelete = async () => {
     if (!deleteTarget) return;
 
@@ -288,7 +258,6 @@ function Workplaces({ onNavigate, returnTo }) {
     try {
       const supabase = getSupabaseClient();
 
-      // First, delete all shifts associated with this workplace
       const { error: shiftsDeleteError } = await supabase
         .from("shifts")
         .delete()
@@ -301,7 +270,6 @@ function Workplaces({ onNavigate, returnTo }) {
         return;
       }
 
-      // Then delete the workplace itself
       const { error: dbError } = await supabase
         .from("workplaces")
         .delete()
@@ -315,10 +283,10 @@ function Workplaces({ onNavigate, returnTo }) {
         return;
       }
 
-      closeDeleteModal();
+      deleteModal.closeModal();
+      setTimeout(() => setDeleteTarget(null), 320);
       toastSuccess(`${deleteTarget.label} and all its shifts deleted.`);
 
-      // Notify Shifts page to refresh
       if (typeof window !== "undefined") {
         window.dispatchEvent(new CustomEvent("shifts:refresh"));
         window.dispatchEvent(new CustomEvent("calendar:refresh"));
@@ -333,7 +301,12 @@ function Workplaces({ onNavigate, returnTo }) {
 
   return (
     <section className="workplaces page">
-      <header className="workplaces__header animate-in">
+      <PageHeader
+        eyebrow="Settings"
+        title="Workplaces"
+        subtitle="Manage your workplaces, pay rates, and colors."
+        className="workplaces__header animate-in"
+      >
         {onNavigate && (
           <button
             type="button"
@@ -343,12 +316,7 @@ function Workplaces({ onNavigate, returnTo }) {
             ← Back to {returnTo || "Shifts"}
           </button>
         )}
-        <p className="page__eyebrow">Settings</p>
-        <h1 className="page__title">Workplaces</h1>
-        <p className="page__subtitle">
-          Manage your workplaces, pay rates, and colors.
-        </p>
-      </header>
+      </PageHeader>
 
       {error && (
         <p className="workplaces__error" role="alert">
@@ -357,21 +325,15 @@ function Workplaces({ onNavigate, returnTo }) {
       )}
 
       {loading ? (
-        <div className="workplaces__list">
-          {[0, 1, 2].map((i) => (
-            <div key={i} className="skeleton skeleton--card" style={{ height: "5rem" }} />
-          ))}
-        </div>
+        <LoadingSkeleton count={3} height="5rem" />
       ) : (
         <>
           <div className="workplaces__list animate-in animate-in--1">
             {activeWorkplaces.length === 0 ? (
-              <div className="workplaces__empty glass-card">
-                <p className="workplaces__empty-text">No workplaces yet.</p>
-                <p className="workplaces__empty-hint">
-                  Add your first workplace to start tracking shifts.
-                </p>
-              </div>
+              <EmptyState
+                title="No workplaces yet."
+                text="Add your first workplace to start tracking shifts."
+              />
             ) : (
               activeWorkplaces.map((wp) => (
                 <div key={wp.id} className="workplaces__card glass-card">
@@ -400,7 +362,7 @@ function Workplaces({ onNavigate, returnTo }) {
                       <button
                         type="button"
                         className="workplaces__action workplaces__action--deactivate"
-                        onClick={() => openDeactivateModal(wp)}
+                        onClick={() => { setDeactivateTarget(wp); deactivateModal.openModal(); }}
                         aria-label={`Deactivate ${wp.label}`}
                       >
                         Deactivate
@@ -442,7 +404,7 @@ function Workplaces({ onNavigate, returnTo }) {
                         <button
                           type="button"
                           className="workplaces__action workplaces__action--delete"
-                          onClick={() => openDeleteModal(wp)}
+                          onClick={() => { setDeleteTarget(wp); deleteModal.openModal(); }}
                         >
                           Delete
                         </button>
@@ -466,257 +428,145 @@ function Workplaces({ onNavigate, returnTo }) {
         </>
       )}
 
-      {modalOpen &&
-        createPortal(
-          <div
-            className={`workplaces__overlay${modalClosing ? " workplaces__overlay--closing" : ""}`}
-            onClick={closeModal}
-          >
-            <div
-              className={`workplaces__modal${modalClosing ? " workplaces__modal--closing" : ""}`}
-              onClick={(e) => e.stopPropagation()}
-              role="dialog"
-              aria-modal="true"
-              aria-labelledby="workplace-modal-title"
-            >
-              <h2 id="workplace-modal-title" className="workplaces__modal-title">
-                {editing ? "Edit workplace" : "Add workplace"}
-              </h2>
+      {/* Add/Edit Workplace Modal */}
+      <SheetModal
+        open={formModal.open}
+        closing={formModal.closing}
+        onClose={closeModal}
+        title={editing ? "Edit workplace" : "Add workplace"}
+      >
+        <form className="workplaces__form" onSubmit={handleSubmit}>
+          <FormField label="Slug (ID)" error={fieldErrors.slug}>
+            <input
+              type="text"
+              value={form.slug}
+              onChange={(e) => {
+                setForm({ ...form, slug: e.target.value.toLowerCase() });
+                setFieldErrors((prev) => ({ ...prev, slug: null }));
+              }}
+              onBlur={() => handleFieldBlur("slug")}
+              placeholder="e.g. warehouse, bar"
+              disabled={!!editing}
+              required
+              autoComplete="off"
+            />
+            {editing && (
+              <span className="form-field__hint">Slug cannot be changed.</span>
+            )}
+          </FormField>
 
-              <form className="workplaces__form" onSubmit={handleSubmit}>
-                <label className="workplaces__field">
-                  <span>
-                    Slug (ID){" "}
-                    {fieldErrors.slug && (
-                      <span className="workplaces__field-error">—{fieldErrors.slug}</span>
-                    )}
-                  </span>
-                  <input
-                    type="text"
-                    value={form.slug}
-                    onChange={(e) => {
-                      setForm({ ...form, slug: e.target.value.toLowerCase() });
-                      setFieldErrors((prev) => ({ ...prev, slug: null }));
-                    }}
-                    onBlur={() => handleFieldBlur("slug")}
-                    placeholder="e.g. warehouse, bar"
-                    className={fieldErrors.slug ? "workplaces__field-input--error" : ""}
-                    disabled={!!editing}
-                    required
-                    autoComplete="off"
-                  />
-                  {editing && (
-                    <span className="workplaces__field-hint">Slug cannot be changed.</span>
-                  )}
-                </label>
+          <FormField label="Display name" error={fieldErrors.label}>
+            <input
+              type="text"
+              value={form.label}
+              onChange={(e) => {
+                setForm({ ...form, label: e.target.value });
+                setFieldErrors((prev) => ({ ...prev, label: null }));
+              }}
+              onBlur={() => handleFieldBlur("label")}
+              placeholder="e.g. Warehouse, The Bar"
+              required
+              autoComplete="off"
+            />
+          </FormField>
 
-                <label className="workplaces__field">
-                  <span>
-                    Display name{" "}
-                    {fieldErrors.label && (
-                      <span className="workplaces__field-error">—{fieldErrors.label}</span>
-                    )}
-                  </span>
-                  <input
-                    type="text"
-                    value={form.label}
-                    onChange={(e) => {
-                      setForm({ ...form, label: e.target.value });
-                      setFieldErrors((prev) => ({ ...prev, label: null }));
-                    }}
-                    onBlur={() => handleFieldBlur("label")}
-                    placeholder="e.g. Warehouse, The Bar"
-                    className={fieldErrors.label ? "workplaces__field-input--error" : ""}
-                    required
-                    autoComplete="off"
-                  />
-                </label>
+          <FormField label="Hourly rate (₪)" error={fieldErrors.rate}>
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              value={form.rate}
+              onChange={(e) => {
+                setForm({ ...form, rate: e.target.value });
+                setFieldErrors((prev) => ({ ...prev, rate: null }));
+              }}
+              onBlur={() => handleFieldBlur("rate")}
+              placeholder="e.g. 50"
+              required
+            />
+          </FormField>
 
-                <label className="workplaces__field">
-                  <span>
-                    Hourly rate (₪){" "}
-                    {fieldErrors.rate && (
-                      <span className="workplaces__field-error">—{fieldErrors.rate}</span>
-                    )}
-                  </span>
-                  <input
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    value={form.rate}
-                    onChange={(e) => {
-                      setForm({ ...form, rate: e.target.value });
-                      setFieldErrors((prev) => ({ ...prev, rate: null }));
-                    }}
-                    onBlur={() => handleFieldBlur("rate")}
-                    placeholder="e.g. 50"
-                    className={fieldErrors.rate ? "workplaces__field-input--error" : ""}
-                    required
-                  />
-                </label>
-
-                <label className="workplaces__field">
-                  <span>Color</span>
-                  <div className="workplaces__color-input-row">
-                    <input
-                      type="color"
-                      value={form.color}
-                      onChange={(e) => setForm({ ...form, color: e.target.value })}
-                      className="workplaces__color-native"
-                      aria-label="Pick a color"
-                    />
-                    <input
-                      type="text"
-                      value={form.color}
-                      onChange={(e) => setForm({ ...form, color: e.target.value })}
-                      placeholder="#818cf8"
-                      maxLength={7}
-                      className="workplaces__color-hex"
-                    />
-                  </div>
-                </label>
-
-                <div className="workplaces__form-actions">
-                  <button
-                    type="button"
-                    className="workplaces__btn workplaces__btn--ghost"
-                    onClick={closeModal}
-                    disabled={saving}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="workplaces__btn workplaces__btn--primary"
-                    disabled={saving || !isFormValid}
-                  >
-                    {saving ? (
-                      <>
-                        <span className="workplaces__btn-spinner" aria-hidden="true" />
-                        Saving…
-                      </>
-                    ) : editing ? (
-                      "Save changes"
-                    ) : (
-                      "Add workplace"
-                    )}
-                  </button>
-                </div>
-              </form>
+          <FormField label="Color">
+            <div className="workplaces__color-input-row">
+              <input
+                type="color"
+                value={form.color}
+                onChange={(e) => setForm({ ...form, color: e.target.value })}
+                className="workplaces__color-native"
+                aria-label="Pick a color"
+              />
+              <input
+                type="text"
+                value={form.color}
+                onChange={(e) => setForm({ ...form, color: e.target.value })}
+                placeholder="#818cf8"
+                maxLength={7}
+                className="workplaces__color-hex"
+              />
             </div>
-          </div>,
-          document.body,
-        )}
+          </FormField>
 
-      {deactivateTarget &&
-        createPortal(
-          <div
-            className={`workplaces__overlay${deactivateModalClosing ? " workplaces__overlay--closing" : ""}`}
-            onClick={closeDeactivateModal}
-          >
-            <div
-              className={`workplaces__modal workplaces__modal--compact workplaces__modal--delete${deactivateModalClosing ? " workplaces__modal--closing" : ""}`}
-              onClick={(e) => e.stopPropagation()}
-              role="alertdialog"
-              aria-modal="true"
-              aria-labelledby="deactivate-title"
+          <div className="btn-row">
+            <button
+              type="button"
+              className="btn btn--ghost"
+              onClick={closeModal}
+              disabled={saving}
             >
-              <h2 id="deactivate-title" className="workplaces__modal-title">
-                Deactivate {deactivateTarget.label}?
-              </h2>
-              <p className="workplaces__deactivate-desc">
-                This workplace will be shown as faded but its shifts will still
-                be visible and counted in totals. You can reactivate it anytime.
-              </p>
-              <div className="workplaces__form-actions">
-                <button
-                  type="button"
-                  className="workplaces__btn workplaces__btn--ghost"
-                  onClick={closeDeactivateModal}
-                  disabled={deactivating}
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  className="workplaces__btn workplaces__btn--danger"
-                  onClick={confirmDeactivate}
-                  disabled={deactivating}
-                >
-                  {deactivating ? "Deactivating…" : "Deactivate"}
-                </button>
-              </div>
-            </div>
-          </div>,
-          document.body,
-        )}
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="btn btn--primary"
+              disabled={saving || !isFormValid}
+            >
+              {saving ? (
+                <>
+                  <span className="btn__spinner" aria-hidden="true" />
+                  Saving…
+                </>
+              ) : editing ? (
+                "Save changes"
+              ) : (
+                "Add workplace"
+              )}
+            </button>
+          </div>
+        </form>
+      </SheetModal>
 
-      {deleteTarget &&
-        createPortal(
-          <div
-            className={`workplaces__overlay${deleteModalClosing ? " workplaces__overlay--closing" : ""}`}
-            onClick={closeDeleteModal}
-          >
-            <div
-              className={`workplaces__modal workplaces__modal--compact workplaces__modal--delete${deleteModalClosing ? " workplaces__modal--closing" : ""}`}
-              onClick={(e) => e.stopPropagation()}
-              role="alertdialog"
-              aria-modal="true"
-              aria-labelledby="delete-workplace-title"
-              aria-describedby="delete-workplace-desc"
-            >
-              <div className="workplaces__delete-icon" aria-hidden="true">
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.75"
-                >
-                  <path
-                    d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6h14Z"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                  <path d="M10 11v6M14 11v6" strokeLinecap="round" />
-                </svg>
-              </div>
-              <h2 id="delete-workplace-title" className="workplaces__modal-title workplaces__modal-title--delete">
-                Delete {deleteTarget.label}?
-              </h2>
-              <p id="delete-workplace-desc" className="workplaces__deactivate-desc">
-                This will permanently remove the workplace <strong>and all shifts</strong> associated with it.
-                All shift records using "{deleteTarget.label}" will be deleted from the database.
-                This cannot be undone.
-              </p>
-              <div className="workplaces__form-actions">
-                <button
-                  type="button"
-                  className="workplaces__btn workplaces__btn--ghost"
-                  onClick={closeDeleteModal}
-                  disabled={deleting}
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  className="workplaces__btn workplaces__btn--danger"
-                  onClick={confirmDelete}
-                  disabled={deleting}
-                >
-                  {deleting ? (
-                    <>
-                      <span className="workplaces__btn-spinner" aria-hidden="true" />
-                      Deleting…
-                    </>
-                  ) : (
-                    "Delete workplace"
-                  )}
-                </button>
-              </div>
-            </div>
-          </div>,
-          document.body,
-        )}
+      {/* Deactivate Confirmation */}
+      <ConfirmModal
+        open={deactivateModal.open}
+        closing={deactivateModal.closing}
+        onClose={() => { deactivateModal.closeModal(); setTimeout(() => setDeactivateTarget(null), 320); }}
+        onConfirm={confirmDeactivate}
+        loading={deactivating}
+        title={`Deactivate ${deactivateTarget?.label}?`}
+        description="This workplace will be shown as faded but its shifts will still be visible and counted in totals. You can reactivate it anytime."
+        confirmLabel="Deactivate"
+        variant="warning"
+      />
+
+      {/* Delete Confirmation */}
+      <ConfirmModal
+        open={deleteModal.open}
+        closing={deleteModal.closing}
+        onClose={() => { deleteModal.closeModal(); setTimeout(() => setDeleteTarget(null), 320); }}
+        onConfirm={confirmDelete}
+        loading={deleting}
+        title={`Delete ${deleteTarget?.label}?`}
+        description={
+          <>
+            This will permanently remove the workplace <strong>and all shifts</strong> associated with it.
+            All shift records using &ldquo;{deleteTarget?.label}&rdquo; will be deleted from the database.
+            This cannot be undone.
+          </>
+        }
+        confirmLabel="Delete workplace"
+        icon={TrashIcon}
+        variant="danger"
+      />
     </section>
   );
 }

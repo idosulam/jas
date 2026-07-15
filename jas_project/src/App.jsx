@@ -7,10 +7,7 @@ import Calendar from "./components/Pages/Calendar/Calendar.jsx";
 import Profile from "./components/Pages/profile/Profile.jsx";
 import Workplaces from "./components/Pages/Workplaces/Workplaces.jsx";
 import Auth from "./components/Auth/Auth.jsx";
-import "./styles/pages.css";
-import "./styles/animations.css";
 
-import "./styles/glass_toast.css";
 import { ToastProvider } from "./lib/glass_toast_provider.jsx";
 import { supabase } from "./lib/superbase.jsx";
 import { AuthProvider, useAuth } from "./lib/AuthContext.jsx";

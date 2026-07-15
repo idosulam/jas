@@ -1,0 +1,43 @@
+/* ============================================================
+   EmptyState.css — Empty state placeholder
+   ============================================================ */
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 2rem 1.5rem;
+  text-align: center;
+  animation: fadeUp 0.5s var(--ease-out) backwards;
+}
+
+.empty-state__icon {
+  width: 2.5rem;
+  height: 2.5rem;
+  color: rgba(255, 255, 255, 0.2);
+  margin-bottom: 0.25rem;
+}
+
+.empty-state__icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.empty-state__title {
+  font-family: var(--font-heading);
+  font-size: 1rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.empty-state__text {
+  font-size: 0.82rem;
+  color: rgba(255, 255, 255, 0.35);
+  line-height: 1.5;
+  max-width: 18rem;
+}
+
+.empty-state__action {
+  margin-top: 0.5rem;
+}

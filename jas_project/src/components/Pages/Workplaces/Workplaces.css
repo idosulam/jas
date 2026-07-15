@@ -1,4 +1,7 @@
-/* Workplaces page — matches Shifts glass-morphism design */
+/* ============================================================
+   Workplaces.css — Workplaces page specific styles
+   Shared modal/button/form styles are in styles/
+   ============================================================ */
 
 .workplaces__header {
   margin-bottom: 1.5rem;
@@ -33,7 +36,6 @@
 }
 
 /* ── List ── */
-
 .workplaces__list {
   display: flex;
   flex-direction: column;
@@ -126,7 +128,6 @@
 }
 
 /* ── Action buttons ── */
-
 .workplaces__action {
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid var(--border, rgba(255, 255, 255, 0.1));
@@ -193,7 +194,6 @@
 }
 
 /* ── Section ── */
-
 .workplaces__section {
   margin-bottom: 1.5rem;
 }
@@ -207,27 +207,7 @@
   margin-bottom: 0.65rem;
 }
 
-/* ── Empty state ── */
-
-.workplaces__empty {
-  text-align: center;
-  padding: 2.5rem 1.5rem;
-}
-
-.workplaces__empty-text {
-  font-weight: 600;
-  font-size: 1rem;
-  color: var(--text, #e2e8f0);
-  margin-bottom: 0.35rem;
-}
-
-.workplaces__empty-hint {
-  font-size: 0.85rem;
-  color: var(--text-muted, #94a3b8);
-}
-
 /* ── Add button ── */
-
 .workplaces__add-row {
   display: flex;
   justify-content: center;
@@ -251,167 +231,7 @@
   box-shadow: 0 4px 20px rgba(129, 140, 248, 0.45);
 }
 
-/* ── Overlay & Modal (matches Shifts style) ── */
-
-.workplaces__overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 100;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  padding: 0.75rem;
-  padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
-  background: rgba(0, 0, 0, 0.55);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-  animation: wpOverlayIn 0.28s ease;
-}
-
-.workplaces__overlay--closing {
-  animation: wpOverlayOut 0.26s ease forwards;
-}
-
-.workplaces__modal {
-  position: relative;
-  width: 100%;
-  max-width: 26rem;
-  max-height: min(92dvh, 42rem);
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  padding: 1.4rem 1.4rem max(1.4rem, env(safe-area-inset-bottom));
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 1.2rem 1.2rem 0 0;
-  background: linear-gradient(160deg, #1a1a2e 0%, #16213e 100%);
-  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.45);
-  transform-origin: bottom center;
-  animation: wpModalSlideUp 0.38s var(--ease-spring) both;
-  will-change: transform, opacity;
-}
-
-.workplaces__modal--compact {
-  max-width: min(100%, 560px);
-  padding: 1.5rem;
-  text-align: center;
-}
-
-.workplaces__modal--delete {
-  border-color: rgba(239, 68, 68, 0.4);
-}
-
-.workplaces__modal-title--delete {
-  color: #f87171;
-}
-
-.workplaces__delete-icon {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 0.75rem;
-  color: #f87171;
-}
-
-.workplaces__delete-icon svg {
-  width: 2.5rem;
-  height: 2.5rem;
-}
-
-.workplaces__modal--closing {
-  animation: wpModalSlideDown 0.26s cubic-bezier(0.55, 0, 1, 0.45) forwards;
-}
-
-@media (min-width: 768px) {
-  .workplaces__overlay {
-    align-items: center;
-    padding: 1.5rem;
-  }
-
-  .workplaces__modal {
-    border-radius: 1.25rem;
-    transform-origin: center;
-    animation-name: wpModalCenterIn;
-  }
-
-  .workplaces__modal--closing {
-    animation-name: wpModalCenterOut;
-  }
-}
-
-.workplaces__modal-title {
-  font-family: var(--font-heading);
-  font-size: 1.25rem;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  margin-bottom: 1.25rem;
-  color: #fff;
-  text-align: center;
-}
-
-.workplaces__deactivate-desc {
-  font-size: 0.88rem;
-  color: var(--text-muted, #94a3b8);
-  line-height: 1.5;
-  margin-bottom: 1.25rem;
-}
-
-/* ── Form ── */
-
-.workplaces__form {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.workplaces__field {
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-  font-size: 0.85rem;
-  color: var(--text-muted, #94a3b8);
-}
-
-.workplaces__field input {
-  padding: 0.65rem 0.75rem;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 0.65rem;
-  background: rgba(255, 255, 255, 0.08);
-  color: #f5f5f7;
-  font-family: inherit;
-  font-size: 0.9rem;
-  transition:
-    border-color 0.2s ease,
-    background 0.2s ease,
-    box-shadow 0.2s ease;
-}
-
-.workplaces__field input:focus {
-  outline: none;
-  border-color: rgba(99, 102, 241, 0.55);
-  background: rgba(255, 255, 255, 0.1);
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
-}
-
-.workplaces__field input:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.workplaces__field-input--error {
-  border-color: #f87171 !important;
-}
-
-.workplaces__field-error {
-  color: #f87171;
-  font-size: 0.78rem;
-}
-
-.workplaces__field-hint {
-  font-size: 0.75rem;
-  color: rgba(148, 163, 184, 0.6);
-  font-style: italic;
-}
-
 /* ── Color input ── */
-
 .workplaces__color-input-row {
   display: flex;
   gap: 0.75rem;
@@ -443,159 +263,9 @@
   letter-spacing: 0.05em;
 }
 
-/* ── Form actions ── */
-
-.workplaces__form-actions {
-  display: flex;
-  gap: 0.65rem;
-  justify-content: flex-end;
-  margin-top: 0.5rem;
-}
-
-.workplaces__btn {
-  flex: 1;
-  border: none;
-  border-radius: 0.65rem;
-  padding: 0.7rem 1rem;
-  font-family: inherit;
-  font-size: 0.875rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition:
-    opacity 0.2s ease,
-    transform 0.2s var(--ease-spring, cubic-bezier(0.34, 1.56, 0.64, 1)),
-    box-shadow 0.2s ease;
-}
-
-.workplaces__btn--ghost {
-  background: var(--surface, rgba(255, 255, 255, 0.06));
-  color: var(--text-muted, #94a3b8);
-  border: 1px solid var(--border, rgba(255, 255, 255, 0.1));
-}
-
-.workplaces__btn--ghost:hover {
-  background: var(--surface-hover, rgba(255, 255, 255, 0.1));
-  color: var(--text, #e2e8f0);
-  border-color: var(--border-hover, rgba(255, 255, 255, 0.18));
-}
-
-.workplaces__btn--primary {
-  background: linear-gradient(
-    135deg,
-    var(--color-primary, #818cf8),
-    var(--color-secondary, #a78bfa)
-  );
-  border: none;
-  font-weight: 700;
-  color: #fff;
-  box-shadow:
-    0 4px 16px rgba(129, 140, 248, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.12);
-}
-
-.workplaces__btn--primary:not(:disabled):hover {
-  transform: translateY(-2px);
-  box-shadow:
-    0 6px 24px rgba(129, 140, 248, 0.4),
-    inset 0 1px 0 rgba(255, 255, 255, 0.12);
-}
-
-.workplaces__btn--primary:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
-}
-
-.workplaces__btn--danger {
-  background: rgba(248, 113, 113, 0.15);
-  color: #f87171;
-  border: 1px solid rgba(248, 113, 113, 0.2);
-}
-
-.workplaces__btn--danger:hover {
-  background: rgba(248, 113, 113, 0.25);
-}
-
-.workplaces__btn-spinner {
-  display: inline-block;
-  width: 14px;
-  height: 14px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-top-color: #fff;
-  border-radius: 50%;
-  animation: wpSpin 0.6s linear infinite;
-  margin-right: 0.4rem;
-  vertical-align: middle;
-}
-
-/* ── Animations (matches Shifts) ── */
-
-@keyframes wpOverlayIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes wpOverlayOut {
-  from { opacity: 1; }
-  to { opacity: 0; }
-}
-
-@keyframes wpModalSlideUp {
-  from {
-    opacity: 0;
-    transform: translateY(110%);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes wpModalSlideDown {
-  from {
-    opacity: 1;
-    transform: translateY(0);
-  }
-  to {
-    opacity: 0;
-    transform: translateY(110%);
-  }
-}
-
-@keyframes wpModalCenterIn {
-  from {
-    opacity: 0;
-    transform: translateY(18px) scale(0.96);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-@keyframes wpModalCenterOut {
-  from {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-  to {
-    opacity: 0;
-    transform: translateY(18px) scale(0.96);
-  }
-}
-
-@keyframes wpSpin {
-  to { transform: rotate(360deg); }
-}
-
 /* ── Reduced Motion ── */
-
 @media (prefers-reduced-motion: reduce) {
-  .workplaces__overlay,
-  .workplaces__modal,
   .workplaces__action,
-  .workplaces__btn,
   .workplaces__add-btn,
   .workplaces__card {
     animation: none !important;
