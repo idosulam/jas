@@ -524,6 +524,8 @@ function Profile({ onNavigate }) {
   const { success: toastSuccess, error: toastError } = useGlassToast();
 
   const fetchData = useCallback(async () => {
+    if (!userId) return;
+
     // only show the full-page loading state the first time
     if (!hasLoadedOnce.current) {
       setLoading(true);
@@ -533,12 +535,8 @@ function Profile({ onNavigate }) {
     try {
       const supabase = getSupabaseClient();
       const [profileRes, entriesRes] = await Promise.all([
-        userId
-          ? supabase.from("profile").select("*").eq("user_id", userId).limit(1).maybeSingle()
-          : supabase.from("profile").select("*").limit(1).maybeSingle(),
-        userId
-          ? supabase.from("weight_entries").select("*").eq("user_id", userId).order("entry_date", { ascending: true })
-          : supabase.from("weight_entries").select("*").order("entry_date", { ascending: true }),
+        supabase.from("profile").select("*").eq("user_id", userId).limit(1).maybeSingle(),
+        supabase.from("weight_entries").select("*").eq("user_id", userId).order("entry_date", { ascending: true }),
       ]);
 
       if (profileRes.error) {
@@ -562,7 +560,7 @@ function Profile({ onNavigate }) {
 
     hasLoadedOnce.current = true;
     setLoading(false);
-  }, []);
+  }, [userId]);
 
   useEffect(() => {
     fetchData();

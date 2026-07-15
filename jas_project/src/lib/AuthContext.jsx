@@ -4,6 +4,7 @@ import { supabase } from "./superbase.jsx";
 const AuthContext = createContext({
   session: null,
   user: null,
+  userId: null,
   loading: true,
 });
 
@@ -17,11 +18,13 @@ export function AuthProvider({ children }) {
       return;
     }
 
+    // Get initial session
     supabase.auth.getSession().then(({ data: { session: s } }) => {
       setSession(s);
       setLoading(false);
     });
 
+    // Listen for auth changes
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, s) => {
@@ -31,8 +34,11 @@ export function AuthProvider({ children }) {
     return () => subscription.unsubscribe();
   }, []);
 
+  const user = session?.user ?? null;
+  const userId = user?.id ?? null;
+
   return (
-    <AuthContext.Provider value={{ session, user: session?.user ?? null, loading }}>
+    <AuthContext.Provider value={{ session, user, userId, loading }}>
       {children}
     </AuthContext.Provider>
   );
@@ -43,6 +49,6 @@ export function useAuth() {
 }
 
 export function useUserId() {
-  const { user } = useAuth();
-  return user?.id ?? null;
+  const { userId } = useAuth();
+  return userId;
 }
