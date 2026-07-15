@@ -6,7 +6,15 @@ const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 const hasSupabaseConfig = Boolean(supabaseUrl && supabaseKey);
 
 export const supabase = hasSupabaseConfig
-  ? createClient(supabaseUrl, supabaseKey)
+  ? createClient(supabaseUrl, supabaseKey, {
+      auth: {
+        autoRefreshToken: true,
+        persistSession: true,
+        detectSessionInUrl: true,
+        storage: window.localStorage,
+        storageKey: "jas-auth-token",
+      },
+    })
   : null;
 
 export function getSupabaseClient() {

@@ -1086,7 +1086,28 @@ function Shifts({ onNavigate }) {
         </label>
       </div>
 
-      {useInlineFilters ? (
+      {/* No workplaces CTA */}
+      {!loading && effectiveWorkplaces.length === 0 && onNavigate && (
+        <div className="shifts__no-workplaces animate-in animate-in--1">
+          <div className="shifts__no-workplaces-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z" />
+              <path d="M9 22V12h6v10" />
+            </svg>
+          </div>
+          <p className="shifts__no-workplaces-title">No workplaces yet</p>
+          <p className="shifts__no-workplaces-text">Add a workplace first to start tracking your shifts.</p>
+          <button
+            type="button"
+            className="shifts__no-workplaces-btn"
+            onClick={() => onNavigate("Workplaces")}
+          >
+            + Add workplace
+          </button>
+        </div>
+      )}
+
+      {useInlineFilters && effectiveWorkplaces.length > 0 ? (
         <div
           className="shifts__place-filter animate-in animate-in--2"
           role="group"
@@ -1115,7 +1136,7 @@ function Shifts({ onNavigate }) {
             aria-hidden="true"
           />
         </div>
-      ) : (
+      ) : effectiveWorkplaces.length > 0 ? (
         <button
           type="button"
           className="shifts__place-trigger animate-in animate-in--2"
@@ -1137,7 +1158,7 @@ function Shifts({ onNavigate }) {
             ▾
           </span>
         </button>
-      )}
+      ) : null}
 
       <div
         className="shifts__summary animate-in animate-in--3"
@@ -1249,6 +1270,8 @@ function Shifts({ onNavigate }) {
             className="shifts__add-btn"
             onClick={openAddModal}
             ref={addBtnRef}
+            disabled={effectiveWorkplaces.length === 0}
+            title={effectiveWorkplaces.length === 0 ? "Add a workplace first" : "Add a new shift"}
           >
             + Add shift
           </button>
@@ -1284,13 +1307,29 @@ function Shifts({ onNavigate }) {
             <path d="M3 9h18M9 3v18" />
           </svg>
           <p className="shifts__empty-text">
-            {placeFilter === "all"
-              ? "No shifts this month"
-              : `No ${PLACES[placeFilter]?.label} shifts`}
+            {effectiveWorkplaces.length === 0
+              ? "No workplaces yet"
+              : placeFilter === "all"
+                ? "No shifts this month"
+                : `No ${PLACES[placeFilter]?.label} shifts`}
           </p>
           <p className="shifts__empty-hint">
-            Tap "+ Add shift" to log your first one.
+            {effectiveWorkplaces.length === 0
+              ? "Add a workplace to start tracking shifts."
+              : placeFilter === "all"
+                ? "Tap \"+ Add shift\" to log your first one."
+                : `No shifts logged for ${PLACES[placeFilter]?.label} this month.`}
           </p>
+          {effectiveWorkplaces.length === 0 && onNavigate && (
+            <button
+              type="button"
+              className="shifts__no-workplaces-btn"
+              onClick={() => onNavigate("Workplaces")}
+              style={{ marginTop: "0.75rem" }}
+            >
+              + Add workplace
+            </button>
+          )}
         </div>
       ) : (
         <ul className="shifts__list" key={`list-${placeFilter}`}>
