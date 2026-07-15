@@ -1,0 +1,216 @@
+/* ============================================================
+   ConfirmModal.css — Shared delete/deactivate confirmation modal
+   Matches the glassmorphic style used across all pages.
+   ============================================================ */
+
+.confirm-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0.75rem;
+  padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  animation: confirmOverlayIn 0.28s ease;
+}
+
+.confirm-overlay--closing {
+  animation: confirmOverlayOut 0.26s ease forwards;
+}
+
+.confirm-modal {
+  position: relative;
+  width: min(100%, 560px);
+  padding: 1.5rem;
+  text-align: center;
+  background: linear-gradient(160deg, #1a1a2e 0%, #16213e 100%);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 26px 26px 0 0;
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.45);
+  transform-origin: bottom center;
+  animation: confirmModalSlideUp 0.38s var(--ease-spring, cubic-bezier(0.34, 1.56, 0.64, 1));
+  will-change: transform, opacity;
+}
+
+.confirm-modal--danger {
+  border-color: rgba(239, 68, 68, 0.4);
+}
+
+.confirm-modal--warning {
+  border-color: rgba(251, 191, 36, 0.4);
+}
+
+.confirm-modal--closing {
+  animation: confirmSheetOut 0.26s cubic-bezier(0.55, 0, 1, 0.45) forwards;
+}
+
+@media (min-width: 768px) {
+  .confirm-overlay {
+    align-items: center;
+    padding: 1.5rem;
+  }
+
+  .confirm-modal {
+    border-radius: 1.25rem;
+    transform-origin: center;
+    animation-name: confirmModalCenterIn;
+  }
+
+  .confirm-modal--closing {
+    animation-name: confirmModalCenterOut;
+  }
+}
+
+.confirm-modal__icon {
+  margin-bottom: 0.75rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.confirm-modal__icon svg {
+  width: 40px;
+  height: 40px;
+}
+
+.confirm-modal__title {
+  font-family: var(--font-heading, inherit);
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  color: #fff;
+}
+
+.confirm-modal__desc {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.5);
+  margin-bottom: 1.5rem;
+  line-height: 1.5;
+}
+
+.confirm-modal__preview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.confirm-modal__actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+}
+
+.confirm-modal__actions .confirm-modal__btn {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.confirm-modal__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.65rem 1.2rem;
+  font-family: var(--font-heading, inherit);
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  border: none;
+  border-radius: var(--radius, 1rem);
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, opacity 0.2s;
+}
+
+.confirm-modal__btn--ghost {
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.confirm-modal__btn--ghost:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.confirm-modal__btn--ghost:disabled,
+.confirm-modal__btn--ghost[disabled] {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.confirm-modal__btn--danger {
+  background: rgba(239, 68, 68, 0.2);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.confirm-modal__btn--danger:hover {
+  background: rgba(239, 68, 68, 0.35);
+}
+
+.confirm-modal__btn--danger:disabled,
+.confirm-modal__btn--danger[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.confirm-modal__btn--warning {
+  background: rgba(251, 191, 36, 0.2);
+  color: #fbbf24;
+  border: 1px solid rgba(251, 191, 36, 0.3);
+}
+
+.confirm-modal__btn--warning:hover {
+  background: rgba(251, 191, 36, 0.35);
+}
+
+.confirm-modal__spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-top-color: currentColor;
+  border-radius: 50%;
+  animation: confirmSpin 0.65s linear infinite;
+}
+
+/* ── Keyframes ─────────────────────────────────────────────── */
+
+@keyframes confirmOverlayIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes confirmOverlayOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes confirmModalSlideUp {
+  from { opacity: 0; transform: translateY(110%); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes confirmSheetOut {
+  from { opacity: 1; transform: translateY(0) scale(1); }
+  to { opacity: 0; transform: translateY(30%) scale(0.95); }
+}
+
+@keyframes confirmModalCenterIn {
+  from { opacity: 0; transform: translateY(18px) scale(0.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes confirmModalCenterOut {
+  from { opacity: 1; transform: translateY(0) scale(1); }
+  to { opacity: 0; transform: translateY(18px) scale(0.96); }
+}
+
+@keyframes confirmSpin {
+  to { transform: rotate(360deg); }
+}

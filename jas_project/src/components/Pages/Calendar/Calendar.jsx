@@ -10,7 +10,6 @@ import {
   EVENT_COLORS,
   eventStyle,
   resolveColor,
-  parseTimeToMinutes,
   formatTime12,
   HOUR_HEIGHT,
   layoutOverlappingEvents,
@@ -24,7 +23,15 @@ import {
   sanitizeText,
   sanitizeTime,
 } from "../../../lib/security";
-
+import {
+  parseTimeToMinutes,
+  isShiftLinkNote,
+  getVisibleEventNotes,
+  recalcWakeWalkForDate,
+  WAKE_TITLE,
+  WALK_TITLE,
+} from "../../../lib/calendarSync";
+import { useBodyScrollLock } from "../../../hooks";
 import { useGlassToast } from "../../../lib/glass_toast_provider.jsx";
 import ColorPalettePicker from "../../../lib/ColorPalettePicker.jsx";
 import { fetchPalette } from "../../../lib/color_palette.js";
@@ -35,10 +42,7 @@ const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 // Wake/walk generation defaults — mirrors the logic in Shifts.jsx so that
 // editing a shift-linked event directly on the Calendar page keeps the
 // linked shift and the generated Wake up / Go for a walk events in sync.
-const CALENDAR_WAKEUP_BEFORE_MINUTES = 120;
-const CALENDAR_WALK_AFTER_WAKE_MINUTES = 30;
-const CALENDAR_WAKE_TITLE = "Wake up";
-const CALENDAR_WALK_TITLE = "Go for a walk";
+
 
 const emptyForm = (dateKey) => ({
   title: "",
@@ -49,97 +53,7 @@ const emptyForm = (dateKey) => ({
   color: "#818cf8",
 });
 
-function isShiftLinkNote(value) {
-  return typeof value === "string" && value.startsWith("Linked shift id:");
-}
 
-function getVisibleEventNotes(value) {
-  if (isShiftLinkNote(value)) return "";
-  return value ?? "";
-}
-
-function minutesToTime(min) {
-  const total = Math.max(0, Math.floor(min));
-  const h = Math.floor(total / 60) % 24;
-  const m = total % 60;
-  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
-}
-
-// Recomputes the Wake up / Go for a walk events for a given date based on
-// whatever shifts currently exist that day. Deletes the old generated
-// events and inserts fresh ones. Safe to call even if there are no shifts
-// (it will just clean up any stale wake/walk events).
-async function recalcWakeWalkForDate(supabase, dateKey, userId) {
-  const { data: shiftsOnDate = [] } = await supabase
-    .from("shifts")
-    .select("*")
-    .eq("user_id", userId)
-    .eq("shift_date", dateKey);
-
-  const { data: eventsOnDate = [] } = await supabase
-    .from("events")
-    .select("*")
-    .eq("user_id", userId)
-    .eq("event_date", dateKey);
-
-  const generatedIds = eventsOnDate
-    .filter(
-      (e) => e.title === CALENDAR_WAKE_TITLE || e.title === CALENDAR_WALK_TITLE,
-    )
-    .map((e) => e.id);
-
-  if (!shiftsOnDate.length) {
-    if (generatedIds.length > 0) {
-      await supabase.from("events").delete().in("id", generatedIds);
-    }
-    return;
-  }
-
-  const starts = shiftsOnDate.map((shift) => {
-    if (shift.start_time) {
-      const m = parseTimeToMinutes(shift.start_time);
-      if (m != null) return m;
-    }
-    if (shift.end_time && shift.hours) {
-      const end = parseTimeToMinutes(shift.end_time);
-      if (end != null) {
-        return Math.max(
-          0,
-          end - Math.round((parseFloat(shift.hours) || 0) * 60),
-        );
-      }
-    }
-    return 9 * 60;
-  });
-
-  const earliest = Math.min(...starts);
-  const desiredWake = Math.max(0, earliest - CALENDAR_WAKEUP_BEFORE_MINUTES);
-  const desiredWalk = desiredWake + CALENDAR_WALK_AFTER_WAKE_MINUTES;
-
-  if (generatedIds.length > 0) {
-    await supabase.from("events").delete().in("id", generatedIds);
-  }
-
-  await supabase.from("events").insert({
-    title: CALENDAR_WAKE_TITLE,
-    notes: null,
-    event_date: dateKey,
-    start_time: minutesToTime(desiredWake),
-    end_time: minutesToTime(desiredWake + 15),
-    color: "pink",
-    ...(userId && { user_id: userId }),
-  });
-
-  await supabase.from("events").insert({
-    title: CALENDAR_WALK_TITLE,
-    notes: null,
-    event_date: dateKey,
-    start_time: minutesToTime(desiredWalk),
-    end_time: minutesToTime(desiredWalk + 30),
-    color: "green",
-    ...(userId && { user_id: userId }),
-  });
-}
 
 function Calendar() {
   const userId = useUserId();
@@ -301,7 +215,7 @@ function Calendar() {
             });
           }
         }
-      } catch (syncErr) {
+      } catch {
         // non-critical, continue fetching
       }
 
@@ -353,15 +267,7 @@ function Calendar() {
     return () => clearInterval(timer);
   }, []);
 
-  useEffect(() => {
-    if (modalOpen || deleteTarget) {
-      const previousOverflow = document.body.style.overflow;
-      document.body.style.overflow = "hidden";
-      return () => {
-        document.body.style.overflow = previousOverflow;
-      };
-    }
-  }, [modalOpen, deleteTarget]);
+  useBodyScrollLock(modalOpen, deleteTarget);
 
   useEffect(() => {
     const target = addBtnRef.current;
@@ -578,7 +484,7 @@ function Calendar() {
 
             await recalcWakeWalkForDate(supabase, eventDate, userId);
             window.dispatchEvent(new CustomEvent("shifts:refresh"));
-          } catch (syncErr) {
+          } catch {
             toastError(
               "Event saved, but syncing the linked shift and wake/walk times failed.",
             );

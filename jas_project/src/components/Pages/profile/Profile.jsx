@@ -11,12 +11,11 @@ import {
 } from "../../../lib/security";
 
 import { useGlassToast } from "../../../lib/glass_toast_provider.jsx";
+import { useBodyScrollLock, useSwipeDownToClose } from "../../../hooks";
 
 const UNIT_STORAGE_KEY = "profile_weight_unit";
 const KG_TO_LBS = 2.20462;
 const MODAL_EXIT_MS = 260;
-const SWIPE_CLOSE_THRESHOLD = 110;
-
 const emptyProfileForm = () => ({
   display_name: "Jas",
   age: "",
@@ -91,89 +90,6 @@ function feetAndInchesToCm(feet, inches) {
   const totalInches = (parsedFeet ?? 0) * 12 + (parsedInches ?? 0);
   return Number((totalInches * 2.54).toFixed(2));
 }
-function useSwipeDownToClose(isOpen, isClosing, onClose) {
-  const startYRef = useRef(0);
-  const dragYRef = useRef(0);
-  const draggingRef = useRef(false);
-  const [dragY, setDragY] = useState(0);
-
-  const resetDrag = useCallback(() => {
-    dragYRef.current = 0;
-    draggingRef.current = false;
-    setDragY(0);
-  }, []);
-
-  useEffect(() => {
-    if (!isOpen) {
-      resetDrag();
-    }
-  }, [isOpen, resetDrag]);
-
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const handlePointerMove = (e) => {
-      if (!draggingRef.current) return;
-
-      const nextDrag = Math.max(0, e.clientY - startYRef.current);
-      dragYRef.current = nextDrag;
-      setDragY(nextDrag);
-    };
-
-    const handlePointerEnd = () => {
-      if (!draggingRef.current) return;
-
-      const shouldClose = dragYRef.current >= SWIPE_CLOSE_THRESHOLD;
-      resetDrag();
-
-      if (shouldClose) {
-        onClose();
-      }
-    };
-
-    window.addEventListener("pointermove", handlePointerMove);
-    window.addEventListener("pointerup", handlePointerEnd);
-    window.addEventListener("pointercancel", handlePointerEnd);
-
-    return () => {
-      window.removeEventListener("pointermove", handlePointerMove);
-      window.removeEventListener("pointerup", handlePointerEnd);
-      window.removeEventListener("pointercancel", handlePointerEnd);
-    };
-  }, [isOpen, onClose, resetDrag]);
-  const bind = {
-    onPointerDown: (e) => {
-      if (e.pointerType === "mouse" && e.button !== 0) return;
-
-      // Don't hijack interactive elements — capturing the pointer here
-      // can swallow their click events (this is why Cancel/Save stopped working).
-      if (e.target.closest("button, input, select, textarea, a, label")) {
-        return;
-      }
-
-      startYRef.current = e.clientY;
-      dragYRef.current = 0;
-      draggingRef.current = true;
-
-      if (e.currentTarget.setPointerCapture) {
-        e.currentTarget.setPointerCapture(e.pointerId);
-      }
-    },
-  };
-  return {
-    bind,
-    dragY,
-    dragging: dragY > 0,
-    style:
-      dragY > 0 && !isClosing
-        ? {
-            transform: `translateY(${dragY}px)`,
-            transition: "none",
-          }
-        : undefined,
-  };
-}
-
 function formatHeight(heightCm) {
   if (heightCm == null || Number.isNaN(heightCm)) return null;
   const { feet, inches } = cmToFeetAndInches(heightCm);
@@ -566,15 +482,7 @@ function Profile({ onNavigate }) {
     fetchData();
   }, [fetchData]);
 
-  useEffect(() => {
-    if (weightModalOpen || profileModalOpen || deleteTarget) {
-      const previousOverflow = document.body.style.overflow;
-      document.body.style.overflow = "hidden";
-      return () => {
-        document.body.style.overflow = previousOverflow;
-      };
-    }
-  }, [weightModalOpen, profileModalOpen, deleteTarget]);
+  useBodyScrollLock(weightModalOpen, profileModalOpen, deleteTarget);
 
   useEffect(() => {
     const target = logWeightBtnRef.current;
