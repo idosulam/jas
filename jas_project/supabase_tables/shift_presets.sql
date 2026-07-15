@@ -9,8 +9,11 @@ CREATE TABLE IF NOT EXISTS public.shift_presets (
   end_time    TIME NULL,
   hours       NUMERIC(5, 2) NOT NULL DEFAULT 8 CHECK (hours > 0),
   color       TEXT NULL,
+  user_id     UUID REFERENCES auth.users(id) ON DELETE CASCADE,
   created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+CREATE INDEX IF NOT EXISTS idx_shift_presets_user_id ON public.shift_presets(user_id);
 
 COMMENT ON TABLE public.shift_presets IS 'Reusable shift templates created by the user for quick-add.';
 COMMENT ON COLUMN public.shift_presets.label IS 'Display name for the preset (e.g. "Morning shift")';
@@ -20,23 +23,16 @@ COMMENT ON COLUMN public.shift_presets.start_time IS 'Default start time for thi
 COMMENT ON COLUMN public.shift_presets.end_time IS 'Default end time for this preset';
 COMMENT ON COLUMN public.shift_presets.hours IS 'Default hours for this preset';
 COMMENT ON COLUMN public.shift_presets.color IS 'Optional hex color from the palette';
+COMMENT ON COLUMN public.shift_presets.user_id IS 'Owner — references auth.users';
 
--- Row Level Security (public access — same pattern as shifts)
+-- Row Level Security — per-user only
 ALTER TABLE public.shift_presets ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Allow public read on shift_presets"
-  ON public.shift_presets FOR SELECT
-  USING (true);
-
-CREATE POLICY "Allow public insert on shift_presets"
-  ON public.shift_presets FOR INSERT
-  WITH CHECK (true);
-
-CREATE POLICY "Allow public update on shift_presets"
-  ON public.shift_presets FOR UPDATE
-  USING (true)
-  WITH CHECK (true);
-
-CREATE POLICY "Allow public delete on shift_presets"
-  ON public.shift_presets FOR DELETE
-  USING (true);
+CREATE POLICY "Users can read own shift_presets"
+  ON public.shift_presets FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can insert own shift_presets"
+  ON public.shift_presets FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can update own shift_presets"
+  ON public.shift_presets FOR UPDATE USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can delete own shift_presets"
+  ON public.shift_presets FOR DELETE USING (auth.uid() = user_id);

@@ -10,32 +10,28 @@ CREATE TABLE IF NOT EXISTS public.events (
   color         TEXT NOT NULL DEFAULT '#818cf8',
   is_completed  BOOLEAN NOT NULL DEFAULT false,
   completed_at  TIMESTAMPTZ,
+  user_id       UUID REFERENCES auth.users(id) ON DELETE CASCADE,
   created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   CHECK (end_time > start_time)
 );
 
 CREATE INDEX IF NOT EXISTS idx_events_event_date ON public.events (event_date);
 CREATE INDEX IF NOT EXISTS idx_events_date_time ON public.events (event_date, start_time);
+CREATE INDEX IF NOT EXISTS idx_events_user_id ON public.events(user_id);
 
 COMMENT ON TABLE public.events IS 'Calendar events & reminders — one row per timed block on a given day.';
 COMMENT ON COLUMN public.events.is_completed IS 'Checked off when the reminder/event is done.';
 COMMENT ON COLUMN public.events.color IS 'Hex color from the palette';
+COMMENT ON COLUMN public.events.user_id IS 'Owner — references auth.users';
 
+-- Row Level Security — per-user only
 ALTER TABLE public.events ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Allow public read on events"
-  ON public.events FOR SELECT
-  USING (true);
-
-CREATE POLICY "Allow public insert on events"
-  ON public.events FOR INSERT
-  WITH CHECK (true);
-
-CREATE POLICY "Allow public update on events"
-  ON public.events FOR UPDATE
-  USING (true)
-  WITH CHECK (true);
-
-CREATE POLICY "Allow public delete on events"
-  ON public.events FOR DELETE
-  USING (true);
+CREATE POLICY "Users can read own events"
+  ON public.events FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can insert own events"
+  ON public.events FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can update own events"
+  ON public.events FOR UPDATE USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can delete own events"
+  ON public.events FOR DELETE USING (auth.uid() = user_id);

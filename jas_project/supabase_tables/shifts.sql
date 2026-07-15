@@ -11,10 +11,12 @@ CREATE TABLE IF NOT EXISTS public.shifts (
   tips        NUMERIC(10, 2) NOT NULL DEFAULT 0 CHECK (tips >= 0),
   notes       TEXT NULL,
   color       TEXT NULL,
+  user_id     UUID REFERENCES auth.users(id) ON DELETE CASCADE,
   created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE INDEX IF NOT EXISTS idx_shifts_shift_date ON public.shifts (shift_date);
+CREATE INDEX IF NOT EXISTS idx_shifts_user_id ON public.shifts(user_id);
 
 COMMENT ON TABLE public.shifts IS 'Work shifts — workplaces and rates loaded from the workplaces table.';
 COMMENT ON COLUMN public.shifts.place IS 'References workplaces.slug';
@@ -25,24 +27,17 @@ COMMENT ON COLUMN public.shifts.hours IS 'Hours worked on this shift (supports d
 COMMENT ON COLUMN public.shifts.tips IS 'Tips earned (optional, defaults to 0)';
 COMMENT ON COLUMN public.shifts.notes IS 'Optional free-text note about the shift';
 COMMENT ON COLUMN public.shifts.color IS 'Optional hex color from the palette';
+COMMENT ON COLUMN public.shifts.user_id IS 'Owner — references auth.users';
 COMMENT ON COLUMN public.shifts.created_at IS 'Row creation timestamp';
 
--- Row Level Security (adjust if you add auth later)
+-- Row Level Security — per-user only
 ALTER TABLE public.shifts ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Allow public read on shifts"
-  ON public.shifts FOR SELECT
-  USING (true);
-
-CREATE POLICY "Allow public insert on shifts"
-  ON public.shifts FOR INSERT
-  WITH CHECK (true);
-
-CREATE POLICY "Allow public update on shifts"
-  ON public.shifts FOR UPDATE
-  USING (true)
-  WITH CHECK (true);
-
-CREATE POLICY "Allow public delete on shifts"
-  ON public.shifts FOR DELETE
-  USING (true);
+CREATE POLICY "Users can read own shifts"
+  ON public.shifts FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can insert own shifts"
+  ON public.shifts FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can update own shifts"
+  ON public.shifts FOR UPDATE USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can delete own shifts"
+  ON public.shifts FOR DELETE USING (auth.uid() = user_id);

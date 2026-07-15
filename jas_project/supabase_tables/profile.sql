@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS public.profile (
   height_cm       NUMERIC(5, 2) CHECK (height_cm IS NULL OR height_cm > 0),
   goal_weight_kg  NUMERIC(5, 2) CHECK (goal_weight_kg IS NULL OR goal_weight_kg > 0),
   gender          TEXT CHECK (gender IS NULL OR gender IN ('female', 'male', 'other')),
+  user_id         UUID REFERENCES auth.users(id) ON DELETE CASCADE,
   updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
@@ -17,35 +18,37 @@ CREATE TABLE IF NOT EXISTS public.weight_entries (
   entry_date  DATE NOT NULL,
   weight_kg   NUMERIC(5, 2) NOT NULL CHECK (weight_kg > 0),
   notes       TEXT,
-  created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  UNIQUE (entry_date)
+  user_id     UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+-- Unique per user (one weigh-in per day per user)
+CREATE UNIQUE INDEX IF NOT EXISTS weight_entries_user_date ON public.weight_entries(user_id, entry_date);
 CREATE INDEX IF NOT EXISTS idx_weight_entries_date ON public.weight_entries (entry_date);
+CREATE INDEX IF NOT EXISTS idx_weight_entries_user_id ON public.weight_entries(user_id);
+CREATE INDEX IF NOT EXISTS idx_profile_user_id ON public.profile(user_id);
 
 COMMENT ON TABLE public.profile IS 'Single-user profile — height is stored in cm and goal weight in kg; the app converts lbs in the UI before saving.';
 COMMENT ON TABLE public.weight_entries IS 'Daily weigh-ins — weight is stored in kg for consistent analytics.';
+COMMENT ON COLUMN public.profile.user_id IS 'Owner — references auth.users';
+COMMENT ON COLUMN public.weight_entries.user_id IS 'Owner — references auth.users';
 
+-- Row Level Security — per-user only
 ALTER TABLE public.profile ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.weight_entries ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Allow public read on profile"
-  ON public.profile FOR SELECT USING (true);
-CREATE POLICY "Allow public insert on profile"
-  ON public.profile FOR INSERT WITH CHECK (true);
-CREATE POLICY "Allow public update on profile"
-  ON public.profile FOR UPDATE USING (true) WITH CHECK (true);
+CREATE POLICY "Users can read own profile"
+  ON public.profile FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can insert own profile"
+  ON public.profile FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can update own profile"
+  ON public.profile FOR UPDATE USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
 
-CREATE POLICY "Allow public read on weight_entries"
-  ON public.weight_entries FOR SELECT USING (true);
-CREATE POLICY "Allow public insert on weight_entries"
-  ON public.weight_entries FOR INSERT WITH CHECK (true);
-CREATE POLICY "Allow public update on weight_entries"
-  ON public.weight_entries FOR UPDATE USING (true) WITH CHECK (true);
-CREATE POLICY "Allow public delete on weight_entries"
-  ON public.weight_entries FOR DELETE USING (true);
-
--- Optional seed row (edit values to match Jas)
-INSERT INTO public.profile (display_name, age, height_cm, goal_weight_kg, gender)
-SELECT 'Jas', 26, 165, 58, 'female'
-WHERE NOT EXISTS (SELECT 1 FROM public.profile);
+CREATE POLICY "Users can read own weight_entries"
+  ON public.weight_entries FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can insert own weight_entries"
+  ON public.weight_entries FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can update own weight_entries"
+  ON public.weight_entries FOR UPDATE USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can delete own weight_entries"
+  ON public.weight_entries FOR DELETE USING (auth.uid() = user_id);
