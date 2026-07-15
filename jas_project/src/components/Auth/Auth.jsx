@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { getSupabaseClient } from "../../../lib/superbase";
 import { useGlassToast } from "../../../lib/glass_toast_provider.jsx";
@@ -12,6 +12,136 @@ const slideVariants = {
   exit: (dir) => ({ x: dir > 0 ? -80 : 80, opacity: 0, scale: 0.96 }),
 };
 
+const shakeVariants = {
+  shake: {
+    x: [0, -10, 10, -8, 8, -4, 4, 0],
+    transition: { duration: 0.5, ease: "easeInOut" },
+  },
+};
+
+// Password strength calculator
+function getPasswordStrength(pw) {
+  let score = 0;
+  const checks = {
+    length: pw.length >= 8,
+    lowercase: /[a-z]/.test(pw),
+    uppercase: /[A-Z]/.test(pw),
+    numbers: /\d/.test(pw),
+    special: /[!@#$%^&*(),.?":{}|<>]/.test(pw),
+  };
+  Object.values(checks).forEach((v) => v && score++);
+  if (pw.length < 6) score = Math.min(score, 1);
+
+  const labels = ["Too weak", "Weak", "Fair", "Good", "Strong", "Very strong"];
+  const colors = ["#f87171", "#fb923c", "#fbbf24", "#a3e635", "#34d399", "#22d3ee"];
+
+  return { score, label: labels[score], color: colors[score], checks };
+}
+
+// Inline validation indicator
+function FieldIndicator({ state }) {
+  return (
+    <AnimatePresence mode="wait">
+      {state === "valid" && (
+        <motion.span
+          key="check"
+          className="auth__field-check"
+          initial={{ scale: 0, opacity: 0, rotate: -90 }}
+          animate={{ scale: 1, opacity: 1, rotate: 0 }}
+          exit={{ scale: 0, opacity: 0 }}
+          transition={{ type: "spring", stiffness: 400, damping: 15 }}
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+        </motion.span>
+      )}
+      {state === "error" && (
+        <motion.span
+          key="cross"
+          className="auth__field-cross"
+          initial={{ scale: 0, opacity: 0, rotate: 90 }}
+          animate={{ scale: 1, opacity: 1, rotate: 0 }}
+          exit={{ scale: 0, opacity: 0 }}
+          transition={{ type: "spring", stiffness: 400, damping: 15 }}
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </motion.span>
+      )}
+    </AnimatePresence>
+  );
+}
+
+// Inline field error message
+function FieldError({ message }) {
+  return (
+    <AnimatePresence>
+      {message && (
+        <motion.span
+          className="auth__field-error-msg"
+          initial={{ opacity: 0, y: -4, height: 0 }}
+          animate={{ opacity: 1, y: 0, height: "auto" }}
+          exit={{ opacity: 0, y: -4, height: 0 }}
+          transition={{ duration: 0.2 }}
+        >
+          {message}
+        </motion.span>
+      )}
+    </AnimatePresence>
+  );
+}
+
+// Password strength bar
+function PasswordStrengthBar({ password, mode }) {
+  if (mode === MODES.LOGIN || !password) return null;
+  const { score, label, color, checks } = getPasswordStrength(password);
+  const percent = (score / 5) * 100;
+
+  return (
+    <motion.div
+      className="auth__strength"
+      initial={{ opacity: 0, height: 0 }}
+      animate={{ opacity: 1, height: "auto" }}
+      exit={{ opacity: 0, height: 0 }}
+      transition={{ duration: 0.25 }}
+    >
+      <div className="auth__strength-bar-track">
+        <motion.div
+          className="auth__strength-bar-fill"
+          initial={{ width: 0 }}
+          animate={{ width: `${percent}%` }}
+          transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+          style={{ background: color }}
+        />
+      </div>
+      <div className="auth__strength-row">
+        <motion.span
+          className="auth__strength-label"
+          key={label}
+          initial={{ opacity: 0, x: -6 }}
+          animate={{ opacity: 1, x: 0 }}
+          style={{ color }}
+        >
+          {label}
+        </motion.span>
+        <div className="auth__strength-checks">
+          {Object.entries(checks).map(([key, pass]) => (
+            <span
+              key={key}
+              className={`auth__strength-check ${pass ? "auth__strength-check--pass" : ""}`}
+            >
+              {key === "length" ? "8+" : key === "lowercase" ? "a-z" : key === "uppercase" ? "A-Z" : key === "numbers" ? "0-9" : "!@#"}
+            </span>
+          ))}
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
 function Auth() {
   const [mode, setMode] = useState(MODES.LOGIN);
   const [direction, setDirection] = useState(1);
@@ -23,16 +153,31 @@ function Auth() {
   const [error, setError] = useState(null);
   const [successMsg, setSuccessMsg] = useState(null);
   const [cooldown, setCooldown] = useState(0);
+
+  // Field-level validation states: "idle" | "valid" | "error"
+  const [emailState, setEmailState] = useState("idle");
+  const [passwordState, setPasswordState] = useState("idle");
+  const [confirmState, setConfirmState] = useState("idle");
+  const [emailError, setEmailError] = useState(null);
+  const [passwordError, setPasswordError] = useState(null);
+  const [confirmError, setConfirmError] = useState(null);
+
+  // Track if user has interacted (for showing validation only after blur)
+  const [emailTouched, setEmailTouched] = useState(false);
+  const [passwordTouched, setPasswordTouched] = useState(false);
+  const [confirmTouched, setConfirmTouched] = useState(false);
+
+  // Shake trigger for submit
+  const [shakeKey, setShakeKey] = useState(0);
+
   const emailRef = useRef(null);
   const { success: toastSuccess, error: toastError } = useGlassToast();
 
-  // Focus email field on mount
   useEffect(() => {
     const timer = setTimeout(() => emailRef.current?.focus(), 400);
     return () => clearTimeout(timer);
   }, []);
 
-  // Cooldown timer for rate-limited actions
   useEffect(() => {
     if (cooldown <= 0) return;
     const t = setInterval(() => setCooldown((c) => c - 1), 1000);
@@ -42,31 +187,163 @@ function Auth() {
   const switchMode = (newMode) => {
     setError(null);
     setSuccessMsg(null);
+    setEmailState("idle");
+    setPasswordState("idle");
+    setConfirmState("idle");
+    setEmailError(null);
+    setPasswordError(null);
+    setConfirmError(null);
+    setEmailTouched(false);
+    setPasswordTouched(false);
+    setConfirmTouched(false);
     setDirection(newMode === MODES.REGISTER ? 1 : -1);
     setMode(newMode);
   };
 
-  const validateEmail = (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim());
+  // ── Real-time validators ──
+
+  const validateEmailField = useCallback((value) => {
+    if (!value.trim()) {
+      setEmailState("idle");
+      setEmailError(null);
+      return;
+    }
+    if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim())) {
+      setEmailState("valid");
+      setEmailError(null);
+    } else {
+      setEmailState("error");
+      setEmailError("Invalid email format");
+    }
+  }, []);
+
+  const validatePasswordField = useCallback((value, isRegister) => {
+    if (!value) {
+      setPasswordState("idle");
+      setPasswordError(null);
+      return;
+    }
+    if (isRegister) {
+      if (value.length >= 8) {
+        setPasswordState("valid");
+        setPasswordError(null);
+      } else if (value.length >= 6) {
+        setPasswordState("idle"); // acceptable but not strong
+        setPasswordError(null);
+      } else {
+        setPasswordState("error");
+        setPasswordError("At least 6 characters");
+      }
+    } else {
+      // Login: just check non-empty
+      setPasswordState(value.length > 0 ? "valid" : "idle");
+      setPasswordError(null);
+    }
+  }, []);
+
+  const validateConfirmField = useCallback((value, pw) => {
+    if (!value) {
+      setConfirmState("idle");
+      setConfirmError(null);
+      return;
+    }
+    if (value === pw) {
+      setConfirmState("valid");
+      setConfirmError(null);
+    } else {
+      setConfirmState("error");
+      setConfirmError("Passwords don't match");
+    }
+  }, []);
+
+  // Re-validate confirm when password changes
+  useEffect(() => {
+    if (confirmTouched && mode === MODES.REGISTER) {
+      validateConfirmField(confirmPassword, password);
+    }
+  }, [password, confirmPassword, confirmTouched, mode, validateConfirmField]);
+
+  // ── Blur handlers ──
+
+  const handleEmailBlur = () => {
+    setEmailTouched(true);
+    validateEmailField(email);
+  };
+
+  const handlePasswordBlur = () => {
+    setPasswordTouched(true);
+    validatePasswordField(password, mode === MODES.REGISTER);
+  };
+
+  const handleConfirmBlur = () => {
+    setConfirmTouched(true);
+    validateConfirmField(confirmPassword, password);
+  };
+
+  // ── Change handlers with live validation ──
+
+  const handleEmailChange = (e) => {
+    const v = e.target.value;
+    setEmail(v);
+    setError(null);
+    if (emailTouched) validateEmailField(v);
+  };
+
+  const handlePasswordChange = (e) => {
+    const v = e.target.value;
+    setPassword(v);
+    setError(null);
+    if (passwordTouched) validatePasswordField(v, mode === MODES.REGISTER);
+  };
+
+  const handleConfirmChange = (e) => {
+    const v = e.target.value;
+    setConfirmPassword(v);
+    setError(null);
+    if (confirmTouched) validateConfirmField(v, password);
+  };
+
+  // ── Submit ──
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
     setSuccessMsg(null);
 
-    if (!validateEmail(email)) {
-      setError("Please enter a valid email address.");
-      return;
+    // Force-touch all fields
+    setEmailTouched(true);
+    setPasswordTouched(true);
+    if (mode === MODES.REGISTER) setConfirmTouched(true);
+
+    // Validate
+    let hasError = false;
+
+    if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      setEmailState("error");
+      setEmailError(email.trim() ? "Invalid email format" : "Email is required");
+      hasError = true;
     }
 
     if (mode !== MODES.FORGOT) {
-      if (password.length < 6) {
-        setError("Password must be at least 6 characters.");
-        return;
+      if (mode === MODES.REGISTER && password.length < 6) {
+        setPasswordState("error");
+        setPasswordError("At least 6 characters");
+        hasError = true;
+      } else if (!password) {
+        setPasswordState("error");
+        setPasswordError("Password is required");
+        hasError = true;
       }
       if (mode === MODES.REGISTER && password !== confirmPassword) {
-        setError("Passwords do not match.");
-        return;
+        setConfirmState("error");
+        setConfirmError("Passwords don't match");
+        hasError = true;
       }
+    }
+
+    if (hasError) {
+      setShakeKey((k) => k + 1);
+      return;
     }
 
     setLoading(true);
@@ -81,6 +358,7 @@ function Auth() {
         });
         if (authError) {
           setError(authError.message);
+          setShakeKey((k) => k + 1);
           toastError("Login failed.");
         } else {
           toastSuccess("Welcome back!");
@@ -92,6 +370,7 @@ function Auth() {
         });
         if (authError) {
           setError(authError.message);
+          setShakeKey((k) => k + 1);
           toastError("Registration failed.");
         } else {
           setSuccessMsg("Check your email for a confirmation link!");
@@ -104,6 +383,7 @@ function Auth() {
         );
         if (authError) {
           setError(authError.message);
+          setShakeKey((k) => k + 1);
           toastError("Could not send reset email.");
         } else {
           setSuccessMsg("Password reset email sent! Check your inbox.");
@@ -113,6 +393,7 @@ function Auth() {
       }
     } catch (err) {
       setError(err.message || "Something went wrong.");
+      setShakeKey((k) => k + 1);
       toastError("Authentication error.");
     }
 
@@ -130,6 +411,25 @@ function Auth() {
     [MODES.REGISTER]: "Start tracking your work shifts today",
     [MODES.FORGOT]: "We'll send you a reset link",
   };
+
+  // Compute input class names
+  const emailInputClass = [
+    "auth__input",
+    emailTouched && emailState === "valid" ? "auth__input--valid" : "",
+    emailTouched && emailState === "error" ? "auth__input--error" : "",
+  ].filter(Boolean).join(" ");
+
+  const passwordInputClass = [
+    "auth__input",
+    passwordTouched && passwordState === "valid" ? "auth__input--valid" : "",
+    passwordTouched && passwordState === "error" ? "auth__input--error" : "",
+  ].filter(Boolean).join(" ");
+
+  const confirmInputClass = [
+    "auth__input",
+    confirmTouched && confirmState === "valid" ? "auth__input--valid" : "",
+    confirmTouched && confirmState === "error" ? "auth__input--error" : "",
+  ].filter(Boolean).join(" ");
 
   return (
     <div className="auth">
@@ -204,11 +504,16 @@ function Auth() {
             transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
           >
             {/* Email */}
-            <div className="auth__field">
+            <motion.div
+              className="auth__field"
+              variants={shakeVariants}
+              animate={shakeKey > 0 && emailState === "error" ? "shake" : undefined}
+              key={"email-shake-" + shakeKey}
+            >
               <label className="auth__label" htmlFor="auth-email">
                 Email
               </label>
-              <div className="auth__input-wrap">
+              <div className={`auth__input-wrap ${emailTouched && emailState === "valid" ? "auth__input-wrap--valid" : ""} ${emailTouched && emailState === "error" ? "auth__input-wrap--error" : ""}`}>
                 <svg className="auth__input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" aria-hidden="true">
                   <rect x="2" y="4" width="20" height="16" rx="3" />
                   <path d="m2 7 10 6 10-6" />
@@ -217,17 +522,20 @@ function Auth() {
                   ref={emailRef}
                   id="auth-email"
                   type="email"
-                  className="auth__input"
+                  className={emailInputClass}
                   placeholder="you@example.com"
                   value={email}
-                  onChange={(e) => { setEmail(e.target.value); setError(null); }}
+                  onChange={handleEmailChange}
+                  onBlur={handleEmailBlur}
                   required
                   autoComplete="email"
                   autoCapitalize="none"
                   spellCheck="false"
                 />
+                {emailTouched && <FieldIndicator state={emailState} />}
               </div>
-            </div>
+              <FieldError message={emailTouched ? emailError : null} />
+            </motion.div>
 
             {/* Password */}
             {mode !== MODES.FORGOT && (
@@ -237,11 +545,14 @@ function Auth() {
                 animate={{ opacity: 1, height: "auto" }}
                 exit={{ opacity: 0, height: 0 }}
                 transition={{ duration: 0.25 }}
+                variants={shakeVariants}
+                animate={shakeKey > 0 && passwordState === "error" ? "shake" : undefined}
+                key={"pw-shake-" + shakeKey}
               >
                 <label className="auth__label" htmlFor="auth-password">
                   Password
                 </label>
-                <div className="auth__input-wrap">
+                <div className={`auth__input-wrap ${passwordTouched && passwordState === "valid" ? "auth__input-wrap--valid" : ""} ${passwordTouched && passwordState === "error" ? "auth__input-wrap--error" : ""}`}>
                   <svg className="auth__input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" aria-hidden="true">
                     <rect x="3" y="11" width="18" height="11" rx="3" />
                     <path d="M7 11V7a5 5 0 0 1 10 0v4" />
@@ -249,10 +560,11 @@ function Auth() {
                   <input
                     id="auth-password"
                     type={showPassword ? "text" : "password"}
-                    className="auth__input"
+                    className={passwordInputClass}
                     placeholder="••••••••"
                     value={password}
-                    onChange={(e) => { setPassword(e.target.value); setError(null); }}
+                    onChange={handlePasswordChange}
+                    onBlur={handlePasswordBlur}
                     required
                     autoComplete={mode === MODES.LOGIN ? "current-password" : "new-password"}
                     minLength={6}
@@ -276,7 +588,10 @@ function Auth() {
                       </svg>
                     )}
                   </button>
+                  {passwordTouched && <FieldIndicator state={passwordState} />}
                 </div>
+                <FieldError message={passwordTouched ? passwordError : null} />
+                <PasswordStrengthBar password={password} mode={mode} />
               </motion.div>
             )}
 
@@ -288,11 +603,14 @@ function Auth() {
                 animate={{ opacity: 1, height: "auto" }}
                 exit={{ opacity: 0, height: 0 }}
                 transition={{ duration: 0.25 }}
+                variants={shakeVariants}
+                animate={shakeKey > 0 && confirmState === "error" ? "shake" : undefined}
+                key={"confirm-shake-" + shakeKey}
               >
                 <label className="auth__label" htmlFor="auth-confirm">
                   Confirm password
                 </label>
-                <div className="auth__input-wrap">
+                <div className={`auth__input-wrap ${confirmTouched && confirmState === "valid" ? "auth__input-wrap--valid" : ""} ${confirmTouched && confirmState === "error" ? "auth__input-wrap--error" : ""}`}>
                   <svg className="auth__input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" aria-hidden="true">
                     <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z" />
                     <path d="m9 12 2 2 4-4" />
@@ -300,19 +618,22 @@ function Auth() {
                   <input
                     id="auth-confirm"
                     type={showPassword ? "text" : "password"}
-                    className="auth__input"
+                    className={confirmInputClass}
                     placeholder="••••••••"
                     value={confirmPassword}
-                    onChange={(e) => { setConfirmPassword(e.target.value); setError(null); }}
+                    onChange={handleConfirmChange}
+                    onBlur={handleConfirmBlur}
                     required
                     autoComplete="new-password"
                     minLength={6}
                   />
+                  {confirmTouched && <FieldIndicator state={confirmState} />}
                 </div>
+                <FieldError message={confirmTouched ? confirmError : null} />
               </motion.div>
             )}
 
-            {/* Error */}
+            {/* Global Error */}
             <AnimatePresence>
               {error && (
                 <motion.div
@@ -333,7 +654,7 @@ function Auth() {
               )}
             </AnimatePresence>
 
-            {/* Success */}
+            {/* Global Success */}
             <AnimatePresence>
               {successMsg && (
                 <motion.div
@@ -356,20 +677,34 @@ function Auth() {
             {/* Submit */}
             <motion.button
               type="submit"
-              className="auth__submit"
+              className={`auth__submit ${loading ? "auth__submit--loading" : ""}`}
               disabled={loading || cooldown > 0}
               whileTap={{ scale: 0.97 }}
               whileHover={{ scale: 1.01 }}
             >
-              {loading ? (
-                <span className="auth__spinner" aria-label="Loading" />
-              ) : mode === MODES.FORGOT ? (
-                cooldown > 0 ? `Resend in ${cooldown}s` : "Send reset link"
-              ) : mode === MODES.LOGIN ? (
-                "Sign in"
-              ) : (
-                "Create account"
-              )}
+              <AnimatePresence mode="wait">
+                {loading ? (
+                  <motion.span
+                    key="spinner"
+                    className="auth__spinner"
+                    initial={{ opacity: 0, scale: 0.5 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.5 }}
+                    aria-label="Loading"
+                  />
+                ) : (
+                  <motion.span
+                    key="text"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                  >
+                    {mode === MODES.FORGOT
+                      ? cooldown > 0 ? `Resend in ${cooldown}s` : "Send reset link"
+                      : mode === MODES.LOGIN ? "Sign in" : "Create account"}
+                  </motion.span>
+                )}
+              </AnimatePresence>
             </motion.button>
 
             {/* Divider */}
@@ -381,10 +716,12 @@ function Auth() {
 
             {/* Google sign-in placeholder */}
             {mode !== MODES.FORGOT && (
-              <button
+              <motion.button
                 type="button"
                 className="auth__social-btn"
                 onClick={() => toastError("Google sign-in coming soon!")}
+                whileTap={{ scale: 0.97 }}
+                whileHover={{ scale: 1.01 }}
               >
                 <svg viewBox="0 0 24 24" aria-hidden="true">
                   <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1Z" fill="#4285F4" />
@@ -393,7 +730,7 @@ function Auth() {
                   <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53Z" fill="#EA4335" />
                 </svg>
                 Continue with Google
-              </button>
+              </motion.button>
             )}
           </motion.form>
         </AnimatePresence>
