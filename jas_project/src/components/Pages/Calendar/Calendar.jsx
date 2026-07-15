@@ -2,7 +2,7 @@ import "./Calendar.css";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { getSupabaseClient } from "../../../lib/superbase";
-import { useUserId } from "../../../lib/useAuth.js";
+import { useUserId } from "../../../lib/AuthContext.jsx";
 import {
   addDays,
   DAY_END_HOUR,

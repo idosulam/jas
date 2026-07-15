@@ -2,7 +2,7 @@ import "./Profile.css";
 import { useCallback, useEffect, useMemo, useState, useRef } from "react";
 import { createPortal } from "react-dom";
 import { getSupabaseClient } from "../../../lib/superbase";
-import { useUserId } from "../../../lib/useAuth.js";
+import { useUserId } from "../../../lib/AuthContext.jsx";
 import {
   getUserFacingError,
   sanitizeDate,

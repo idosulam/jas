@@ -2,7 +2,7 @@ import "./Shifts.css";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { getSupabaseClient, supabase } from "../../../lib/superbase";
-import { useUserId } from "../../../lib/useAuth.js";
+import { useUserId } from "../../../lib/AuthContext.jsx";
 import {
   getUserFacingError,
   sanitizeDate,

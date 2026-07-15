@@ -2,7 +2,7 @@ import "./Workplaces.css";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { getSupabaseClient } from "../../../lib/superbase";
-import { useUserId } from "../../../lib/useAuth.js";
+import { useUserId } from "../../../lib/AuthContext.jsx";
 import { getUserFacingError, sanitizeText, sanitizeNumber } from "../../../lib/security";
 import { useGlassToast } from "../../../lib/glass_toast_provider.jsx";
 
