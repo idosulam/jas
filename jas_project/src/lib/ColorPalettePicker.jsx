@@ -6,13 +6,7 @@
  */
 import { useCallback, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import {
-  fetchPalette,
-  addPaletteColor,
-  updatePaletteColor,
-  deletePaletteColor,
-  clearPalette,
-} from "./color_palette";
+import "./color_palette";
 import "./ColorPalettePicker.css";
 
 const MODAL_EXIT_MS = 260;
@@ -79,7 +73,11 @@ export default function ColorPalettePicker({ value, onChange }) {
       await deletePaletteColor(id);
       const updated = await fetchPalette();
       setPalette(updated);
-      if (value && !updated.some((c) => c.hex === value) && updated.length > 0) {
+      if (
+        value &&
+        !updated.some((c) => c.hex === value) &&
+        updated.length > 0
+      ) {
         onChange(updated[0].hex);
       }
       closePicker();
@@ -95,7 +93,11 @@ export default function ColorPalettePicker({ value, onChange }) {
 
   return (
     <div className="cpp__container">
-      <div className="cpp__swatches" role="radiogroup" aria-label="Color palette">
+      <div
+        className="cpp__swatches"
+        role="radiogroup"
+        aria-label="Color palette"
+      >
         {palette.map((entry) => (
           <div key={entry.id} className="cpp__swatch-wrap">
             <button
@@ -215,7 +217,9 @@ export default function ColorPalettePicker({ value, onChange }) {
                   type="button"
                   className="cpp__btn cpp__btn--primary"
                   onClick={handleSave}
-                  disabled={saving || !hex || !hex.startsWith("#") || hex.length < 4}
+                  disabled={
+                    saving || !hex || !hex.startsWith("#") || hex.length < 4
+                  }
                 >
                   {saving ? "Saving…" : editing ? "Save" : "Add"}
                 </button>
