@@ -15,3 +15,13 @@ export function getSupabaseClient() {
   }
   return supabase;
 }
+
+/**
+ * Get the current authenticated user's ID.
+ * Returns null if not logged in or Supabase not configured.
+ */
+export async function getCurrentUserId() {
+  if (!supabase) return null;
+  const { data: { session } } = await supabase.auth.getSession();
+  return session?.user?.id ?? null;
+}

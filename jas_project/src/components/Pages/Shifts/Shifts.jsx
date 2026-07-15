@@ -1,7 +1,8 @@
 import "./Shifts.css";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { getSupabaseClient } from "../../../lib/superbase";
+import { getSupabaseClient, supabase } from "../../../lib/superbase";
+import { useUserId } from "../../../lib/useAuth.js";
 import {
   getUserFacingError,
   sanitizeDate,
@@ -90,6 +91,7 @@ function formatMoney(amount) {
 }
 
 function Shifts({ onNavigate }) {
+  const userId = useUserId();
   const now = new Date();
   const [month, setMonth] = useState(now.getMonth());
   const [year, setYear] = useState(now.getFullYear());
@@ -179,17 +181,19 @@ function Shifts({ onNavigate }) {
   );
 
   const fetchWorkplaces = useCallback(async () => {
+    if (!userId) return;
     try {
       const supabase = getSupabaseClient();
       const { data, error: fetchError } = await supabase
         .from("workplaces")
         .select("*")
+        .eq("user_id", userId)
         .order("created_at", { ascending: true });
       if (!fetchError && data && data.length > 0) setWorkplaces(data);
     } catch {
       // silent — will use defaults
     }
-  }, []);
+  }, [userId]);
 
   useEffect(() => {
     fetchWorkplaces();
@@ -244,17 +248,19 @@ function Shifts({ onNavigate }) {
   );
 
   const fetchPresets = useCallback(async () => {
+    if (!userId) return;
     try {
       const supabase = getSupabaseClient();
       const { data, error: fetchError } = await supabase
         .from("shift_presets")
         .select("*")
+        .eq("user_id", userId)
         .order("created_at", { ascending: true });
       if (!fetchError) setPresets(data ?? []);
     } catch {
       // silent — presets are non-critical
     }
-  }, []);
+  }, [userId]);
 
   useEffect(() => {
     fetchPresets();
@@ -278,6 +284,7 @@ function Shifts({ onNavigate }) {
       hours: Number(Number(presetForm.hours).toFixed(2)),
       pay_type: presetForm.pay_type,
       color: presetForm.color || null,
+      ...(userId && { user_id: userId }),
     };
     try {
       const supabase = getSupabaseClient();
@@ -391,6 +398,7 @@ function Shifts({ onNavigate }) {
   }, []);
 
   const fetchShifts = useCallback(async () => {
+    if (!userId) return;
     setLoading(true);
     setError(null);
 
@@ -402,6 +410,7 @@ function Shifts({ onNavigate }) {
       const { data, error: fetchError } = await supabase
         .from("shifts")
         .select("*")
+        .eq("user_id", userId)
         .gte("shift_date", startDate)
         .lte("shift_date", endDate)
         .order("shift_date", { ascending: true });
@@ -417,7 +426,7 @@ function Shifts({ onNavigate }) {
       setShifts([]);
     }
     setLoading(false);
-  }, [month, year]);
+  }, [month, year, userId]);
 
   useEffect(() => {
     fetchShifts();
@@ -682,6 +691,7 @@ function Shifts({ onNavigate }) {
     const { data: eventsOnDate = [] } = await supabase
       .from("events")
       .select("*")
+      .eq("user_id", userId)
       .eq("event_date", dateKey);
 
     const idsToDelete = (eventsOnDate || [])
@@ -719,11 +729,13 @@ function Shifts({ onNavigate }) {
       const { data: shiftsOnDate = [] } = await supabase
         .from("shifts")
         .select("*")
+        .eq("user_id", userId)
         .eq("shift_date", dateKey);
 
       const { data: eventsOnDate = [] } = await supabase
         .from("events")
         .select("*")
+        .eq("user_id", userId)
         .eq("event_date", dateKey);
 
       if (!shiftsOnDate.length) {
@@ -776,6 +788,7 @@ function Shifts({ onNavigate }) {
         start_time: wakeStart,
         end_time: wakeEnd,
         color: "pink",
+        ...(userId && { user_id: userId }),
       });
 
       await supabase.from("events").insert({
@@ -785,6 +798,7 @@ function Shifts({ onNavigate }) {
         start_time: walkStart,
         end_time: walkEnd,
         color: "green",
+        ...(userId && { user_id: userId }),
       });
 
       const shiftTitle = getShiftEventTitle(shiftRecord);
@@ -810,6 +824,7 @@ function Shifts({ onNavigate }) {
         start_time: shiftStart,
         end_time: shiftEnd,
         color: shiftRecord.color || "cyan",
+        ...(userId && { user_id: userId }),
       };
 
       if (existingShiftEvent) {
@@ -889,6 +904,7 @@ function Shifts({ onNavigate }) {
       tips: Number(tips.toFixed(2)),
       notes,
       color: PLACES[form.place]?.color || null,
+      ...(userId && { user_id: userId }),
     };
 
     try {
@@ -980,6 +996,7 @@ function Shifts({ onNavigate }) {
         const { data: remainingShifts = [] } = await supabase
           .from("shifts")
           .select("*")
+          .eq("user_id", userId)
           .eq("shift_date", shiftDate);
 
         if ((remainingShifts || []).length > 0) {

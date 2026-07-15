@@ -2,6 +2,7 @@ import "./Calendar.css";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { getSupabaseClient } from "../../../lib/superbase";
+import { useUserId } from "../../../lib/useAuth.js";
 import {
   addDays,
   DAY_END_HOUR,
@@ -68,15 +69,17 @@ function minutesToTime(min) {
 // whatever shifts currently exist that day. Deletes the old generated
 // events and inserts fresh ones. Safe to call even if there are no shifts
 // (it will just clean up any stale wake/walk events).
-async function recalcWakeWalkForDate(supabase, dateKey) {
+async function recalcWakeWalkForDate(supabase, dateKey, userId) {
   const { data: shiftsOnDate = [] } = await supabase
     .from("shifts")
     .select("*")
+    .eq("user_id", userId)
     .eq("shift_date", dateKey);
 
   const { data: eventsOnDate = [] } = await supabase
     .from("events")
     .select("*")
+    .eq("user_id", userId)
     .eq("event_date", dateKey);
 
   const generatedIds = eventsOnDate
@@ -124,6 +127,7 @@ async function recalcWakeWalkForDate(supabase, dateKey) {
     start_time: minutesToTime(desiredWake),
     end_time: minutesToTime(desiredWake + 15),
     color: "pink",
+    ...(userId && { user_id: userId }),
   });
 
   await supabase.from("events").insert({
@@ -133,10 +137,12 @@ async function recalcWakeWalkForDate(supabase, dateKey) {
     start_time: minutesToTime(desiredWalk),
     end_time: minutesToTime(desiredWalk + 30),
     color: "green",
+    ...(userId && { user_id: userId }),
   });
 }
 
 function Calendar() {
+  const userId = useUserId();
   const today = useMemo(() => new Date(), []);
   const [selectedDate, setSelectedDate] = useState(today);
   const [viewMode, setViewMode] = useState("week");
@@ -228,6 +234,7 @@ function Calendar() {
   }, [isToday, nowTick]);
 
   const fetchEvents = useCallback(async () => {
+    if (!userId) return;
     setLoading(true);
     setError(null);
 
@@ -251,12 +258,14 @@ function Calendar() {
         const { data: shiftsInRange = [] } = await supabase
           .from("shifts")
           .select("*")
+          .eq("user_id", userId)
           .gte("shift_date", startKey)
           .lte("shift_date", endKey);
 
         const { data: existingEvents = [] } = await supabase
           .from("events")
           .select("id, notes")
+          .eq("user_id", userId)
           .gte("event_date", startKey)
           .lte("event_date", endKey);
 
@@ -288,6 +297,7 @@ function Calendar() {
               start_time: start,
               end_time: end,
               color: shift.color || "cyan",
+              ...(userId && { user_id: userId }),
             });
           }
         }
@@ -298,6 +308,7 @@ function Calendar() {
       const { data, error: fetchError } = await supabase
         .from("events")
         .select("*")
+        .eq("user_id", userId)
         .gte("event_date", startKey)
         .lte("event_date", endKey)
         .order("start_time", { ascending: true });
@@ -317,7 +328,7 @@ function Calendar() {
       setEvents([]);
     }
     setLoading(false);
-  }, [selectedDate, selectedKey, viewMode]);
+  }, [selectedDate, selectedKey, viewMode, userId]);
 
   useEffect(() => {
     fetchEvents();
@@ -507,6 +518,7 @@ function Calendar() {
       event_date: eventDate,
       start_time: startTime,
       end_time: endTime,
+      ...(userId && { user_id: userId }),
       color:
         form.color && form.color.startsWith("#")
           ? form.color
@@ -564,7 +576,7 @@ function Calendar() {
               })
               .eq("id", linkedShiftId);
 
-            await recalcWakeWalkForDate(supabase, eventDate);
+            await recalcWakeWalkForDate(supabase, eventDate, userId);
             window.dispatchEvent(new CustomEvent("shifts:refresh"));
           } catch (syncErr) {
             toastError(

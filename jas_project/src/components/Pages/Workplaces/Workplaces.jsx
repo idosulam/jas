@@ -2,6 +2,7 @@ import "./Workplaces.css";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { getSupabaseClient } from "../../../lib/superbase";
+import { useUserId } from "../../../lib/useAuth.js";
 import { getUserFacingError, sanitizeText, sanitizeNumber } from "../../../lib/security";
 import { useGlassToast } from "../../../lib/glass_toast_provider.jsx";
 
@@ -19,6 +20,7 @@ function formatMoney(amount) {
 }
 
 function Workplaces({ onNavigate, returnTo }) {
+  const userId = useUserId();
   const [workplaces, setWorkplaces] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -37,6 +39,7 @@ function Workplaces({ onNavigate, returnTo }) {
   const { success: toastSuccess, error: toastError } = useGlassToast();
 
   const fetchWorkplaces = useCallback(async () => {
+    if (!userId) return;
     setLoading(true);
     setError(null);
     try {
@@ -44,6 +47,7 @@ function Workplaces({ onNavigate, returnTo }) {
       const { data, error: fetchError } = await supabase
         .from("workplaces")
         .select("*")
+        .eq("user_id", userId)
         .order("created_at", { ascending: true });
 
       if (fetchError) {
@@ -57,7 +61,7 @@ function Workplaces({ onNavigate, returnTo }) {
       setWorkplaces([]);
     }
     setLoading(false);
-  }, []);
+  }, [userId]);
 
   useEffect(() => {
     fetchWorkplaces();
@@ -173,7 +177,7 @@ function Workplaces({ onNavigate, returnTo }) {
       } else {
         ({ error: dbError } = await supabase
           .from("workplaces")
-          .insert({ slug, label, rate, color }));
+          .insert({ slug, label, rate, color, ...(userId && { user_id: userId }) }));
       }
 
       setSaving(false);

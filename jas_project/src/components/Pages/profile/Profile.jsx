@@ -2,6 +2,7 @@ import "./Profile.css";
 import { useCallback, useEffect, useMemo, useState, useRef } from "react";
 import { createPortal } from "react-dom";
 import { getSupabaseClient } from "../../../lib/superbase";
+import { useUserId } from "../../../lib/useAuth.js";
 import {
   getUserFacingError,
   sanitizeDate,
@@ -494,6 +495,7 @@ function WeightChart({ entries, unit, goalKg }) {
 }
 
 function Profile({ onNavigate }) {
+  const userId = useUserId();
   const [removingId, setRemovingId] = useState(null);
   const [unit, setUnit] = useState(loadUnit);
   const [profile, setProfile] = useState(null);
@@ -531,11 +533,12 @@ function Profile({ onNavigate }) {
     try {
       const supabase = getSupabaseClient();
       const [profileRes, entriesRes] = await Promise.all([
-        supabase.from("profile").select("*").limit(1).maybeSingle(),
-        supabase
-          .from("weight_entries")
-          .select("*")
-          .order("entry_date", { ascending: true }),
+        userId
+          ? supabase.from("profile").select("*").eq("user_id", userId).limit(1).maybeSingle()
+          : supabase.from("profile").select("*").limit(1).maybeSingle(),
+        userId
+          ? supabase.from("weight_entries").select("*").eq("user_id", userId).order("entry_date", { ascending: true })
+          : supabase.from("weight_entries").select("*").order("entry_date", { ascending: true }),
       ]);
 
       if (profileRes.error) {
@@ -753,6 +756,7 @@ function Profile({ onNavigate }) {
       entry_date: entryDate,
       weight_kg: Number(weightKg.toFixed(2)),
       notes: notes || null,
+      ...(userId && { user_id: userId }),
     };
 
     try {
@@ -764,7 +768,7 @@ function Profile({ onNavigate }) {
             .eq("id", editingEntry.id)
         : supabase
             .from("weight_entries")
-            .upsert(payload, { onConflict: "entry_date" });
+            .upsert(payload, { onConflict: "user_id,entry_date" });
 
       const { error: saveError } = await query;
       setSaving(false);
@@ -964,7 +968,7 @@ function Profile({ onNavigate }) {
       const supabase = getSupabaseClient();
       const { error: saveError } = profile
         ? await supabase.from("profile").update(payload).eq("id", profile.id)
-        : await supabase.from("profile").insert(payload);
+        : await supabase.from("profile").insert({ ...payload, ...(userId && { user_id: userId }) });
 
       setSaving(false);
 
