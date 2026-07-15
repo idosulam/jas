@@ -76,8 +76,8 @@ function AppContent() {
     );
   }
 
-  // Show auth if Supabase is configured and user is not logged in
-  const isAuthenticated = !supabase || !!session;
+  // Show auth page — require a real session when Supabase is configured
+  const isAuthenticated = !!supabase && !!session;
 
   const ActivePage = PAGES[activeNav];
 
