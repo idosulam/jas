@@ -283,6 +283,21 @@ function Workplaces({ onNavigate, returnTo }) {
 
     try {
       const supabase = getSupabaseClient();
+
+      // First, delete all shifts associated with this workplace
+      const { error: shiftsDeleteError } = await supabase
+        .from("shifts")
+        .delete()
+        .eq("place", deleteTarget.slug);
+
+      if (shiftsDeleteError) {
+        setDeleting(false);
+        setError(getUserFacingError(shiftsDeleteError.message));
+        toastError("Failed to delete associated shifts.");
+        return;
+      }
+
+      // Then delete the workplace itself
       const { error: dbError } = await supabase
         .from("workplaces")
         .delete()
@@ -297,7 +312,13 @@ function Workplaces({ onNavigate, returnTo }) {
       }
 
       closeDeleteModal();
-      toastSuccess(`${deleteTarget.label} deleted.`);
+      toastSuccess(`${deleteTarget.label} and all its shifts deleted.`);
+
+      // Notify Shifts page to refresh
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("shifts:refresh"));
+        window.dispatchEvent(new CustomEvent("calendar:refresh"));
+      }
       fetchWorkplaces();
     } catch (err) {
       setDeleting(false);
@@ -600,8 +621,8 @@ function Workplaces({ onNavigate, returnTo }) {
                 Deactivate {deactivateTarget.label}?
               </h2>
               <p className="workplaces__deactivate-desc">
-                This workplace will be hidden from shift forms. Existing shifts
-                using it will keep their data. You can reactivate it anytime.
+                This workplace will be shown as faded but its shifts will still
+                be visible and counted in totals. You can reactivate it anytime.
               </p>
               <div className="workplaces__form-actions">
                 <button
@@ -659,8 +680,8 @@ function Workplaces({ onNavigate, returnTo }) {
                 Delete {deleteTarget.label}?
               </h2>
               <p id="delete-workplace-desc" className="workplaces__deactivate-desc">
-                This will permanently remove the workplace and all its data.
-                Existing shifts will keep their records but lose the workplace reference.
+                This will permanently remove the workplace <strong>and all shifts</strong> associated with it.
+                All shift records using "{deleteTarget.label}" will be deleted from the database.
                 This cannot be undone.
               </p>
               <div className="workplaces__form-actions">
