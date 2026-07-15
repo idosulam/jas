@@ -148,6 +148,15 @@ function Shifts({ onNavigate }) {
   // All workplaces come from the DB — no hardcoded fallback
   const effectiveWorkplaces = workplaces;
 
+  // Track which workplace slugs are deactivated for faded display
+  const deactivatedSlugs = useMemo(() => {
+    const set = new Set();
+    workplaces.forEach((wp) => {
+      if (!wp.active) set.add(wp.slug);
+    });
+    return set;
+  }, [workplaces]);
+
   // Build PLACES map from workplaces for backward compatibility
   const PLACES = useMemo(() => {
     const map = {};
@@ -164,7 +173,7 @@ function Shifts({ onNavigate }) {
   const PLACE_FILTERS = useMemo(
     () => [
       { id: "all", label: "All" },
-      ...effectiveWorkplaces.map((wp) => ({ id: wp.slug, label: wp.label })),
+      ...effectiveWorkplaces.map((wp) => ({ id: wp.slug, label: wp.label, active: wp.active })),
     ],
     [effectiveWorkplaces],
   );
@@ -175,7 +184,6 @@ function Shifts({ onNavigate }) {
       const { data, error: fetchError } = await supabase
         .from("workplaces")
         .select("*")
-        .eq("active", true)
         .order("created_at", { ascending: true });
       if (!fetchError && data && data.length > 0) setWorkplaces(data);
     } catch {
@@ -1068,16 +1076,17 @@ function Shifts({ onNavigate }) {
           aria-label="Filter by place"
           ref={placeFilterRef}
         >
-          {PLACE_FILTERS.map(({ id, label }) => (
+          {PLACE_FILTERS.map(({ id, label, active }) => (
             <button
               key={id}
               type="button"
               data-place={id}
-              className={`shifts__place-btn${placeFilter === id ? " shifts__place-btn--active" : ""}${id !== "all" ? ` shifts__place-btn--${id}` : ""}`}
+              className={`shifts__place-btn${placeFilter === id ? " shifts__place-btn--active" : ""}${id !== "all" ? ` shifts__place-btn--${id}` : ""}${active === false ? " shifts__place-btn--deactivated" : ""}`}
               onClick={() => setPlaceFilter(id)}
               aria-pressed={placeFilter === id}
             >
               {label}
+              {active === false && <span className="shifts__place-deactivated-dot" aria-label="Deactivated" />}
             </button>
           ))}
           <span
@@ -1280,10 +1289,12 @@ function Shifts({ onNavigate }) {
             const isRemoving = removingId === shift.id;
             const isTipsOnly = shift.pay_type === "tips_only";
 
+            const isDeactivated = deactivatedSlugs.has(shift.place);
+
             return (
               <li
                 key={shift.id}
-                className={`shifts__card${isRemoving ? " shifts__card--removing" : ""}`}
+                className={`shifts__card${isRemoving ? " shifts__card--removing" : ""}${isDeactivated ? " shifts__card--deactivated" : ""}`}
                 style={{ "--card-delay": `${index * 0.06}s` }}
               >
                 <div className="shifts__card-main">
@@ -1443,7 +1454,7 @@ function Shifts({ onNavigate }) {
                   >
                     {Object.entries(PLACES).map(([key, { label, rate }]) => (
                       <option key={key} value={key}>
-                        {label} — ₪{rate}/hr
+                        {label} — ₪{rate}/hr{deactivatedSlugs.has(key) ? " (inactive)" : ""}
                       </option>
                     ))}
                   </select>
@@ -1703,7 +1714,7 @@ function Shifts({ onNavigate }) {
                 Filter by workplace
               </h2>
               <ul className="shifts__picker-list">
-                {PLACE_FILTERS.map(({ id, label }) => {
+                {PLACE_FILTERS.map(({ id, label, active }) => {
                   const isActive = placeFilter === id;
                   const color =
                     id === "all"
@@ -1713,7 +1724,7 @@ function Shifts({ onNavigate }) {
                     <li key={id}>
                       <button
                         type="button"
-                        className={`shifts__picker-item${isActive ? " shifts__picker-item--active" : ""}`}
+                        className={`shifts__picker-item${isActive ? " shifts__picker-item--active" : ""}${active === false ? " shifts__picker-item--deactivated" : ""}`}
                         onClick={() => selectPlaceFilter(id)}
                         role="option"
                         aria-selected={isActive}
@@ -1723,6 +1734,7 @@ function Shifts({ onNavigate }) {
                           style={{ background: color }}
                         />
                         <span className="shifts__picker-label">{label}</span>
+                        {active === false && <span className="shifts__picker-deactivated-tag">inactive</span>}
                         {isActive && (
                           <span className="shifts__picker-check" aria-hidden="true">
                             ✓
@@ -1876,7 +1888,7 @@ function Shifts({ onNavigate }) {
                   >
                     {Object.entries(PLACES).map(([key, { label, rate }]) => (
                       <option key={key} value={key}>
-                        {label} — ₪{rate}/hr
+                        {label} — ₪{rate}/hr{deactivatedSlugs.has(key) ? " (inactive)" : ""}
                       </option>
                     ))}
                   </select>
