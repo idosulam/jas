@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react";
-import { fetchPalette } from "./color_palette";
+import "../lib/color_palette.js";
 
 /**
  * Hook that loads and caches the user's color palette from Supabase.
