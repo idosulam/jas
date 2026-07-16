@@ -37,7 +37,7 @@ const emptyProfileForm = () => ({
   height_in: "",
   goal_weight_kg: "",
   goal_weight_lbs: "",
-  gender: "female",
+  gender: "",
 });
 
 const emptyWeightForm = () => ({
@@ -559,7 +559,7 @@ function Profile({ onNavigate }) {
         goal_weight_kg: goalKg != null ? String(goalKg.toFixed(1)) : "",
         goal_weight_lbs:
           goalKg != null ? String(kgToLbs(goalKg)?.toFixed(1) ?? "") : "",
-        gender: profile.gender ?? "female",
+        gender: profile.gender ?? "",
       });
     } else {
       setProfileForm(emptyProfileForm());
@@ -1633,6 +1633,7 @@ function Profile({ onNavigate }) {
                 setProfileForm((f) => ({ ...f, gender: e.target.value }))
               }
             >
+              <option value="">Select...</option>
               <option value="female">Female</option>
               <option value="male">Male</option>
               <option value="other">Other</option>
