@@ -37,7 +37,7 @@ const emptyProfileForm = () => ({
   height_in: "",
   goal_weight_kg: "",
   goal_weight_lbs: "",
-  gender: "female",
+
 });
 
 const emptyWeightForm = () => ({
@@ -559,7 +559,7 @@ function Profile({ onNavigate }) {
         goal_weight_kg: goalKg != null ? String(goalKg.toFixed(1)) : "",
         goal_weight_lbs:
           goalKg != null ? String(kgToLbs(goalKg)?.toFixed(1) ?? "") : "",
-        gender: profile.gender ?? "female",
+
       });
     } else {
       setProfileForm(emptyProfileForm());
@@ -887,16 +887,12 @@ function Profile({ onNavigate }) {
       profileForm.height_in,
     );
     const heightCm = heightCmFromCm ?? heightCmFromImperial;
-    const gender = ["female", "male", "other"].includes(profileForm.gender)
-      ? profileForm.gender
-      : null;
 
     const payload = {
       display_name: displayName,
       age,
       height_cm: heightCm ?? null,
       goal_weight_kg: goalKg ? Number(goalKg.toFixed(2)) : null,
-      gender,
       updated_at: new Date().toISOString(),
     };
 
@@ -1031,7 +1027,7 @@ function Profile({ onNavigate }) {
     };
   }, [entries, profile]);
 
-  const displayName = profile?.display_name ?? "Jas";
+  const displayName = profile?.display_name || "";
   const unitLabel = unit === "kg" ? "kg" : "lbs";
 
   const weightSwipe = useSwipeDownToClose(
@@ -1045,7 +1041,7 @@ function Profile({ onNavigate }) {
       <PageHeader
         className="profile__header"
         eyebrow="Your progress"
-        title={displayName}
+        title={`Hi ${displayName}`}
         subtitle="Weight loss analytics tuned for your training."
       >
         <div className="profile__avatar" aria-hidden="true">
@@ -1626,18 +1622,7 @@ function Profile({ onNavigate }) {
               />
             </FormField>
           </div>
-          <FormField label="Gender">
-            <select
-              value={profileForm.gender}
-              onChange={(e) =>
-                setProfileForm((f) => ({ ...f, gender: e.target.value }))
-              }
-            >
-              <option value="female">Female</option>
-              <option value="male">Male</option>
-              <option value="other">Other</option>
-            </select>
-          </FormField>
+
           <p className="profile__form-hint">
             Enter height in centimeters or feet and inches. Weight fields
             follow your {unitLabel} toggle.

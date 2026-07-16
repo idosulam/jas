@@ -14,7 +14,6 @@ CREATE TABLE IF NOT EXISTS public.profile (
   age             INTEGER CHECK (age IS NULL OR (age >= 13 AND age <= 120)),
   height_cm       NUMERIC(5, 2) CHECK (height_cm IS NULL OR height_cm > 0),
   goal_weight_kg  NUMERIC(5, 2) CHECK (goal_weight_kg IS NULL OR goal_weight_kg > 0),
-  gender          TEXT CHECK (gender IS NULL OR gender IN ('female', 'male', 'other')),
   user_id         UUID REFERENCES auth.users(id) ON DELETE CASCADE,
   updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
@@ -58,3 +57,17 @@ CREATE POLICY "Users can update own weight_entries"
   ON public.weight_entries FOR UPDATE USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
 CREATE POLICY "Users can delete own weight_entries"
   ON public.weight_entries FOR DELETE USING (auth.uid() = user_id);
+
+-- Auto-create profile on signup with display_name from user metadata
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS trigger AS $$
+BEGIN
+  INSERT INTO public.profile (user_id, display_name)
+  VALUES (new.id, new.raw_user_meta_data->>'display_name');
+  RETURN new;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+CREATE OR REPLACE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
