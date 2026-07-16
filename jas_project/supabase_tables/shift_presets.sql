@@ -54,5 +54,10 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 CREATE TRIGGER trg_sync_preset_color
-  BEFORE INSERT OR UPDATE OF place, user_id ON public.shift_presets
+  BEFORE INSERT OR UPDATE ON public.shift_presets
   FOR EACH ROW EXECUTE FUNCTION public.sync_preset_color_from_workplace();
+
+-- Backfill: set color on any existing presets that are missing it
+UPDATE public.shift_presets sp SET color = w.color
+FROM public.workplaces w
+WHERE sp.place = w.slug AND sp.user_id = w.user_id AND sp.color IS NULL;

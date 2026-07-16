@@ -59,5 +59,10 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 CREATE TRIGGER trg_sync_shift_color
-  BEFORE INSERT OR UPDATE OF place, user_id ON public.shifts
+  BEFORE INSERT OR UPDATE ON public.shifts
   FOR EACH ROW EXECUTE FUNCTION public.sync_shift_color_from_workplace();
+
+-- Backfill: set color on any existing shifts that are missing it
+UPDATE public.shifts s SET color = w.color
+FROM public.workplaces w
+WHERE s.place = w.slug AND s.user_id = w.user_id AND s.color IS NULL;

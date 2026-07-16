@@ -41,3 +41,9 @@ CREATE POLICY "Users can update own events"
   ON public.events FOR UPDATE USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
 CREATE POLICY "Users can delete own events"
   ON public.events FOR DELETE USING (auth.uid() = user_id);
+
+-- Backfill: sync event colors from linked shifts
+UPDATE public.events e SET color = s.color
+FROM public.shifts s
+WHERE e.notes LIKE '%Linked shift id: ' || s.id || '%'
+  AND e.color IS DISTINCT FROM s.color;
