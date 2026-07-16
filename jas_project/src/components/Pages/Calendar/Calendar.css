@@ -476,6 +476,7 @@
   overflow-x: hidden;
   scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch;
+  padding-bottom: 4rem;
 }
 
 .calendar__timeline::-webkit-scrollbar {
