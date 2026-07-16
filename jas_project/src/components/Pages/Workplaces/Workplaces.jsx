@@ -192,12 +192,6 @@ function Workplaces({ onNavigate, returnTo }) {
           .from("workplaces")
           .update({ label, rate, color })
           .eq("id", editing.id));
-
-        // Always cascade color to existing shifts and shift_presets
-        if (!dbError) {
-          await supabase.from("shifts").update({ color }).eq("place", editing.slug).eq("user_id", userId);
-          await supabase.from("shift_presets").update({ color }).eq("place", editing.slug).eq("user_id", userId);
-        }
       } else {
         ({ error: dbError } = await supabase
           .from("workplaces")

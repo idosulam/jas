@@ -36,3 +36,17 @@ CREATE POLICY "Users can update own shift_presets"
   ON public.shift_presets FOR UPDATE USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
 CREATE POLICY "Users can delete own shift_presets"
   ON public.shift_presets FOR DELETE USING (auth.uid() = user_id);
+
+-- Auto-sync color from workplace on insert/update
+CREATE OR REPLACE FUNCTION public.sync_preset_color_from_workplace()
+RETURNS TRIGGER AS $$
+BEGIN
+  SELECT color INTO NEW.color FROM public.workplaces
+    WHERE slug = NEW.place AND user_id = NEW.user_id LIMIT 1;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+CREATE TRIGGER trg_sync_preset_color
+  BEFORE INSERT OR UPDATE OF place, user_id ON public.shift_presets
+  FOR EACH ROW EXECUTE FUNCTION public.sync_preset_color_from_workplace();
