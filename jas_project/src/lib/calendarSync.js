@@ -242,7 +242,7 @@ export async function syncShiftToCalendar(supabase, shiftRecord, userId, placesM
     event_date: dateKey,
     start_time: shiftStart,
     end_time: shiftEnd,
-    color: shiftRecord.color || "cyan",
+    color: shiftRecord.color || placesMap[shiftRecord.place]?.color || "cyan",
     user_id: userId,
   };
 

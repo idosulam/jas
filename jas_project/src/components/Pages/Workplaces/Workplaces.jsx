@@ -193,8 +193,8 @@ function Workplaces({ onNavigate, returnTo }) {
           .update({ label, rate, color })
           .eq("id", editing.id));
 
-        // Cascade color change to existing shifts and shift_presets
-        if (!dbError && color !== editing.color) {
+        // Always cascade color to existing shifts and shift_presets
+        if (!dbError) {
           await supabase.from("shifts").update({ color }).eq("place", editing.slug).eq("user_id", userId);
           await supabase.from("shift_presets").update({ color }).eq("place", editing.slug).eq("user_id", userId);
         }
