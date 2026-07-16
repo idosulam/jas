@@ -1031,7 +1031,7 @@ function Profile({ onNavigate }) {
     };
   }, [entries, profile]);
 
-  const displayName = profile?.display_name || "Jas";
+  const displayName = profile?.display_name || "";
   const unitLabel = unit === "kg" ? "kg" : "lbs";
 
   const weightSwipe = useSwipeDownToClose(
