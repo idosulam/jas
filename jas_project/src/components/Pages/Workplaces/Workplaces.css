@@ -238,23 +238,28 @@
   align-items: center;
 }
 
-.workplaces__color-native {
-  width: 3rem;
+.workplaces__color-native-hidden {
+  position: absolute;
+  width: 0;
+  height: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.workplaces__color-swatch {
+  width: 2.6rem;
   height: 2.6rem;
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  border: 2px solid rgba(255, 255, 255, 0.15);
   border-radius: 0.65rem;
   cursor: pointer;
-  background: transparent;
+  flex-shrink: 0;
+  transition: border-color 0.2s ease, transform 0.15s ease;
   padding: 0;
 }
 
-.workplaces__color-native::-webkit-color-swatch-wrapper {
-  padding: 2px;
-}
-
-.workplaces__color-native::-webkit-color-swatch {
-  border: none;
-  border-radius: 0.5rem;
+.workplaces__color-swatch:hover {
+  border-color: rgba(255, 255, 255, 0.35);
+  transform: scale(1.05);
 }
 
 .workplaces__color-hex {

@@ -1,5 +1,5 @@
 import "./Workplaces.css";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getSupabaseClient } from "../../../lib/superbase";
 import { useUserId } from "../../../lib/AuthContext.jsx";
 import { getUserFacingError, sanitizeText, sanitizeNumber } from "../../../lib/security";
@@ -34,6 +34,7 @@ function Workplaces({ onNavigate, returnTo }) {
   const [fieldErrors, setFieldErrors] = useState({});
   const [fieldStates, setFieldStates] = useState({});
   const [shakeKey, setShakeKey] = useState(0);
+  const colorPickerRef = useRef(null);
   const { success: toastSuccess, error: toastError } = useGlassToast();
 
   const formModal = useModal(320);
@@ -523,11 +524,19 @@ function Workplaces({ onNavigate, returnTo }) {
           <FormField label="Color">
             <div className="workplaces__color-input-row">
               <input
+                ref={colorPickerRef}
                 type="color"
                 value={form.color}
                 onChange={(e) => setForm({ ...form, color: e.target.value })}
-                className="workplaces__color-native"
+                className="workplaces__color-native-hidden"
                 aria-label="Pick a color"
+              />
+              <button
+                type="button"
+                className="workplaces__color-swatch"
+                style={{ background: form.color }}
+                onClick={() => colorPickerRef.current?.click()}
+                aria-label="Open color picker"
               />
               <input
                 type="text"
