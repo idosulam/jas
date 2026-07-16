@@ -30,7 +30,7 @@ const UNIT_STORAGE_KEY = "profile_weight_unit";
 const KG_TO_LBS = 2.20462;
 const MODAL_EXIT_MS = 260;
 const emptyProfileForm = () => ({
-  display_name: "Jas",
+  display_name: "",
   age: "",
   height_cm: "",
   height_ft: "",
@@ -551,7 +551,7 @@ function Profile({ onNavigate }) {
       const goalKg =
         profile.goal_weight_kg != null ? Number(profile.goal_weight_kg) : null;
       setProfileForm({
-        display_name: profile.display_name ?? "Jas",
+        display_name: profile.display_name ?? "",
         age: profile.age != null ? String(profile.age) : "",
         height_cm: heightCm != null ? String(heightCm) : "",
         height_ft: feet,
