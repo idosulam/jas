@@ -191,6 +191,12 @@ function Workplaces({ onNavigate, returnTo }) {
           .from("workplaces")
           .update({ label, rate, color })
           .eq("id", editing.id));
+
+        // Cascade color change to existing shifts and shift_presets
+        if (!dbError && color !== editing.color) {
+          await supabase.from("shifts").update({ color }).eq("place", editing.slug).eq("user_id", userId);
+          await supabase.from("shift_presets").update({ color }).eq("place", editing.slug).eq("user_id", userId);
+        }
       } else {
         ({ error: dbError } = await supabase
           .from("workplaces")
@@ -208,6 +214,12 @@ function Workplaces({ onNavigate, returnTo }) {
 
       closeModal();
       toastSuccess(editing ? "Workplace updated." : "Workplace created.");
+
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("shifts:refresh"));
+        window.dispatchEvent(new CustomEvent("calendar:refresh"));
+      }
+
       fetchWorkplaces();
     } catch (err) {
       setSaving(false);
