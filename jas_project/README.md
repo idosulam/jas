@@ -1,18 +1,41 @@
-# React + Vite
+# Jas — Shift & Earnings Tracker
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A React + Vite app backed by Supabase for tracking work shifts, earnings, and weight.
 
-Currently, two official plugins are available:
+## Setup
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+### 1. Supabase
 
-## React Compiler
+1. Create a project at [supabase.com](https://supabase.com)
+2. Go to **SQL Editor** and run the table scripts **in this order**:
+   - `supabase_tables/workplaces.sql`
+   - `supabase_tables/shifts.sql`
+   - `supabase_tables/shift_presets.sql`
+   - `supabase_tables/events.sql`
+   - `supabase_tables/profile.sql`
+   - `supabase_tables/color_palettes.sql`
+   - **`supabase_tables/_grants.sql`** ← run this last (grants schema permissions to Supabase roles)
+3. Copy your project URL and anon key from **Project Settings → API**
 
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
+### 2. Environment
 
-Note: This will impact Vite dev & build performances.
+Create `.env` in the project root:
 
-## Expanding the ESLint configuration
+```
+VITE_SUPABASE_URL=https://YOUR_PROJECT.supabase.co
+VITE_SUPABASE_PUBLISHABLE_KEY=your_anon_key
+```
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+### 3. Install & Run
+
+```bash
+npm install
+npm run dev
+```
+
+## Tech Stack
+
+- React 19 + Vite
+- Supabase (Auth + Postgres + RLS)
+- Tailwind CSS
+- Framer Motion
