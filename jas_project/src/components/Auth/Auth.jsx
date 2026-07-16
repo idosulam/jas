@@ -302,13 +302,13 @@ function Auth() {
         if (authError) { setError(authError.message); setShakeKey((k) => k + 1); toastError("Login failed."); }
         else { toastSuccess("Welcome back!"); }
       } else if (mode === MODES.REGISTER) {
-        const { data: signUpData, error: authError } = await supabase.auth.signUp({ email: email.trim(), password });
+        const { data: signUpData, error: authError } = await supabase.auth.signUp({
+          email: email.trim(),
+          password,
+          options: { data: { display_name: displayName.trim() } },
+        });
         if (authError) { setError(authError.message); setShakeKey((k) => k + 1); toastError("Registration failed."); }
-        else {
-          // Store name for profile creation after first login
-          localStorage.setItem("jas_pending_name", displayName.trim());
-          setSuccessMsg("Check your email for a confirmation link!"); toastSuccess("Account created.");
-        }
+        else { setSuccessMsg("Check your email for a confirmation link!"); toastSuccess("Account created."); }
       } else if (mode === MODES.FORGOT) {
         const { error: authError } = await supabase.auth.resetPasswordForEmail(email.trim(), { redirectTo: window.location.origin });
         if (authError) { setError(authError.message); setShakeKey((k) => k + 1); toastError("Could not send reset email."); }

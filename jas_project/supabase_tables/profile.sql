@@ -58,3 +58,17 @@ CREATE POLICY "Users can update own weight_entries"
   ON public.weight_entries FOR UPDATE USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
 CREATE POLICY "Users can delete own weight_entries"
   ON public.weight_entries FOR DELETE USING (auth.uid() = user_id);
+
+-- Auto-create profile on signup with display_name from user metadata
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS trigger AS $$
+BEGIN
+  INSERT INTO public.profile (user_id, display_name)
+  VALUES (new.id, COALESCE(new.raw_user_meta_data->>'display_name', 'Jas'));
+  RETURN new;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+CREATE OR REPLACE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
