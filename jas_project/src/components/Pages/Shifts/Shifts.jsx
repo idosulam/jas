@@ -922,7 +922,7 @@ function Shifts({ onNavigate }) {
         </div>
       )}
 
-      {useInlineFilters && effectiveWorkplaces.length > 0 ? (
+      {useInlineFilters && effectiveWorkplaces.length > 1 ? (
         <div
           className="shifts__place-filter animate-in animate-in--2"
           role="group"
@@ -951,7 +951,7 @@ function Shifts({ onNavigate }) {
             aria-hidden="true"
           />
         </div>
-      ) : effectiveWorkplaces.length > 0 ? (
+      ) : effectiveWorkplaces.length > 1 ? (
         <button
           type="button"
           className="shifts__place-trigger animate-in animate-in--2"
