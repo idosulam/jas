@@ -18,9 +18,20 @@ export function AuthProvider({ children }) {
       return;
     }
 
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session: s } }) => {
-      setSession(s);
+    // Get initial session and validate it
+    supabase.auth.getSession().then(async ({ data: { session: s } }) => {
+      if (s) {
+        // Validate session is actually valid (user exists, token not expired)
+        const { error } = await supabase.auth.getUser();
+        if (error) {
+          await supabase.auth.signOut();
+          setSession(null);
+        } else {
+          setSession(s);
+        }
+      } else {
+        setSession(null);
+      }
       setLoading(false);
     });
 
