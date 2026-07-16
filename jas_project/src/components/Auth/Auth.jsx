@@ -156,6 +156,7 @@ function Auth() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [displayName, setDisplayName] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -173,6 +174,9 @@ function Auth() {
   const [emailTouched, setEmailTouched] = useState(false);
   const [passwordTouched, setPasswordTouched] = useState(false);
   const [confirmTouched, setConfirmTouched] = useState(false);
+  const [nameTouched, setNameTouched] = useState(false);
+  const [nameState, setNameState] = useState("idle");
+  const [nameError, setNameError] = useState(null);
   const [shakeKey, setShakeKey] = useState(0);
 
   const emailRef = useRef(null);
@@ -201,6 +205,10 @@ function Auth() {
     setEmailTouched(false);
     setPasswordTouched(false);
     setConfirmTouched(false);
+    setNameTouched(false);
+    setNameState("idle");
+    setNameError(null);
+    setDisplayName("");
     setDirection(newMode === MODES.REGISTER ? 1 : -1);
     setMode(newMode);
   };
@@ -234,6 +242,14 @@ function Auth() {
     else { setConfirmState("error"); setConfirmError("Passwords don't match"); }
   }, []);
 
+  const validateNameField = useCallback((value) => {
+    const trimmed = value.trim();
+    if (!trimmed) { setNameState("idle"); setNameError(null); return; }
+    if (trimmed.length >= 2 && trimmed.length <= 40) { setNameState("valid"); setNameError(null); }
+    else if (trimmed.length > 40) { setNameState("error"); setNameError("Name too long (max 40)"); }
+    else { setNameState("error"); setNameError("At least 2 characters"); }
+  }, []);
+
   useEffect(() => {
     if (confirmTouched && mode === MODES.REGISTER) validateConfirmField(confirmPassword, password);
   }, [password, confirmPassword, confirmTouched, mode, validateConfirmField]);
@@ -241,6 +257,8 @@ function Auth() {
   const handleEmailBlur = () => { setEmailTouched(true); validateEmailField(email); };
   const handlePasswordBlur = () => { setPasswordTouched(true); validatePasswordField(password, mode === MODES.REGISTER); };
   const handleConfirmBlur = () => { setConfirmTouched(true); validateConfirmField(confirmPassword, password); };
+  const handleNameBlur = () => { setNameTouched(true); validateNameField(displayName); };
+  const handleNameChange = (e) => { const v = e.target.value; setDisplayName(v); setError(null); if (nameTouched) validateNameField(v); };
 
   const handleEmailChange = (e) => { const v = e.target.value; setEmail(v); setError(null); if (emailTouched) validateEmailField(v); };
   const handlePasswordChange = (e) => { const v = e.target.value; setPassword(v); setError(null); if (passwordTouched) validatePasswordField(v, mode === MODES.REGISTER); };
@@ -254,9 +272,17 @@ function Auth() {
 
     setEmailTouched(true);
     setPasswordTouched(true);
-    if (mode === MODES.REGISTER) setConfirmTouched(true);
+    if (mode === MODES.REGISTER) {
+      setConfirmTouched(true);
+      setNameTouched(true);
+    }
 
     let hasError = false;
+    if (mode === MODES.REGISTER) {
+      const trimmedName = displayName.trim();
+      if (!trimmedName || trimmedName.length < 2) { setNameState("error"); setNameError(trimmedName ? "At least 2 characters" : "Name is required"); hasError = true; }
+      else if (trimmedName.length > 40) { setNameState("error"); setNameError("Name too long (max 40)"); hasError = true; }
+    }
     if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
       setEmailState("error"); setEmailError(email.trim() ? "Invalid email format" : "Email is required"); hasError = true;
     }
@@ -276,9 +302,16 @@ function Auth() {
         if (authError) { setError(authError.message); setShakeKey((k) => k + 1); toastError("Login failed."); }
         else { toastSuccess("Welcome back!"); }
       } else if (mode === MODES.REGISTER) {
-        const { error: authError } = await supabase.auth.signUp({ email: email.trim(), password });
+        const { data: signUpData, error: authError } = await supabase.auth.signUp({ email: email.trim(), password });
         if (authError) { setError(authError.message); setShakeKey((k) => k + 1); toastError("Registration failed."); }
-        else { setSuccessMsg("Check your email for a confirmation link!"); toastSuccess("Account created."); }
+        else {
+          // Save display name to profile
+          const userId = signUpData.user?.id;
+          if (userId) {
+            await supabase.from("profile").insert({ user_id: userId, display_name: displayName.trim() });
+          }
+          setSuccessMsg("Check your email for a confirmation link!"); toastSuccess("Account created.");
+        }
       } else if (mode === MODES.FORGOT) {
         const { error: authError } = await supabase.auth.resetPasswordForEmail(email.trim(), { redirectTo: window.location.origin });
         if (authError) { setError(authError.message); setShakeKey((k) => k + 1); toastError("Could not send reset email."); }
@@ -327,6 +360,21 @@ function Auth() {
 
         <AnimatePresence mode="wait" custom={direction}>
           <motion.form key={mode + "-form"} className="auth__form" onSubmit={handleSubmit} custom={direction} variants={slideVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}>
+
+            {/* Name (register only) */}
+            {mode === MODES.REGISTER && (
+              <ShakeField trigger={nameState === "error" ? shakeKey : 0} className="auth__field">
+                <label className="auth__label" htmlFor="auth-name">Name</label>
+                <div className={`auth__input-wrap ${wrapClass(nameTouched, nameState)}`}>
+                  <svg className="auth__input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" aria-hidden="true">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" />
+                  </svg>
+                  <input id="auth-name" type="text" className={inputClass(nameTouched, nameState)} placeholder="Your name" value={displayName} onChange={handleNameChange} onBlur={handleNameBlur} required autoComplete="name" maxLength={40} />
+                  {nameTouched && <FieldIndicator state={nameState} />}
+                </div>
+                <FieldError message={nameTouched ? nameError : null} />
+              </ShakeField>
+            )}
 
             {/* Email */}
             <ShakeField trigger={emailState === "error" ? shakeKey : 0} className="auth__field">
