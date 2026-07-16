@@ -8,7 +8,7 @@
  *   - Wraps in ShakeField if `shake` is truthy
  *   - Adds form-field--valid or form-field--error-enhanced class
  */
-import { Children, cloneElement } from "react";
+import { Children } from "react";
 import FieldIndicator from "./FieldIndicator";
 import FieldError from "./FieldError";
 import ShakeField from "./ShakeField";

@@ -499,6 +499,7 @@ function Shifts({ onNavigate }) {
       notes: shift.notes ?? "",
       color: shift.color || PLACES[shift.place]?.color || "",
     });
+    setFieldErrors({});
     setFieldStates({});
     formModal.openModal();
   };

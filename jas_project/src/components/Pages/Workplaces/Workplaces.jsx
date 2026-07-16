@@ -85,6 +85,7 @@ function Workplaces({ onNavigate, returnTo }) {
     setEditing(null);
     setForm(emptyForm());
     setFieldErrors({});
+    setFieldStates({});
     formModal.openModal();
   };
 
@@ -97,6 +98,7 @@ function Workplaces({ onNavigate, returnTo }) {
       color: wp.color,
     });
     setFieldErrors({});
+    setFieldStates({});
     formModal.openModal();
   };
 
@@ -105,6 +107,7 @@ function Workplaces({ onNavigate, returnTo }) {
     setTimeout(() => {
       setEditing(null);
       setForm(emptyForm());
+      setFieldStates({});
     }, 320);
   };
 
