@@ -26,7 +26,7 @@ COMMENT ON COLUMN public.shifts.end_time IS 'Optional shift end time';
 COMMENT ON COLUMN public.shifts.hours IS 'Hours worked on this shift (supports decimal values such as 4.1)';
 COMMENT ON COLUMN public.shifts.tips IS 'Tips earned (optional, defaults to 0)';
 COMMENT ON COLUMN public.shifts.notes IS 'Optional free-text note about the shift';
-COMMENT ON COLUMN public.shifts.color IS 'Optional hex color from the palette';
+COMMENT ON COLUMN public.shifts.color IS 'Hex color — synced from workplaces.color when a workplace is edited';
 COMMENT ON COLUMN public.shifts.user_id IS 'Owner — references auth.users';
 COMMENT ON COLUMN public.shifts.created_at IS 'Row creation timestamp';
 

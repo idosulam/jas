@@ -22,7 +22,7 @@ COMMENT ON COLUMN public.shift_presets.pay_type IS 'Pay type: hourly or tips_onl
 COMMENT ON COLUMN public.shift_presets.start_time IS 'Default start time for this preset';
 COMMENT ON COLUMN public.shift_presets.end_time IS 'Default end time for this preset';
 COMMENT ON COLUMN public.shift_presets.hours IS 'Default hours for this preset';
-COMMENT ON COLUMN public.shift_presets.color IS 'Optional hex color from the palette';
+COMMENT ON COLUMN public.shift_presets.color IS 'Hex color — synced from workplaces.color when a workplace is edited';
 COMMENT ON COLUMN public.shift_presets.user_id IS 'Owner — references auth.users';
 
 -- Row Level Security — per-user only
