@@ -73,6 +73,8 @@ function Calendar() {
   const [removingId, setRemovingId] = useState(null);
   const [nowTick, setNowTick] = useState(() => Date.now());
   const [fieldErrors, setFieldErrors] = useState({});
+  const [fieldStates, setFieldStates] = useState({});
+  const [shakeKey, setShakeKey] = useState(0);
   const [palette, setPalette] = useState([]);
 
   const formModal = useModal(MODAL_EXIT_MS);
@@ -305,9 +307,14 @@ function Calendar() {
 
   const handleCalendarFieldBlur = (fieldName) => {
     const errors = validateCalendarField(fieldName);
+    const fieldError = errors[fieldName] || null;
     setFieldErrors((prev) => ({
       ...prev,
-      [fieldName]: errors[fieldName] || null,
+      [fieldName]: fieldError,
+    }));
+    setFieldStates((prev) => ({
+      ...prev,
+      [fieldName]: fieldError ? "error" : (form[fieldName] ? "valid" : "idle"),
     }));
   };
 
@@ -342,6 +349,7 @@ function Calendar() {
       end_time: `${String(endHour).padStart(2, "0")}:00`,
     });
     setFieldErrors({});
+    setFieldStates({});
     formModal.openModal();
   };
 
@@ -356,6 +364,7 @@ function Calendar() {
       color: event.color ?? "green",
     });
     setFieldErrors({});
+    setFieldStates({});
     formModal.openModal();
   };
 
@@ -365,6 +374,7 @@ function Calendar() {
       setEditingEvent(null);
       setForm(emptyForm(selectedKey));
       setFieldErrors({});
+      setFieldStates({});
     }, MODAL_EXIT_MS);
   };
 
@@ -393,6 +403,10 @@ function Calendar() {
 
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors);
+      const newStates = {};
+      Object.keys(errors).forEach((k) => { newStates[k] = "error"; });
+      setFieldStates((prev) => ({ ...prev, ...newStates }));
+      setShakeKey((k) => k + 1);
       return;
     }
 
@@ -977,7 +991,7 @@ function Calendar() {
         title={editingEvent ? "Edit event" : "Add event"}
       >
         <form className="calendar__form" onSubmit={handleSubmit}>
-          <FormField label="Title" error={fieldErrors.title}>
+          <FormField label="Title" error={fieldErrors.title} state={fieldStates.title} showIndicator shake={fieldErrors.title ? shakeKey : 0}>
             <input
               type="text"
               value={form.title}
@@ -992,7 +1006,7 @@ function Calendar() {
             />
           </FormField>
 
-          <FormField label="Date" error={fieldErrors.event_date}>
+          <FormField label="Date" error={fieldErrors.event_date} state={fieldStates.event_date} showIndicator shake={fieldErrors.event_date ? shakeKey : 0}>
             <input
               type="date"
               value={form.event_date}
@@ -1005,7 +1019,7 @@ function Calendar() {
             />
           </FormField>
 
-          <FormField label="Start" error={fieldErrors.start_time}>
+          <FormField label="Start" error={fieldErrors.start_time} state={fieldStates.start_time} showIndicator shake={fieldErrors.start_time ? shakeKey : 0}>
             <input
               type="time"
               value={form.start_time}
@@ -1022,7 +1036,7 @@ function Calendar() {
             />
           </FormField>
 
-          <FormField label="End" error={fieldErrors.end_time}>
+          <FormField label="End" error={fieldErrors.end_time} state={fieldStates.end_time} showIndicator shake={fieldErrors.end_time ? shakeKey : 0}>
             <input
               type="time"
               value={form.end_time}

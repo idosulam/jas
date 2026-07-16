@@ -32,6 +32,8 @@ function Workplaces({ onNavigate, returnTo }) {
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleting, setDeleting] = useState(false);
   const [fieldErrors, setFieldErrors] = useState({});
+  const [fieldStates, setFieldStates] = useState({});
+  const [shakeKey, setShakeKey] = useState(0);
   const { success: toastSuccess, error: toastError } = useGlassToast();
 
   const formModal = useModal(320);
@@ -135,6 +137,10 @@ function Workplaces({ onNavigate, returnTo }) {
   const handleFieldBlur = (name) => {
     const err = validateField(name, form[name]);
     setFieldErrors((prev) => ({ ...prev, [name]: err }));
+    setFieldStates((prev) => ({
+      ...prev,
+      [name]: err ? "error" : (form[name] ? "valid" : "idle"),
+    }));
   };
 
   const isFormValid = useMemo(() => {
@@ -150,7 +156,20 @@ function Workplaces({ onNavigate, returnTo }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!isFormValid) return;
+    if (!isFormValid) {
+      // Trigger validation display for all fields
+      const errors = {};
+      const states = {};
+      ["slug", "label", "rate"].forEach((name) => {
+        const err = validateField(name, form[name]);
+        if (err) { errors[name] = err; states[name] = "error"; }
+        else if (form[name]) { states[name] = "valid"; }
+      });
+      setFieldErrors((prev) => ({ ...prev, ...errors }));
+      setFieldStates((prev) => ({ ...prev, ...states }));
+      setShakeKey((k) => k + 1);
+      return;
+    }
 
     setSaving(true);
     setError(null);
@@ -436,7 +455,7 @@ function Workplaces({ onNavigate, returnTo }) {
         title={editing ? "Edit workplace" : "Add workplace"}
       >
         <form className="workplaces__form" onSubmit={handleSubmit}>
-          <FormField label="Slug (ID)" error={fieldErrors.slug}>
+          <FormField label="Slug (ID)" error={fieldErrors.slug} state={fieldStates.slug} showIndicator shake={fieldErrors.slug ? shakeKey : 0}>
             <input
               type="text"
               value={form.slug}
@@ -455,7 +474,7 @@ function Workplaces({ onNavigate, returnTo }) {
             )}
           </FormField>
 
-          <FormField label="Display name" error={fieldErrors.label}>
+          <FormField label="Display name" error={fieldErrors.label} state={fieldStates.label} showIndicator shake={fieldErrors.label ? shakeKey : 0}>
             <input
               type="text"
               value={form.label}
@@ -470,7 +489,7 @@ function Workplaces({ onNavigate, returnTo }) {
             />
           </FormField>
 
-          <FormField label="Hourly rate (₪)" error={fieldErrors.rate}>
+          <FormField label="Hourly rate (₪)" error={fieldErrors.rate} state={fieldStates.rate} showIndicator shake={fieldErrors.rate ? shakeKey : 0}>
             <input
               type="number"
               min="0"

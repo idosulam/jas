@@ -439,7 +439,11 @@ function Profile({ onNavigate }) {
   const [deleting, setDeleting] = useState(false);
   const [duplicateDateConfirm, setDuplicateDateConfirm] = useState(null);
   const [profileFieldErrors, setProfileFieldErrors] = useState({});
+  const [profileFieldStates, setProfileFieldStates] = useState({});
+  const [profileShakeKey, setProfileShakeKey] = useState(0);
   const [weightFieldErrors, setWeightFieldErrors] = useState({});
+  const [weightFieldStates, setWeightFieldStates] = useState({});
+  const [weightShakeKey, setWeightShakeKey] = useState(0);
   const hasLoadedOnce = useRef(false);
   const { success: toastSuccess, error: toastError } = useGlassToast();
 
@@ -511,6 +515,7 @@ function Profile({ onNavigate }) {
     setEditingEntry(null);
     setWeightForm(emptyWeightForm());
     setWeightFieldErrors({});
+    setWeightFieldStates({});
     weightModal.openModal();
   };
 
@@ -524,6 +529,7 @@ function Profile({ onNavigate }) {
       notes: entry.notes ?? "",
     });
     setWeightFieldErrors({});
+    setWeightFieldStates({});
     weightModal.openModal();
   };
 
@@ -533,6 +539,7 @@ function Profile({ onNavigate }) {
       setEditingEntry(null);
       setWeightForm(emptyWeightForm());
       setWeightFieldErrors({});
+      setWeightFieldStates({});
     }, MODAL_EXIT_MS);
   };
 
@@ -558,6 +565,7 @@ function Profile({ onNavigate }) {
       setProfileForm(emptyProfileForm());
     }
     setProfileFieldErrors({});
+    setProfileFieldStates({});
     profileModal.openModal();
   };
 
@@ -565,6 +573,7 @@ function Profile({ onNavigate }) {
     profileModal.closeModal();
     setTimeout(() => {
       setProfileFieldErrors({});
+      setProfileFieldStates({});
     }, MODAL_EXIT_MS);
   };
 
@@ -771,6 +780,10 @@ function Profile({ onNavigate }) {
   const handleProfileFieldBlur = (fieldName) => {
     const error = validateProfileField(fieldName);
     setProfileFieldErrors((prev) => ({ ...prev, [fieldName]: error }));
+    setProfileFieldStates((prev) => ({
+      ...prev,
+      [fieldName]: error ? "error" : (profileForm[fieldName] ? "valid" : "idle"),
+    }));
   };
 
   const validateWeightField = (fieldName) => {
@@ -803,6 +816,10 @@ function Profile({ onNavigate }) {
   const handleWeightFieldBlur = (fieldName) => {
     const error = validateWeightField(fieldName);
     setWeightFieldErrors((prev) => ({ ...prev, [fieldName]: error }));
+    setWeightFieldStates((prev) => ({
+      ...prev,
+      [fieldName]: error ? "error" : (weightForm[fieldName] ? "valid" : "idle"),
+    }));
   };
 
   const saveWeight = async (e) => {
@@ -814,7 +831,17 @@ function Profile({ onNavigate }) {
       weightForm.entry_date,
       emptyWeightForm().entry_date,
     );
-    if (!weightKg || weightKg <= 0 || !entryDate) return;
+    if (!weightKg || weightKg <= 0 || !entryDate) {
+      // Trigger validation display
+      const errors = {};
+      const states = {};
+      if (!entryDate) { errors.entry_date = "Pick a date"; states.entry_date = "error"; }
+      if (!weightKg || weightKg <= 0) { errors.weight_kg = "Enter your weight"; states.weight_kg = "error"; }
+      setWeightFieldErrors((prev) => ({ ...prev, ...errors }));
+      setWeightFieldStates((prev) => ({ ...prev, ...states }));
+      setWeightShakeKey((k) => k + 1);
+      return;
+    }
 
     // If adding (not editing), check for an existing entry on the same date
     if (!editingEntry) {
@@ -1356,6 +1383,9 @@ function Profile({ onNavigate }) {
           <FormField
             label="Date"
             error={weightFieldErrors.entry_date}
+            state={weightFieldStates.entry_date}
+            showIndicator
+            shake={weightFieldErrors.entry_date ? weightShakeKey : 0}
           >
             <input
               type="date"
@@ -1378,6 +1408,9 @@ function Profile({ onNavigate }) {
             <FormField
               label="Weight (kg)"
               error={weightFieldErrors.weight_kg}
+              state={weightFieldStates.weight_kg}
+              showIndicator
+              shake={weightFieldErrors.weight_kg ? weightShakeKey : 0}
             >
               <input
                 type="number"
@@ -1400,6 +1433,9 @@ function Profile({ onNavigate }) {
             <FormField
               label="Weight (lbs)"
               error={weightFieldErrors.weight_lbs}
+              state={weightFieldStates.weight_lbs}
+              showIndicator
+              shake={weightFieldErrors.weight_lbs ? weightShakeKey : 0}
             >
               <input
                 type="number"
@@ -1460,6 +1496,9 @@ function Profile({ onNavigate }) {
           <FormField
             label="Name"
             error={profileFieldErrors.display_name}
+            state={profileFieldStates.display_name}
+            showIndicator
+            shake={profileFieldErrors.display_name ? profileShakeKey : 0}
           >
             <input
               type="text"
@@ -1480,6 +1519,9 @@ function Profile({ onNavigate }) {
           <FormField
             label="Age"
             error={profileFieldErrors.age}
+            state={profileFieldStates.age}
+            showIndicator
+            shake={profileFieldErrors.age ? profileShakeKey : 0}
             optional
           >
             <input
@@ -1498,6 +1540,9 @@ function Profile({ onNavigate }) {
           <FormField
             label="Height (cm)"
             error={profileFieldErrors.height_cm}
+            state={profileFieldStates.height_cm}
+            showIndicator
+            shake={profileFieldErrors.height_cm ? profileShakeKey : 0}
             optional
           >
             <input
@@ -1547,6 +1592,9 @@ function Profile({ onNavigate }) {
             <FormField
               label="Goal weight (kg)"
               error={profileFieldErrors.goal_weight_kg}
+              state={profileFieldStates.goal_weight_kg}
+              showIndicator
+              shake={profileFieldErrors.goal_weight_kg ? profileShakeKey : 0}
               optional
             >
               <input

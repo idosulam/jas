@@ -1,0 +1,104 @@
+/* ============================================================
+   FormField.css — Enhanced form field states (valid/error/indicator/shake)
+   Extends Form.css base styles with Auth-pattern feedback.
+   ============================================================ */
+
+/* ── Valid state ── */
+.form-field--valid input,
+.form-field--valid select,
+.form-field--valid textarea {
+  border-color: var(--color-success, #34d399) !important;
+  background: rgba(52, 211, 153, 0.04) !important;
+}
+
+.form-field--valid input:focus,
+.form-field--valid select:focus,
+.form-field--valid textarea:focus {
+  box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.15) !important;
+}
+
+/* ── Error state (enhanced — overrides Form.css base) ── */
+.form-field--error-enhanced input,
+.form-field--error-enhanced select,
+.form-field--error-enhanced textarea {
+  border-color: var(--color-danger, #f87171) !important;
+  background: rgba(248, 113, 113, 0.04) !important;
+}
+
+.form-field--error-enhanced input:focus,
+.form-field--error-enhanced select:focus,
+.form-field--error-enhanced textarea:focus {
+  box-shadow: 0 0 0 3px rgba(248, 113, 113, 0.15) !important;
+}
+
+/* ── Field input wrapper (for positioning indicator) ── */
+.form-field__input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.form-field__input-wrap > input,
+.form-field__input-wrap > select,
+.form-field__input-wrap > textarea {
+  padding-right: 2.5rem;
+}
+
+/* ── Inline indicator (check/cross circle) ── */
+.form-field__indicator {
+  position: absolute;
+  right: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.form-field__indicator--valid {
+  color: #fff;
+  background: var(--color-success, #34d399);
+  box-shadow: 0 2px 8px rgba(52, 211, 153, 0.3);
+}
+
+.form-field__indicator--valid svg {
+  width: 13px;
+  height: 13px;
+}
+
+.form-field__indicator--error {
+  color: #fff;
+  background: var(--color-danger, #f87171);
+  box-shadow: 0 2px 8px rgba(248, 113, 113, 0.3);
+}
+
+.form-field__indicator--error svg {
+  width: 13px;
+  height: 13px;
+}
+
+/* ── Animated error message (via FieldError component) ── */
+.form-field__error-msg {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--color-danger, #f87171);
+  padding-left: 0.15rem;
+  overflow: hidden;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+/* ── Shake keyframe (CSS fallback — currently using framer-motion) ── */
+@keyframes formShake {
+  0%, 100% { transform: translateX(0); }
+  10% { transform: translateX(-10px); }
+  20% { transform: translateX(10px); }
+  30% { transform: translateX(-8px); }
+  40% { transform: translateX(8px); }
+  50% { transform: translateX(-4px); }
+  60% { transform: translateX(4px); }
+  70% { transform: translateX(0); }
+}

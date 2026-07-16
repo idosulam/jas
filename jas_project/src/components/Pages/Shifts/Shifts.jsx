@@ -110,6 +110,8 @@ function Shifts({ onNavigate }) {
   const [expandedNoteId, setExpandedNoteId] = useState(null);
   const [showFloatingActions, setShowFloatingActions] = useState(false);
   const [fieldErrors, setFieldErrors] = useState({});
+  const [fieldStates, setFieldStates] = useState({});
+  const [shakeKey, setShakeKey] = useState(0);
   const [workplaces, setWorkplaces] = useState([]);
   const [palette, setPalette] = useState([]);
   const [presets, setPresets] = useState([]);
@@ -479,6 +481,8 @@ function Shifts({ onNavigate }) {
   const openAddModal = () => {
     setEditingShift(null);
     setForm(emptyForm(effectiveWorkplaces[0]?.slug));
+    setFieldErrors({});
+    setFieldStates({});
     formModal.openModal();
   };
 
@@ -495,6 +499,7 @@ function Shifts({ onNavigate }) {
       notes: shift.notes ?? "",
       color: shift.color || PLACES[shift.place]?.color || "",
     });
+    setFieldStates({});
     formModal.openModal();
   };
 
@@ -504,6 +509,7 @@ function Shifts({ onNavigate }) {
     setTimeout(() => {
       setEditingShift(null);
       setForm(emptyForm(effectiveWorkplaces[0]?.slug));
+      setFieldStates({});
     }, MODAL_EXIT_MS);
   };
 
@@ -597,9 +603,14 @@ function Shifts({ onNavigate }) {
 
   const handleFieldBlur = (fieldName) => {
     const error = validateField(fieldName, form[fieldName]);
+    const fieldError = error ? error[fieldName] : null;
     setFieldErrors((prev) => ({
       ...prev,
-      [fieldName]: error ? error[fieldName] : null,
+      [fieldName]: fieldError,
+    }));
+    setFieldStates((prev) => ({
+      ...prev,
+      [fieldName]: fieldError ? "error" : (form[fieldName] ? "valid" : "idle"),
     }));
   };
 
@@ -686,10 +697,16 @@ function Shifts({ onNavigate }) {
 
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors);
+      // Set error states for all errored fields
+      const newStates = {};
+      Object.keys(errors).forEach((k) => { newStates[k] = "error"; });
+      setFieldStates((prev) => ({ ...prev, ...newStates }));
+      setShakeKey((k) => k + 1);
       return;
     }
 
     setFieldErrors({});
+    setFieldStates({});
 
     setSaving(true);
     setError(null);
@@ -1250,7 +1267,7 @@ function Shifts({ onNavigate }) {
         title={editingShift ? "Edit shift" : "Add shift"}
       >
         <form className="shifts__form" onSubmit={handleSubmit}>
-          <FormField label="Place" error={fieldErrors.place}>
+          <FormField label="Place" error={fieldErrors.place} state={fieldStates.place} showIndicator>
             <select
               value={form.place}
               onChange={(e) => {
@@ -1284,7 +1301,7 @@ function Shifts({ onNavigate }) {
             ))}
           </div>
 
-          <FormField label="Date" error={fieldErrors.shift_date}>
+          <FormField label="Date" error={fieldErrors.shift_date} state={fieldStates.shift_date} showIndicator shake={fieldErrors.shift_date ? shakeKey : 0}>
             <input
               type="date"
               value={form.shift_date}
@@ -1298,7 +1315,7 @@ function Shifts({ onNavigate }) {
           </FormField>
 
           <div className="form-time-row">
-            <FormField label="Start time" error={fieldErrors.start_time}>
+            <FormField label="Start time" error={fieldErrors.start_time} state={fieldStates.start_time} showIndicator shake={fieldErrors.start_time ? shakeKey : 0}>
               <input
                 type="time"
                 value={form.start_time}
@@ -1308,7 +1325,7 @@ function Shifts({ onNavigate }) {
                 onBlur={() => handleFieldBlur("start_time")}
               />
             </FormField>
-            <FormField label="End time" error={fieldErrors.end_time}>
+            <FormField label="End time" error={fieldErrors.end_time} state={fieldStates.end_time} showIndicator shake={fieldErrors.end_time ? shakeKey : 0}>
               <input
                 type="time"
                 value={form.end_time}
@@ -1335,7 +1352,7 @@ function Shifts({ onNavigate }) {
             </p>
           )}
 
-          <FormField label="Hours" error={fieldErrors.hours}>
+          <FormField label="Hours" error={fieldErrors.hours} state={fieldStates.hours} showIndicator shake={fieldErrors.hours ? shakeKey : 0}>
             <input
               type="number"
               min="0.01"
@@ -1348,7 +1365,7 @@ function Shifts({ onNavigate }) {
             />
           </FormField>
 
-          <FormField label="Tips" error={fieldErrors.tips} optional={form.pay_type !== "tips_only"}>
+          <FormField label="Tips" error={fieldErrors.tips} state={fieldStates.tips} showIndicator shake={fieldErrors.tips ? shakeKey : 0} optional={form.pay_type !== "tips_only"}>
             <input
               type="number"
               min="0"
