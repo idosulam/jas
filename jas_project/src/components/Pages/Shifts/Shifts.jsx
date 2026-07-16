@@ -20,15 +20,15 @@ import { useBodyScrollLock, useModal } from "../../../hooks";
 import { useGlassToast } from "../../../lib/glass_toast_provider.jsx";
 import ColorPalettePicker from "../../../lib/ColorPalettePicker.jsx";
 import { fetchPalette } from "../../../lib/color_palette.js";
-import SheetModal from "../../../components/SheetModal";
-import ConfirmModal from "../../../components/ConfirmModal";
-import FormField from "../../../components/FormField";
-import Badge from "../../../components/Badge";
-import EmptyState from "../../../components/EmptyState";
-import LoadingSkeleton from "../../../components/LoadingSkeleton";
-import PageHeader from "../../../components/PageHeader";
-import GlassCard from "../../../components/GlassCard";
-import FAB from "../../../components/FAB";
+import SheetModal from "../../../components/ui/modals/SheetModal";
+import ConfirmModal from "../../../components/ui/modals/ConfirmModal";
+import FormField from "../../../components/ui/form/FormField";
+import Badge from "../../../components/ui/Badge";
+import EmptyState from "../../../components/ui/EmptyState";
+import LoadingSkeleton from "../../../components/ui/LoadingSkeleton";
+import PageHeader from "../../../components/ui/PageHeader";
+import GlassCard from "../../../components/ui/GlassCard";
+import FAB from "../../../components/ui/FAB";
 
 
 

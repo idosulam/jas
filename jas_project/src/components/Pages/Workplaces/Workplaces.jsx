@@ -6,7 +6,7 @@ import { getUserFacingError, sanitizeText, sanitizeNumber } from "../../../lib/s
 import { useGlassToast } from "../../../lib/glass_toast_provider.jsx";
 import { SheetModal, FormField, PageHeader, ConfirmModal, EmptyState, LoadingSkeleton } from "../../../components";
 import { useBodyScrollLock, useModal } from "../../../hooks";
-import { TrashIcon } from "../../../components/ConfirmModal";
+import { TrashIcon } from "../../../components/ui/modals/ConfirmModal";
 
 const emptyForm = () => ({
   slug: "",
