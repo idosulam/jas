@@ -148,7 +148,7 @@ export function eventStyle(layoutEvent) {
 
   const top = ((clampedStart - dayStartMin) / 60) * HOUR_HEIGHT;
   const height = Math.max(
-    ((clampedEnd - clampedStart) / 60) * HOUR_HEIGHT - 2,
+    ((clampedEnd - clampedStart) / 60) * HOUR_HEIGHT - 4,
     28,
   );
   const widthPct = 100 / layoutEvent.totalColumns;
