@@ -28,7 +28,11 @@ import {
   getVisibleEventNotes,
   recalcWakeWalkForDate,
 } from "../../../lib/calendarSync";
-import { useBodyScrollLock, useModal, useFloatingActions } from "../../../hooks";
+import {
+  useBodyScrollLock,
+  useModal,
+  useFloatingActions,
+} from "../../../hooks";
 import {
   SheetModal,
   ConfirmModal,
@@ -314,7 +318,7 @@ function Calendar() {
     }));
     setFieldStates((prev) => ({
       ...prev,
-      [fieldName]: fieldError ? "error" : (form[fieldName] ? "valid" : "idle"),
+      [fieldName]: fieldError ? "error" : form[fieldName] ? "valid" : "idle",
     }));
   };
 
@@ -404,7 +408,9 @@ function Calendar() {
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors);
       const newStates = {};
-      Object.keys(errors).forEach((k) => { newStates[k] = "error"; });
+      Object.keys(errors).forEach((k) => {
+        newStates[k] = "error";
+      });
       setFieldStates((prev) => ({ ...prev, ...newStates }));
       setShakeKey((k) => k + 1);
       return;
@@ -762,8 +768,16 @@ function Calendar() {
       </div>
 
       <div className="calendar__summary animate-in animate-in--3">
-        <GlassCard className="calendar__stat" value={events.length} label="Events" />
-        <GlassCard className="calendar__stat" value={pendingCount} label="Pending" />
+        <GlassCard
+          className="calendar__stat"
+          value={events.length}
+          label="Events"
+        />
+        <GlassCard
+          className="calendar__stat"
+          value={pendingCount}
+          label="Pending"
+        />
       </div>
 
       {error && (
@@ -929,6 +943,7 @@ function Calendar() {
         <EmptyState
           text="No events today. Tap the timeline or + Add event."
           className="animate-in"
+          style={{ marginTop: "1rem" }}
         />
       )}
 
@@ -991,7 +1006,13 @@ function Calendar() {
         title={editingEvent ? "Edit event" : "Add event"}
       >
         <form className="calendar__form" onSubmit={handleSubmit}>
-          <FormField label="Title" error={fieldErrors.title} state={fieldStates.title} showIndicator shake={fieldErrors.title ? shakeKey : 0}>
+          <FormField
+            label="Title"
+            error={fieldErrors.title}
+            state={fieldStates.title}
+            showIndicator
+            shake={fieldErrors.title ? shakeKey : 0}
+          >
             <input
               type="text"
               value={form.title}
@@ -1006,7 +1027,13 @@ function Calendar() {
             />
           </FormField>
 
-          <FormField label="Date" error={fieldErrors.event_date} state={fieldStates.event_date} showIndicator shake={fieldErrors.event_date ? shakeKey : 0}>
+          <FormField
+            label="Date"
+            error={fieldErrors.event_date}
+            state={fieldStates.event_date}
+            showIndicator
+            shake={fieldErrors.event_date ? shakeKey : 0}
+          >
             <input
               type="date"
               value={form.event_date}
@@ -1019,7 +1046,13 @@ function Calendar() {
             />
           </FormField>
 
-          <FormField label="Start" error={fieldErrors.start_time} state={fieldStates.start_time} showIndicator shake={fieldErrors.start_time ? shakeKey : 0}>
+          <FormField
+            label="Start"
+            error={fieldErrors.start_time}
+            state={fieldStates.start_time}
+            showIndicator
+            shake={fieldErrors.start_time ? shakeKey : 0}
+          >
             <input
               type="time"
               value={form.start_time}
@@ -1036,7 +1069,13 @@ function Calendar() {
             />
           </FormField>
 
-          <FormField label="End" error={fieldErrors.end_time} state={fieldStates.end_time} showIndicator shake={fieldErrors.end_time ? shakeKey : 0}>
+          <FormField
+            label="End"
+            error={fieldErrors.end_time}
+            state={fieldStates.end_time}
+            showIndicator
+            shake={fieldErrors.end_time ? shakeKey : 0}
+          >
             <input
               type="time"
               value={form.end_time}
@@ -1070,9 +1109,7 @@ function Calendar() {
               rows={3}
               value={form.notes}
               maxLength={240}
-              onChange={(e) =>
-                setForm({ ...form, notes: e.target.value })
-              }
+              onChange={(e) => setForm({ ...form, notes: e.target.value })}
               placeholder="Reminder details…"
             />
           </FormField>
