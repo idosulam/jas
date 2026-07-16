@@ -305,11 +305,8 @@ function Auth() {
         const { data: signUpData, error: authError } = await supabase.auth.signUp({ email: email.trim(), password });
         if (authError) { setError(authError.message); setShakeKey((k) => k + 1); toastError("Registration failed."); }
         else {
-          // Save display name to profile
-          const userId = signUpData.user?.id;
-          if (userId) {
-            await supabase.from("profile").insert({ user_id: userId, display_name: displayName.trim() });
-          }
+          // Store name for profile creation after first login
+          localStorage.setItem("jas_pending_name", displayName.trim());
           setSuccessMsg("Check your email for a confirmation link!"); toastSuccess("Account created.");
         }
       } else if (mode === MODES.FORGOT) {

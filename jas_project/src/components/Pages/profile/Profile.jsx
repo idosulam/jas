@@ -562,7 +562,13 @@ function Profile({ onNavigate }) {
         gender: profile.gender ?? "female",
       });
     } else {
-      setProfileForm(emptyProfileForm());
+      const pendingName = localStorage.getItem("jas_pending_name");
+      const form = emptyProfileForm();
+      if (pendingName) {
+        form.display_name = pendingName;
+        localStorage.removeItem("jas_pending_name");
+      }
+      setProfileForm(form);
     }
     setProfileFieldErrors({});
     setProfileFieldStates({});
@@ -1031,7 +1037,7 @@ function Profile({ onNavigate }) {
     };
   }, [entries, profile]);
 
-  const displayName = profile?.display_name ?? "Jas";
+  const displayName = profile?.display_name || localStorage.getItem("jas_pending_name") || "Jas";
   const unitLabel = unit === "kg" ? "kg" : "lbs";
 
   const weightSwipe = useSwipeDownToClose(
