@@ -1,16 +1,17 @@
-import { useRef, useState } from "react";
+import { useRef, useState, lazy, Suspense } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import Navbar from "./components/navbar/Navbar.jsx";
 import Page_transition from "./components/Page_transition.jsx";
-import Shifts from "./components/Pages/Shifts/Shifts.jsx";
-import Calendar from "./components/Pages/Calendar/Calendar.jsx";
-import Profile from "./components/Pages/profile/Profile.jsx";
-import Workplaces from "./components/Pages/Workplaces/Workplaces.jsx";
-import Auth from "./components/Auth/Auth.jsx";
-
 import { ToastProvider } from "./lib/glass_toast_provider.jsx";
 import { supabase } from "./lib/superbase.jsx";
 import { AuthProvider, useAuth } from "./lib/AuthContext.jsx";
+
+// Lazy-loaded page components (route-level code splitting)
+const Shifts = lazy(() => import("./components/Pages/Shifts/Shifts.jsx"));
+const Calendar = lazy(() => import("./components/Pages/Calendar/Calendar.jsx"));
+const Profile = lazy(() => import("./components/Pages/profile/Profile.jsx"));
+const Workplaces = lazy(() => import("./components/Pages/Workplaces/Workplaces.jsx"));
+const Auth = lazy(() => import("./components/Auth/Auth.jsx"));
 
 const TAB_ORDER = ["Shifts", "Calendar", "Profile"];
 
@@ -88,7 +89,9 @@ function AppContent() {
           exit={{ opacity: 0, scale: 0.96 }}
           transition={{ duration: 0.3 }}
         >
-          <Auth />
+          <Suspense fallback={null}>
+            <Auth />
+          </Suspense>
         </motion.div>
       ) : (
         <motion.div
@@ -100,7 +103,19 @@ function AppContent() {
         >
           <main className="app__content">
             <Page_transition pageKey={activeNav} direction={direction}>
-              <ActivePage onNavigate={handleNavChange} returnTo={returnTo} />
+              <Suspense fallback={
+                <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100%" }}>
+                  <div style={{
+                    width: 36, height: 36,
+                    border: "3px solid rgba(255,255,255,0.15)",
+                    borderTopColor: "var(--color-primary, #818cf8)",
+                    borderRadius: "50%",
+                    animation: "authSpin 0.7s linear infinite",
+                  }} />
+                </div>
+              }>
+                <ActivePage onNavigate={handleNavChange} returnTo={returnTo} />
+              </Suspense>
             </Page_transition>
           </main>
           <Navbar activeId={activeNav} onChange={handleNavChange} />
