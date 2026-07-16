@@ -14,7 +14,6 @@ CREATE TABLE IF NOT EXISTS public.profile (
   age             INTEGER CHECK (age IS NULL OR (age >= 13 AND age <= 120)),
   height_cm       NUMERIC(5, 2) CHECK (height_cm IS NULL OR height_cm > 0),
   goal_weight_kg  NUMERIC(5, 2) CHECK (goal_weight_kg IS NULL OR goal_weight_kg > 0),
-  gender          TEXT CHECK (gender IS NULL OR gender IN ('female', 'male', 'other')),
   user_id         UUID REFERENCES auth.users(id) ON DELETE CASCADE,
   updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
