@@ -1045,7 +1045,7 @@ function Profile({ onNavigate }) {
       <PageHeader
         className="profile__header"
         eyebrow="Your progress"
-        title={displayName}
+        title={`Hi ${displayName}`}
         subtitle="Weight loss analytics tuned for your training."
       >
         <div className="profile__avatar" aria-hidden="true">
