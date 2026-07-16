@@ -1,5 +1,11 @@
 -- Run this in the Supabase SQL Editor to create the shift_presets table.
 
+GRANT USAGE ON SCHEMA public TO anon, authenticated, service_role;
+GRANT ALL ON ALL TABLES IN SCHEMA public TO anon, authenticated, service_role;
+GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO anon, authenticated, service_role;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO anon, authenticated, service_role;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO anon, authenticated, service_role;
+
 CREATE TABLE IF NOT EXISTS public.shift_presets (
   id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   label       TEXT NOT NULL,

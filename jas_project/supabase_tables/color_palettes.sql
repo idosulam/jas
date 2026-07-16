@@ -1,4 +1,10 @@
 -- Run this in the Supabase SQL Editor to create the color_palettes table.
+
+GRANT USAGE ON SCHEMA public TO anon, authenticated, service_role;
+GRANT ALL ON ALL TABLES IN SCHEMA public TO anon, authenticated, service_role;
+GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO anon, authenticated, service_role;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO anon, authenticated, service_role;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO anon, authenticated, service_role;
 -- Stores user-defined colors for the palette picker (Calendar + Shifts).
 
 CREATE TABLE IF NOT EXISTS public.color_palettes (
