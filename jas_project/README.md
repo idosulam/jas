@@ -8,13 +8,12 @@ A React + Vite app backed by Supabase for tracking work shifts, earnings, and we
 
 1. Create a project at [supabase.com](https://supabase.com)
 2. Go to **SQL Editor** and run the table scripts **in this order**:
-   - `supabase_tables/workplaces.sql`
+   - `supabase_tables/workplaces.sql` ← run this first (includes schema grants)
    - `supabase_tables/shifts.sql`
    - `supabase_tables/shift_presets.sql`
    - `supabase_tables/events.sql`
    - `supabase_tables/profile.sql`
    - `supabase_tables/color_palettes.sql`
-   - **`supabase_tables/_grants.sql`** ← run this last (grants schema permissions to Supabase roles)
 3. Copy your project URL and anon key from **Project Settings → API**
 
 ### 2. Environment
