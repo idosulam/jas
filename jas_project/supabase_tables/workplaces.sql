@@ -47,10 +47,21 @@ CREATE OR REPLACE FUNCTION public.cascade_workplace_color()
 RETURNS TRIGGER AS $$
 BEGIN
   IF NEW.color IS DISTINCT FROM OLD.color THEN
+    -- Update shifts
     UPDATE public.shifts SET color = NEW.color
       WHERE place = NEW.slug AND user_id = NEW.user_id;
+    -- Update presets
     UPDATE public.shift_presets SET color = NEW.color
       WHERE place = NEW.slug AND user_id = NEW.user_id;
+    -- Update linked calendar events
+    UPDATE public.events e SET color = NEW.color
+      WHERE e.user_id = NEW.user_id
+        AND EXISTS (
+          SELECT 1 FROM public.shifts s
+            WHERE s.place = NEW.slug
+              AND s.user_id = NEW.user_id
+              AND e.notes LIKE '%Linked shift id: ' || s.id || '%'
+        );
   END IF;
   RETURN NEW;
 END;
