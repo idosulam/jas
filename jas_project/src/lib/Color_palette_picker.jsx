@@ -1,9 +1,3 @@
-/**
- * Inline color palette picker — used inside form modals.
- * Shows palette swatches + "+" to add. Hover ✎ to edit.
- * Manages its own add/edit modal internally.
- * Colors stored in Supabase color_palettes table.
- */
 import { useCallback, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import {

@@ -1,7 +1,7 @@
 import "./Calendar.css";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { getSupabaseClient } from "../../../lib/superbase";
-import { useUserId } from "../../../lib/AuthContext.jsx";
+import { useUserId } from "../../../lib/Auth_context.jsx";
 import {
   addDays,
   DAY_END_HOUR,
@@ -27,7 +27,7 @@ import {
   isShiftLinkNote,
   getVisibleEventNotes,
   recalcWakeWalkForDate,
-} from "../../../lib/calendarSync";
+} from "../../../lib/calendar_sync";
 import {
   useBodyScrollLock,
   useModal,
@@ -44,7 +44,7 @@ import {
   FAB,
 } from "../../../components";
 import { useGlassToast } from "../../../lib/glass_toast_provider.jsx";
-import ColorPalettePicker from "../../../lib/ColorPalettePicker.jsx";
+import ColorPalettePicker from "../../../lib/Color_palette_picker.jsx";
 import { fetchPalette } from "../../../lib/color_palette.js";
 
 const MODAL_EXIT_MS = 260;

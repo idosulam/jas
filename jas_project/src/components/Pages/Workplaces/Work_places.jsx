@@ -1,7 +1,7 @@
-import "./Workplaces.css";
+import "./Work_places.css";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getSupabaseClient } from "../../../lib/superbase.jsx";
-import { useUserId } from "../../../lib/AuthContext.jsx";
+import { useUserId } from "../../../lib/Auth_context.jsx";
 import {
   getUserFacingError,
   sanitizeText,
@@ -17,7 +17,7 @@ import {
   LoadingSkeleton,
 } from "../../index.js";
 import { useBodyScrollLock, useModal } from "../../../hooks/index.js";
-import { TrashIcon } from "../../../components/ui/modals/ConfirmModal";
+import { TrashIcon } from "../../../components/ui/modals/Confirm_modal";
 
 const emptyForm = () => ({
   slug: "",
