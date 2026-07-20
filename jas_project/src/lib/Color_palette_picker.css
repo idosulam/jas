@@ -26,7 +26,9 @@
   border-radius: 50%;
   background: var(--swatch);
   cursor: pointer;
-  transition: transform 0.15s ease, border-color 0.15s ease;
+  transition:
+    transform 0.15s ease,
+    border-color 0.15s ease;
 }
 
 .cpp__swatch:hover {
@@ -35,7 +37,9 @@
 
 .cpp__swatch--active {
   border-color: #fff;
-  box-shadow: 0 0 0 2px var(--swatch), 0 0 10px rgba(0, 0, 0, 0.25);
+  box-shadow:
+    0 0 0 2px var(--swatch),
+    0 0 10px rgba(0, 0, 0, 0.25);
   transform: scale(1.12);
 }
 
@@ -145,7 +149,8 @@
   background: linear-gradient(160deg, #1a1a2e 0%, #16213e 100%);
   box-shadow: 0 24px 48px rgba(0, 0, 0, 0.45);
   transform-origin: bottom center;
-  animation: cppModalSlideUp 0.38s var(--ease-spring, cubic-bezier(0.34, 1.56, 0.64, 1));
+  animation: cppModalSlideUp 0.38s
+    var(--ease-spring, cubic-bezier(0.34, 1.56, 0.64, 1));
   will-change: transform, opacity;
 }
 
@@ -294,7 +299,11 @@
 }
 
 .cpp__btn--primary {
-  background: linear-gradient(135deg, var(--color-primary, #818cf8), var(--color-secondary, #a78bfa));
+  background: linear-gradient(
+    135deg,
+    var(--color-primary, #818cf8),
+    var(--color-secondary, #a78bfa)
+  );
   color: #fff;
   font-weight: 700;
   box-shadow:
@@ -322,13 +331,21 @@
 /* ── Animations ── */
 
 @keyframes cppOverlayIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes cppOverlayOut {
-  from { opacity: 1; }
-  to { opacity: 0; }
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
 }
 
 @keyframes cppModalSlideUp {

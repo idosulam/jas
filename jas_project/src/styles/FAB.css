@@ -29,7 +29,9 @@
   border: none;
   border-radius: 50%;
   cursor: pointer;
-  transition: transform 0.2s var(--ease-spring), box-shadow 0.2s;
+  transition:
+    transform 0.2s var(--ease-spring),
+    box-shadow 0.2s;
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -63,7 +65,11 @@
 
 /* ── Add action ── */
 .fab--add {
-  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+  background: linear-gradient(
+    135deg,
+    var(--color-primary),
+    var(--color-secondary)
+  );
   color: #fff;
   box-shadow: 0 6px 20px rgba(129, 140, 248, 0.35);
 }

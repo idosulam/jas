@@ -71,12 +71,18 @@ export function getUserFacingError(error) {
   }
 
   // Permission errors
-  if (/permission denied|insufficient.*privilege|RLS|row-level security/i.test(msg)) {
+  if (
+    /permission denied|insufficient.*privilege|RLS|row-level security/i.test(
+      msg,
+    )
+  ) {
     return "You don't have permission to do that.";
   }
 
   // Network errors
-  if (/Failed to fetch|NetworkError|ERR_NETWORK|ECONNREFUSED|offline/i.test(msg)) {
+  if (
+    /Failed to fetch|NetworkError|ERR_NETWORK|ECONNREFUSED|offline/i.test(msg)
+  ) {
     return "Check your connection and try again.";
   }
 

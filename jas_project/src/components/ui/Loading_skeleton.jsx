@@ -1,7 +1,13 @@
 /**
  * LoadingSkeleton — Skeleton placeholder for loading states.
  */
-export default function LoadingSkeleton({ count = 3, height = "5rem", variant = "card", className = "", contents = false }) {
+export default function LoadingSkeleton({
+  count = 3,
+  height = "5rem",
+  variant = "card",
+  className = "",
+  contents = false,
+}) {
   const style = contents
     ? { display: "contents" }
     : { display: "flex", flexDirection: "column", gap: "0.65rem" };

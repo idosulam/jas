@@ -3,7 +3,7 @@
  * Replaces the repeated createPortal + overlay + modal pattern.
  */
 import { createPortal } from "react-dom";
-import "../styles/SheetModal.css";
+import "../../../styles/Sheet_modal.css";
 
 export default function SheetModal({
   open,
@@ -49,7 +49,9 @@ export default function SheetModal({
         style={swipeStyle}
       >
         {title && (
-          <h2 className={`sheet-modal__title${compact ? " sheet-modal__title--compact" : ""}`}>
+          <h2
+            className={`sheet-modal__title${compact ? " sheet-modal__title--compact" : ""}`}
+          >
             {title}
           </h2>
         )}

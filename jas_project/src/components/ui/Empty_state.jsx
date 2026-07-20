@@ -1,9 +1,12 @@
-/**
- * EmptyState — Placeholder when a list has no items.
- */
-import "../styles/EmptyState.css";
+import "../../styles/Empty_state.css";
 
-export default function EmptyState({ icon, title, text, action, className = "" }) {
+export default function EmptyState({
+  icon,
+  title,
+  text,
+  action,
+  className = "",
+}) {
   return (
     <div className={`empty-state glass-card ${className}`}>
       {icon && (

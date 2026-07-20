@@ -9,10 +9,10 @@
  *   - Adds form-field--valid or form-field--error-enhanced class
  */
 import { Children } from "react";
-import FieldIndicator from "./FieldIndicator";
-import FieldError from "./FieldError";
-import ShakeField from "./ShakeField";
-import "./FormField.css";
+import FieldIndicator from "./Field_indicator";
+import FieldError from "./Field_error";
+import ShakeField from "./Shake_field";
+import "./Form_field.css";
 
 export default function FormField({
   label,
@@ -68,9 +68,7 @@ export default function FormField({
         )}
       </span>
       {fieldContent}
-      {enhanced ? (
-        <FieldError message={error || null} />
-      ) : null}
+      {enhanced ? <FieldError message={error || null} /> : null}
       {charCount != null && maxChars != null && charCount > 0 && (
         <span className="form-field__char-count">
           {charCount}/{maxChars}

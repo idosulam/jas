@@ -165,7 +165,9 @@ export function ToastProvider({ children }) {
           },
         ];
         // Keep only the newest MAX_VISIBLE toasts
-        return next.length > MAX_VISIBLE ? next.slice(next.length - MAX_VISIBLE) : next;
+        return next.length > MAX_VISIBLE
+          ? next.slice(next.length - MAX_VISIBLE)
+          : next;
       });
       return id;
     },

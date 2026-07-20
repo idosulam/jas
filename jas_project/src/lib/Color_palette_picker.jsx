@@ -6,8 +6,13 @@
  */
 import { useCallback, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { fetchPalette, addPaletteColor, updatePaletteColor, deletePaletteColor } from "./color_palette";
-import "./ColorPalettePicker.css";
+import {
+  fetchPalette,
+  addPaletteColor,
+  updatePaletteColor,
+  deletePaletteColor,
+} from "./color_palette";
+import "./Color_palette_picker.css";
 
 const MODAL_EXIT_MS = 260;
 

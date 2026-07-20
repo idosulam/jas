@@ -1,7 +1,7 @@
 import "./Profile.css";
 import { useCallback, useEffect, useMemo, useState, useRef } from "react";
 import { getSupabaseClient } from "../../../lib/superbase";
-import { useUserId } from "../../../lib/AuthContext.jsx";
+import { useUserId } from "../../../lib/Auth_context.jsx";
 import {
   getUserFacingError,
   sanitizeDate,
@@ -37,7 +37,6 @@ const emptyProfileForm = () => ({
   height_in: "",
   goal_weight_kg: "",
   goal_weight_lbs: "",
-
 });
 
 const emptyWeightForm = () => ({
@@ -462,8 +461,17 @@ function Profile({ onNavigate }) {
     try {
       const supabase = getSupabaseClient();
       const [profileRes, entriesRes] = await Promise.all([
-        supabase.from("profile").select("*").eq("user_id", userId).limit(1).maybeSingle(),
-        supabase.from("weight_entries").select("*").eq("user_id", userId).order("entry_date", { ascending: true }),
+        supabase
+          .from("profile")
+          .select("*")
+          .eq("user_id", userId)
+          .limit(1)
+          .maybeSingle(),
+        supabase
+          .from("weight_entries")
+          .select("*")
+          .eq("user_id", userId)
+          .order("entry_date", { ascending: true }),
       ]);
 
       if (profileRes.error) {
@@ -559,7 +567,6 @@ function Profile({ onNavigate }) {
         goal_weight_kg: goalKg != null ? String(goalKg.toFixed(1)) : "",
         goal_weight_lbs:
           goalKg != null ? String(kgToLbs(goalKg)?.toFixed(1) ?? "") : "",
-
       });
     } else {
       setProfileForm(emptyProfileForm());
@@ -782,7 +789,7 @@ function Profile({ onNavigate }) {
     setProfileFieldErrors((prev) => ({ ...prev, [fieldName]: error }));
     setProfileFieldStates((prev) => ({
       ...prev,
-      [fieldName]: error ? "error" : (profileForm[fieldName] ? "valid" : "idle"),
+      [fieldName]: error ? "error" : profileForm[fieldName] ? "valid" : "idle",
     }));
   };
 
@@ -818,7 +825,7 @@ function Profile({ onNavigate }) {
     setWeightFieldErrors((prev) => ({ ...prev, [fieldName]: error }));
     setWeightFieldStates((prev) => ({
       ...prev,
-      [fieldName]: error ? "error" : (weightForm[fieldName] ? "valid" : "idle"),
+      [fieldName]: error ? "error" : weightForm[fieldName] ? "valid" : "idle",
     }));
   };
 
@@ -835,8 +842,14 @@ function Profile({ onNavigate }) {
       // Trigger validation display
       const errors = {};
       const states = {};
-      if (!entryDate) { errors.entry_date = "Pick a date"; states.entry_date = "error"; }
-      if (!weightKg || weightKg <= 0) { errors.weight_kg = "Enter your weight"; states.weight_kg = "error"; }
+      if (!entryDate) {
+        errors.entry_date = "Pick a date";
+        states.entry_date = "error";
+      }
+      if (!weightKg || weightKg <= 0) {
+        errors.weight_kg = "Enter your weight";
+        states.weight_kg = "error";
+      }
       setWeightFieldErrors((prev) => ({ ...prev, ...errors }));
       setWeightFieldStates((prev) => ({ ...prev, ...states }));
       setWeightShakeKey((k) => k + 1);
@@ -900,7 +913,9 @@ function Profile({ onNavigate }) {
       const supabase = getSupabaseClient();
       const { error: saveError } = profile
         ? await supabase.from("profile").update(payload).eq("id", profile.id)
-        : await supabase.from("profile").insert({ ...payload, ...(userId && { user_id: userId }) });
+        : await supabase
+            .from("profile")
+            .insert({ ...payload, ...(userId && { user_id: userId }) });
 
       setSaving(false);
 
@@ -1103,7 +1118,11 @@ function Profile({ onNavigate }) {
             />
             <GlassCard
               className="profile__stat"
-              valueClassName={analytics.totalChangeKg != null && analytics.totalChangeKg < 0 ? "profile__stat-value--good" : ""}
+              valueClassName={
+                analytics.totalChangeKg != null && analytics.totalChangeKg < 0
+                  ? "profile__stat-value--good"
+                  : ""
+              }
               value={
                 analytics.totalChangeKg != null
                   ? formatSignedDelta(
@@ -1616,16 +1635,14 @@ function Profile({ onNavigate }) {
                 min="1"
                 placeholder="128"
                 value={profileForm.goal_weight_lbs}
-                onChange={(e) =>
-                  handleGoalWeightLbsChange(e.target.value)
-                }
+                onChange={(e) => handleGoalWeightLbsChange(e.target.value)}
               />
             </FormField>
           </div>
 
           <p className="profile__form-hint">
-            Enter height in centimeters or feet and inches. Weight fields
-            follow your {unitLabel} toggle.
+            Enter height in centimeters or feet and inches. Weight fields follow
+            your {unitLabel} toggle.
           </p>
           <div className="btn-row">
             <button

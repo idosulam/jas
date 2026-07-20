@@ -1,7 +1,7 @@
 import "./Shifts.css";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getSupabaseClient } from "../../../lib/superbase";
-import { useUserId } from "../../../lib/AuthContext.jsx";
+import { useUserId } from "../../../lib/Auth_context.jsx";
 import {
   getUserFacingError,
   sanitizeDate,
@@ -15,22 +15,20 @@ import {
   getShiftEventTitle,
   removeGeneratedCalendarEvents,
   syncShiftToCalendar as syncShiftToCalendarUtil,
-} from "../../../lib/calendarSync";
+} from "../../../lib/calendar_sync";
 import { useBodyScrollLock, useModal } from "../../../hooks";
 import { useGlassToast } from "../../../lib/glass_toast_provider.jsx";
-import ColorPalettePicker from "../../../lib/ColorPalettePicker.jsx";
+import ColorPalettePicker from "../../../lib/Color_palette_picker.jsx";
 import { fetchPalette } from "../../../lib/color_palette.js";
-import SheetModal from "../../../components/ui/modals/SheetModal";
-import ConfirmModal from "../../../components/ui/modals/ConfirmModal";
-import FormField from "../../../components/ui/form/FormField";
+import SheetModal from "../../../components/ui/modals/Sheet_modal";
+import ConfirmModal from "../../../components/ui/modals/Confirm_modal";
+import FormField from "../../ui/form/Form_field.jsx";
 import Badge from "../../../components/ui/Badge";
-import EmptyState from "../../../components/ui/EmptyState";
-import LoadingSkeleton from "../../../components/ui/LoadingSkeleton";
-import PageHeader from "../../../components/ui/PageHeader";
-import GlassCard from "../../../components/ui/GlassCard";
+import EmptyState from "../../../components/ui/Empty_state";
+import LoadingSkeleton from "../../../components/ui/Loading_skeleton";
+import PageHeader from "../../../components/ui/Page_header";
+import GlassCard from "../../../components/ui/Glass_card";
 import FAB from "../../../components/ui/FAB";
-
-
 
 const PAY_TYPES = [
   { id: "hourly", label: "Hourly + tips" },
@@ -178,7 +176,11 @@ function Shifts({ onNavigate }) {
   const PLACE_FILTERS = useMemo(
     () => [
       { id: "all", label: "All" },
-      ...effectiveWorkplaces.map((wp) => ({ id: wp.slug, label: wp.label, active: wp.active })),
+      ...effectiveWorkplaces.map((wp) => ({
+        id: wp.slug,
+        label: wp.label,
+        active: wp.active,
+      })),
     ],
     [effectiveWorkplaces],
   );
@@ -438,7 +440,12 @@ function Shifts({ onNavigate }) {
     };
   }, [fetchShifts]);
 
-  useBodyScrollLock(formModal.open, deleteModal.open, presetModal.open, placePicker.open);
+  useBodyScrollLock(
+    formModal.open,
+    deleteModal.open,
+    presetModal.open,
+    placePicker.open,
+  );
 
   useEffect(() => {
     const target = addBtnRef.current;
@@ -611,7 +618,7 @@ function Shifts({ onNavigate }) {
     }));
     setFieldStates((prev) => ({
       ...prev,
-      [fieldName]: fieldError ? "error" : (form[fieldName] ? "valid" : "idle"),
+      [fieldName]: fieldError ? "error" : form[fieldName] ? "valid" : "idle",
     }));
   };
 
@@ -644,10 +651,20 @@ function Shifts({ onNavigate }) {
   };
 
   // Thin wrappers that pass local PLACES map to the shared utility functions
-  const _getShiftEventTitle = (shiftRecord) => getShiftEventTitle(shiftRecord, PLACES);
+  const _getShiftEventTitle = (shiftRecord) =>
+    getShiftEventTitle(shiftRecord, PLACES);
 
-  async function _removeShiftGeneratedCalendarEvents(supabase, dateKey, linkedShiftId = null) {
-    return removeGeneratedCalendarEvents(supabase, dateKey, userId, linkedShiftId);
+  async function _removeShiftGeneratedCalendarEvents(
+    supabase,
+    dateKey,
+    linkedShiftId = null,
+  ) {
+    return removeGeneratedCalendarEvents(
+      supabase,
+      dateKey,
+      userId,
+      linkedShiftId,
+    );
   }
 
   const notifyCalendarRefresh = () => {
@@ -700,7 +717,9 @@ function Shifts({ onNavigate }) {
       setFieldErrors(errors);
       // Set error states for all errored fields
       const newStates = {};
-      Object.keys(errors).forEach((k) => { newStates[k] = "error"; });
+      Object.keys(errors).forEach((k) => {
+        newStates[k] = "error";
+      });
       setFieldStates((prev) => ({ ...prev, ...newStates }));
       setShakeKey((k) => k + 1);
       return;
@@ -870,7 +889,11 @@ function Shifts({ onNavigate }) {
 
   return (
     <section className="shifts page">
-      <PageHeader eyebrow="Earnings tracker" title="Shifts" className="shifts__header animate-in" />
+      <PageHeader
+        eyebrow="Earnings tracker"
+        title="Shifts"
+        className="shifts__header animate-in"
+      />
 
       <div className="shifts__filters animate-in animate-in--1">
         <label className="shifts__filter">
@@ -905,13 +928,22 @@ function Shifts({ onNavigate }) {
       {!loading && effectiveWorkplaces.length === 0 && onNavigate && (
         <div className="shifts__no-workplaces animate-in animate-in--1">
           <div className="shifts__no-workplaces-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
               <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z" />
               <path d="M9 22V12h6v10" />
             </svg>
           </div>
           <p className="shifts__no-workplaces-title">No workplaces yet</p>
-          <p className="shifts__no-workplaces-text">Add a workplace first to start tracking your shifts.</p>
+          <p className="shifts__no-workplaces-text">
+            Add a workplace first to start tracking your shifts.
+          </p>
           <button
             type="button"
             className="shifts__no-workplaces-btn"
@@ -939,7 +971,12 @@ function Shifts({ onNavigate }) {
               aria-pressed={placeFilter === id}
             >
               {label}
-              {active === false && <span className="shifts__place-deactivated-dot" aria-label="Deactivated" />}
+              {active === false && (
+                <span
+                  className="shifts__place-deactivated-dot"
+                  aria-label="Deactivated"
+                />
+              )}
             </button>
           ))}
           <span
@@ -965,7 +1002,8 @@ function Shifts({ onNavigate }) {
               background:
                 placeFilter === "all"
                   ? "var(--color-primary, #818cf8)"
-                  : PLACES[placeFilter]?.color || "var(--color-primary, #818cf8)",
+                  : PLACES[placeFilter]?.color ||
+                    "var(--color-primary, #818cf8)",
             }}
           />
           {PLACE_FILTERS.find((f) => f.id === placeFilter)?.label || "All"}
@@ -979,10 +1017,26 @@ function Shifts({ onNavigate }) {
         className="shifts__summary animate-in animate-in--3"
         key={`${month}-${year}-${placeFilter}`}
       >
-        <GlassCard value={`${totals.hours.toFixed(1)}h`} label="Hours" className="shifts__stat" />
-        <GlassCard value={formatMoney(totals.pay)} label="Pay" className="shifts__stat" />
-        <GlassCard value={formatMoney(totals.tips)} label="Tips" className="shifts__stat" />
-        <GlassCard value={formatMoney(totals.total)} label="Total" className="shifts__stat shifts__stat--total" />
+        <GlassCard
+          value={`${totals.hours.toFixed(1)}h`}
+          label="Hours"
+          className="shifts__stat"
+        />
+        <GlassCard
+          value={formatMoney(totals.pay)}
+          label="Pay"
+          className="shifts__stat"
+        />
+        <GlassCard
+          value={formatMoney(totals.tips)}
+          label="Tips"
+          className="shifts__stat"
+        />
+        <GlassCard
+          value={formatMoney(totals.total)}
+          label="Total"
+          className="shifts__stat shifts__stat--total"
+        />
       </div>
 
       {error && (
@@ -1073,7 +1127,11 @@ function Shifts({ onNavigate }) {
             onClick={openAddModal}
             ref={addBtnRef}
             disabled={effectiveWorkplaces.length === 0}
-            title={effectiveWorkplaces.length === 0 ? "Add a workplace first" : "Add a new shift"}
+            title={
+              effectiveWorkplaces.length === 0
+                ? "Add a workplace first"
+                : "Add a new shift"
+            }
           >
             + Add shift
           </button>
@@ -1111,7 +1169,7 @@ function Shifts({ onNavigate }) {
             effectiveWorkplaces.length === 0
               ? "Add a workplace to start tracking shifts."
               : placeFilter === "all"
-                ? "Tap \"+ Add shift\" to log your first one."
+                ? 'Tap "+ Add shift" to log your first one.'
                 : `No shifts logged for ${PLACES[placeFilter]?.label} this month.`
           }
           action={
@@ -1152,7 +1210,9 @@ function Shifts({ onNavigate }) {
                   <div className="shifts__card-top">
                     <Badge
                       className="shifts__badge"
-                      color={shift.color || PLACES[shift.place]?.color || "#818cf8"}
+                      color={
+                        shift.color || PLACES[shift.place]?.color || "#818cf8"
+                      }
                       deactivated={isDeactivated}
                     >
                       {placeInfo?.label ?? shift.place}
@@ -1268,7 +1328,12 @@ function Shifts({ onNavigate }) {
         title={editingShift ? "Edit shift" : "Add shift"}
       >
         <form className="shifts__form" onSubmit={handleSubmit}>
-          <FormField label="Place" error={fieldErrors.place} state={fieldStates.place} showIndicator>
+          <FormField
+            label="Place"
+            error={fieldErrors.place}
+            state={fieldStates.place}
+            showIndicator
+          >
             <select
               value={form.place}
               onChange={(e) => {
@@ -1278,7 +1343,8 @@ function Shifts({ onNavigate }) {
             >
               {Object.entries(PLACES).map(([key, { label, rate }]) => (
                 <option key={key} value={key}>
-                  {label} — ₪{rate}/hr{deactivatedSlugs.has(key) ? " (inactive)" : ""}
+                  {label} — ₪{rate}/hr
+                  {deactivatedSlugs.has(key) ? " (inactive)" : ""}
                 </option>
               ))}
             </select>
@@ -1302,7 +1368,13 @@ function Shifts({ onNavigate }) {
             ))}
           </div>
 
-          <FormField label="Date" error={fieldErrors.shift_date} state={fieldStates.shift_date} showIndicator shake={fieldErrors.shift_date ? shakeKey : 0}>
+          <FormField
+            label="Date"
+            error={fieldErrors.shift_date}
+            state={fieldStates.shift_date}
+            showIndicator
+            shake={fieldErrors.shift_date ? shakeKey : 0}
+          >
             <input
               type="date"
               value={form.shift_date}
@@ -1316,23 +1388,31 @@ function Shifts({ onNavigate }) {
           </FormField>
 
           <div className="form-time-row">
-            <FormField label="Start time" error={fieldErrors.start_time} state={fieldStates.start_time} showIndicator shake={fieldErrors.start_time ? shakeKey : 0}>
+            <FormField
+              label="Start time"
+              error={fieldErrors.start_time}
+              state={fieldStates.start_time}
+              showIndicator
+              shake={fieldErrors.start_time ? shakeKey : 0}
+            >
               <input
                 type="time"
                 value={form.start_time}
-                onChange={(e) =>
-                  handleTimeChange("start_time", e.target.value)
-                }
+                onChange={(e) => handleTimeChange("start_time", e.target.value)}
                 onBlur={() => handleFieldBlur("start_time")}
               />
             </FormField>
-            <FormField label="End time" error={fieldErrors.end_time} state={fieldStates.end_time} showIndicator shake={fieldErrors.end_time ? shakeKey : 0}>
+            <FormField
+              label="End time"
+              error={fieldErrors.end_time}
+              state={fieldStates.end_time}
+              showIndicator
+              shake={fieldErrors.end_time ? shakeKey : 0}
+            >
               <input
                 type="time"
                 value={form.end_time}
-                onChange={(e) =>
-                  handleTimeChange("end_time", e.target.value)
-                }
+                onChange={(e) => handleTimeChange("end_time", e.target.value)}
                 onBlur={() => handleFieldBlur("end_time")}
               />
             </FormField>
@@ -1353,7 +1433,13 @@ function Shifts({ onNavigate }) {
             </p>
           )}
 
-          <FormField label="Hours" error={fieldErrors.hours} state={fieldStates.hours} showIndicator shake={fieldErrors.hours ? shakeKey : 0}>
+          <FormField
+            label="Hours"
+            error={fieldErrors.hours}
+            state={fieldStates.hours}
+            showIndicator
+            shake={fieldErrors.hours ? shakeKey : 0}
+          >
             <input
               type="number"
               min="0.01"
@@ -1366,7 +1452,14 @@ function Shifts({ onNavigate }) {
             />
           </FormField>
 
-          <FormField label="Tips" error={fieldErrors.tips} state={fieldStates.tips} showIndicator shake={fieldErrors.tips ? shakeKey : 0} optional={form.pay_type !== "tips_only"}>
+          <FormField
+            label="Tips"
+            error={fieldErrors.tips}
+            state={fieldStates.tips}
+            showIndicator
+            shake={fieldErrors.tips ? shakeKey : 0}
+            optional={form.pay_type !== "tips_only"}
+          >
             <input
               type="number"
               min="0"
@@ -1378,14 +1471,17 @@ function Shifts({ onNavigate }) {
             />
           </FormField>
 
-          <FormField label="Notes" optional charCount={form.notes.length} maxChars={500}>
+          <FormField
+            label="Notes"
+            optional
+            charCount={form.notes.length}
+            maxChars={500}
+          >
             <textarea
               placeholder="e.g. Covered for Dana, closed the register"
               value={form.notes}
               maxLength={500}
-              onChange={(e) =>
-                setForm({ ...form, notes: e.target.value })
-              }
+              onChange={(e) => setForm({ ...form, notes: e.target.value })}
             />
           </FormField>
 
@@ -1394,24 +1490,17 @@ function Shifts({ onNavigate }) {
               {form.pay_type === "tips_only" ? (
                 <>
                   Tips only shift — total{" "}
-                  <strong>
-                    {formatMoney(parseFloat(form.tips) || 0)}
-                  </strong>
+                  <strong>{formatMoney(parseFloat(form.tips) || 0)}</strong>
                 </>
               ) : (
                 <>
-                  Estimated pay:{" "}
-                  <strong>{formatMoney(previewPay)}</strong>
+                  Estimated pay: <strong>{formatMoney(previewPay)}</strong>
                   {form.tips && (
                     <>
                       {" "}
-                      + tips {formatMoney(
-                        parseFloat(form.tips) || 0,
-                      )} ={" "}
+                      + tips {formatMoney(parseFloat(form.tips) || 0)} ={" "}
                       <strong>
-                        {formatMoney(
-                          previewPay + (parseFloat(form.tips) || 0),
-                        )}
+                        {formatMoney(previewPay + (parseFloat(form.tips) || 0))}
                       </strong>
                     </>
                   )}
@@ -1445,10 +1534,7 @@ function Shifts({ onNavigate }) {
             >
               {saving ? (
                 <>
-                  <span
-                    className="btn__spinner"
-                    aria-hidden="true"
-                  />
+                  <span className="btn__spinner" aria-hidden="true" />
                   Saving…
                 </>
               ) : editingShift ? (
@@ -1489,7 +1575,11 @@ function Shifts({ onNavigate }) {
                     style={{ background: color }}
                   />
                   <span className="shifts__picker-label">{label}</span>
-                  {active === false && <span className="shifts__picker-deactivated-tag">inactive</span>}
+                  {active === false && (
+                    <span className="shifts__picker-deactivated-tag">
+                      inactive
+                    </span>
+                  )}
                   {isActive && (
                     <span className="shifts__picker-check" aria-hidden="true">
                       ✓
@@ -1512,7 +1602,14 @@ function Shifts({ onNavigate }) {
         description="This action cannot be undone."
         confirmLabel="Delete shift"
         icon={
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.75"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
             <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6h14Z" />
             <path d="M10 11v6M14 11v6" />
           </svg>
@@ -1522,7 +1619,11 @@ function Shifts({ onNavigate }) {
             <>
               <Badge
                 className="shifts__badge"
-                color={deleteTarget.color || PLACES[deleteTarget.place]?.color || "#818cf8"}
+                color={
+                  deleteTarget.color ||
+                  PLACES[deleteTarget.place]?.color ||
+                  "#818cf8"
+                }
               >
                 {deletePlaceInfo?.label}
               </Badge>
@@ -1568,7 +1669,8 @@ function Shifts({ onNavigate }) {
             >
               {Object.entries(PLACES).map(([key, { label, rate }]) => (
                 <option key={key} value={key}>
-                  {label} — ₪{rate}/hr{deactivatedSlugs.has(key) ? " (inactive)" : ""}
+                  {label} — ₪{rate}/hr
+                  {deactivatedSlugs.has(key) ? " (inactive)" : ""}
                 </option>
               ))}
             </select>
@@ -1583,9 +1685,7 @@ function Shifts({ onNavigate }) {
                 key={id}
                 type="button"
                 className={`shifts__pay-toggle-btn${presetForm.pay_type === id ? " shifts__pay-toggle-btn--active" : ""}`}
-                onClick={() =>
-                  setPresetForm((f) => ({ ...f, pay_type: id }))
-                }
+                onClick={() => setPresetForm((f) => ({ ...f, pay_type: id }))}
                 aria-pressed={presetForm.pay_type === id}
               >
                 {label}
@@ -1633,9 +1733,7 @@ function Shifts({ onNavigate }) {
           <FormField label="Color">
             <ColorPalettePicker
               value={presetForm.color}
-              onChange={(hex) =>
-                setPresetForm((f) => ({ ...f, color: hex }))
-              }
+              onChange={(hex) => setPresetForm((f) => ({ ...f, color: hex }))}
             />
           </FormField>
           <div className="btn-row">

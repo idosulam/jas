@@ -1,11 +1,22 @@
 import "./Workplaces.css";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { getSupabaseClient } from "../../../lib/superbase";
+import { getSupabaseClient } from "../../../lib/superbase.jsx";
 import { useUserId } from "../../../lib/AuthContext.jsx";
-import { getUserFacingError, sanitizeText, sanitizeNumber } from "../../../lib/security";
+import {
+  getUserFacingError,
+  sanitizeText,
+  sanitizeNumber,
+} from "../../../lib/security.js";
 import { useGlassToast } from "../../../lib/glass_toast_provider.jsx";
-import { SheetModal, FormField, PageHeader, ConfirmModal, EmptyState, LoadingSkeleton } from "../../../components";
-import { useBodyScrollLock, useModal } from "../../../hooks";
+import {
+  SheetModal,
+  FormField,
+  PageHeader,
+  ConfirmModal,
+  EmptyState,
+  LoadingSkeleton,
+} from "../../index.js";
+import { useBodyScrollLock, useModal } from "../../../hooks/index.js";
 import { TrashIcon } from "../../../components/ui/modals/ConfirmModal";
 
 const emptyForm = () => ({
@@ -143,7 +154,7 @@ function Workplaces({ onNavigate, returnTo }) {
     setFieldErrors((prev) => ({ ...prev, [name]: err }));
     setFieldStates((prev) => ({
       ...prev,
-      [name]: err ? "error" : (form[name] ? "valid" : "idle"),
+      [name]: err ? "error" : form[name] ? "valid" : "idle",
     }));
   };
 
@@ -166,8 +177,12 @@ function Workplaces({ onNavigate, returnTo }) {
       const states = {};
       ["slug", "label", "rate"].forEach((name) => {
         const err = validateField(name, form[name]);
-        if (err) { errors[name] = err; states[name] = "error"; }
-        else if (form[name]) { states[name] = "valid"; }
+        if (err) {
+          errors[name] = err;
+          states[name] = "error";
+        } else if (form[name]) {
+          states[name] = "valid";
+        }
       });
       setFieldErrors((prev) => ({ ...prev, ...errors }));
       setFieldStates((prev) => ({ ...prev, ...states }));
@@ -193,9 +208,13 @@ function Workplaces({ onNavigate, returnTo }) {
           .update({ label, rate, color })
           .eq("id", editing.id));
       } else {
-        ({ error: dbError } = await supabase
-          .from("workplaces")
-          .insert({ slug, label, rate, color, ...(userId && { user_id: userId }) }));
+        ({ error: dbError } = await supabase.from("workplaces").insert({
+          slug,
+          label,
+          rate,
+          color,
+          ...(userId && { user_id: userId }),
+        }));
       }
 
       setSaving(false);
@@ -203,7 +222,9 @@ function Workplaces({ onNavigate, returnTo }) {
       if (dbError) {
         const message = getUserFacingError(dbError.message);
         setError(message);
-        toastError(editing ? "Couldn't update workplace." : "Couldn't create workplace.");
+        toastError(
+          editing ? "Couldn't update workplace." : "Couldn't create workplace.",
+        );
         return;
       }
 
@@ -219,7 +240,9 @@ function Workplaces({ onNavigate, returnTo }) {
     } catch (err) {
       setSaving(false);
       setError(getUserFacingError(err.message));
-      toastError(editing ? "Couldn't update workplace." : "Couldn't create workplace.");
+      toastError(
+        editing ? "Couldn't update workplace." : "Couldn't create workplace.",
+      );
     }
   };
 
@@ -378,7 +401,9 @@ function Workplaces({ onNavigate, returnTo }) {
                     </div>
                   </div>
                   <div className="workplaces__card-right">
-                    <span className="workplaces__card-rate">{formatMoney(wp.rate)}/hr</span>
+                    <span className="workplaces__card-rate">
+                      {formatMoney(wp.rate)}/hr
+                    </span>
                     <div className="workplaces__card-actions">
                       <button
                         type="button"
@@ -391,7 +416,10 @@ function Workplaces({ onNavigate, returnTo }) {
                       <button
                         type="button"
                         className="workplaces__action workplaces__action--deactivate"
-                        onClick={() => { setDeactivateTarget(wp); deactivateModal.openModal(); }}
+                        onClick={() => {
+                          setDeactivateTarget(wp);
+                          deactivateModal.openModal();
+                        }}
                         aria-label={`Deactivate ${wp.label}`}
                       >
                         Deactivate
@@ -408,7 +436,10 @@ function Workplaces({ onNavigate, returnTo }) {
               <h2 className="workplaces__section-title">Inactive</h2>
               <div className="workplaces__list">
                 {inactiveWorkplaces.map((wp) => (
-                  <div key={wp.id} className="workplaces__card workplaces__card--inactive glass-card">
+                  <div
+                    key={wp.id}
+                    className="workplaces__card workplaces__card--inactive glass-card"
+                  >
                     <div className="workplaces__card-left">
                       <span
                         className="workplaces__color-dot workplaces__color-dot--inactive"
@@ -416,12 +447,16 @@ function Workplaces({ onNavigate, returnTo }) {
                         aria-hidden="true"
                       />
                       <div className="workplaces__card-info">
-                        <span className="workplaces__card-label">{wp.label}</span>
+                        <span className="workplaces__card-label">
+                          {wp.label}
+                        </span>
                         <span className="workplaces__card-slug">{wp.slug}</span>
                       </div>
                     </div>
                     <div className="workplaces__card-right">
-                      <span className="workplaces__card-rate">{formatMoney(wp.rate)}/hr</span>
+                      <span className="workplaces__card-rate">
+                        {formatMoney(wp.rate)}/hr
+                      </span>
                       <div className="workplaces__card-actions">
                         <button
                           type="button"
@@ -433,7 +468,10 @@ function Workplaces({ onNavigate, returnTo }) {
                         <button
                           type="button"
                           className="workplaces__action workplaces__action--delete"
-                          onClick={() => { setDeleteTarget(wp); deleteModal.openModal(); }}
+                          onClick={() => {
+                            setDeleteTarget(wp);
+                            deleteModal.openModal();
+                          }}
                         >
                           Delete
                         </button>
@@ -465,7 +503,13 @@ function Workplaces({ onNavigate, returnTo }) {
         title={editing ? "Edit workplace" : "Add workplace"}
       >
         <form className="workplaces__form" onSubmit={handleSubmit}>
-          <FormField label="Slug (ID)" error={fieldErrors.slug} state={fieldStates.slug} showIndicator shake={fieldErrors.slug ? shakeKey : 0}>
+          <FormField
+            label="Slug (ID)"
+            error={fieldErrors.slug}
+            state={fieldStates.slug}
+            showIndicator
+            shake={fieldErrors.slug ? shakeKey : 0}
+          >
             <input
               type="text"
               value={form.slug}
@@ -484,7 +528,13 @@ function Workplaces({ onNavigate, returnTo }) {
             )}
           </FormField>
 
-          <FormField label="Display name" error={fieldErrors.label} state={fieldStates.label} showIndicator shake={fieldErrors.label ? shakeKey : 0}>
+          <FormField
+            label="Display name"
+            error={fieldErrors.label}
+            state={fieldStates.label}
+            showIndicator
+            shake={fieldErrors.label ? shakeKey : 0}
+          >
             <input
               type="text"
               value={form.label}
@@ -499,7 +549,13 @@ function Workplaces({ onNavigate, returnTo }) {
             />
           </FormField>
 
-          <FormField label="Hourly rate (₪)" error={fieldErrors.rate} state={fieldStates.rate} showIndicator shake={fieldErrors.rate ? shakeKey : 0}>
+          <FormField
+            label="Hourly rate (₪)"
+            error={fieldErrors.rate}
+            state={fieldStates.rate}
+            showIndicator
+            shake={fieldErrors.rate ? shakeKey : 0}
+          >
             <input
               type="number"
               min="0"
@@ -576,7 +632,10 @@ function Workplaces({ onNavigate, returnTo }) {
       <ConfirmModal
         open={deactivateModal.open}
         closing={deactivateModal.closing}
-        onClose={() => { deactivateModal.closeModal(); setTimeout(() => setDeactivateTarget(null), 320); }}
+        onClose={() => {
+          deactivateModal.closeModal();
+          setTimeout(() => setDeactivateTarget(null), 320);
+        }}
         onConfirm={confirmDeactivate}
         loading={deactivating}
         title={`Deactivate ${deactivateTarget?.label}?`}
@@ -589,15 +648,19 @@ function Workplaces({ onNavigate, returnTo }) {
       <ConfirmModal
         open={deleteModal.open}
         closing={deleteModal.closing}
-        onClose={() => { deleteModal.closeModal(); setTimeout(() => setDeleteTarget(null), 320); }}
+        onClose={() => {
+          deleteModal.closeModal();
+          setTimeout(() => setDeleteTarget(null), 320);
+        }}
         onConfirm={confirmDelete}
         loading={deleting}
         title={`Delete ${deleteTarget?.label}?`}
         description={
           <>
-            This will permanently remove the workplace <strong>and all shifts</strong> associated with it.
-            All shift records using &ldquo;{deleteTarget?.label}&rdquo; will be deleted from the database.
-            This cannot be undone.
+            This will permanently remove the workplace{" "}
+            <strong>and all shifts</strong> associated with it. All shift
+            records using &ldquo;{deleteTarget?.label}&rdquo; will be deleted
+            from the database. This cannot be undone.
           </>
         }
         confirmLabel="Delete workplace"

@@ -1,9 +1,14 @@
 /**
  * Badge — Colored tag for workplace/place display.
  */
-import "../styles/Badge.css";
+import "../../styles/Badge.css";
 
-export default function Badge({ children, color, deactivated = false, className = "" }) {
+export default function Badge({
+  children,
+  color,
+  deactivated = false,
+  className = "",
+}) {
   return (
     <span
       className={`badge ${className}`}

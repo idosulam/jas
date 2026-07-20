@@ -54,7 +54,10 @@
   border: 1px solid var(--border, rgba(255, 255, 255, 0.08));
   backdrop-filter: var(--blur, blur(12px));
   -webkit-backdrop-filter: var(--blur, blur(12px));
-  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .workplaces__card:hover {
@@ -253,7 +256,9 @@
   border-radius: 0.65rem;
   cursor: pointer;
   flex-shrink: 0;
-  transition: border-color 0.2s ease, transform 0.15s ease;
+  transition:
+    border-color 0.2s ease,
+    transform 0.15s ease;
   padding: 0;
 }
 

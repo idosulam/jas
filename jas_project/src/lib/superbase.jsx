@@ -30,6 +30,8 @@ export function getSupabaseClient() {
  */
 export async function getCurrentUserId() {
   if (!supabase) return null;
-  const { data: { session } } = await supabase.auth.getSession();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
   return session?.user?.id ?? null;
 }

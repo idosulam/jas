@@ -17,7 +17,11 @@
   border: none;
   border-radius: var(--radius);
   cursor: pointer;
-  transition: background 0.2s, color 0.2s, opacity 0.2s, border-color 0.2s;
+  transition:
+    background 0.2s,
+    color 0.2s,
+    opacity 0.2s,
+    border-color 0.2s;
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -46,7 +50,11 @@
 
 /* ── Primary ── */
 .btn--primary {
-  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+  background: linear-gradient(
+    135deg,
+    var(--color-primary),
+    var(--color-secondary)
+  );
   color: #fff;
   box-shadow: 0 4px 16px rgba(129, 140, 248, 0.3);
 }
@@ -121,7 +129,9 @@
 }
 
 @keyframes btnSpin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* ── Button row (form actions) ── */

@@ -2,7 +2,7 @@
  * FAB — Floating action button stack (scroll-to-top + add).
  */
 import { createPortal } from "react-dom";
-import "../styles/FAB.css";
+import "../../styles/FAB.css";
 
 export default function FAB({ visible, onScrollTop, onAdd, addLabel = "Add" }) {
   if (!visible) return null;
@@ -16,7 +16,15 @@ export default function FAB({ visible, onScrollTop, onAdd, addLabel = "Add" }) {
           onClick={onScrollTop}
           aria-label="Scroll to top"
         >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
             <path d="M12 19V5M5 12l7-7 7 7" />
           </svg>
         </button>
@@ -28,7 +36,15 @@ export default function FAB({ visible, onScrollTop, onAdd, addLabel = "Add" }) {
           onClick={onAdd}
           aria-label={addLabel}
         >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
             <path d="M12 5v14M5 12h14" />
           </svg>
         </button>

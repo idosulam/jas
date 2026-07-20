@@ -12,7 +12,9 @@ export async function fetchPalette() {
     const userId = await getCurrentUserId();
     let query = supabase.from("color_palettes").select("*");
     if (userId) query = query.eq("user_id", userId);
-    const { data, error } = await query.order("sort_order", { ascending: true });
+    const { data, error } = await query.order("sort_order", {
+      ascending: true,
+    });
     if (!error && data) return data;
     return [];
   } catch {
