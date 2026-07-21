@@ -281,14 +281,30 @@ function Household() {
 
   // Create household
   const handleCreate = async () => {
+    // Safety: ensure we have a valid user ID before attempting insert
+    if (!userId) {
+      toastError("You must be logged in to create a household.");
+      return;
+    }
+
     setJoinLoading(true);
     try {
       const supabase = getSupabaseClient();
+
+      // Double-check session is still valid
+      const { data: { session } } = await supabase.auth.getSession();
+      const uid = session?.user?.id || userId;
+      if (!uid) {
+        toastError("Session expired. Please sign in again.");
+        setJoinLoading(false);
+        return;
+      }
+
       const { data: hh, error: createError } = await supabase
         .from("households")
         .insert({
           name: householdName.trim() || "Our Household",
-          created_by: userId,
+          created_by: uid,
         })
         .select()
         .single();
@@ -300,7 +316,7 @@ function Household() {
         .from("household_members")
         .insert({
           household_id: hh.id,
-          user_id: userId,
+          user_id: uid,
           role: "owner",
         });
 
@@ -318,9 +334,24 @@ function Household() {
   // Join household by code
   const handleJoin = async () => {
     if (!joinCode.trim()) return;
+
+    if (!userId) {
+      toastError("You must be logged in to join a household.");
+      return;
+    }
+
     setJoinLoading(true);
     try {
       const supabase = getSupabaseClient();
+
+      // Double-check session
+      const { data: { session } } = await supabase.auth.getSession();
+      const uid = session?.user?.id || userId;
+      if (!uid) {
+        toastError("Session expired. Please sign in again.");
+        setJoinLoading(false);
+        return;
+      }
 
       // Find household by invite code
       const { data: hh, error: findError } = await supabase
@@ -341,7 +372,7 @@ function Household() {
         .from("household_members")
         .insert({
           household_id: hh.id,
-          user_id: userId,
+          user_id: uid,
           role: "member",
         });
 
