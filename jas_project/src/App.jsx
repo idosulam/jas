@@ -9,17 +9,19 @@ import { AuthProvider, useAuth } from "./lib/Auth_context.jsx";
 // Lazy-loaded page components (route-level code splitting)
 const Shifts = lazy(() => import("./components/Pages/Shifts/Shifts.jsx"));
 const Calendar = lazy(() => import("./components/Pages/Calendar/Calendar.jsx"));
+const Household = lazy(() => import("./components/Pages/Household/Household.jsx"));
 const Profile = lazy(() => import("./components/Pages/profile/Profile.jsx"));
 const Workplaces = lazy(
   () => import("./components/Pages/Workplaces/Work_places.jsx"),
 );
 const Auth = lazy(() => import("./components/Auth/Auth.jsx"));
 
-const TAB_ORDER = ["Shifts", "Calendar", "Profile"];
+const TAB_ORDER = ["Shifts", "Calendar", "Household", "Profile"];
 
 const PAGES = {
   Shifts: Shifts,
   Calendar: Calendar,
+  Household: Household,
   Profile: Profile,
   Workplaces: Workplaces,
 };

@@ -1,0 +1,675 @@
+/* ============================================================
+   Household.css — Couple's shared dashboard
+   ============================================================ */
+
+.household {
+  text-align: left;
+  padding-bottom: 5.5rem;
+  min-width: 0;
+}
+
+@media (min-width: 1024px) {
+  .household.page {
+    max-width: 56rem;
+    margin-inline: auto;
+  }
+}
+
+.household__header {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+/* ── Invite Code ────────────────────────────────────────────── */
+
+.household__invite-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.75rem;
+  margin-top: 0.5rem;
+  font-size: 0.75rem;
+  font-family: var(--font-heading);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-pill, 999px);
+  cursor: pointer;
+  transition: all 0.2s;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.household__invite-btn:hover {
+  color: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.household__invite-icon {
+  font-size: 0.85rem;
+}
+
+.household__invite-code {
+  font-family: var(--font-mono, monospace);
+  letter-spacing: 0.08em;
+}
+
+/* ── Error ──────────────────────────────────────────────────── */
+
+.household__error {
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--color-danger, #f87171);
+  margin-bottom: 1rem;
+  padding: 0.6rem 1rem;
+  background: rgba(248, 113, 113, 0.08);
+  border: 1px solid rgba(248, 113, 113, 0.15);
+  border-radius: var(--radius);
+}
+
+/* ── Empty State / Setup ────────────────────────────────────── */
+
+.household__setup-btns {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.household__form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.household__form-hint {
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.35);
+  line-height: 1.4;
+}
+
+/* ── Today Section ──────────────────────────────────────────── */
+
+.household__today {
+  margin-bottom: 1.25rem;
+}
+
+.household__today-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.household__today-card {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.household__today-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.household__today-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.household__today-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.household__today-detail {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+/* ── Section Titles ─────────────────────────────────────────── */
+
+.household__section-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: rgba(255, 255, 255, 0.5);
+  margin-bottom: 0.75rem;
+}
+
+/* ── Filters ────────────────────────────────────────────────── */
+
+.household__filters {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.household__filter {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.household__filter select {
+  width: 100%;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all var(--transition);
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.household__filter select:focus {
+  outline: none;
+  border-color: var(--color-primary, #818cf8);
+  box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.12);
+}
+
+/* ── Combined Stats ─────────────────────────────────────────── */
+
+.household__stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.65rem;
+  margin-bottom: 1.25rem;
+}
+
+.household__stat .glass-card__value {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: 0.2rem;
+}
+
+.household__stat .glass-card__label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.household__stat--total .glass-card__value {
+  color: var(--color-primary, #818cf8);
+}
+
+/* ── Per-Member Breakdown ───────────────────────────────────── */
+
+.household__breakdown {
+  margin-bottom: 1.25rem;
+}
+
+.household__member-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: 0.65rem;
+}
+
+.household__member-card {
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.household__member-header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.75rem;
+}
+
+.household__member-avatar {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: rgba(129, 140, 248, 0.15);
+  color: var(--color-primary, #818cf8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.household__member-name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text);
+  flex: 1;
+}
+
+.household__member-shifts {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.35);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.household__member-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
+.household__member-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.household__member-stat-value {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.household__member-stat-label {
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: rgba(255, 255, 255, 0.35);
+}
+
+/* ── Chart Section ──────────────────────────────────────────── */
+
+.household__chart-section {
+  margin-bottom: 1.25rem;
+}
+
+/* ── Earnings Chart ─────────────────────────────────────────── */
+
+.earnings-chart__wrap {
+  position: relative;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.75rem;
+  overflow: hidden;
+}
+
+.earnings-chart {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.earnings-chart__grid {
+  stroke: rgba(255, 255, 255, 0.05);
+  stroke-dasharray: 3 3;
+}
+
+.earnings-chart__axis {
+  fill: rgba(255, 255, 255, 0.3);
+  font-size: 9px;
+  font-family: var(--font-mono, monospace);
+}
+
+.earnings-chart__bar {
+  transition: opacity 0.15s;
+}
+
+.earnings-chart__bar--active {
+  opacity: 0.85;
+  filter: brightness(1.2);
+}
+
+.earnings-chart__tooltip {
+  position: absolute;
+  top: 1rem;
+  transform: translateX(-50%);
+  background: rgba(20, 20, 30, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius);
+  padding: 0.5rem 0.65rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  pointer-events: none;
+  z-index: 10;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  min-width: 7rem;
+}
+
+.earnings-chart__tooltip-date {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.15rem;
+}
+
+.earnings-chart__tooltip-item {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.earnings-chart__tooltip-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.earnings-chart__tooltip-total {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #fff;
+  margin-top: 0.2rem;
+  padding-top: 0.2rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.earnings-chart__legend {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 0.5rem;
+}
+
+.earnings-chart__legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.earnings-chart__legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.earnings-chart__empty {
+  text-align: center;
+  padding: 2rem 1rem;
+  color: rgba(255, 255, 255, 0.35);
+  font-size: 0.85rem;
+}
+
+.earnings-chart__empty span {
+  display: block;
+  font-size: 0.75rem;
+  margin-top: 0.25rem;
+  color: rgba(255, 255, 255, 0.25);
+}
+
+/* ── Savings Goals ──────────────────────────────────────────── */
+
+.savings-goals__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.savings-goals__header .household__section-title {
+  margin-bottom: 0;
+}
+
+.savings-goals__empty {
+  text-align: center;
+  font-size: 0.82rem;
+  color: rgba(255, 255, 255, 0.3);
+  padding: 1.5rem 1rem;
+}
+
+.savings-goals__list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.savings-goals__card {
+  position: relative;
+  overflow: hidden;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: all 0.2s;
+}
+
+.savings-goals__card--completed {
+  border-color: rgba(52, 211, 153, 0.2);
+  background: rgba(52, 211, 153, 0.03);
+}
+
+.savings-goals__card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin-bottom: 0.75rem;
+}
+
+.savings-goals__icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.savings-goals__card-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.savings-goals__title {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.savings-goals__amounts {
+  display: block;
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.4);
+  font-family: var(--font-mono, monospace);
+}
+
+.savings-goals__card-actions {
+  display: flex;
+  gap: 0.35rem;
+  flex-shrink: 0;
+}
+
+.savings-goals__add-btn,
+.savings-goals__edit-btn,
+.savings-goals__delete-btn {
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 0.85rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.savings-goals__add-btn:hover {
+  background: rgba(52, 211, 153, 0.12);
+  border-color: rgba(52, 211, 153, 0.25);
+  color: #34d399;
+}
+
+.savings-goals__edit-btn:hover {
+  background: rgba(129, 140, 248, 0.12);
+  border-color: rgba(129, 140, 248, 0.25);
+  color: var(--color-primary, #818cf8);
+}
+
+.savings-goals__delete-btn:hover {
+  background: rgba(248, 113, 113, 0.12);
+  border-color: rgba(248, 113, 113, 0.25);
+  color: #f87171;
+}
+
+.savings-goals__progress-wrap {
+  margin-top: 0.25rem;
+}
+
+.savings-goals__progress-bar {
+  width: 100%;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.savings-goals__progress-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.4s ease;
+}
+
+.savings-goals__progress-meta {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 0.35rem;
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.savings-goals__reached {
+  color: #34d399;
+  font-weight: 600;
+}
+
+/* ── Celebration Confetti ───────────────────────────────────── */
+
+.savings-goals__celebration {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.savings-goals__confetti {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 1px;
+  top: -6px;
+  animation: savingsConfettiFall 1.2s ease-out forwards;
+}
+
+.savings-goals__confetti--0 { left: 15%; background: #818cf8; }
+.savings-goals__confetti--1 { left: 35%; background: #f472b6; }
+.savings-goals__confetti--2 { left: 55%; background: #34d399; }
+.savings-goals__confetti--3 { left: 75%; background: #fbbf24; }
+
+@keyframes savingsConfettiFall {
+  0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(200px) rotate(720deg); opacity: 0; }
+}
+
+/* ── Form Pickers ───────────────────────────────────────────── */
+
+.savings-goals__icon-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.savings-goals__icon-btn {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: var(--radius);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.02);
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.savings-goals__icon-btn:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.savings-goals__icon-btn--active {
+  border-color: var(--color-primary, #818cf8);
+  background: rgba(129, 140, 248, 0.1);
+  box-shadow: 0 0 0 2px rgba(129, 140, 248, 0.2);
+}
+
+.savings-goals__color-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.savings-goals__color-btn {
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.savings-goals__color-btn:hover {
+  transform: scale(1.15);
+}
+
+.savings-goals__color-btn--active {
+  border-color: #fff;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.2);
+  transform: scale(1.15);
+}
+
+/* ── Savings Section ────────────────────────────────────────── */
+
+.household__savings-section {
+  margin-bottom: 1.25rem;
+}
+
+/* ── Btn helpers ────────────────────────────────────────────── */
+
+.btn--sm {
+  padding: 0.35rem 0.65rem;
+  font-size: 0.75rem;
+}
