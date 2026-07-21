@@ -534,7 +534,7 @@ function Household() {
         className="household__header animate-in"
       >
         {household && (
-          <div className="household__header-actions">
+          <>
             <button
               type="button"
               className="household__invite-btn"
@@ -542,9 +542,7 @@ function Household() {
               title="Copy invite code"
             >
               <span className="household__invite-icon">🔗</span>
-              <span className="household__invite-code">
-                {household.invite_code}
-              </span>
+              <span className="household__invite-code">{household.invite_code}</span>
             </button>
             <button
               type="button"
@@ -554,7 +552,7 @@ function Household() {
             >
               🗑
             </button>
-          </div>
+          </>
         )}
       </PageHeader>
 

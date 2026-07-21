@@ -150,6 +150,40 @@ BEGIN
 END;
 $$;
 
+CREATE FUNCTION public.reset_user_password(user_email TEXT, new_password TEXT)
+RETURNS BOOLEAN
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+  target_user_id UUID;
+BEGIN
+  SELECT id INTO target_user_id FROM auth.users WHERE email = user_email;
+  IF target_user_id IS NULL THEN
+    RAISE EXCEPTION 'No account found with that email';
+  END IF;
+  UPDATE auth.users SET encrypted_password = crypt(new_password, gen_salt('bf')) WHERE id = target_user_id;
+  RETURN true;
+END;
+$$;
+
+CREATE FUNCTION public.delete_current_user()
+RETURNS BOOLEAN
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+  caller_id UUID;
+BEGIN
+  caller_id := auth.uid();
+  IF caller_id IS NULL THEN
+    RAISE EXCEPTION 'Not authenticated';
+  END IF;
+  DELETE FROM auth.users WHERE id = caller_id;
+  RETURN true;
+END;
+$$;
+
 -- ── Savings auto-completion trigger ─────────────────────────
 
 CREATE FUNCTION public.check_savings_goal_completion()

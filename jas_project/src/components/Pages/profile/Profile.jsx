@@ -428,6 +428,7 @@ function Profile({ onNavigate }) {
   const weightModal = useModal(MODAL_EXIT_MS);
   const profileModal = useModal(MODAL_EXIT_MS);
   const deleteModal = useModal(MODAL_EXIT_MS);
+  const deleteAccountModal = useModal(MODAL_EXIT_MS);
 
   const [deleteTarget, setDeleteTarget] = useState(null);
 
@@ -974,6 +975,20 @@ function Profile({ onNavigate }) {
     }
   };
 
+  // Delete account
+  const handleDeleteAccount = async () => {
+    try {
+      const supabase = getSupabaseClient();
+      const { error } = await supabase.rpc("delete_current_user");
+      if (error) throw error;
+      deleteAccountModal.closeModal();
+      toastSuccess("Account deleted.");
+      await supabase.auth.signOut();
+    } catch (err) {
+      toastError(getUserFacingError(err.message));
+    }
+  };
+
   const analytics = useMemo(() => {
     const sorted = [...entries].sort((a, b) =>
       a.entry_date.localeCompare(b.entry_date),
@@ -1293,6 +1308,13 @@ function Profile({ onNavigate }) {
                 onClick={openProfileEdit}
               >
                 Edit profile
+              </button>
+              <button
+                type="button"
+                className="profile__text-btn profile__text-btn--danger"
+                onClick={() => deleteAccountModal.openModal()}
+              >
+                Delete account
               </button>
               {onNavigate && (
                 <button
@@ -1754,6 +1776,18 @@ function Profile({ onNavigate }) {
         onScrollTop={() => window.scrollTo({ top: 0, behavior: "smooth" })}
         onAdd={openAddWeight}
         addLabel="Log weight"
+      />
+
+      {/* Delete Account Confirmation */}
+      <ConfirmModal
+        open={deleteAccountModal.open}
+        closing={deleteAccountModal.closing}
+        onClose={() => deleteAccountModal.closeModal()}
+        onConfirm={handleDeleteAccount}
+        title="Delete your account?"
+        description="This will permanently delete your account, all shifts, weight entries, and household data. This cannot be undone."
+        confirmLabel="Delete account"
+        variant="danger"
       />
     </section>
   );

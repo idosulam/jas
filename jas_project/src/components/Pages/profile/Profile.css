@@ -196,6 +196,14 @@
   outline-offset: 2px;
 }
 
+.profile__text-btn--danger {
+  color: rgba(248, 113, 113, 0.6);
+}
+
+.profile__text-btn--danger:hover {
+  color: #f87171;
+}
+
 .profile__chart-wrap {
   width: 100%;
   border-radius: 0.75rem;

@@ -4,7 +4,7 @@ import { getSupabaseClient } from "../../lib/superbase.jsx";
 import { useGlassToast } from "../../lib/glass_toast_provider.jsx";
 import "./Auth.css";
 
-const MODES = { LOGIN: "login", REGISTER: "register" };
+const MODES = { LOGIN: "login", REGISTER: "register", FORGOT: "forgot" };
 
 const slideVariants = {
   enter: (dir) => ({ x: dir > 0 ? 80 : -80, opacity: 0, scale: 0.96 }),
@@ -265,7 +265,7 @@ function Auth() {
 
     setEmailTouched(true);
     setPasswordTouched(true);
-    if (mode === MODES.REGISTER) {
+    if (mode === MODES.REGISTER || mode === MODES.FORGOT) {
       setConfirmTouched(true);
       setNameTouched(true);
     }
@@ -281,7 +281,7 @@ function Auth() {
     }
     if (mode === MODES.REGISTER && password.length < 6) { setPasswordState("error"); setPasswordError("At least 6 characters"); hasError = true; }
       else if (!password) { setPasswordState("error"); setPasswordError("Password is required"); hasError = true; }
-      if (mode === MODES.REGISTER && password !== confirmPassword) { setConfirmState("error"); setConfirmError("Passwords don't match"); hasError = true; }
+      if ((mode === MODES.REGISTER || mode === MODES.FORGOT) && password !== confirmPassword) { setConfirmState("error"); setConfirmError("Passwords don't match"); hasError = true; }
     if (hasError) { setShakeKey((k) => k + 1); return; }
 
     setLoading(true);
@@ -300,6 +300,13 @@ function Auth() {
         });
         if (authError) { setError(authError.message); setShakeKey((k) => k + 1); toastError("Registration failed."); }
         else { toastSuccess("Account created! Welcome!"); }
+      } else if (mode === MODES.FORGOT) {
+        const { error: resetError } = await supabase.rpc("reset_user_password", {
+          user_email: email.trim(),
+          new_password: password,
+        });
+        if (resetError) { setError(resetError.message); setShakeKey((k) => k + 1); toastError("Password reset failed."); }
+        else { toastSuccess("Password updated! Sign in with your new password."); switchMode(MODES.LOGIN); }
       }
     } catch (err) {
       setError(err.message || "Something went wrong."); setShakeKey((k) => k + 1); toastError("Authentication error.");
@@ -307,8 +314,8 @@ function Auth() {
     setLoading(false);
   };
 
-  const titles = { [MODES.LOGIN]: "Welcome back", [MODES.REGISTER]: "Create account" };
-  const subtitles = { [MODES.LOGIN]: "Sign in to track your shifts and earnings", [MODES.REGISTER]: "Start tracking your work shifts today" };
+  const titles = { [MODES.LOGIN]: "Welcome back", [MODES.REGISTER]: "Create account", [MODES.FORGOT]: "Reset password" };
+  const subtitles = { [MODES.LOGIN]: "Sign in to track your shifts and earnings", [MODES.REGISTER]: "Start tracking your work shifts today", [MODES.FORGOT]: "Enter your email and new password" };
 
   const inputClass = (touched, state) =>
     ["auth__input", touched && state === "valid" ? "auth__input--valid" : "", touched && state === "error" ? "auth__input--error" : ""].filter(Boolean).join(" ");
@@ -395,7 +402,7 @@ function Auth() {
               </ShakeField>
 
             {/* Confirm Password */}
-            {mode === MODES.REGISTER && (
+            {(mode === MODES.REGISTER || mode === MODES.FORGOT) && (
               <ShakeField trigger={confirmState === "error" ? shakeKey : 0} className="auth__field">
                 <label className="auth__label" htmlFor="auth-confirm">Confirm password</label>
                 <div className={`auth__input-wrap ${wrapClass(confirmTouched, confirmState)}`}>
@@ -436,7 +443,7 @@ function Auth() {
                   <motion.span key="spinner" className="auth__spinner" initial={{ opacity: 0, scale: 0.5 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.5 }} aria-label="Loading" />
                 ) : (
                   <motion.span key="text" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                    {mode === MODES.LOGIN ? "Sign in" : "Create account"}
+                    {mode === MODES.LOGIN ? "Sign in" : mode === MODES.REGISTER ? "Create account" : "Reset password"}
                   </motion.span>
                 )}
               </AnimatePresence>
@@ -444,13 +451,42 @@ function Auth() {
           </motion.form>
         </AnimatePresence>
 
+        {mode !== MODES.FORGOT && (
+          <>
+            <div className="auth__divider"><span>or</span></div>
+            <motion.button type="button" className="auth__social-btn" onClick={async () => {
+              try {
+                const supabase = getSupabaseClient();
+                const { error } = await supabase.auth.signInWithOAuth({
+                  provider: "google",
+                  options: { redirectTo: window.location.origin },
+                });
+                if (error) toastError(error.message);
+              } catch (err) {
+                toastError(err.message || "Google sign-in failed.");
+              }
+            }} whileTap={{ scale: 0.97 }} whileHover={{ scale: 1.01 }}>
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1Z" fill="#4285F4" />
+                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23Z" fill="#34A853" />
+                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62Z" fill="#FBBC05" />
+                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53Z" fill="#EA4335" />
+              </svg>
+              Continue with Google
+            </motion.button>
+          </>
+        )}
+
         <motion.div className="auth__footer" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4, duration: 0.4 }}>
           {mode === MODES.LOGIN && (
             <>
+              <button type="button" className="auth__link" onClick={() => switchMode(MODES.FORGOT)}>Forgot password?</button>
+              <span className="auth__footer-sep">·</span>
               <button type="button" className="auth__link" onClick={() => switchMode(MODES.REGISTER)}>Create account</button>
             </>
           )}
           {mode === MODES.REGISTER && <button type="button" className="auth__link" onClick={() => switchMode(MODES.LOGIN)}>Already have an account? Sign in</button>}
+          {mode === MODES.FORGOT && <button type="button" className="auth__link" onClick={() => switchMode(MODES.LOGIN)}>← Back to sign in</button>}
         </motion.div>
       </motion.div>
 
