@@ -65,6 +65,15 @@ function Household() {
   const [householdName, setHouseholdName] = useState("");
   const [deleting, setDeleting] = useState(false);
 
+  // Field validation states
+  const [nameFieldState, setNameFieldState] = useState("idle");
+  const [nameFieldError, setNameFieldError] = useState(null);
+  const [nameTouched, setNameTouched] = useState(false);
+  const [codeFieldState, setCodeFieldState] = useState("idle");
+  const [codeFieldError, setCodeFieldError] = useState(null);
+  const [codeTouched, setCodeTouched] = useState(false);
+  const [shakeKey, setShakeKey] = useState(0);
+
   useBodyScrollLock(joinModal.open, createModal.open, deleteModal.open);
 
   // Fetch household membership
@@ -300,8 +309,80 @@ function Household() {
     return data;
   }, [memberShifts, members, workplaces, month, year]);
 
+  // Field validation
+  const validateNameField = (value, isBlur = false) => {
+    const trimmed = value.trim();
+    if (!trimmed) {
+      if (isBlur) {
+        setNameFieldState("error");
+        setNameFieldError("Household name is required");
+      } else {
+        setNameFieldState("idle");
+        setNameFieldError(null);
+      }
+      return;
+    }
+    if (trimmed.length >= 2 && trimmed.length <= 40) {
+      setNameFieldState("valid");
+      setNameFieldError(null);
+    } else if (trimmed.length > 40) {
+      setNameFieldState("error");
+      setNameFieldError("Name too long (max 40)");
+    } else {
+      setNameFieldState("error");
+      setNameFieldError("At least 2 characters");
+    }
+  };
+
+  const validateCodeField = (value, isBlur = false) => {
+    const trimmed = value.trim();
+    if (!trimmed) {
+      if (isBlur) {
+        setCodeFieldState("error");
+        setCodeFieldError("Invite code is required");
+      } else {
+        setCodeFieldState("idle");
+        setCodeFieldError(null);
+      }
+      return;
+    }
+    setCodeFieldState("valid");
+    setCodeFieldError(null);
+  };
+
+  const handleNameBlur = () => {
+    setNameTouched(true);
+    validateNameField(householdName, true);
+  };
+
+  const handleCodeBlur = () => {
+    setCodeTouched(true);
+    validateCodeField(joinCode, true);
+  };
+
+  const handleNameChange = (e) => {
+    const v = e.target.value;
+    setHouseholdName(v);
+    if (nameTouched) validateNameField(v);
+  };
+
+  const handleCodeChange = (e) => {
+    const v = e.target.value;
+    setJoinCode(v);
+    if (codeTouched) validateCodeField(v);
+  };
+
   // Create household
   const handleCreate = async () => {
+    // Validate all fields on submit
+    setNameTouched(true);
+    const nameValid = householdName.trim().length >= 2;
+    if (!nameValid) {
+      validateNameField(householdName, true);
+      setShakeKey((k) => k + 1);
+      return;
+    }
+
     setJoinLoading(true);
     try {
       const supabase = getSupabaseClient();
@@ -327,7 +408,13 @@ function Household() {
 
   // Join household by code
   const handleJoin = async () => {
-    if (!joinCode.trim()) return;
+    // Validate all fields on submit
+    setCodeTouched(true);
+    if (!joinCode.trim()) {
+      validateCodeField(joinCode, true);
+      setShakeKey((k) => k + 1);
+      return;
+    }
 
     if (!userId) {
       toastError("You must be logged in to join a household.");
@@ -428,14 +515,26 @@ function Household() {
               <button
                 type="button"
                 className="btn btn--primary"
-                onClick={() => createModal.openModal()}
+                onClick={() => {
+                  setNameTouched(false);
+                  setNameFieldState("idle");
+                  setNameFieldError(null);
+                  setHouseholdName("");
+                  createModal.openModal();
+                }}
               >
                 Create household
               </button>
               <button
                 type="button"
                 className="btn btn--ghost"
-                onClick={() => joinModal.openModal()}
+                onClick={() => {
+                  setCodeTouched(false);
+                  setCodeFieldState("idle");
+                  setCodeFieldError(null);
+                  setJoinCode("");
+                  joinModal.openModal();
+                }}
               >
                 Join with code
               </button>
@@ -450,11 +549,18 @@ function Household() {
           title="Create household"
         >
           <div className="household__form">
-            <FormField label="Household name">
+            <FormField
+              label="Household name"
+              error={nameFieldError}
+              state={nameFieldState}
+              showIndicator
+              shake={nameFieldError ? shakeKey : 0}
+            >
               <input
                 type="text"
                 value={householdName}
-                onChange={(e) => setHouseholdName(e.target.value)}
+                onChange={handleNameChange}
+                onBlur={handleNameBlur}
                 placeholder="Our Household"
                 maxLength={40}
                 autoFocus
@@ -467,7 +573,12 @@ function Household() {
               <button
                 type="button"
                 className="btn btn--ghost"
-                onClick={() => createModal.closeModal()}
+                onClick={() => {
+                  setNameTouched(false);
+                  setNameFieldState("idle");
+                  setNameFieldError(null);
+                  createModal.closeModal();
+                }}
               >
                 Cancel
               </button>
@@ -490,11 +601,18 @@ function Household() {
           title="Join household"
         >
           <div className="household__form">
-            <FormField label="Invite code">
+            <FormField
+              label="Invite code"
+              error={codeFieldError}
+              state={codeFieldState}
+              showIndicator
+              shake={codeFieldError ? shakeKey : 0}
+            >
               <input
                 type="text"
                 value={joinCode}
-                onChange={(e) => setJoinCode(e.target.value)}
+                onChange={handleCodeChange}
+                onBlur={handleCodeBlur}
                 placeholder="Enter code"
                 autoFocus
               />
@@ -506,7 +624,12 @@ function Household() {
               <button
                 type="button"
                 className="btn btn--ghost"
-                onClick={() => joinModal.closeModal()}
+                onClick={() => {
+                  setCodeTouched(false);
+                  setCodeFieldState("idle");
+                  setCodeFieldError(null);
+                  joinModal.closeModal();
+                }}
               >
                 Cancel
               </button>

@@ -233,10 +233,15 @@ function Auth() {
 
   /* ── Validators ── */
 
-  const validateEmailField = useCallback((value) => {
+  const validateEmailField = useCallback((value, isBlur = false) => {
     if (!value.trim()) {
-      setEmailState("idle");
-      setEmailError(null);
+      if (isBlur) {
+        setEmailState("error");
+        setEmailError("Email is required");
+      } else {
+        setEmailState("idle");
+        setEmailError(null);
+      }
       return;
     }
     if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim())) {
@@ -248,10 +253,15 @@ function Auth() {
     }
   }, []);
 
-  const validatePasswordField = useCallback((value, isRegister) => {
+  const validatePasswordField = useCallback((value, isRegister, isBlur = false) => {
     if (!value) {
-      setPasswordState("idle");
-      setPasswordError(null);
+      if (isBlur) {
+        setPasswordState("error");
+        setPasswordError("Password is required");
+      } else {
+        setPasswordState("idle");
+        setPasswordError(null);
+      }
       return;
     }
     if (isRegister) {
@@ -271,10 +281,15 @@ function Auth() {
     }
   }, []);
 
-  const validateConfirmField = useCallback((value, pw) => {
+  const validateConfirmField = useCallback((value, pw, isBlur = false) => {
     if (!value) {
-      setConfirmState("idle");
-      setConfirmError(null);
+      if (isBlur) {
+        setConfirmState("error");
+        setConfirmError("Confirm your password");
+      } else {
+        setConfirmState("idle");
+        setConfirmError(null);
+      }
       return;
     }
     if (value === pw) {
@@ -286,11 +301,16 @@ function Auth() {
     }
   }, []);
 
-  const validateNameField = useCallback((value) => {
+  const validateNameField = useCallback((value, isBlur = false) => {
     const trimmed = value.trim();
     if (!trimmed) {
-      setNameState("idle");
-      setNameError(null);
+      if (isBlur) {
+        setNameState("error");
+        setNameError("Name is required");
+      } else {
+        setNameState("idle");
+        setNameError(null);
+      }
       return;
     }
     if (trimmed.length >= 2 && trimmed.length <= 40) {
@@ -312,19 +332,19 @@ function Auth() {
 
   const handleEmailBlur = () => {
     setEmailTouched(true);
-    validateEmailField(email);
+    validateEmailField(email, true);
   };
   const handlePasswordBlur = () => {
     setPasswordTouched(true);
-    validatePasswordField(password, mode === MODES.REGISTER);
+    validatePasswordField(password, mode === MODES.REGISTER, true);
   };
   const handleConfirmBlur = () => {
     setConfirmTouched(true);
-    validateConfirmField(confirmPassword, password);
+    validateConfirmField(confirmPassword, password, true);
   };
   const handleNameBlur = () => {
     setNameTouched(true);
-    validateNameField(displayName);
+    validateNameField(displayName, true);
   };
   const handleNameChange = (e) => {
     const v = e.target.value;
