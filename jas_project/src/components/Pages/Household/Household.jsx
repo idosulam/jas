@@ -475,7 +475,7 @@ function Household() {
                 type="button"
                 className="btn btn--primary"
                 onClick={handleCreate}
-                disabled={joinLoading}
+                disabled={joinLoading || !householdName.trim()}
               >
                 {joinLoading ? "Creating…" : "Create"}
               </button>

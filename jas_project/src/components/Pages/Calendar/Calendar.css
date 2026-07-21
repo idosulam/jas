@@ -1222,7 +1222,7 @@
 }
 
 .calendar__btn:disabled {
-  opacity: 0.5;
+  opacity: 0.4;
   cursor: not-allowed;
 }
 
@@ -1233,6 +1233,8 @@
 .calendar__btn--primary:disabled {
   transform: none !important;
   box-shadow: none !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: rgba(255, 255, 255, 0.35) !important;
 }
 
 .calendar__btn--danger:disabled {

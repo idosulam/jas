@@ -1040,7 +1040,8 @@
 }
 
 .shifts__btn--primary:disabled {
-  background: rgba(139, 92, 246, 0.5) !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: rgba(255, 255, 255, 0.35) !important;
 }
 
 .shifts__btn--ghost:disabled {
@@ -1142,10 +1143,12 @@
 
 .shifts__btn--primary:disabled,
 .shifts__btn--primary[disabled] {
-  opacity: 0.7;
+  opacity: 0.4;
   transform: none !important;
   box-shadow: none !important;
   cursor: not-allowed;
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: rgba(255, 255, 255, 0.35) !important;
 }
 
 .shifts__btn--ghost {

@@ -464,6 +464,29 @@ function Auth() {
     setLoading(false);
   };
 
+  /* ── Form validity ── */
+  const isFormValid = useMemo(() => {
+    if (mode === MODES.LOGIN) {
+      return email.trim().length > 0 && password.length > 0;
+    }
+    if (mode === MODES.REGISTER) {
+      return (
+        displayName.trim().length >= 2 &&
+        /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()) &&
+        password.length >= 6 &&
+        confirmPassword === password
+      );
+    }
+    if (mode === MODES.FORGOT) {
+      return (
+        /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()) &&
+        password.length >= 6 &&
+        confirmPassword === password
+      );
+    }
+    return false;
+  }, [mode, email, password, confirmPassword, displayName]);
+
   const titles = {
     [MODES.LOGIN]: "Welcome back",
     [MODES.REGISTER]: "Create account",
@@ -804,7 +827,7 @@ function Auth() {
             <motion.button
               type="submit"
               className={`auth__submit ${loading ? "auth__submit--loading" : ""}`}
-              disabled={loading}
+              disabled={loading || !isFormValid}
               whileTap={{ scale: 0.97 }}
               whileHover={{ scale: 1.01 }}
             >
