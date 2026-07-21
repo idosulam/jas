@@ -350,7 +350,7 @@ function SavingsGoals({ householdId, userId, members }) {
               type="button"
               className="btn btn--primary"
               onClick={saveGoal}
-              disabled={!goalForm.title.trim() || !goalForm.target_amount}
+              disabled={!goalForm.title.trim() || !goalForm.target_amount || Number(goalForm.target_amount) <= 0}
             >
               {editingGoal ? "Update" : "Create"}
             </button>
