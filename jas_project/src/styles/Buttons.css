@@ -81,6 +81,27 @@
   color: rgba(255, 255, 255, 0.35);
 }
 
+/* ── Warning ── */
+.btn--warning {
+  background: rgba(251, 191, 36, 0.2);
+  color: #fbbf24;
+  border: 1px solid rgba(251, 191, 36, 0.3);
+}
+
+.btn--warning:hover {
+  background: rgba(251, 191, 36, 0.35);
+}
+
+.btn--warning:active {
+  transform: scale(0.97);
+}
+
+.btn--warning:disabled,
+.btn--warning[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 /* ── Danger ── */
 .btn--danger {
   background: rgba(239, 68, 68, 0.2);
