@@ -16,8 +16,18 @@ import EarningsChart from "./EarningsChart";
 import SavingsGoals from "./SavingsGoals";
 
 const MONTHS = [
-  "January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December",
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
 ];
 
 function formatMoney(amount) {
@@ -26,7 +36,11 @@ function formatMoney(amount) {
 
 function formatDateShort(dateStr) {
   const d = new Date(`${dateStr}T12:00:00`);
-  return d.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
+  return d.toLocaleDateString(undefined, {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+  });
 }
 
 function Household() {
@@ -48,7 +62,7 @@ function Household() {
   const joinModal = useModal(260);
   const createModal = useModal(260);
   const deleteModal = useModal(260);
-  const [householdName, setHouseholdName] = useState("Our Household");
+  const [householdName, setHouseholdName] = useState("");
   const [deleting, setDeleting] = useState(false);
 
   useBodyScrollLock(joinModal.open, createModal.open, deleteModal.open);
@@ -62,7 +76,9 @@ function Household() {
       // Check if user is in a household
       const { data: membership, error: memError } = await supabase
         .from("household_members")
-        .select("household_id, role, households(id, name, invite_code, created_by)")
+        .select(
+          "household_id, role, households(id, name, invite_code, created_by)",
+        )
         .eq("user_id", userId)
         .maybeSingle();
 
@@ -204,7 +220,7 @@ function Household() {
 
     members.forEach((member) => {
       const memberShiftsFiltered = memberShifts.filter(
-        (s) => s.user_id === member.user_id
+        (s) => s.user_id === member.user_id,
       );
       const wp = workplaces[member.user_id] || {};
 
@@ -215,7 +231,8 @@ function Household() {
       memberShiftsFiltered.forEach((shift) => {
         const hours = parseFloat(shift.hours) || 0;
         const tips = parseFloat(shift.tips) || 0;
-        const rate = shift.pay_type === "tips_only" ? 0 : (wp[shift.place]?.rate ?? 0);
+        const rate =
+          shift.pay_type === "tips_only" ? 0 : (wp[shift.place]?.rate ?? 0);
 
         mHours += hours;
         mPay += rate * hours;
@@ -268,7 +285,8 @@ function Household() {
         mShifts.forEach((shift) => {
           const hours = parseFloat(shift.hours) || 0;
           const tips = parseFloat(shift.tips) || 0;
-          const rate = shift.pay_type === "tips_only" ? 0 : (wp[shift.place]?.rate ?? 0);
+          const rate =
+            shift.pay_type === "tips_only" ? 0 : (wp[shift.place]?.rate ?? 0);
           earnings += rate * hours + tips;
         });
         entry[member.user_id] = earnings;
@@ -297,7 +315,9 @@ function Household() {
       if (createError) throw createError;
 
       createModal.closeModal();
-      toastSuccess("Household created! Share the invite code with your partner.");
+      toastSuccess(
+        "Household created! Share the invite code with your partner.",
+      );
       fetchHousehold();
     } catch (err) {
       toastError(getUserFacingError(err.message));
@@ -318,10 +338,9 @@ function Household() {
     try {
       const supabase = getSupabaseClient();
 
-      const { error: joinError } = await supabase
-        .rpc("join_household", {
-          invite_code_param: joinCode.trim(),
-        });
+      const { error: joinError } = await supabase.rpc("join_household", {
+        invite_code_param: joinCode.trim(),
+      });
 
       if (joinError) {
         if (joinError.message.includes("duplicate")) {
@@ -389,7 +408,14 @@ function Household() {
         <EmptyState
           className="household__empty animate-in animate-in--1"
           icon={
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
               <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z" />
               <path d="M9 22V12h6v10" />
               <path d="M12 5.5v.01" />
@@ -438,7 +464,11 @@ function Household() {
               You'll get an invite code to share with your partner.
             </p>
             <div className="btn-row">
-              <button type="button" className="btn btn--ghost" onClick={() => createModal.closeModal()}>
+              <button
+                type="button"
+                className="btn btn--ghost"
+                onClick={() => createModal.closeModal()}
+              >
                 Cancel
               </button>
               <button
@@ -473,7 +503,11 @@ function Household() {
               Ask your partner for the invite code from their Household page.
             </p>
             <div className="btn-row">
-              <button type="button" className="btn btn--ghost" onClick={() => joinModal.closeModal()}>
+              <button
+                type="button"
+                className="btn btn--ghost"
+                onClick={() => joinModal.closeModal()}
+              >
                 Cancel
               </button>
               <button
@@ -508,7 +542,9 @@ function Household() {
               title="Copy invite code"
             >
               <span className="household__invite-icon">🔗</span>
-              <span className="household__invite-code">{household.invite_code}</span>
+              <span className="household__invite-code">
+                {household.invite_code}
+              </span>
             </button>
             <button
               type="button"
@@ -523,7 +559,9 @@ function Household() {
       </PageHeader>
 
       {error && (
-        <p className="household__error" role="alert">{error}</p>
+        <p className="household__error" role="alert">
+          {error}
+        </p>
       )}
 
       {/* Who's working today */}
@@ -555,17 +593,27 @@ function Household() {
       <div className="household__filters animate-in animate-in--1">
         <label className="household__filter">
           <span>Month</span>
-          <select value={month} onChange={(e) => setMonth(Number(e.target.value))}>
+          <select
+            value={month}
+            onChange={(e) => setMonth(Number(e.target.value))}
+          >
             {MONTHS.map((name, i) => (
-              <option key={name} value={i}>{name}</option>
+              <option key={name} value={i}>
+                {name}
+              </option>
             ))}
           </select>
         </label>
         <label className="household__filter">
           <span>Year</span>
-          <select value={year} onChange={(e) => setYear(Number(e.target.value))}>
+          <select
+            value={year}
+            onChange={(e) => setYear(Number(e.target.value))}
+          >
             {yearOptions.map((y) => (
-              <option key={y} value={y}>{y}</option>
+              <option key={y} value={y}>
+                {y}
+              </option>
             ))}
           </select>
         </label>
@@ -610,7 +658,10 @@ function Household() {
                   const stats = combinedStats.byMember[member.user_id];
                   if (!stats) return null;
                   return (
-                    <div key={member.user_id} className="household__member-card">
+                    <div
+                      key={member.user_id}
+                      className="household__member-card"
+                    >
                       <div className="household__member-header">
                         <span className="household__member-avatar">
                           {stats.display_name.charAt(0).toUpperCase()}
@@ -619,17 +670,26 @@ function Household() {
                           {stats.is_me ? "You" : stats.display_name}
                         </span>
                         <span className="household__member-shifts">
-                          {stats.shiftCount} shift{stats.shiftCount !== 1 ? "s" : ""}
+                          {stats.shiftCount} shift
+                          {stats.shiftCount !== 1 ? "s" : ""}
                         </span>
                       </div>
                       <div className="household__member-stats">
                         <div className="household__member-stat">
-                          <span className="household__member-stat-value">{stats.hours.toFixed(1)}h</span>
-                          <span className="household__member-stat-label">Hours</span>
+                          <span className="household__member-stat-value">
+                            {stats.hours.toFixed(1)}h
+                          </span>
+                          <span className="household__member-stat-label">
+                            Hours
+                          </span>
                         </div>
                         <div className="household__member-stat">
-                          <span className="household__member-stat-value">{formatMoney(stats.total)}</span>
-                          <span className="household__member-stat-label">Earned</span>
+                          <span className="household__member-stat-value">
+                            {formatMoney(stats.total)}
+                          </span>
+                          <span className="household__member-stat-label">
+                            Earned
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -652,7 +712,11 @@ function Household() {
 
           {/* Savings Goals */}
           <div className="household__savings-section animate-in animate-in--5">
-            <SavingsGoals householdId={household?.id} userId={userId} members={members} />
+            <SavingsGoals
+              householdId={household?.id}
+              userId={userId}
+              members={members}
+            />
           </div>
         </>
       )}
