@@ -46,7 +46,7 @@ export default function FormField({
       const firstChild = childArray[0];
       if (firstChild && typeof firstChild === "object" && firstChild.props) {
         const wrapped = (
-          <div key="form-field-wrap" className="form-field__input-wrap">
+          <div className="form-field__input-wrap">
             {firstChild}
             <FieldIndicator state={state} />
           </div>

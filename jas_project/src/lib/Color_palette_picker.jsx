@@ -5,16 +5,10 @@ import {
   addPaletteColor,
   updatePaletteColor,
   deletePaletteColor,
-  clearPalette,
 } from "./color_palette";
-import FormField from "../components/ui/form/Form_field.jsx";
 import "./Color_palette_picker.css";
 
 const MODAL_EXIT_MS = 260;
-
-function isValidHex(value) {
-  return /^#[0-9a-fA-F]{6}$/.test(value);
-}
 
 export default function ColorPalettePicker({ value, onChange }) {
   const [palette, setPalette] = useState([]);
@@ -178,12 +172,8 @@ export default function ColorPalettePicker({ value, onChange }) {
                 />
               </div>
 
-              <FormField
-                label="Hex color"
-                error={hex && !isValidHex(hex) ? "Enter a valid hex color (e.g. #818cf8)" : null}
-                state={hex ? (isValidHex(hex) ? "valid" : "error") : "idle"}
-                showIndicator
-              >
+              <label className="cpp__field">
+                <span>Hex color</span>
                 <input
                   type="text"
                   value={hex}
@@ -192,9 +182,10 @@ export default function ColorPalettePicker({ value, onChange }) {
                   maxLength={7}
                   className="cpp__hex-input"
                 />
-              </FormField>
+              </label>
 
-              <FormField label="Name" optional>
+              <label className="cpp__field">
+                <span>Name (optional)</span>
                 <input
                   type="text"
                   value={label}
@@ -202,7 +193,7 @@ export default function ColorPalettePicker({ value, onChange }) {
                   placeholder="e.g. Brand blue"
                   maxLength={24}
                 />
-              </FormField>
+              </label>
 
               <div className="cpp__form-actions">
                 {editing && (
@@ -226,7 +217,7 @@ export default function ColorPalettePicker({ value, onChange }) {
                   className="cpp__btn cpp__btn--primary"
                   onClick={handleSave}
                   disabled={
-                    saving || !isValidHex(hex)
+                    saving || !hex || !hex.startsWith("#") || hex.length < 4
                   }
                 >
                   {saving ? "Saving…" : editing ? "Save" : "Add"}

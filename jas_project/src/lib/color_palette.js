@@ -84,16 +84,3 @@ export async function deletePaletteColor(id) {
     return false;
   }
 }
-
-export async function clearPalette() {
-  try {
-    const supabase = getSupabaseClient();
-    const userId = await getCurrentUserId();
-    let query = supabase.from("color_palettes").delete();
-    if (userId) query = query.eq("user_id", userId);
-    const { error } = await query;
-    return !error;
-  } catch {
-    return false;
-  }
-}
