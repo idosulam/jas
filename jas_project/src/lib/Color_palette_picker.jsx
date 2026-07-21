@@ -38,7 +38,7 @@ export default function ColorPalettePicker({ value, onChange }) {
     setHex("#818cf8");
     setLabel("");
     setHexTouched(false);
-    setHexState("idle");
+    setHexState("valid");
     setHexError(null);
     setPickerClosing(false);
     setPickerOpen(true);
@@ -49,7 +49,7 @@ export default function ColorPalettePicker({ value, onChange }) {
     setHex(entry.hex);
     setLabel(entry.label);
     setHexTouched(false);
-    setHexState("idle");
+    setHexState("valid");
     setHexError(null);
     setPickerClosing(false);
     setPickerOpen(true);
@@ -216,7 +216,11 @@ export default function ColorPalettePicker({ value, onChange }) {
                 <input
                   type="color"
                   value={hex}
-                  onChange={(e) => setHex(e.target.value)}
+                  onChange={(e) => {
+                    setHex(e.target.value);
+                    setHexState("valid");
+                    setHexError(null);
+                  }}
                   className="cpp__native-picker"
                   aria-label="Pick a color"
                 />
