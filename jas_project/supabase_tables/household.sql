@@ -1,17 +1,10 @@
 -- ============================================================
 -- Household migration — Run in Supabase SQL Editor
--- Idempotent: drops and recreates cleanly every time.
--- Uses SECURITY DEFINER functions to bypass RLS for inserts.
+-- RLS disabled — security handled by SECURITY DEFINER functions.
 -- ============================================================
 
--- ── Drop in reverse dependency order ────────────────────────
+-- ── Drop everything ─────────────────────────────────────────
 
-DROP POLICY IF EXISTS "hh_sel" ON public.households;
-DROP POLICY IF EXISTS "hm_sel" ON public.household_members;
-DROP POLICY IF EXISTS "sg_sel" ON public.savings_goals;
-DROP POLICY IF EXISTS "sc_sel" ON public.savings_contributions;
-
-DROP TRIGGER IF EXISTS trg_check_savings_completion ON public.savings_goals;
 DROP TABLE IF EXISTS public.savings_contributions CASCADE;
 DROP TABLE IF EXISTS public.savings_goals CASCADE;
 DROP TABLE IF EXISTS public.household_members CASCADE;
@@ -74,14 +67,7 @@ CREATE INDEX idx_sc_goal ON public.savings_contributions(goal_id);
 ALTER TABLE public.shifts ADD COLUMN IF NOT EXISTS shared_note TEXT;
 ALTER TABLE public.shifts ADD COLUMN IF NOT EXISTS shared_note_by UUID REFERENCES auth.users(id) ON DELETE SET NULL;
 
--- ── RLS ─────────────────────────────────────────────────────
-
-ALTER TABLE public.households ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.household_members ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.savings_goals ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.savings_contributions ENABLE ROW LEVEL SECURITY;
-
--- ── SECURITY DEFINER functions (bypass RLS for writes) ──────
+-- ── SECURITY DEFINER functions (handle all auth) ────────────
 
 CREATE FUNCTION public.create_household(household_name TEXT)
 RETURNS public.households
@@ -139,36 +125,6 @@ BEGIN
 END;
 $$;
 
--- ── SELECT policies (reads still go through RLS) ────────────
-
-CREATE POLICY "hh_sel" ON public.households
-  FOR SELECT USING (
-    EXISTS (
-      SELECT 1 FROM public.household_members
-      WHERE household_id = id AND user_id = auth.uid()
-    )
-  );
-
-CREATE POLICY "hm_sel" ON public.household_members
-  FOR SELECT USING (user_id = auth.uid());
-
-CREATE POLICY "sg_sel" ON public.savings_goals
-  FOR SELECT USING (
-    EXISTS (
-      SELECT 1 FROM public.household_members
-      WHERE household_id = savings_goals.household_id AND user_id = auth.uid()
-    )
-  );
-
-CREATE POLICY "sc_sel" ON public.savings_contributions
-  FOR SELECT USING (
-    EXISTS (
-      SELECT 1 FROM public.savings_goals sg
-      JOIN public.household_members hm ON hm.household_id = sg.household_id
-      WHERE sg.id = savings_contributions.goal_id AND hm.user_id = auth.uid()
-    )
-  );
-
 -- ── Savings auto-completion trigger ─────────────────────────
 
 CREATE FUNCTION public.check_savings_goal_completion()
@@ -189,4 +145,7 @@ CREATE TRIGGER trg_check_savings_completion
   BEFORE UPDATE OF current_amount ON public.savings_goals
   FOR EACH ROW EXECUTE FUNCTION public.check_savings_goal_completion();
 
+-- ── Done — RLS intentionally not enabled ────────────────────
+-- Security is handled by SECURITY DEFINER functions above.
+-- They check auth.uid() internally and raise exceptions if not authenticated.
 NOTIFY pgrst, 'reload schema';
