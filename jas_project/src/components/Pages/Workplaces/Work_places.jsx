@@ -145,6 +145,11 @@ function Workplaces({ onNavigate, returnTo }) {
         if (n > 99999) return "Rate too high";
         return null;
       }
+      case "color": {
+        if (!value || !/^#[0-9a-fA-F]{6}$/.test(value.trim()))
+          return "Enter a valid hex color";
+        return null;
+      }
       default:
         return null;
     }
@@ -171,6 +176,7 @@ function Workplaces({ onNavigate, returnTo }) {
     if (!form.label.trim()) return false;
     const rate = parseFloat(form.rate);
     if (!form.rate || isNaN(rate) || rate < 0) return false;
+    if (!form.color || !/^#[0-9a-fA-F]{6}$/.test(form.color.trim())) return false;
     return true;
   }, [form, editing, workplaces]);
 
@@ -576,13 +582,23 @@ function Workplaces({ onNavigate, returnTo }) {
             />
           </FormField>
 
-          <FormField label="Color">
+          <FormField
+            label="Color"
+            error={fieldErrors.color}
+            state={fieldStates.color}
+            showIndicator
+            shake={fieldErrors.color ? shakeKey : 0}
+          >
             <div className="workplaces__color-input-row">
               <input
                 ref={colorPickerRef}
                 type="color"
                 value={form.color}
-                onChange={(e) => setForm({ ...form, color: e.target.value })}
+                onChange={(e) => {
+                  setForm({ ...form, color: e.target.value });
+                  setFieldErrors((prev) => ({ ...prev, color: null }));
+                  setFieldStates((prev) => ({ ...prev, color: "valid" }));
+                }}
                 className="workplaces__color-native-hidden"
                 aria-label="Pick a color"
               />
@@ -596,7 +612,18 @@ function Workplaces({ onNavigate, returnTo }) {
               <input
                 type="text"
                 value={form.color}
-                onChange={(e) => setForm({ ...form, color: e.target.value })}
+                onChange={(e) => {
+                  setForm({ ...form, color: e.target.value });
+                  if (fieldStates.color) {
+                    const err = validateField("color", e.target.value);
+                    setFieldErrors((prev) => ({ ...prev, color: err }));
+                    setFieldStates((prev) => ({
+                      ...prev,
+                      color: err ? "error" : e.target.value ? "valid" : "idle",
+                    }));
+                  }
+                }}
+                onBlur={() => handleFieldBlur("color")}
                 placeholder="#818cf8"
                 maxLength={7}
                 className="workplaces__color-hex"

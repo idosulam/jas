@@ -306,6 +306,12 @@ function Calendar() {
         }
         break;
       }
+      case "color": {
+        if (!form.color) {
+          errors[fieldName] = "Pick a color";
+        }
+        break;
+      }
     }
     return errors;
   };
@@ -332,6 +338,7 @@ function Calendar() {
     if (!form.event_date) return false;
     if (!form.start_time || !form.end_time) return false;
     if (form.start_time >= form.end_time) return false;
+    if (!form.color) return false;
     return true;
   }, [form]);
 
@@ -1097,10 +1104,22 @@ function Calendar() {
             />
           </FormField>
 
-          <FormField label="Color">
+          <FormField
+            label="Color"
+            error={fieldErrors.color}
+            state={fieldStates.color || (form.color ? "valid" : "idle")}
+            showIndicator
+            shake={fieldErrors.color ? shakeKey : 0}
+          >
             <ColorPalettePicker
               value={form.color}
-              onChange={(hex) => setForm({ ...form, color: hex })}
+              onChange={(hex) => {
+                setForm({ ...form, color: hex });
+                setFieldErrors((prev) => ({ ...prev, color: null }));
+                if (hex) {
+                  setFieldStates((prev) => ({ ...prev, color: "valid" }));
+                }
+              }}
             />
           </FormField>
 
