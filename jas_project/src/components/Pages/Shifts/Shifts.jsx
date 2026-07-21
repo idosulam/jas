@@ -18,8 +18,7 @@ import {
 } from "../../../lib/calendar_sync";
 import { useBodyScrollLock, useModal } from "../../../hooks";
 import { useGlassToast } from "../../../lib/glass_toast_provider.jsx";
-import ColorPalettePicker from "../../../lib/Color_palette_picker.jsx";
-import { fetchPalette } from "../../../lib/color_palette.js";
+
 import SheetModal from "../../../components/ui/modals/Sheet_modal";
 import ConfirmModal from "../../../components/ui/modals/Confirm_modal";
 import FormField from "../../ui/form/Form_field.jsx";
@@ -111,7 +110,7 @@ function Shifts({ onNavigate }) {
   const [fieldStates, setFieldStates] = useState({});
   const [shakeKey, setShakeKey] = useState(0);
   const [workplaces, setWorkplaces] = useState([]);
-  const [palette, setPalette] = useState([]);
+
   const [presets, setPresets] = useState([]);
   const [editingPreset, setEditingPreset] = useState(null);
   const [presetForm, setPresetForm] = useState({
@@ -121,7 +120,6 @@ function Shifts({ onNavigate }) {
     end_time: "17:00",
     hours: "8",
     pay_type: "hourly",
-    color: "#818cf8",
   });
   const addBtnRef = useRef(null);
   const placeFilterRef = useRef(null);
@@ -266,12 +264,7 @@ function Shifts({ onNavigate }) {
     fetchPresets();
   }, [fetchPresets]);
 
-  // Load color palette from DB
-  useEffect(() => {
-    fetchPalette().then(setPalette);
-  }, []);
 
-  const firstColor = palette[0]?.hex || "#818cf8";
 
   const savePreset = useCallback(async () => {
     const label = presetForm.label.trim();
@@ -283,7 +276,6 @@ function Shifts({ onNavigate }) {
       end_time: presetForm.end_time,
       hours: Number(Number(presetForm.hours).toFixed(2)),
       pay_type: presetForm.pay_type,
-      color: presetForm.color || null,
       ...(userId && { user_id: userId }),
     };
     try {
@@ -343,7 +335,6 @@ function Shifts({ onNavigate }) {
           end_time: preset.end_time,
           hours: preset.hours,
           pay_type: preset.pay_type,
-          color: preset.color || "#818cf8",
         });
       } else {
         setEditingPreset(null);
@@ -354,12 +345,11 @@ function Shifts({ onNavigate }) {
           end_time: "17:00",
           hours: "8",
           pay_type: "hourly",
-          color: firstColor,
         });
       }
       presetModal.openModal();
     },
-    [form.place, effectiveWorkplaces, firstColor, presetModal],
+    [form.place, effectiveWorkplaces, presetModal],
   );
 
   const closePresetModal = useCallback(() => {
@@ -384,7 +374,6 @@ function Shifts({ onNavigate }) {
       end_time: form.end_time || "17:00",
       hours: form.hours || "8",
       pay_type: form.pay_type,
-      color: form.color || "#818cf8",
     });
     presetModal.openModal();
   }, [form, PLACES, presetModal]);
@@ -1064,18 +1053,10 @@ function Shifts({ onNavigate }) {
                     hours: preset.hours,
                     tips: "",
                     notes: "",
-                    color: preset.color || "#818cf8",
                   });
                   formModal.openModal();
                 }}
               >
-                <span
-                  className="shifts__template-dot"
-                  style={{
-                    background:
-                      preset.color || PLACES[preset.place]?.color || "#818cf8",
-                  }}
-                />
                 {preset.label}
                 <span className="shifts__template-time">
                   {preset.start_time}–{preset.end_time}
@@ -1728,12 +1709,6 @@ function Shifts({ onNavigate }) {
                 setPresetForm((f) => ({ ...f, hours: e.target.value }))
               }
               placeholder="8"
-            />
-          </FormField>
-          <FormField label="Color">
-            <ColorPalettePicker
-              value={presetForm.color}
-              onChange={(hex) => setPresetForm((f) => ({ ...f, color: hex }))}
             />
           </FormField>
           <div className="btn-row">
