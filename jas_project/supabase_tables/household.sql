@@ -125,6 +125,31 @@ BEGIN
 END;
 $$;
 
+CREATE FUNCTION public.delete_household(household_id_param UUID)
+RETURNS BOOLEAN
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+  caller_id UUID;
+BEGIN
+  caller_id := auth.uid();
+  IF caller_id IS NULL THEN
+    RAISE EXCEPTION 'Not authenticated';
+  END IF;
+
+  DELETE FROM public.households
+  WHERE id = household_id_param
+    AND created_by = caller_id;
+
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'Household not found or you are not the owner';
+  END IF;
+
+  RETURN true;
+END;
+$$;
+
 -- ── Savings auto-completion trigger ─────────────────────────
 
 CREATE FUNCTION public.check_savings_goal_completion()

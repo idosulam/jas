@@ -6,6 +6,7 @@ import { getUserFacingError } from "../../../lib/security";
 import { useGlassToast } from "../../../lib/glass_toast_provider.jsx";
 import { useBodyScrollLock, useModal } from "../../../hooks";
 import SheetModal from "../../ui/modals/Sheet_modal";
+import ConfirmModal from "../../ui/modals/Confirm_modal";
 import FormField from "../../ui/form/Form_field.jsx";
 import PageHeader from "../../ui/Page_header";
 import GlassCard from "../../ui/Glass_card";
@@ -46,9 +47,11 @@ function Household() {
 
   const joinModal = useModal(260);
   const createModal = useModal(260);
+  const deleteModal = useModal(260);
   const [householdName, setHouseholdName] = useState("Our Household");
+  const [deleting, setDeleting] = useState(false);
 
-  useBodyScrollLock(joinModal.open, createModal.open);
+  useBodyScrollLock(joinModal.open, createModal.open, deleteModal.open);
 
   // Fetch household membership
   const fetchHousehold = useCallback(async () => {
@@ -348,6 +351,27 @@ function Household() {
     }
   };
 
+  // Delete household
+  const handleDelete = async () => {
+    if (!household) return;
+    setDeleting(true);
+    try {
+      const supabase = getSupabaseClient();
+      const { error } = await supabase.rpc("delete_household", {
+        household_id_param: household.id,
+      });
+      if (error) throw error;
+      deleteModal.closeModal();
+      toastSuccess("Household deleted.");
+      setHousehold(null);
+      setMembers([]);
+      setMemberShifts([]);
+    } catch (err) {
+      toastError(getUserFacingError(err.message));
+    }
+    setDeleting(false);
+  };
+
   const yearOptions = useMemo(() => {
     const current = now.getFullYear();
     return Array.from({ length: 11 }, (_, i) => current - 5 + i);
@@ -476,15 +500,25 @@ function Household() {
         className="household__header animate-in"
       >
         {household && (
-          <button
-            type="button"
-            className="household__invite-btn"
-            onClick={copyInviteCode}
-            title="Copy invite code"
-          >
-            <span className="household__invite-icon">🔗</span>
-            <span className="household__invite-code">{household.invite_code}</span>
-          </button>
+          <div className="household__header-actions">
+            <button
+              type="button"
+              className="household__invite-btn"
+              onClick={copyInviteCode}
+              title="Copy invite code"
+            >
+              <span className="household__invite-icon">🔗</span>
+              <span className="household__invite-code">{household.invite_code}</span>
+            </button>
+            <button
+              type="button"
+              className="household__delete-btn"
+              onClick={() => deleteModal.openModal()}
+              title="Delete household"
+            >
+              🗑
+            </button>
+          </div>
         )}
       </PageHeader>
 
@@ -622,6 +656,19 @@ function Household() {
           </div>
         </>
       )}
+
+      {/* Delete Confirmation */}
+      <ConfirmModal
+        open={deleteModal.open}
+        closing={deleteModal.closing}
+        onClose={() => deleteModal.closeModal()}
+        onConfirm={handleDelete}
+        loading={deleting}
+        title="Delete household?"
+        description="This will remove the household, all members, and all savings goals. This cannot be undone."
+        confirmLabel="Delete household"
+        variant="danger"
+      />
     </section>
   );
 }
