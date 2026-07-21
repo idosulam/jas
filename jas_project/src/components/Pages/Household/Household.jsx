@@ -304,7 +304,6 @@ function Household() {
         .from("households")
         .insert({
           name: householdName.trim() || "Our Household",
-          created_by: uid,
         })
         .select()
         .single();
@@ -316,7 +315,6 @@ function Household() {
         .from("household_members")
         .insert({
           household_id: hh.id,
-          user_id: uid,
           role: "owner",
         });
 
@@ -372,7 +370,6 @@ function Household() {
         .from("household_members")
         .insert({
           household_id: hh.id,
-          user_id: uid,
           role: "member",
         });
 

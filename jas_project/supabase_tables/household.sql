@@ -32,14 +32,14 @@ CREATE TABLE public.households (
   id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name        TEXT NOT NULL DEFAULT 'Our Household',
   invite_code TEXT UNIQUE NOT NULL DEFAULT encode(gen_random_bytes(6), 'hex'),
-  created_by  UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+  created_by  UUID REFERENCES auth.users(id) ON DELETE SET NULL DEFAULT auth.uid(),
   created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE public.household_members (
   id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   household_id UUID REFERENCES public.households(id) ON DELETE CASCADE,
-  user_id      UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  user_id      UUID REFERENCES auth.users(id) ON DELETE CASCADE DEFAULT auth.uid(),
   role         TEXT NOT NULL DEFAULT 'member' CHECK (role IN ('owner', 'member')),
   joined_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   UNIQUE(household_id, user_id)
@@ -58,7 +58,7 @@ CREATE TABLE public.savings_goals (
   color          TEXT DEFAULT '#818cf8',
   is_completed   BOOLEAN NOT NULL DEFAULT false,
   completed_at   TIMESTAMPTZ,
-  created_by     UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+  created_by     UUID REFERENCES auth.users(id) ON DELETE SET NULL DEFAULT auth.uid(),
   created_at     TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
@@ -67,7 +67,7 @@ CREATE INDEX idx_sg_household ON public.savings_goals(household_id);
 CREATE TABLE public.savings_contributions (
   id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   goal_id    UUID REFERENCES public.savings_goals(id) ON DELETE CASCADE,
-  user_id    UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+  user_id    UUID REFERENCES auth.users(id) ON DELETE SET NULL DEFAULT auth.uid(),
   amount     NUMERIC(12, 2) NOT NULL CHECK (amount > 0),
   note       TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
@@ -109,7 +109,7 @@ CREATE POLICY "Members can read own household"
 
 CREATE POLICY "Authenticated users can create households"
   ON public.households FOR INSERT
-  WITH CHECK (auth.uid() = created_by);
+  WITH CHECK (auth.uid() IS NOT NULL AND created_by = auth.uid());
 
 CREATE POLICY "Owners can update household"
   ON public.households FOR UPDATE
