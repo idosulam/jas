@@ -223,37 +223,6 @@
 
 /* ── Fields ── */
 
-.cpp__field {
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-  font-size: 0.75rem;
-  font-weight: 500;
-  color: rgba(255, 255, 255, 0.55);
-  margin-bottom: 0.85rem;
-}
-
-.cpp__field input {
-  padding: 0.65rem 0.75rem;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 0.65rem;
-  background: rgba(255, 255, 255, 0.08);
-  color: #f5f5f7;
-  font-family: inherit;
-  font-size: 0.9rem;
-  transition:
-    border-color 0.2s ease,
-    background 0.2s ease,
-    box-shadow 0.2s ease;
-}
-
-.cpp__field input:focus {
-  outline: none;
-  border-color: rgba(99, 102, 241, 0.55);
-  background: rgba(255, 255, 255, 0.1);
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
-}
-
 .cpp__hex-input {
   font-family: var(--font-mono, monospace);
   letter-spacing: 0.05em;
