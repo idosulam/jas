@@ -823,10 +823,28 @@ function Profile({ onNavigate }) {
 
   const handleWeightFieldBlur = (fieldName) => {
     const error = validateWeightField(fieldName);
-    setWeightFieldErrors((prev) => ({ ...prev, [fieldName]: error }));
+    // If the other field has a valid value, don't show error on this one
+    const otherField = fieldName === "weight_kg" ? "weight_lbs" : "weight_kg";
+    const otherHasValue = !!weightForm[otherField];
+    const effectiveError = otherHasValue ? null : error;
+
+    // When one field is filled, mark both as valid
+    const hasAnyWeight = weightForm.weight_kg || weightForm.weight_lbs;
+    setWeightFieldErrors((prev) => ({
+      ...prev,
+      [fieldName]: effectiveError,
+      ...(hasAnyWeight ? { [otherField]: null } : {}),
+    }));
     setWeightFieldStates((prev) => ({
       ...prev,
-      [fieldName]: error ? "error" : weightForm[fieldName] ? "valid" : "idle",
+      [fieldName]: effectiveError
+        ? "error"
+        : weightForm[fieldName]
+          ? "valid"
+          : hasAnyWeight
+            ? "valid"
+            : "idle",
+      ...(hasAnyWeight ? { [otherField]: "valid" } : {}),
     }));
   };
 
@@ -1464,7 +1482,6 @@ function Profile({ onNavigate }) {
                   }));
                 }}
                 onBlur={() => handleWeightFieldBlur("weight_kg")}
-                required
               />
             </FormField>
             <FormField
@@ -1489,7 +1506,6 @@ function Profile({ onNavigate }) {
                   }));
                 }}
                 onBlur={() => handleWeightFieldBlur("weight_lbs")}
-                required
               />
             </FormField>
           </div>
