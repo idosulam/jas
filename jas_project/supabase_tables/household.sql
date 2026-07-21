@@ -1,12 +1,34 @@
 -- ============================================================
--- Household migration — FIXED (no infinite recursion)
--- Paste this entire block into Supabase SQL Editor and run it.
--- Safe to re-run: uses IF EXISTS / IF NOT EXISTS everywhere.
+-- Household migration — Run in Supabase SQL Editor
+-- Idempotent: drops and recreates cleanly every time.
 -- ============================================================
+
+-- ── Drop in reverse dependency order ────────────────────────
+
+DROP POLICY IF EXISTS "Members can read own household" ON public.households;
+DROP POLICY IF EXISTS "Authenticated users can create households" ON public.households;
+DROP POLICY IF EXISTS "Owners can update household" ON public.households;
+DROP POLICY IF EXISTS "Members can read household members" ON public.household_members;
+DROP POLICY IF EXISTS "Users can join households" ON public.household_members;
+DROP POLICY IF EXISTS "Users can leave households" ON public.household_members;
+DROP POLICY IF EXISTS "Members can read savings goals" ON public.savings_goals;
+DROP POLICY IF EXISTS "Members can create savings goals" ON public.savings_goals;
+DROP POLICY IF EXISTS "Members can update savings goals" ON public.savings_goals;
+DROP POLICY IF EXISTS "Members can delete savings goals" ON public.savings_goals;
+DROP POLICY IF EXISTS "Members can read contributions" ON public.savings_contributions;
+DROP POLICY IF EXISTS "Users can add contributions" ON public.savings_contributions;
+
+DROP TRIGGER IF EXISTS trg_check_savings_completion ON public.savings_goals;
+DROP TABLE IF EXISTS public.savings_contributions CASCADE;
+DROP TABLE IF EXISTS public.savings_goals CASCADE;
+DROP TABLE IF EXISTS public.household_members CASCADE;
+DROP TABLE IF EXISTS public.households CASCADE;
+DROP FUNCTION IF EXISTS public.is_household_member(UUID);
+DROP FUNCTION IF EXISTS public.check_savings_goal_completion();
 
 -- ── Tables ──────────────────────────────────────────────────
 
-CREATE TABLE IF NOT EXISTS public.households (
+CREATE TABLE public.households (
   id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name        TEXT NOT NULL DEFAULT 'Our Household',
   invite_code TEXT UNIQUE NOT NULL DEFAULT encode(gen_random_bytes(6), 'hex'),
@@ -14,7 +36,7 @@ CREATE TABLE IF NOT EXISTS public.households (
   created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-CREATE TABLE IF NOT EXISTS public.household_members (
+CREATE TABLE public.household_members (
   id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   household_id UUID REFERENCES public.households(id) ON DELETE CASCADE,
   user_id      UUID REFERENCES auth.users(id) ON DELETE CASCADE,
@@ -23,10 +45,10 @@ CREATE TABLE IF NOT EXISTS public.household_members (
   UNIQUE(household_id, user_id)
 );
 
-CREATE INDEX IF NOT EXISTS idx_hm_user ON public.household_members(user_id);
-CREATE INDEX IF NOT EXISTS idx_hm_household ON public.household_members(household_id);
+CREATE INDEX idx_hm_user ON public.household_members(user_id);
+CREATE INDEX idx_hm_household ON public.household_members(household_id);
 
-CREATE TABLE IF NOT EXISTS public.savings_goals (
+CREATE TABLE public.savings_goals (
   id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   household_id   UUID REFERENCES public.households(id) ON DELETE CASCADE,
   title          TEXT NOT NULL,
@@ -40,9 +62,9 @@ CREATE TABLE IF NOT EXISTS public.savings_goals (
   created_at     TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-CREATE INDEX IF NOT EXISTS idx_sg_household ON public.savings_goals(household_id);
+CREATE INDEX idx_sg_household ON public.savings_goals(household_id);
 
-CREATE TABLE IF NOT EXISTS public.savings_contributions (
+CREATE TABLE public.savings_contributions (
   id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   goal_id    UUID REFERENCES public.savings_goals(id) ON DELETE CASCADE,
   user_id    UUID REFERENCES auth.users(id) ON DELETE SET NULL,
@@ -51,31 +73,22 @@ CREATE TABLE IF NOT EXISTS public.savings_contributions (
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-CREATE INDEX IF NOT EXISTS idx_sc_goal ON public.savings_contributions(goal_id);
+CREATE INDEX idx_sc_goal ON public.savings_contributions(goal_id);
 
--- Add shared_note columns to shifts if missing
-DO $$ BEGIN
-  ALTER TABLE public.shifts ADD COLUMN IF NOT EXISTS shared_note TEXT;
-EXCEPTION WHEN undefined_column THEN NULL;
-END $$;
+-- Add shared_note columns to shifts
+ALTER TABLE public.shifts ADD COLUMN IF NOT EXISTS shared_note TEXT;
+ALTER TABLE public.shifts ADD COLUMN IF NOT EXISTS shared_note_by UUID REFERENCES auth.users(id) ON DELETE SET NULL;
 
-DO $$ BEGIN
-  ALTER TABLE public.shifts ADD COLUMN IF NOT EXISTS shared_note_by UUID REFERENCES auth.users(id) ON DELETE SET NULL;
-EXCEPTION WHEN undefined_column THEN NULL;
-END $$;
-
--- ── Enable RLS ──────────────────────────────────────────────
+-- ── RLS ─────────────────────────────────────────────────────
 
 ALTER TABLE public.households ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.household_members ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.savings_goals ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.savings_contributions ENABLE ROW LEVEL SECURITY;
 
--- ── Helper function (breaks the recursion) ──────────────────
--- This function uses SECURITY DEFINER so it bypasses RLS
--- when checking household_members, preventing the infinite loop.
+-- ── Helper function (SECURITY DEFINER = no recursion) ───────
 
-CREATE OR REPLACE FUNCTION public.is_household_member(p_household_id UUID)
+CREATE FUNCTION public.is_household_member(p_household_id UUID)
 RETURNS BOOLEAN
 LANGUAGE sql
 SECURITY DEFINER
@@ -87,25 +100,7 @@ AS $$
   );
 $$;
 
--- ── Drop ALL existing policies (clean slate) ────────────────
-
-DROP POLICY IF EXISTS "Members can read own household" ON public.households;
-DROP POLICY IF EXISTS "Authenticated users can create households" ON public.households;
-DROP POLICY IF EXISTS "Owners can update household" ON public.households;
-
-DROP POLICY IF EXISTS "Members can read household members" ON public.household_members;
-DROP POLICY IF EXISTS "Users can join households" ON public.household_members;
-DROP POLICY IF EXISTS "Users can leave households" ON public.household_members;
-
-DROP POLICY IF EXISTS "Members can read savings goals" ON public.savings_goals;
-DROP POLICY IF EXISTS "Members can create savings goals" ON public.savings_goals;
-DROP POLICY IF EXISTS "Members can update savings goals" ON public.savings_goals;
-DROP POLICY IF EXISTS "Members can delete savings goals" ON public.savings_goals;
-
-DROP POLICY IF EXISTS "Members can read contributions" ON public.savings_contributions;
-DROP POLICY IF EXISTS "Users can add contributions" ON public.savings_contributions;
-
--- ── Recreate policies (no self-referencing) ──────────────────
+-- ── Policies ────────────────────────────────────────────────
 
 -- households
 CREATE POLICY "Members can read own household"
@@ -120,7 +115,7 @@ CREATE POLICY "Owners can update household"
   ON public.households FOR UPDATE
   USING (public.is_household_member(id));
 
--- household_members (no self-reference!)
+-- household_members
 CREATE POLICY "Members can read household members"
   ON public.household_members FOR SELECT
   USING (public.is_household_member(household_id));
@@ -168,9 +163,9 @@ CREATE POLICY "Users can add contributions"
   ON public.savings_contributions FOR INSERT
   WITH CHECK (auth.uid() = user_id);
 
--- ── Auto-completion trigger for savings goals ───────────────
+-- ── Savings auto-completion trigger ─────────────────────────
 
-CREATE OR REPLACE FUNCTION public.check_savings_goal_completion()
+CREATE FUNCTION public.check_savings_goal_completion()
 RETURNS TRIGGER AS $$
 BEGIN
   IF NEW.current_amount >= NEW.target_amount AND NOT NEW.is_completed THEN
@@ -184,9 +179,9 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-DROP TRIGGER IF EXISTS trg_check_savings_completion ON public.savings_goals;
 CREATE TRIGGER trg_check_savings_completion
   BEFORE UPDATE OF current_amount ON public.savings_goals
   FOR EACH ROW EXECUTE FUNCTION public.check_savings_goal_completion();
 
--- ── Done! ───────────────────────────────────────────────────
+-- Reload PostgREST schema cache
+NOTIFY pgrst, 'reload schema';
