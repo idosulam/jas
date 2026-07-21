@@ -281,11 +281,6 @@ function Household() {
 
   // Create household
   const handleCreate = async () => {
-    if (!userId) {
-      toastError("You must be logged in to create a household.");
-      return;
-    }
-
     setJoinLoading(true);
     try {
       const supabase = getSupabaseClient();
