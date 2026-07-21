@@ -299,7 +299,7 @@ function Auth() {
           options: { data: { display_name: displayName.trim() } },
         });
         if (authError) { setError(authError.message); setShakeKey((k) => k + 1); toastError("Registration failed."); }
-        else { setSuccessMsg("Check your email for a confirmation link!"); toastSuccess("Account created."); }
+        else { toastSuccess("Account created! Welcome!"); }
       }
     } catch (err) {
       setError(err.message || "Something went wrong."); setShakeKey((k) => k + 1); toastError("Authentication error.");
