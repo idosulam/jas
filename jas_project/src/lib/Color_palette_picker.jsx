@@ -24,6 +24,9 @@ export default function ColorPalettePicker({ value, onChange }) {
   const [hex, setHex] = useState("#818cf8");
   const [label, setLabel] = useState("");
   const [saving, setSaving] = useState(false);
+  const [hexTouched, setHexTouched] = useState(false);
+  const [hexState, setHexState] = useState("idle");
+  const [hexError, setHexError] = useState(null);
 
   useEffect(() => {
     fetchPalette().then(setPalette);
@@ -33,6 +36,9 @@ export default function ColorPalettePicker({ value, onChange }) {
     setEditing(null);
     setHex("#818cf8");
     setLabel("");
+    setHexTouched(false);
+    setHexState("idle");
+    setHexError(null);
     setPickerClosing(false);
     setPickerOpen(true);
   }, []);
@@ -41,6 +47,9 @@ export default function ColorPalettePicker({ value, onChange }) {
     setEditing(entry);
     setHex(entry.hex);
     setLabel(entry.label);
+    setHexTouched(false);
+    setHexState("idle");
+    setHexError(null);
     setPickerClosing(false);
     setPickerOpen(true);
   }, []);
@@ -54,9 +63,40 @@ export default function ColorPalettePicker({ value, onChange }) {
     }, MODAL_EXIT_MS);
   }, []);
 
+  const validateHex = (value, isBlur = false) => {
+    const trimmed = value.trim();
+    if (!trimmed) {
+      if (isBlur) {
+        setHexState("error");
+        setHexError("Hex color is required");
+      } else {
+        setHexState("idle");
+        setHexError(null);
+      }
+      return;
+    }
+    if (isValidHex(trimmed)) {
+      setHexState("valid");
+      setHexError(null);
+    } else {
+      setHexState("error");
+      setHexError("Enter a valid hex (e.g. #818cf8)");
+    }
+  };
+
+  const handleHexBlur = () => {
+    setHexTouched(true);
+    validateHex(hex, true);
+  };
+
+  const handleHexChange = (value) => {
+    setHex(value);
+    if (hexTouched) validateHex(value);
+  };
+
   const handleSave = useCallback(async () => {
     const cleanHex = hex.trim();
-    if (!cleanHex || !cleanHex.startsWith("#")) return;
+    if (!cleanHex || !isValidHex(cleanHex)) return;
 
     setSaving(true);
 
@@ -180,14 +220,16 @@ export default function ColorPalettePicker({ value, onChange }) {
 
               <FormField
                 label="Hex color"
-                error={hex && !isValidHex(hex) ? "Enter a valid hex color (e.g. #818cf8)" : null}
-                state={hex ? (isValidHex(hex) ? "valid" : "error") : "idle"}
+                error={hexError}
+                state={hexState}
                 showIndicator
+                shake={hexError ? 1 : 0}
               >
                 <input
                   type="text"
                   value={hex}
-                  onChange={(e) => setHex(e.target.value)}
+                  onChange={(e) => handleHexChange(e.target.value)}
+                  onBlur={handleHexBlur}
                   placeholder="#818cf8"
                   maxLength={7}
                   className="cpp__hex-input"

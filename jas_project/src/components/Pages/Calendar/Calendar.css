@@ -1142,13 +1142,13 @@
 }
 
 .calendar__field-error {
-  border-color: #ff6b6b !important;
-  background: rgba(255, 107, 107, 0.08) !important;
+  border-color: var(--color-warning, #fbbf24) !important;
+  background: rgba(251, 191, 36, 0.08) !important;
 }
 
 .calendar__field-error:focus {
-  border-color: #ff6b6b !important;
-  box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.2) !important;
+  border-color: var(--color-warning, #fbbf24) !important;
+  box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.2) !important;
 }
 
 .calendar__char-count {
@@ -1159,7 +1159,7 @@
 }
 
 .calendar__field-error-text {
-  color: #ff6b6b;
+  color: var(--color-warning, #fbbf24);
   font-size: 0.85em;
 }
 

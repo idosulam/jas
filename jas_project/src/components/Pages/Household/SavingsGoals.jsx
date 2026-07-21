@@ -23,6 +23,19 @@ function SavingsGoals({ householdId, userId, members }) {
   const contributeModal = useModal(260);
   const deleteModal = useModal(260);
 
+  // Field validation states for goal form
+  const [goalTitleState, setGoalTitleState] = useState("idle");
+  const [goalTitleError, setGoalTitleError] = useState(null);
+  const [goalTitleTouched, setGoalTitleTouched] = useState(false);
+  const [goalAmountState, setGoalAmountState] = useState("idle");
+  const [goalAmountError, setGoalAmountError] = useState(null);
+  const [goalAmountTouched, setGoalAmountTouched] = useState(false);
+
+  // Field validation states for contribute form
+  const [contribAmountState, setContribAmountState] = useState("idle");
+  const [contribAmountError, setContribAmountError] = useState(null);
+  const [contribAmountTouched, setContribAmountTouched] = useState(false);
+
   const [goalForm, setGoalForm] = useState({
     title: "",
     target_amount: "",
@@ -97,6 +110,80 @@ function SavingsGoals({ householdId, userId, members }) {
     }
   };
 
+  // Validation helpers
+  const validateGoalTitle = (value, isBlur = false) => {
+    const trimmed = value.trim();
+    if (!trimmed) {
+      if (isBlur) {
+        setGoalTitleState("error");
+        setGoalTitleError("Goal name is required");
+      } else {
+        setGoalTitleState("idle");
+        setGoalTitleError(null);
+      }
+      return;
+    }
+    setGoalTitleState("valid");
+    setGoalTitleError(null);
+  };
+
+  const validateGoalAmount = (value, isBlur = false) => {
+    if (!value) {
+      if (isBlur) {
+        setGoalAmountState("error");
+        setGoalAmountError("Target amount is required");
+      } else {
+        setGoalAmountState("idle");
+        setGoalAmountError(null);
+      }
+      return;
+    }
+    const num = Number(value);
+    if (isNaN(num) || num <= 0) {
+      setGoalAmountState("error");
+      setGoalAmountError("Enter a valid amount");
+    } else {
+      setGoalAmountState("valid");
+      setGoalAmountError(null);
+    }
+  };
+
+  const validateContribAmount = (value, isBlur = false) => {
+    if (!value) {
+      if (isBlur) {
+        setContribAmountState("error");
+        setContribAmountError("Amount is required");
+      } else {
+        setContribAmountState("idle");
+        setContribAmountError(null);
+      }
+      return;
+    }
+    const num = Number(value);
+    if (isNaN(num) || num <= 0) {
+      setContribAmountState("error");
+      setContribAmountError("Enter a valid amount");
+    } else {
+      setContribAmountState("valid");
+      setContribAmountError(null);
+    }
+  };
+
+  const resetGoalFieldStates = () => {
+    setGoalTitleTouched(false);
+    setGoalTitleState("idle");
+    setGoalTitleError(null);
+    setGoalAmountTouched(false);
+    setGoalAmountState("idle");
+    setGoalAmountError(null);
+  };
+
+  const resetContribFieldStates = () => {
+    setContribAmountTouched(false);
+    setContribAmountState("idle");
+    setContribAmountError(null);
+  };
+
   const openEditGoal = (goal) => {
     setEditingGoal(goal);
     setGoalForm({
@@ -105,12 +192,14 @@ function SavingsGoals({ householdId, userId, members }) {
       icon: goal.icon || "🎯",
       color: goal.color || "#818cf8",
     });
+    resetGoalFieldStates();
     goalModal.openModal();
   };
 
   const openNewGoal = () => {
     setEditingGoal(null);
     setGoalForm({ title: "", target_amount: "", icon: "🎯", color: "#818cf8" });
+    resetGoalFieldStates();
     goalModal.openModal();
   };
 
@@ -136,6 +225,7 @@ function SavingsGoals({ householdId, userId, members }) {
   const openContribute = (goal) => {
     setActiveGoal(goal);
     setContributeForm({ amount: "", note: "" });
+    resetContribFieldStates();
     contributeModal.openModal();
   };
 
@@ -292,23 +382,49 @@ function SavingsGoals({ householdId, userId, members }) {
         title={editingGoal ? "Edit goal" : "New savings goal"}
       >
         <div className="savings-goals__form">
-          <FormField label="Goal name">
+          <FormField
+            label="Goal name"
+            error={goalTitleError}
+            state={goalTitleState}
+            showIndicator
+            shake={goalTitleError ? 1 : 0}
+          >
             <input
               type="text"
               value={goalForm.title}
-              onChange={(e) => setGoalForm((f) => ({ ...f, title: e.target.value }))}
+              onChange={(e) => {
+                setGoalForm((f) => ({ ...f, title: e.target.value }));
+                if (goalTitleTouched) validateGoalTitle(e.target.value);
+              }}
+              onBlur={() => {
+                setGoalTitleTouched(true);
+                validateGoalTitle(goalForm.title, true);
+              }}
               placeholder="e.g. Vacation fund"
               maxLength={60}
               autoFocus
             />
           </FormField>
-          <FormField label="Target amount (₪)">
+          <FormField
+            label="Target amount (₪)"
+            error={goalAmountError}
+            state={goalAmountState}
+            showIndicator
+            shake={goalAmountError ? 1 : 0}
+          >
             <input
               type="number"
               min="1"
               step="0.01"
               value={goalForm.target_amount}
-              onChange={(e) => setGoalForm((f) => ({ ...f, target_amount: e.target.value }))}
+              onChange={(e) => {
+                setGoalForm((f) => ({ ...f, target_amount: e.target.value }));
+                if (goalAmountTouched) validateGoalAmount(e.target.value);
+              }}
+              onBlur={() => {
+                setGoalAmountTouched(true);
+                validateGoalAmount(goalForm.target_amount, true);
+              }}
               placeholder="5000"
             />
           </FormField>
@@ -336,13 +452,26 @@ function SavingsGoals({ householdId, userId, members }) {
         title={`Add to "${activeGoal?.title || ""}"`}
       >
         <div className="savings-goals__form">
-          <FormField label="Amount (₪)">
+          <FormField
+            label="Amount (₪)"
+            error={contribAmountError}
+            state={contribAmountState}
+            showIndicator
+            shake={contribAmountError ? 1 : 0}
+          >
             <input
               type="number"
               min="0.01"
               step="0.01"
               value={contributeForm.amount}
-              onChange={(e) => setContributeForm((f) => ({ ...f, amount: e.target.value }))}
+              onChange={(e) => {
+                setContributeForm((f) => ({ ...f, amount: e.target.value }));
+                if (contribAmountTouched) validateContribAmount(e.target.value);
+              }}
+              onBlur={() => {
+                setContribAmountTouched(true);
+                validateContribAmount(contributeForm.amount, true);
+              }}
               placeholder="100"
               autoFocus
             />

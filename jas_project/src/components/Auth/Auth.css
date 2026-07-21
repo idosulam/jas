@@ -288,16 +288,16 @@
 
 /* ── Error state ── */
 .auth__input--error {
-  border-color: var(--color-danger, #f87171) !important;
-  background: rgba(248, 113, 113, 0.04) !important;
+  border-color: var(--color-warning, #fbbf24) !important;
+  background: rgba(251, 191, 36, 0.04) !important;
 }
 
 .auth__input--error:focus {
-  box-shadow: 0 0 0 3px rgba(248, 113, 113, 0.15) !important;
+  box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.15) !important;
 }
 
 .auth__input-wrap--error .auth__input-icon {
-  color: var(--color-danger, #f87171);
+  color: var(--color-warning, #fbbf24);
 }
 
 /* ── Field indicators (check/cross) ── */
@@ -327,8 +327,8 @@
 
 .auth__field-cross {
   color: #fff;
-  background: var(--color-danger, #f87171);
-  box-shadow: 0 2px 8px rgba(248, 113, 113, 0.3);
+  background: var(--color-warning, #fbbf24);
+  box-shadow: 0 2px 8px rgba(251, 191, 36, 0.3);
 }
 
 .auth__field-cross svg {
@@ -341,7 +341,7 @@
   display: block;
   font-size: 0.72rem;
   font-weight: 500;
-  color: var(--color-danger, #f87171);
+  color: var(--color-warning, #fbbf24);
   padding-left: 0.15rem;
   overflow: hidden;
 }
