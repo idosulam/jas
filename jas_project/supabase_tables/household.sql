@@ -65,12 +65,7 @@ ALTER TABLE public.savings_contributions ENABLE ROW LEVEL SECURITY;
 -- Household policies: members can read their own household
 CREATE POLICY "Members can read own household"
   ON public.households FOR SELECT
-  USING (
-    EXISTS (
-      SELECT 1 FROM public.household_members
-      WHERE household_id = households.id AND user_id = auth.uid()
-    )
-  );
+  USING (public.is_household_member(id));
 
 CREATE POLICY "Authenticated users can create households"
   ON public.households FOR INSERT
@@ -78,22 +73,21 @@ CREATE POLICY "Authenticated users can create households"
 
 CREATE POLICY "Owners can update household"
   ON public.households FOR UPDATE
-  USING (
-    EXISTS (
-      SELECT 1 FROM public.household_members
-      WHERE household_id = households.id AND user_id = auth.uid() AND role = 'owner'
-    )
-  );
+  USING (public.is_household_member(id));
 
--- Household members policies
+-- Helper function: checks membership without triggering RLS recursion
+CREATE OR REPLACE FUNCTION public.is_household_member(p_household_id UUID)
+RETURNS BOOLEAN AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM public.household_members
+    WHERE household_id = p_household_id AND user_id = auth.uid()
+  );
+$$ LANGUAGE sql SECURITY DEFINER STABLE;
+
+-- Household members policies (no self-reference)
 CREATE POLICY "Members can read household members"
   ON public.household_members FOR SELECT
-  USING (
-    EXISTS (
-      SELECT 1 FROM public.household_members hm
-      WHERE hm.household_id = household_members.household_id AND hm.user_id = auth.uid()
-    )
-  );
+  USING (public.is_household_member(household_id));
 
 CREATE POLICY "Users can join households"
   ON public.household_members FOR INSERT
@@ -106,40 +100,22 @@ CREATE POLICY "Users can leave households"
 -- Savings goals policies: household members can CRUD
 CREATE POLICY "Members can read savings goals"
   ON public.savings_goals FOR SELECT
-  USING (
-    EXISTS (
-      SELECT 1 FROM public.household_members
-      WHERE household_id = savings_goals.household_id AND user_id = auth.uid()
-    )
-  );
+  USING (public.is_household_member(household_id));
 
 CREATE POLICY "Members can create savings goals"
   ON public.savings_goals FOR INSERT
   WITH CHECK (
     auth.uid() = created_by AND
-    EXISTS (
-      SELECT 1 FROM public.household_members
-      WHERE household_id = savings_goals.household_id AND user_id = auth.uid()
-    )
+    public.is_household_member(household_id)
   );
 
 CREATE POLICY "Members can update savings goals"
   ON public.savings_goals FOR UPDATE
-  USING (
-    EXISTS (
-      SELECT 1 FROM public.household_members
-      WHERE household_id = savings_goals.household_id AND user_id = auth.uid()
-    )
-  );
+  USING (public.is_household_member(household_id));
 
 CREATE POLICY "Members can delete savings goals"
   ON public.savings_goals FOR DELETE
-  USING (
-    EXISTS (
-      SELECT 1 FROM public.household_members
-      WHERE household_id = savings_goals.household_id AND user_id = auth.uid()
-    )
-  );
+  USING (public.is_household_member(household_id));
 
 -- Savings contributions policies
 CREATE POLICY "Members can read contributions"
@@ -147,8 +123,8 @@ CREATE POLICY "Members can read contributions"
   USING (
     EXISTS (
       SELECT 1 FROM public.savings_goals sg
-      JOIN public.household_members hm ON hm.household_id = sg.household_id
-      WHERE sg.id = savings_contributions.goal_id AND hm.user_id = auth.uid()
+      WHERE sg.id = savings_contributions.goal_id
+        AND public.is_household_member(sg.household_id)
     )
   );
 
