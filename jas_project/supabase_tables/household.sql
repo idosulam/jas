@@ -1,7 +1,11 @@
--- Household system for couples sharing the app.
--- Run AFTER all other table scripts.
+-- ============================================================
+-- Household migration — FIXED (no infinite recursion)
+-- Paste this entire block into Supabase SQL Editor and run it.
+-- Safe to re-run: uses IF EXISTS / IF NOT EXISTS everywhere.
+-- ============================================================
 
--- 1. Households table
+-- ── Tables ──────────────────────────────────────────────────
+
 CREATE TABLE IF NOT EXISTS public.households (
   id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name        TEXT NOT NULL DEFAULT 'Our Household',
@@ -10,7 +14,6 @@ CREATE TABLE IF NOT EXISTS public.households (
   created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- 2. Household members (links users to a household)
 CREATE TABLE IF NOT EXISTS public.household_members (
   id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   household_id UUID REFERENCES public.households(id) ON DELETE CASCADE,
@@ -23,46 +26,88 @@ CREATE TABLE IF NOT EXISTS public.household_members (
 CREATE INDEX IF NOT EXISTS idx_hm_user ON public.household_members(user_id);
 CREATE INDEX IF NOT EXISTS idx_hm_household ON public.household_members(household_id);
 
--- 3. Savings goals (shared within a household)
 CREATE TABLE IF NOT EXISTS public.savings_goals (
-  id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  household_id UUID REFERENCES public.households(id) ON DELETE CASCADE,
-  title        TEXT NOT NULL,
-  target_amount NUMERIC(12, 2) NOT NULL CHECK (target_amount > 0),
+  id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  household_id   UUID REFERENCES public.households(id) ON DELETE CASCADE,
+  title          TEXT NOT NULL,
+  target_amount  NUMERIC(12, 2) NOT NULL CHECK (target_amount > 0),
   current_amount NUMERIC(12, 2) NOT NULL DEFAULT 0 CHECK (current_amount >= 0),
-  icon         TEXT DEFAULT '🎯',
-  color        TEXT DEFAULT '#818cf8',
-  is_completed BOOLEAN NOT NULL DEFAULT false,
-  completed_at TIMESTAMPTZ,
-  created_by   UUID REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at   TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  icon           TEXT DEFAULT '🎯',
+  color          TEXT DEFAULT '#818cf8',
+  is_completed   BOOLEAN NOT NULL DEFAULT false,
+  completed_at   TIMESTAMPTZ,
+  created_by     UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+  created_at     TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE INDEX IF NOT EXISTS idx_sg_household ON public.savings_goals(household_id);
 
--- 4. Savings contributions (who added what)
 CREATE TABLE IF NOT EXISTS public.savings_contributions (
-  id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  goal_id      UUID REFERENCES public.savings_goals(id) ON DELETE CASCADE,
-  user_id      UUID REFERENCES auth.users(id) ON DELETE SET NULL,
-  amount       NUMERIC(12, 2) NOT NULL CHECK (amount > 0),
-  note         TEXT,
-  created_at   TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  goal_id    UUID REFERENCES public.savings_goals(id) ON DELETE CASCADE,
+  user_id    UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+  amount     NUMERIC(12, 2) NOT NULL CHECK (amount > 0),
+  note       TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE INDEX IF NOT EXISTS idx_sc_goal ON public.savings_contributions(goal_id);
 
--- 5. Couple notes on shifts
-ALTER TABLE public.shifts ADD COLUMN IF NOT EXISTS shared_note TEXT;
-ALTER TABLE public.shifts ADD COLUMN IF NOT EXISTS shared_note_by UUID REFERENCES auth.users(id) ON DELETE SET NULL;
+-- Add shared_note columns to shifts if missing
+DO $$ BEGIN
+  ALTER TABLE public.shifts ADD COLUMN IF NOT EXISTS shared_note TEXT;
+EXCEPTION WHEN undefined_column THEN NULL;
+END $$;
 
--- RLS for households
+DO $$ BEGIN
+  ALTER TABLE public.shifts ADD COLUMN IF NOT EXISTS shared_note_by UUID REFERENCES auth.users(id) ON DELETE SET NULL;
+EXCEPTION WHEN undefined_column THEN NULL;
+END $$;
+
+-- ── Enable RLS ──────────────────────────────────────────────
+
 ALTER TABLE public.households ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.household_members ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.savings_goals ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.savings_contributions ENABLE ROW LEVEL SECURITY;
 
--- Household policies: members can read their own household
+-- ── Helper function (breaks the recursion) ──────────────────
+-- This function uses SECURITY DEFINER so it bypasses RLS
+-- when checking household_members, preventing the infinite loop.
+
+CREATE OR REPLACE FUNCTION public.is_household_member(p_household_id UUID)
+RETURNS BOOLEAN
+LANGUAGE sql
+SECURITY DEFINER
+STABLE
+AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM public.household_members
+    WHERE household_id = p_household_id AND user_id = auth.uid()
+  );
+$$;
+
+-- ── Drop ALL existing policies (clean slate) ────────────────
+
+DROP POLICY IF EXISTS "Members can read own household" ON public.households;
+DROP POLICY IF EXISTS "Authenticated users can create households" ON public.households;
+DROP POLICY IF EXISTS "Owners can update household" ON public.households;
+
+DROP POLICY IF EXISTS "Members can read household members" ON public.household_members;
+DROP POLICY IF EXISTS "Users can join households" ON public.household_members;
+DROP POLICY IF EXISTS "Users can leave households" ON public.household_members;
+
+DROP POLICY IF EXISTS "Members can read savings goals" ON public.savings_goals;
+DROP POLICY IF EXISTS "Members can create savings goals" ON public.savings_goals;
+DROP POLICY IF EXISTS "Members can update savings goals" ON public.savings_goals;
+DROP POLICY IF EXISTS "Members can delete savings goals" ON public.savings_goals;
+
+DROP POLICY IF EXISTS "Members can read contributions" ON public.savings_contributions;
+DROP POLICY IF EXISTS "Users can add contributions" ON public.savings_contributions;
+
+-- ── Recreate policies (no self-referencing) ──────────────────
+
+-- households
 CREATE POLICY "Members can read own household"
   ON public.households FOR SELECT
   USING (public.is_household_member(id));
@@ -75,16 +120,7 @@ CREATE POLICY "Owners can update household"
   ON public.households FOR UPDATE
   USING (public.is_household_member(id));
 
--- Helper function: checks membership without triggering RLS recursion
-CREATE OR REPLACE FUNCTION public.is_household_member(p_household_id UUID)
-RETURNS BOOLEAN AS $$
-  SELECT EXISTS (
-    SELECT 1 FROM public.household_members
-    WHERE household_id = p_household_id AND user_id = auth.uid()
-  );
-$$ LANGUAGE sql SECURITY DEFINER STABLE;
-
--- Household members policies (no self-reference)
+-- household_members (no self-reference!)
 CREATE POLICY "Members can read household members"
   ON public.household_members FOR SELECT
   USING (public.is_household_member(household_id));
@@ -97,7 +133,7 @@ CREATE POLICY "Users can leave households"
   ON public.household_members FOR DELETE
   USING (auth.uid() = user_id);
 
--- Savings goals policies: household members can CRUD
+-- savings_goals
 CREATE POLICY "Members can read savings goals"
   ON public.savings_goals FOR SELECT
   USING (public.is_household_member(household_id));
@@ -105,8 +141,8 @@ CREATE POLICY "Members can read savings goals"
 CREATE POLICY "Members can create savings goals"
   ON public.savings_goals FOR INSERT
   WITH CHECK (
-    auth.uid() = created_by AND
-    public.is_household_member(household_id)
+    auth.uid() = created_by
+    AND public.is_household_member(household_id)
   );
 
 CREATE POLICY "Members can update savings goals"
@@ -117,7 +153,7 @@ CREATE POLICY "Members can delete savings goals"
   ON public.savings_goals FOR DELETE
   USING (public.is_household_member(household_id));
 
--- Savings contributions policies
+-- savings_contributions
 CREATE POLICY "Members can read contributions"
   ON public.savings_contributions FOR SELECT
   USING (
@@ -132,7 +168,8 @@ CREATE POLICY "Users can add contributions"
   ON public.savings_contributions FOR INSERT
   WITH CHECK (auth.uid() = user_id);
 
--- Function to auto-update goal completion
+-- ── Auto-completion trigger for savings goals ───────────────
+
 CREATE OR REPLACE FUNCTION public.check_savings_goal_completion()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -147,38 +184,9 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS trg_check_savings_completion ON public.savings_goals;
 CREATE TRIGGER trg_check_savings_completion
   BEFORE UPDATE OF current_amount ON public.savings_goals
   FOR EACH ROW EXECUTE FUNCTION public.check_savings_goal_completion();
 
--- Function to get household partner's shifts (for the dashboard)
-CREATE OR REPLACE FUNCTION public.get_household_shifts(p_user_id UUID, p_start DATE, p_end DATE)
-RETURNS TABLE (
-  user_id UUID,
-  display_name TEXT,
-  shift_date DATE,
-  hours NUMERIC,
-  tips NUMERIC,
-  pay_type TEXT,
-  place TEXT,
-  color TEXT
-) AS $$
-BEGIN
-  RETURN QUERY
-  SELECT
-    s.user_id,
-    COALESCE(p.display_name, 'User') as display_name,
-    s.shift_date,
-    s.hours,
-    s.tips,
-    s.pay_type,
-    s.place,
-    s.color
-  FROM public.shifts s
-  JOIN public.household_members hm ON hm.user_id = s.user_id
-  JOIN public.household_members me ON me.household_id = hm.household_id AND me.user_id = p_user_id
-  LEFT JOIN public.profile p ON p.user_id = s.user_id
-  WHERE s.shift_date >= p_start
-    AND s.shift_date <= p_end;
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+-- ── Done! ───────────────────────────────────────────────────
