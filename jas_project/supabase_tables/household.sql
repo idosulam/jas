@@ -109,7 +109,7 @@ CREATE POLICY "Members can read own household"
 
 CREATE POLICY "Authenticated users can create households"
   ON public.households FOR INSERT
-  WITH CHECK (auth.uid() IS NOT NULL AND created_by = auth.uid());
+  WITH CHECK (auth.uid() IS NOT NULL);
 
 CREATE POLICY "Owners can update household"
   ON public.households FOR UPDATE
