@@ -267,6 +267,17 @@
   transform: scale(1.05);
 }
 
+.workplaces__color-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  font-size: 1rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.25);
+}
+
 .workplaces__color-hex {
   flex: 1;
   font-family: var(--font-mono, monospace);

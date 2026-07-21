@@ -57,7 +57,7 @@ const emptyForm = (dateKey) => ({
   event_date: dateKey,
   start_time: "09:00",
   end_time: "10:00",
-  color: "#818cf8",
+  color: "",
 });
 
 function Calendar() {
@@ -360,7 +360,7 @@ function Calendar() {
     setEditingEvent(null);
     setForm({
       ...emptyForm(selectedKey),
-      color: firstColor,
+      color: "",
       start_time: startTime,
       end_time: `${String(endHour).padStart(2, "0")}:00`,
     });
@@ -416,6 +416,7 @@ function Calendar() {
     if (!endTime) errors.end_time = "Required";
     if (startTime && endTime && endTime <= startTime)
       errors.end_time = "Must be after start";
+    if (!form.color) errors.color = "Pick a color";
 
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors);

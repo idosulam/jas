@@ -24,7 +24,7 @@ const emptyForm = () => ({
   slug: "",
   label: "",
   rate: "",
-  color: "#818cf8",
+  color: "",
 });
 
 function formatMoney(amount) {
@@ -593,7 +593,7 @@ function Workplaces({ onNavigate, returnTo }) {
               <input
                 ref={colorPickerRef}
                 type="color"
-                value={form.color}
+                value={form.color || "#818cf8"}
                 onChange={(e) => {
                   setForm({ ...form, color: e.target.value });
                   setFieldErrors((prev) => ({ ...prev, color: null }));
@@ -605,10 +605,12 @@ function Workplaces({ onNavigate, returnTo }) {
               <button
                 type="button"
                 className="workplaces__color-swatch"
-                style={{ background: form.color }}
+                style={{ background: form.color || "rgba(255,255,255,0.08)" }}
                 onClick={() => colorPickerRef.current?.click()}
                 aria-label="Open color picker"
-              />
+              >
+                {!form.color && <span className="workplaces__color-placeholder">?</span>}
+              </button>
               <input
                 type="text"
                 value={form.color}
