@@ -281,7 +281,6 @@ function Household() {
 
   // Create household
   const handleCreate = async () => {
-    // Safety: ensure we have a valid user ID before attempting insert
     if (!userId) {
       toastError("You must be logged in to create a household.");
       return;
@@ -291,34 +290,13 @@ function Household() {
     try {
       const supabase = getSupabaseClient();
 
-      // Double-check session is still valid
-      const { data: { session } } = await supabase.auth.getSession();
-      const uid = session?.user?.id || userId;
-      if (!uid) {
-        toastError("Session expired. Please sign in again.");
-        setJoinLoading(false);
-        return;
-      }
-
       const { data: hh, error: createError } = await supabase
-        .from("households")
-        .insert({
-          name: householdName.trim() || "Our Household",
+        .rpc("create_household", {
+          household_name: householdName.trim() || "Our Household",
         })
-        .select()
         .single();
 
       if (createError) throw createError;
-
-      // Add self as owner
-      const { error: memberError } = await supabase
-        .from("household_members")
-        .insert({
-          household_id: hh.id,
-          role: "owner",
-        });
-
-      if (memberError) throw memberError;
 
       createModal.closeModal();
       toastSuccess("Household created! Share the invite code with your partner.");
@@ -342,40 +320,16 @@ function Household() {
     try {
       const supabase = getSupabaseClient();
 
-      // Double-check session
-      const { data: { session } } = await supabase.auth.getSession();
-      const uid = session?.user?.id || userId;
-      if (!uid) {
-        toastError("Session expired. Please sign in again.");
-        setJoinLoading(false);
-        return;
-      }
-
-      // Find household by invite code
-      const { data: hh, error: findError } = await supabase
-        .from("households")
-        .select("id")
-        .eq("invite_code", joinCode.trim())
-        .maybeSingle();
-
-      if (findError) throw findError;
-      if (!hh) {
-        toastError("Invalid invite code. Check and try again.");
-        setJoinLoading(false);
-        return;
-      }
-
-      // Join as member
       const { error: joinError } = await supabase
-        .from("household_members")
-        .insert({
-          household_id: hh.id,
-          role: "member",
+        .rpc("join_household", {
+          invite_code_param: joinCode.trim(),
         });
 
       if (joinError) {
         if (joinError.message.includes("duplicate")) {
           toastError("You're already in this household.");
+        } else if (joinError.message.includes("Invalid invite code")) {
+          toastError("Invalid invite code. Check and try again.");
         } else {
           throw joinError;
         }
