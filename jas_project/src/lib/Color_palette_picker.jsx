@@ -5,6 +5,7 @@ import {
   addPaletteColor,
   updatePaletteColor,
   deletePaletteColor,
+  clearPalette,
 } from "./color_palette";
 import FormField from "../components/ui/form/Form_field.jsx";
 import "./Color_palette_picker.css";
