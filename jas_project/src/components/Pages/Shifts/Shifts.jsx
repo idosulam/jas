@@ -8,6 +8,7 @@ import {
   sanitizeNumber,
   sanitizeText,
   formatDateFriendly,
+  hapticError,
 } from "../../../lib/security";
 import {
   parseTimeToMinutes,
@@ -609,6 +610,10 @@ function Shifts({ onNavigate }) {
       ...prev,
       [fieldName]: fieldError ? "error" : form[fieldName] ? "valid" : "idle",
     }));
+    if (fieldError) {
+      setShakeKey((k) => k + 1);
+      hapticError();
+    }
   };
 
   const isFormValid = useMemo(() => {

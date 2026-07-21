@@ -6,6 +6,7 @@ import {
   getUserFacingError,
   sanitizeText,
   sanitizeNumber,
+  hapticError,
 } from "../../../lib/security.js";
 import { useGlassToast } from "../../../lib/glass_toast_provider.jsx";
 import {
@@ -156,6 +157,10 @@ function Workplaces({ onNavigate, returnTo }) {
       ...prev,
       [name]: err ? "error" : form[name] ? "valid" : "idle",
     }));
+    if (err) {
+      setShakeKey((k) => k + 1);
+      hapticError();
+    }
   };
 
   const isFormValid = useMemo(() => {

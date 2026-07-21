@@ -2,7 +2,7 @@ import "./Household.css";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { getSupabaseClient } from "../../../lib/superbase";
 import { useUserId } from "../../../lib/Auth_context.jsx";
-import { getUserFacingError } from "../../../lib/security";
+import { getUserFacingError, hapticError } from "../../../lib/security";
 import { useGlassToast } from "../../../lib/glass_toast_provider.jsx";
 import { useBodyScrollLock, useModal } from "../../../hooks";
 import SheetModal from "../../ui/modals/Sheet_modal";
@@ -353,11 +353,19 @@ function Household() {
   const handleNameBlur = () => {
     setNameTouched(true);
     validateNameField(householdName, true);
+    if (!householdName.trim() || householdName.trim().length < 2) {
+      setShakeKey((k) => k + 1);
+      hapticError();
+    }
   };
 
   const handleCodeBlur = () => {
     setCodeTouched(true);
     validateCodeField(joinCode, true);
+    if (!joinCode.trim()) {
+      setShakeKey((k) => k + 1);
+      hapticError();
+    }
   };
 
   const handleNameChange = (e) => {

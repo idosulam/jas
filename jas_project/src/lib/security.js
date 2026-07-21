@@ -154,3 +154,15 @@ export function formatTimeFriendly(timeStr) {
   const hour12 = h % 12 || 12;
   return `${hour12}:${String(m).padStart(2, "0")} ${period}`;
 }
+
+/**
+ * Haptic feedback — vibrate the device briefly.
+ * Safe no-op on desktop / unsupported browsers.
+ */
+export function hapticError() {
+  try {
+    navigator.vibrate?.(30);
+  } catch {
+    // ignore
+  }
+}

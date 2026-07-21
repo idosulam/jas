@@ -21,6 +21,7 @@ import {
   sanitizeDate,
   sanitizeText,
   sanitizeTime,
+  hapticError,
 } from "../../../lib/security";
 import {
   parseTimeToMinutes,
@@ -320,6 +321,10 @@ function Calendar() {
       ...prev,
       [fieldName]: fieldError ? "error" : form[fieldName] ? "valid" : "idle",
     }));
+    if (fieldError) {
+      setShakeKey((k) => k + 1);
+      hapticError();
+    }
   };
 
   const isCalendarFormValid = useMemo(() => {

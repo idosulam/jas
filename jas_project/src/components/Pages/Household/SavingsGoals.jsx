@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { getSupabaseClient } from "../../../lib/superbase";
-import { getUserFacingError, sanitizeNumber, sanitizeText } from "../../../lib/security";
+import { getUserFacingError, sanitizeNumber, sanitizeText, hapticError } from "../../../lib/security";
 import { useGlassToast } from "../../../lib/glass_toast_provider.jsx";
 import { useModal, useBodyScrollLock } from "../../../hooks";
 import SheetModal from "../../ui/modals/Sheet_modal";
@@ -24,6 +24,7 @@ function SavingsGoals({ householdId, userId, members }) {
   const deleteModal = useModal(260);
 
   // Field validation states for goal form
+  const [goalShakeKey, setGoalShakeKey] = useState(0);
   const [goalTitleState, setGoalTitleState] = useState("idle");
   const [goalTitleError, setGoalTitleError] = useState(null);
   const [goalTitleTouched, setGoalTitleTouched] = useState(false);
@@ -387,7 +388,7 @@ function SavingsGoals({ householdId, userId, members }) {
             error={goalTitleError}
             state={goalTitleState}
             showIndicator
-            shake={goalTitleError ? 1 : 0}
+            shake={goalTitleError ? goalShakeKey : 0}
           >
             <input
               type="text"
@@ -399,6 +400,10 @@ function SavingsGoals({ householdId, userId, members }) {
               onBlur={() => {
                 setGoalTitleTouched(true);
                 validateGoalTitle(goalForm.title, true);
+                if (!goalForm.title.trim()) {
+                  setGoalShakeKey((k) => k + 1);
+                  hapticError();
+                }
               }}
               placeholder="e.g. Vacation fund"
               maxLength={60}
@@ -410,7 +415,7 @@ function SavingsGoals({ householdId, userId, members }) {
             error={goalAmountError}
             state={goalAmountState}
             showIndicator
-            shake={goalAmountError ? 1 : 0}
+            shake={goalAmountError ? goalShakeKey : 0}
           >
             <input
               type="number"
@@ -424,6 +429,10 @@ function SavingsGoals({ householdId, userId, members }) {
               onBlur={() => {
                 setGoalAmountTouched(true);
                 validateGoalAmount(goalForm.target_amount, true);
+                if (!goalForm.target_amount || Number(goalForm.target_amount) <= 0) {
+                  setGoalShakeKey((k) => k + 1);
+                  hapticError();
+                }
               }}
               placeholder="5000"
             />
@@ -457,7 +466,7 @@ function SavingsGoals({ householdId, userId, members }) {
             error={contribAmountError}
             state={contribAmountState}
             showIndicator
-            shake={contribAmountError ? 1 : 0}
+            shake={contribAmountError ? goalShakeKey : 0}
           >
             <input
               type="number"
@@ -471,6 +480,10 @@ function SavingsGoals({ householdId, userId, members }) {
               onBlur={() => {
                 setContribAmountTouched(true);
                 validateContribAmount(contributeForm.amount, true);
+                if (!contributeForm.amount || Number(contributeForm.amount) <= 0) {
+                  setGoalShakeKey((k) => k + 1);
+                  hapticError();
+                }
               }}
               placeholder="100"
               autoFocus

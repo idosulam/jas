@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { getSupabaseClient } from "../../lib/superbase.jsx";
 import { useGlassToast } from "../../lib/glass_toast_provider.jsx";
+import { hapticError } from "../../lib/security";
 import "./Auth.css";
 
 const MODES = { LOGIN: "login", REGISTER: "register", FORGOT: "forgot" };
@@ -333,18 +334,34 @@ function Auth() {
   const handleEmailBlur = () => {
     setEmailTouched(true);
     validateEmailField(email, true);
+    if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      setShakeKey((k) => k + 1);
+      hapticError();
+    }
   };
   const handlePasswordBlur = () => {
     setPasswordTouched(true);
     validatePasswordField(password, mode === MODES.REGISTER, true);
+    if (!password || (mode === MODES.REGISTER && password.length < 6)) {
+      setShakeKey((k) => k + 1);
+      hapticError();
+    }
   };
   const handleConfirmBlur = () => {
     setConfirmTouched(true);
     validateConfirmField(confirmPassword, password, true);
+    if (!confirmPassword || confirmPassword !== password) {
+      setShakeKey((k) => k + 1);
+      hapticError();
+    }
   };
   const handleNameBlur = () => {
     setNameTouched(true);
     validateNameField(displayName, true);
+    if (!displayName.trim() || displayName.trim().length < 2) {
+      setShakeKey((k) => k + 1);
+      hapticError();
+    }
   };
   const handleNameChange = (e) => {
     const v = e.target.value;

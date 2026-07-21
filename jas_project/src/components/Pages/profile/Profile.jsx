@@ -7,6 +7,7 @@ import {
   sanitizeDate,
   sanitizeNumber,
   sanitizeText,
+  hapticError,
 } from "../../../lib/security";
 
 import { useGlassToast } from "../../../lib/glass_toast_provider.jsx";
@@ -792,6 +793,10 @@ function Profile({ onNavigate }) {
       ...prev,
       [fieldName]: error ? "error" : profileForm[fieldName] ? "valid" : "idle",
     }));
+    if (error) {
+      setProfileShakeKey((k) => k + 1);
+      hapticError();
+    }
   };
 
   const validateWeightField = (fieldName) => {
@@ -846,6 +851,10 @@ function Profile({ onNavigate }) {
             : "idle",
       ...(hasAnyWeight ? { [otherField]: "valid" } : {}),
     }));
+    if (effectiveError) {
+      setWeightShakeKey((k) => k + 1);
+      hapticError();
+    }
   };
 
   const saveWeight = async (e) => {

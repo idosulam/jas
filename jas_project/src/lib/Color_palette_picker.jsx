@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
+import { hapticError } from "./security";
 import {
   fetchPalette,
   addPaletteColor,
@@ -87,6 +88,9 @@ export default function ColorPalettePicker({ value, onChange }) {
   const handleHexBlur = () => {
     setHexTouched(true);
     validateHex(hex, true);
+    if (!hex.trim() || !isValidHex(hex.trim())) {
+      hapticError();
+    }
   };
 
   const handleHexChange = (value) => {
