@@ -8,9 +8,6 @@ import ConfirmModal from "../../ui/modals/Confirm_modal";
 import FormField from "../../ui/form/Form_field.jsx";
 import GlassCard from "../../ui/Glass_card";
 
-const GOAL_ICONS = ["🎯", "✈️", "🏠", "🚗", "💍", "📱", "💻", "🎸", "📚", "🏋️", "🐕", "🎓"];
-const GOAL_COLORS = ["#818cf8", "#f472b6", "#34d399", "#fbbf24", "#f87171", "#60a5fa", "#a78bfa", "#fb923c"];
-
 function formatMoney(amount) {
   return `₪${Number(amount || 0).toFixed(2)}`;
 }
@@ -315,33 +312,6 @@ function SavingsGoals({ householdId, userId, members }) {
               placeholder="5000"
             />
           </FormField>
-          <FormField label="Icon">
-            <div className="savings-goals__icon-picker">
-              {GOAL_ICONS.map((icon) => (
-                <button
-                  key={icon}
-                  type="button"
-                  className={`savings-goals__icon-btn${goalForm.icon === icon ? " savings-goals__icon-btn--active" : ""}`}
-                  onClick={() => setGoalForm((f) => ({ ...f, icon }))}
-                >
-                  {icon}
-                </button>
-              ))}
-            </div>
-          </FormField>
-          <FormField label="Color">
-            <div className="savings-goals__color-picker">
-              {GOAL_COLORS.map((color) => (
-                <button
-                  key={color}
-                  type="button"
-                  className={`savings-goals__color-btn${goalForm.color === color ? " savings-goals__color-btn--active" : ""}`}
-                  style={{ background: color }}
-                  onClick={() => setGoalForm((f) => ({ ...f, color }))}
-                />
-              ))}
-            </div>
-          </FormField>
           <div className="btn-row">
             <button type="button" className="btn btn--ghost" onClick={() => goalModal.closeModal()}>
               Cancel
@@ -350,7 +320,7 @@ function SavingsGoals({ householdId, userId, members }) {
               type="button"
               className="btn btn--primary"
               onClick={saveGoal}
-              disabled={!goalForm.title.trim() || !goalForm.target_amount}
+              disabled={!goalForm.title.trim() || !goalForm.target_amount || Number(goalForm.target_amount) <= 0}
             >
               {editingGoal ? "Update" : "Create"}
             </button>
