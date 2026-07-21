@@ -953,11 +953,12 @@ function Calendar() {
       )}
 
       {events.length === 0 && !loading && (
-        <EmptyState
-          text="No events today. Tap the timeline or + Add event."
-          className="animate-in"
-          style={{ marginTop: "1rem" }}
-        />
+        <div style={{ marginTop: "1rem" }}>
+          <EmptyState
+            text="No events today. Tap the timeline or + Add event."
+            className="animate-in"
+          />
+        </div>
       )}
 
       {events.length > 0 && (
