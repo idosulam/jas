@@ -30,13 +30,14 @@ CREATE TABLE public.transactions (
   household_id    UUID REFERENCES public.households(id) ON DELETE CASCADE,
   user_id         UUID REFERENCES auth.users(id) ON DELETE SET NULL,
   category_id     UUID REFERENCES public.transaction_categories(id) ON DELETE SET NULL,
-  type            TEXT NOT NULL CHECK (type IN ('expense', 'income')),
+  type            TEXT NOT NULL CHECK (type IN ('expense', 'income', 'contribute')),
   amount          NUMERIC(12, 2) NOT NULL CHECK (amount > 0),
   description     TEXT,
   note            TEXT,
   transaction_date DATE NOT NULL DEFAULT CURRENT_DATE,
   is_recurring    BOOLEAN NOT NULL DEFAULT false,
   recurring_id    UUID,
+  goal_id         UUID REFERENCES public.savings_goals(id) ON DELETE SET NULL,
   created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
@@ -44,6 +45,7 @@ CREATE INDEX idx_t_household ON public.transactions(household_id);
 CREATE INDEX idx_t_date ON public.transactions(household_id, transaction_date);
 CREATE INDEX idx_t_user ON public.transactions(user_id);
 CREATE INDEX idx_t_category ON public.transactions(category_id);
+CREATE INDEX idx_t_goal ON public.transactions(goal_id);
 
 -- ── Recurring Transactions ────────────────────────────────────
 
