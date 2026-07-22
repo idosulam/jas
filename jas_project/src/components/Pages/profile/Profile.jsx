@@ -21,6 +21,7 @@ import {
   LoadingSkeleton,
 } from "../../../components";
 import {
+import { useHousehold } from "../../../lib/Household_context.jsx";
   useBodyScrollLock,
   useModal,
   useFloatingActions,
@@ -418,6 +419,7 @@ function WeightChart({ entries, unit, goalKg }) {
 }
 
 function Profile({ onNavigate }) {
+  const { householdName } = useHousehold();
   const userId = useUserId();
   const [removingId, setRemovingId] = useState(null);
   const [unit, setUnit] = useState(loadUnit);
@@ -1097,7 +1099,7 @@ function Profile({ onNavigate }) {
     <section>
       <PageHeader
         className="profile__header"
-        eyebrow="Your progress"
+        eyebrow={householdName ? `Progress · ${householdName}` : "Your progress"}
         title={`Hi ${displayName}`}
         subtitle="Weight loss analytics tuned for your training."
       >

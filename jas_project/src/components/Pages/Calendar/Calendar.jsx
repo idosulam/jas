@@ -47,6 +47,7 @@ import {
 import { useGlassToast } from "../../../lib/glass_toast_provider.jsx";
 import ColorPalettePicker from "../../../lib/Color_palette_picker.jsx";
 import { fetchPalette } from "../../../lib/color_palette.js";
+import { useHousehold } from "../../../lib/Household_context.jsx";
 
 const MODAL_EXIT_MS = 260;
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -61,6 +62,7 @@ const emptyForm = (dateKey) => ({
 });
 
 function Calendar() {
+  const { householdName } = useHousehold();
   const userId = useUserId();
   const today = useMemo(() => new Date(), []);
   const [selectedDate, setSelectedDate] = useState(today);
@@ -678,7 +680,7 @@ function Calendar() {
     <section className="calendar page">
       <PageHeader
         className="calendar__header animate-in"
-        eyebrow="Daily planner"
+        eyebrow={householdName ? `Calendar · ${householdName}` : "Daily planner"}
         title="Calendar"
       />
 

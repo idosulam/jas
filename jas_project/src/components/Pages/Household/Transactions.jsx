@@ -340,6 +340,8 @@ function Transactions({ householdId, userId, members }) {
       const { error } = await supabase.from("transactions").delete().eq("id", deleteTarget.id);
       if (error) throw error;
       deleteModal.closeModal();
+      editModal.closeModal();
+      setEditingTx(null);
       toastSuccess("Transaction deleted.");
       fetchTransactions();
     } catch (err) {
@@ -478,7 +480,7 @@ function Transactions({ householdId, userId, members }) {
                         <span className="transactions__item-desc">{tx.description}</span>
                         <span className="transactions__item-meta">
                           {tx.category_name}
-                          {!tx.is_me && ` · ${tx.display_name}`}
+                          {` · ${tx.is_me ? "You" : tx.display_name}`}
                           {tx.is_recurring && " · 🔄"}
                         </span>
                       </div>

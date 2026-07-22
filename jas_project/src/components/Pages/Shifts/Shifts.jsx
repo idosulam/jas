@@ -1,6 +1,7 @@
 import "./Shifts.css";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getSupabaseClient } from "../../../lib/superbase";
+import { useHousehold } from "../../../lib/Household_context.jsx";
 import { useUserId } from "../../../lib/Auth_context.jsx";
 import {
   getUserFacingError,
@@ -109,6 +110,7 @@ function Shifts({ onNavigate }) {
   const [showFloatingActions, setShowFloatingActions] = useState(false);
   const [fieldErrors, setFieldErrors] = useState({});
   const [fieldStates, setFieldStates] = useState({});
+  const { householdName } = useHousehold();
   const [shakeKey, setShakeKey] = useState(0);
   const [workplaces, setWorkplaces] = useState([]);
 
@@ -884,7 +886,7 @@ function Shifts({ onNavigate }) {
   return (
     <section className="shifts page">
       <PageHeader
-        eyebrow="Earnings tracker"
+        eyebrow={householdName ? `Earnings · ${householdName}` : "Earnings tracker"}
         title="Shifts"
         className="shifts__header animate-in"
       />
