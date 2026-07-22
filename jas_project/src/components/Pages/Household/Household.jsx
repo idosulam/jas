@@ -59,6 +59,7 @@ function Household() {
   const [activeTab, setActiveTab] = useState("overview");
   const [allTransactions, setAllTransactions] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [goals, setGoals] = useState([]);
   const { success: toastSuccess, error: toastError } = useGlassToast();
 
   const joinModal = useModal(260);
@@ -234,6 +235,21 @@ function Household() {
     } catch { /* silent */ }
   }, [household]);
 
+  // Fetch savings goals
+  const fetchGoals = useCallback(async () => {
+    if (!household) return;
+    try {
+      const supabase = getSupabaseClient();
+      const { data, error } = await supabase
+        .from("savings_goals")
+        .select("*")
+        .eq("household_id", household.id)
+        .order("created_at", { ascending: true });
+      if (error) throw error;
+      setGoals(data ?? []);
+    } catch { /* silent */ }
+  }, [household]);
+
   useEffect(() => { fetchHousehold(); }, [fetchHousehold]);
 
   useEffect(() => {
@@ -242,9 +258,10 @@ function Household() {
       fetchWorkplaces();
       fetchAllTransactions();
       fetchCategories();
+      fetchGoals();
       setLoading(false);
     }
-  }, [household, members, fetchMemberShifts, fetchWorkplaces, fetchAllTransactions, fetchCategories]);
+  }, [household, members, fetchMemberShifts, fetchWorkplaces, fetchAllTransactions, fetchCategories, fetchGoals]);
 
   // Calculate combined stats
   const combinedStats = useMemo(() => {
@@ -643,7 +660,7 @@ function Household() {
         )}
 
         {activeTab === "transactions" && (
-          <Transactions householdId={household?.id} userId={userId} members={members} />
+          <Transactions householdId={household?.id} userId={userId} members={members} goals={goals} />
         )}
 
         {activeTab === "recurring" && (
