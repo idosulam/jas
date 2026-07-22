@@ -46,7 +46,7 @@ function Workplaces({ onNavigate, returnTo }) {
   const [fieldErrors, setFieldErrors] = useState({});
   const [fieldStates, setFieldStates] = useState({});
   const [shakeKey, setShakeKey] = useState(0);
-  const colorPickerRef = useRef(null);
+
   const { success: toastSuccess, error: toastError } = useGlassToast();
 
   const formModal = useModal(320);
@@ -590,27 +590,23 @@ function Workplaces({ onNavigate, returnTo }) {
             shake={fieldErrors.color ? shakeKey : 0}
           >
             <div className="workplaces__color-input-row">
-              <input
-                ref={colorPickerRef}
-                type="color"
-                value={form.color || "#818cf8"}
-                onChange={(e) => {
-                  setForm({ ...form, color: e.target.value });
-                  setFieldErrors((prev) => ({ ...prev, color: null }));
-                  setFieldStates((prev) => ({ ...prev, color: "valid" }));
-                }}
-                className="workplaces__color-native-hidden"
-                aria-label="Pick a color"
-              />
-              <button
-                type="button"
+              <label
                 className="workplaces__color-swatch"
                 style={{ background: form.color || "rgba(255,255,255,0.08)" }}
-                onClick={() => colorPickerRef.current?.click()}
                 aria-label="Open color picker"
               >
+                <input
+                  type="color"
+                  value={form.color || "#818cf8"}
+                  onChange={(e) => {
+                    setForm({ ...form, color: e.target.value });
+                    setFieldErrors((prev) => ({ ...prev, color: null }));
+                    setFieldStates((prev) => ({ ...prev, color: "valid" }));
+                  }}
+                  className="workplaces__color-native-hidden"
+                />
                 {!form.color && <span className="workplaces__color-placeholder">?</span>}
-              </button>
+              </label>
               <input
                 type="text"
                 value={form.color}
