@@ -5,6 +5,7 @@ import Page_transition from "./components/Page_transition.jsx";
 import { ToastProvider } from "./lib/glass_toast_provider.jsx";
 import { supabase } from "./lib/superbase.jsx";
 import { AuthProvider, useAuth } from "./lib/Auth_context.jsx";
+import { HouseholdProvider } from "./lib/Household_context.jsx";
 
 // Lazy-loaded page components (route-level code splitting)
 const Shifts = lazy(() => import("./components/Pages/Shifts/Shifts.jsx"));
@@ -204,12 +205,13 @@ function AppContent() {
     </AnimatePresence>
   );
 }
-
 function App() {
   return (
     <ToastProvider>
       <AuthProvider>
-        <AppContent />
+        <HouseholdProvider>
+          <AppContent />
+        </HouseholdProvider>
       </AuthProvider>
     </ToastProvider>
   );
