@@ -1102,7 +1102,7 @@ function Profile({ onNavigate }) {
   };
 
   return (
-    <section>
+    <section style={{ paddingTop: "2.5rem" }}>
       <div className="profile__top-bar">
         <button
           type="button"

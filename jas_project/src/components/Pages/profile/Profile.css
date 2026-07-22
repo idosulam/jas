@@ -1171,14 +1171,21 @@
 /* ── Sign-out Top Bar ──────────────────────────────────────── */
 
 .profile__top-bar {
-  position: sticky;
+  position: fixed;
   top: 0;
+  left: 0;
+  right: 0;
   z-index: 50;
   display: flex;
   align-items: center;
   padding: calc(env(safe-area-inset-top, 0px) + 0.5rem) 1rem 0.5rem;
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
+  pointer-events: none;
+}
+
+.profile__top-bar > * {
+  pointer-events: auto;
 }
 
 .profile__signout-btn {
