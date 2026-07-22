@@ -34,22 +34,6 @@ const FREQUENCIES = [
   { value: "yearly", label: "Yearly" },
 ];
 
-const EXPENSE_CATEGORIES = [
-  { name: "Food & Dining", icon: "🍔", color: "#f97316" },
-  { name: "Transport", icon: "🚗", color: "#3b82f6" },
-  { name: "Shopping", icon: "🛍️", color: "#ec4899" },
-  { name: "Bills & Utilities", icon: "💡", color: "#eab308" },
-  { name: "Entertainment", icon: "🎬", color: "#a855f7" },
-  { name: "Health", icon: "💊", color: "#22c55e" },
-  { name: "Subscriptions", icon: "📱", color: "#8b5cf6" },
-  { name: "Other", icon: "📦", color: "#6b7280" },
-];
-
-const INCOME_CATEGORIES = [
-  { name: "Salary", icon: "💰", color: "#22c55e" },
-  { name: "Freelance", icon: "💻", color: "#3b82f6" },
-  { name: "Other Income", icon: "📈", color: "#a855f7" },
-];
 
 function RecurringTransactions({ householdId, userId, categories }) {
   const [recurring, setRecurring] = useState([]);
@@ -241,7 +225,7 @@ function RecurringTransactions({ householdId, userId, categories }) {
       const payload = {
         household_id: householdId,
         user_id: userId,
-        category_id: form.category_id || null,
+        category_id: /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(form.category_id) ? form.category_id : null,
         type: form.type,
         amount: Number(Number(form.amount).toFixed(2)),
         description: sanitizeText(form.description, 100),
@@ -333,12 +317,7 @@ function RecurringTransactions({ householdId, userId, categories }) {
     return "";
   };
 
-  const currentCategories =
-    form.type === "expense" ? EXPENSE_CATEGORIES : INCOME_CATEGORIES;
-  const availableCategories =
-    categories.length > 0
-      ? categories.filter((c) => c.type === form.type)
-      : currentCategories;
+  const availableCategories = categories.filter((c) => c.type === form.type);
 
   // Monthly total estimate
   const monthlyEstimate = recurring
@@ -551,33 +530,29 @@ function RecurringTransactions({ householdId, userId, categories }) {
           {/* Category */}
           <div className="recurring__category-grid-wrap">
             <label className="recurring__form-label">Category</label>
-            <div className="recurring__category-grid">
-              {availableCategories.map((cat) => {
-                const catId = cat.id || cat.name;
-                const isActive = form.category_id === catId;
-                return (
-                  <button
-                    key={catId}
-                    type="button"
-                    className={`recurring__category-chip ${isActive ? "active" : ""}`}
-                    style={
-                      isActive
-                        ? {
-                            borderColor: cat.color,
-                            background: `${cat.color}15`,
-                          }
-                        : {}
-                    }
-                    onClick={() =>
-                      setForm((f) => ({ ...f, category_id: catId }))
-                    }
-                  >
-                    <span>{cat.icon}</span>
-                    <span>{cat.name}</span>
-                  </button>
-                );
-              })}
-            </div>
+            {availableCategories.length === 0 ? (
+              <p style={{ color: "var(--text-muted, #888)", fontSize: 14 }}>
+                No labels yet. Create labels in the Transactions tab first.
+              </p>
+            ) : (
+              <div className="recurring__category-grid">
+                {availableCategories.map((cat) => {
+                  const isActive = form.category_id === cat.id;
+                  return (
+                    <button
+                      key={cat.id}
+                      type="button"
+                      className={`recurring__category-chip ${isActive ? "active" : ""}`}
+                      style={isActive ? { borderColor: cat.color, background: `${cat.color}15` } : {}}
+                      onClick={() => setForm((f) => ({ ...f, category_id: cat.id }))}
+                    >
+                      <span>{cat.icon}</span>
+                      <span>{cat.name}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
           {/* Frequency */}
