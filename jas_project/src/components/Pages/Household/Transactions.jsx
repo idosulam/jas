@@ -339,7 +339,7 @@ function Transactions({ householdId, userId, members }) {
       const payload = {
         household_id: householdId,
         user_id: userId,
-        category_id: form.category_id || null,
+        category_id: /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(form.category_id) ? form.category_id : null,
         type: form.type,
         amount: Number(Number(form.amount).toFixed(2)),
         description: sanitizeText(form.description, 100),
@@ -662,9 +662,9 @@ function Transactions({ householdId, userId, members }) {
             <div className="transactions__category-grid">
               {availableCategories.map((cat) => {
                 const catId = cat.id || cat.name;
-                const isActive =
-                  form.category_id === catId ||
-                  (!form.category_id && cat.name === "Other");
+                const isActive = cat.id
+                  ? form.category_id === cat.id
+                  : !form.category_id && cat.name === "Other";
                 return (
                   <button
                     key={catId}
@@ -679,7 +679,7 @@ function Transactions({ householdId, userId, members }) {
                         : {}
                     }
                     onClick={() =>
-                      setForm((f) => ({ ...f, category_id: catId }))
+                      setForm((f) => ({ ...f, category_id: cat.id || "" }))
                     }
                   >
                     <span>{cat.icon}</span>
