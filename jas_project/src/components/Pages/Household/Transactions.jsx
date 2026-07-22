@@ -1,11 +1,16 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { getSupabaseClient } from "../../../../lib/superbase";
-import { getUserFacingError, sanitizeNumber, sanitizeText, hapticError } from "../../../../lib/security";
-import { useGlassToast } from "../../../../lib/glass_toast_provider.jsx";
-import { useModal, useBodyScrollLock } from "../../../../hooks";
-import SheetModal from "../../../ui/modals/Sheet_modal";
-import ConfirmModal from "../../../ui/modals/Confirm_modal";
-import FormField from "../../../ui/form/Form_field.jsx";
+import { getSupabaseClient } from "../../../lib/superbase";
+import {
+  getUserFacingError,
+  sanitizeNumber,
+  sanitizeText,
+  hapticError,
+} from "../../../lib/security";
+import { useGlassToast } from "../../../lib/glass_toast_provider.jsx";
+import { useModal, useBodyScrollLock } from "../../../hooks";
+import SheetModal from "../../ui/modals/Sheet_modal";
+import ConfirmModal from "../../ui/modals/Confirm_modal";
+import FormField from "../../ui/form/Form_field.jsx";
 
 function formatMoney(amount) {
   return `₪${Number(amount || 0).toFixed(2)}`;
@@ -103,8 +108,18 @@ function Transactions({ householdId, userId, members }) {
   }, []);
 
   const monthNames = [
-    "January", "February", "March", "April", "May", "June",
-    "July", "August", "September", "October", "November", "December",
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
   ];
 
   // Fetch categories
@@ -164,8 +179,12 @@ function Transactions({ householdId, userId, members }) {
     setLoading(false);
   }, [householdId, members, userId, month, year]);
 
-  useEffect(() => { fetchCategories(); }, [fetchCategories]);
-  useEffect(() => { if (householdId) fetchTransactions(); }, [householdId, fetchTransactions]);
+  useEffect(() => {
+    fetchCategories();
+  }, [fetchCategories]);
+  useEffect(() => {
+    if (householdId) fetchTransactions();
+  }, [householdId, fetchTransactions]);
 
   // Filtered transactions
   const filtered = useMemo(() => {
@@ -221,38 +240,56 @@ function Transactions({ householdId, userId, members }) {
     return Object.values(map).sort((a, b) => b.total - a.total);
   }, [transactions]);
 
-  const maxCategoryTotal = categoryBreakdown.length > 0
-    ? Math.max(...categoryBreakdown.map((c) => c.total))
-    : 0;
+  const maxCategoryTotal =
+    categoryBreakdown.length > 0
+      ? Math.max(...categoryBreakdown.map((c) => c.total))
+      : 0;
 
   // Validation
   const validateAmount = (value, isBlur = false) => {
     if (!value) {
-      if (isBlur) { setAmountState("error"); setAmountError("Amount is required"); }
-      else { setAmountState("idle"); setAmountError(null); }
+      if (isBlur) {
+        setAmountState("error");
+        setAmountError("Amount is required");
+      } else {
+        setAmountState("idle");
+        setAmountError(null);
+      }
       return;
     }
     const num = Number(value);
     if (isNaN(num) || num <= 0) {
-      setAmountState("error"); setAmountError("Enter a valid amount");
+      setAmountState("error");
+      setAmountError("Enter a valid amount");
     } else {
-      setAmountState("valid"); setAmountError(null);
+      setAmountState("valid");
+      setAmountError(null);
     }
   };
 
   const validateDesc = (value, isBlur = false) => {
     const trimmed = value.trim();
     if (!trimmed) {
-      if (isBlur) { setDescState("error"); setDescError("Description is required"); }
-      else { setDescState("idle"); setDescError(null); }
+      if (isBlur) {
+        setDescState("error");
+        setDescError("Description is required");
+      } else {
+        setDescState("idle");
+        setDescError(null);
+      }
       return;
     }
-    setDescState("valid"); setDescError(null);
+    setDescState("valid");
+    setDescError(null);
   };
 
   const resetFieldStates = () => {
-    setAmountTouched(false); setAmountState("idle"); setAmountError(null);
-    setDescTouched(false); setDescState("idle"); setDescError(null);
+    setAmountTouched(false);
+    setAmountState("idle");
+    setAmountError(null);
+    setDescTouched(false);
+    setDescState("idle");
+    setDescError(null);
   };
 
   const openAdd = (type = "expense") => {
@@ -320,7 +357,9 @@ function Transactions({ householdId, userId, members }) {
       } else {
         const { error } = await supabase.from("transactions").insert(payload);
         if (error) throw error;
-        toastSuccess(`${form.type === "expense" ? "Expense" : "Income"} added!`);
+        toastSuccess(
+          `${form.type === "expense" ? "Expense" : "Income"} added!`,
+        );
       }
 
       addModal.closeModal();
@@ -337,7 +376,10 @@ function Transactions({ householdId, userId, members }) {
     setDeleting(true);
     try {
       const supabase = getSupabaseClient();
-      const { error } = await supabase.from("transactions").delete().eq("id", deleteTarget.id);
+      const { error } = await supabase
+        .from("transactions")
+        .delete()
+        .eq("id", deleteTarget.id);
       if (error) throw error;
       deleteModal.closeModal();
       editModal.closeModal();
@@ -350,10 +392,12 @@ function Transactions({ householdId, userId, members }) {
     setDeleting(false);
   };
 
-  const currentCategories = form.type === "expense" ? EXPENSE_CATEGORIES : INCOME_CATEGORIES;
-  const availableCategories = categories.length > 0
-    ? categories.filter((c) => c.type === form.type)
-    : currentCategories;
+  const currentCategories =
+    form.type === "expense" ? EXPENSE_CATEGORIES : INCOME_CATEGORIES;
+  const availableCategories =
+    categories.length > 0
+      ? categories.filter((c) => c.type === form.type)
+      : currentCategories;
 
   return (
     <div className="transactions">
@@ -382,8 +426,11 @@ function Transactions({ householdId, userId, members }) {
         </div>
         <div className="transactions__balance-net">
           <span className="transactions__balance-net-label">Balance</span>
-          <span className={`transactions__balance-net-value ${stats.balance >= 0 ? "positive" : "negative"}`}>
-            {stats.balance >= 0 ? "+" : ""}{formatMoney(stats.balance)}
+          <span
+            className={`transactions__balance-net-value ${stats.balance >= 0 ? "positive" : "negative"}`}
+          >
+            {stats.balance >= 0 ? "+" : ""}
+            {formatMoney(stats.balance)}
           </span>
         </div>
       </div>
@@ -409,8 +456,12 @@ function Transactions({ householdId, userId, members }) {
             {categoryBreakdown.slice(0, 6).map((cat) => (
               <div key={cat.name} className="transactions__category-item">
                 <div className="transactions__category-left">
-                  <span className="transactions__category-icon">{cat.icon}</span>
-                  <span className="transactions__category-name">{cat.name}</span>
+                  <span className="transactions__category-icon">
+                    {cat.icon}
+                  </span>
+                  <span className="transactions__category-name">
+                    {cat.name}
+                  </span>
                 </div>
                 <div className="transactions__category-right">
                   <div className="transactions__category-bar-wrap">
@@ -422,7 +473,9 @@ function Transactions({ householdId, userId, members }) {
                       }}
                     />
                   </div>
-                  <span className="transactions__category-amount">{formatMoney(cat.total)}</span>
+                  <span className="transactions__category-amount">
+                    {formatMoney(cat.total)}
+                  </span>
                 </div>
               </div>
             ))}
@@ -434,10 +487,16 @@ function Transactions({ householdId, userId, members }) {
       <div className="transactions__list-header">
         <h3 className="transactions__section-title">Transactions</h3>
         <div className="transactions__add-btns">
-          <button className="btn btn--ghost btn--sm" onClick={() => openAdd("expense")}>
+          <button
+            className="btn btn--ghost btn--sm"
+            onClick={() => openAdd("expense")}
+          >
             + Expense
           </button>
-          <button className="btn btn--primary btn--sm" onClick={() => openAdd("income")}>
+          <button
+            className="btn btn--primary btn--sm"
+            onClick={() => openAdd("income")}
+          >
             + Income
           </button>
         </div>
@@ -452,15 +511,23 @@ function Transactions({ householdId, userId, members }) {
         <div className="transactions__groups">
           {grouped.map(([date, items]) => {
             const dayTotal = items.reduce((sum, t) => {
-              return sum + (t.type === "expense" ? -Number(t.amount) : Number(t.amount));
+              return (
+                sum +
+                (t.type === "expense" ? -Number(t.amount) : Number(t.amount))
+              );
             }, 0);
 
             return (
               <div key={date} className="transactions__group">
                 <div className="transactions__group-header">
-                  <span className="transactions__group-date">{formatDateGroup(date)}</span>
-                  <span className={`transactions__group-total ${dayTotal >= 0 ? "positive" : "negative"}`}>
-                    {dayTotal >= 0 ? "+" : ""}{formatMoney(Math.abs(dayTotal))}
+                  <span className="transactions__group-date">
+                    {formatDateGroup(date)}
+                  </span>
+                  <span
+                    className={`transactions__group-total ${dayTotal >= 0 ? "positive" : "negative"}`}
+                  >
+                    {dayTotal >= 0 ? "+" : ""}
+                    {formatMoney(Math.abs(dayTotal))}
                   </span>
                 </div>
                 <div className="transactions__group-items">
@@ -472,12 +539,17 @@ function Transactions({ householdId, userId, members }) {
                     >
                       <div
                         className="transactions__item-icon"
-                        style={{ background: `${tx.category_color}18`, color: tx.category_color }}
+                        style={{
+                          background: `${tx.category_color}18`,
+                          color: tx.category_color,
+                        }}
                       >
                         {tx.category_icon}
                       </div>
                       <div className="transactions__item-info">
-                        <span className="transactions__item-desc">{tx.description}</span>
+                        <span className="transactions__item-desc">
+                          {tx.description}
+                        </span>
                         <span className="transactions__item-meta">
                           {tx.category_name}
                           {` · ${tx.is_me ? "You" : tx.display_name}`}
@@ -485,7 +557,8 @@ function Transactions({ householdId, userId, members }) {
                         </span>
                       </div>
                       <span className={`transactions__item-amount ${tx.type}`}>
-                        {tx.type === "expense" ? "-" : "+"}{formatMoney(tx.amount)}
+                        {tx.type === "expense" ? "-" : "+"}
+                        {formatMoney(tx.amount)}
                       </span>
                     </div>
                   ))}
@@ -500,7 +573,10 @@ function Transactions({ householdId, userId, members }) {
       <SheetModal
         open={addModal.open || editModal.open}
         closing={addModal.closing || editModal.closing}
-        onClose={() => { addModal.closeModal(); editModal.closeModal(); }}
+        onClose={() => {
+          addModal.closeModal();
+          editModal.closeModal();
+        }}
         title={editingTx ? "Edit transaction" : "Add transaction"}
       >
         <div className="transactions__form">
@@ -508,13 +584,17 @@ function Transactions({ householdId, userId, members }) {
           <div className="transactions__type-toggle">
             <button
               className={`transactions__type-btn ${form.type === "expense" ? "transactions__type-btn--active expense" : ""}`}
-              onClick={() => setForm((f) => ({ ...f, type: "expense", category_id: "" }))}
+              onClick={() =>
+                setForm((f) => ({ ...f, type: "expense", category_id: "" }))
+              }
             >
               Expense
             </button>
             <button
               className={`transactions__type-btn ${form.type === "income" ? "transactions__type-btn--active income" : ""}`}
-              onClick={() => setForm((f) => ({ ...f, type: "income", category_id: "" }))}
+              onClick={() =>
+                setForm((f) => ({ ...f, type: "income", category_id: "" }))
+              }
             >
               Income
             </button>
@@ -540,7 +620,8 @@ function Transactions({ householdId, userId, members }) {
                 setAmountTouched(true);
                 validateAmount(form.amount, true);
                 if (!form.amount || Number(form.amount) <= 0) {
-                  setShakeKey((k) => k + 1); hapticError();
+                  setShakeKey((k) => k + 1);
+                  hapticError();
                 }
               }}
               placeholder="0.00"
@@ -566,7 +647,8 @@ function Transactions({ householdId, userId, members }) {
                 setDescTouched(true);
                 validateDesc(form.description, true);
                 if (!form.description.trim()) {
-                  setShakeKey((k) => k + 1); hapticError();
+                  setShakeKey((k) => k + 1);
+                  hapticError();
                 }
               }}
               placeholder="What was this for?"
@@ -580,14 +662,25 @@ function Transactions({ householdId, userId, members }) {
             <div className="transactions__category-grid">
               {availableCategories.map((cat) => {
                 const catId = cat.id || cat.name;
-                const isActive = form.category_id === catId || (!form.category_id && cat.name === "Other");
+                const isActive =
+                  form.category_id === catId ||
+                  (!form.category_id && cat.name === "Other");
                 return (
                   <button
                     key={catId}
                     type="button"
                     className={`transactions__category-chip ${isActive ? "active" : ""}`}
-                    style={isActive ? { borderColor: cat.color, background: `${cat.color}15` } : {}}
-                    onClick={() => setForm((f) => ({ ...f, category_id: catId }))}
+                    style={
+                      isActive
+                        ? {
+                            borderColor: cat.color,
+                            background: `${cat.color}15`,
+                          }
+                        : {}
+                    }
+                    onClick={() =>
+                      setForm((f) => ({ ...f, category_id: catId }))
+                    }
                   >
                     <span>{cat.icon}</span>
                     <span>{cat.name}</span>
@@ -601,7 +694,9 @@ function Transactions({ householdId, userId, members }) {
             <input
               type="date"
               value={form.transaction_date}
-              onChange={(e) => setForm((f) => ({ ...f, transaction_date: e.target.value }))}
+              onChange={(e) =>
+                setForm((f) => ({ ...f, transaction_date: e.target.value }))
+              }
             />
           </FormField>
 
@@ -619,7 +714,10 @@ function Transactions({ householdId, userId, members }) {
             <button
               type="button"
               className="btn btn--ghost"
-              onClick={() => { addModal.closeModal(); editModal.closeModal(); }}
+              onClick={() => {
+                addModal.closeModal();
+                editModal.closeModal();
+              }}
             >
               Cancel
             </button>
@@ -627,7 +725,10 @@ function Transactions({ householdId, userId, members }) {
               <button
                 type="button"
                 className="btn btn--danger"
-                onClick={() => { setDeleteTarget(editingTx); deleteModal.openModal(); }}
+                onClick={() => {
+                  setDeleteTarget(editingTx);
+                  deleteModal.openModal();
+                }}
               >
                 Delete
               </button>

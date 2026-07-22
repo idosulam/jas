@@ -1,11 +1,16 @@
 import { useCallback, useEffect, useState } from "react";
-import { getSupabaseClient } from "../../../../lib/superbase";
-import { getUserFacingError, sanitizeNumber, sanitizeText, hapticError } from "../../../../lib/security";
-import { useGlassToast } from "../../../../lib/glass_toast_provider.jsx";
-import { useModal, useBodyScrollLock } from "../../../../hooks";
-import SheetModal from "../../../ui/modals/Sheet_modal";
-import ConfirmModal from "../../../ui/modals/Confirm_modal";
-import FormField from "../../../ui/form/Form_field.jsx";
+import { getSupabaseClient } from "../../../lib/superbase";
+import {
+  getUserFacingError,
+  sanitizeNumber,
+  sanitizeText,
+  hapticError,
+} from "../../../lib/security";
+import { useGlassToast } from "../../../lib/glass_toast_provider.jsx";
+import { useModal, useBodyScrollLock } from "../../../hooks";
+import SheetModal from "../../ui/modals/Sheet_modal";
+import ConfirmModal from "../../ui/modals/Confirm_modal";
+import FormField from "../../ui/form/Form_field.jsx";
 
 function formatMoney(amount) {
   return `₪${Number(amount || 0).toFixed(2)}`;
@@ -14,7 +19,11 @@ function formatMoney(amount) {
 function formatDate(dateStr) {
   if (!dateStr) return "—";
   const d = new Date(`${dateStr}T12:00:00`);
-  return d.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
+  return d.toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
 }
 
 const FREQUENCIES = [
@@ -95,34 +104,53 @@ function RecurringTransactions({ householdId, userId, categories }) {
     setLoading(false);
   }, [householdId]);
 
-  useEffect(() => { fetchRecurring(); }, [fetchRecurring]);
+  useEffect(() => {
+    fetchRecurring();
+  }, [fetchRecurring]);
 
   const validateAmount = (value, isBlur = false) => {
     if (!value) {
-      if (isBlur) { setAmountState("error"); setAmountError("Amount is required"); }
-      else { setAmountState("idle"); setAmountError(null); }
+      if (isBlur) {
+        setAmountState("error");
+        setAmountError("Amount is required");
+      } else {
+        setAmountState("idle");
+        setAmountError(null);
+      }
       return;
     }
     const num = Number(value);
     if (isNaN(num) || num <= 0) {
-      setAmountState("error"); setAmountError("Enter a valid amount");
+      setAmountState("error");
+      setAmountError("Enter a valid amount");
     } else {
-      setAmountState("valid"); setAmountError(null);
+      setAmountState("valid");
+      setAmountError(null);
     }
   };
 
   const validateDesc = (value, isBlur = false) => {
     if (!value.trim()) {
-      if (isBlur) { setDescState("error"); setDescError("Description is required"); }
-      else { setDescState("idle"); setDescError(null); }
+      if (isBlur) {
+        setDescState("error");
+        setDescError("Description is required");
+      } else {
+        setDescState("idle");
+        setDescError(null);
+      }
       return;
     }
-    setDescState("valid"); setDescError(null);
+    setDescState("valid");
+    setDescError(null);
   };
 
   const resetFieldStates = () => {
-    setAmountTouched(false); setAmountState("idle"); setAmountError(null);
-    setDescTouched(false); setDescState("idle"); setDescError(null);
+    setAmountTouched(false);
+    setAmountState("idle");
+    setAmountError(null);
+    setDescTouched(false);
+    setDescState("idle");
+    setDescError(null);
   };
 
   const openAdd = () => {
@@ -183,7 +211,11 @@ function RecurringTransactions({ householdId, userId, categories }) {
         return d.toISOString().slice(0, 10);
       }
       case "yearly": {
-        const d = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
+        const d = new Date(
+          today.getFullYear(),
+          today.getMonth(),
+          today.getDate() + 1,
+        );
         return d.toISOString().slice(0, 10);
       }
       default:
@@ -215,9 +247,14 @@ function RecurringTransactions({ householdId, userId, categories }) {
         description: sanitizeText(form.description, 100),
         note: sanitizeText(form.note, 500) || null,
         frequency: form.frequency,
-        day_of_month: form.frequency === "monthly" ? parseInt(form.day_of_month) : null,
-        day_of_week: ["weekly", "biweekly"].includes(form.frequency) ? parseInt(form.day_of_week) : null,
-        next_due_date: editingRec ? editingRec.next_due_date : calcNextDueDate(),
+        day_of_month:
+          form.frequency === "monthly" ? parseInt(form.day_of_month) : null,
+        day_of_week: ["weekly", "biweekly"].includes(form.frequency)
+          ? parseInt(form.day_of_week)
+          : null,
+        next_due_date: editingRec
+          ? editingRec.next_due_date
+          : calcNextDueDate(),
         is_active: true,
       };
 
@@ -229,7 +266,9 @@ function RecurringTransactions({ householdId, userId, categories }) {
         if (error) throw error;
         toastSuccess("Recurring transaction updated.");
       } else {
-        const { error } = await supabase.from("recurring_transactions").insert(payload);
+        const { error } = await supabase
+          .from("recurring_transactions")
+          .insert(payload);
         if (error) throw error;
         toastSuccess("Recurring transaction created!");
       }
@@ -284,17 +323,22 @@ function RecurringTransactions({ householdId, userId, categories }) {
     if (rec.frequency === "monthly" && rec.day_of_month) {
       return `on day ${rec.day_of_month}`;
     }
-    if (["weekly", "biweekly"].includes(rec.frequency) && rec.day_of_week != null) {
+    if (
+      ["weekly", "biweekly"].includes(rec.frequency) &&
+      rec.day_of_week != null
+    ) {
       const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
       return `on ${days[rec.day_of_week]}`;
     }
     return "";
   };
 
-  const currentCategories = form.type === "expense" ? EXPENSE_CATEGORIES : INCOME_CATEGORIES;
-  const availableCategories = categories.length > 0
-    ? categories.filter((c) => c.type === form.type)
-    : currentCategories;
+  const currentCategories =
+    form.type === "expense" ? EXPENSE_CATEGORIES : INCOME_CATEGORIES;
+  const availableCategories =
+    categories.length > 0
+      ? categories.filter((c) => c.type === form.type)
+      : currentCategories;
 
   // Monthly total estimate
   const monthlyEstimate = recurring
@@ -302,12 +346,18 @@ function RecurringTransactions({ householdId, userId, categories }) {
     .reduce((sum, r) => {
       const amt = Number(r.amount);
       switch (r.frequency) {
-        case "daily": return sum + amt * 30;
-        case "weekly": return sum + amt * 4.33;
-        case "biweekly": return sum + amt * 2.17;
-        case "monthly": return sum + amt;
-        case "yearly": return sum + amt / 12;
-        default: return sum + amt;
+        case "daily":
+          return sum + amt * 30;
+        case "weekly":
+          return sum + amt * 4.33;
+        case "biweekly":
+          return sum + amt * 2.17;
+        case "monthly":
+          return sum + amt;
+        case "yearly":
+          return sum + amt / 12;
+        default:
+          return sum + amt;
       }
     }, 0);
 
@@ -317,10 +367,13 @@ function RecurringTransactions({ householdId, userId, categories }) {
       <div className="recurring__estimate">
         <div className="recurring__estimate-info">
           <span className="recurring__estimate-label">Monthly Estimate</span>
-          <span className="recurring__estimate-value">{formatMoney(monthlyEstimate)}</span>
+          <span className="recurring__estimate-value">
+            {formatMoney(monthlyEstimate)}
+          </span>
         </div>
         <span className="recurring__estimate-note">
-          Based on {recurring.filter((r) => r.is_active).length} active recurring transactions
+          Based on {recurring.filter((r) => r.is_active).length} active
+          recurring transactions
         </span>
       </div>
 
@@ -335,7 +388,9 @@ function RecurringTransactions({ householdId, userId, categories }) {
       {recurring.length === 0 ? (
         <div className="recurring__empty">
           <p>No recurring transactions</p>
-          <span>Set up bills, subscriptions, or regular income to auto-track them.</span>
+          <span>
+            Set up bills, subscriptions, or regular income to auto-track them.
+          </span>
         </div>
       ) : (
         <div className="recurring__list">
@@ -356,20 +411,27 @@ function RecurringTransactions({ householdId, userId, categories }) {
                   {cat?.icon || "📦"}
                 </div>
                 <div className="recurring__item-info">
-                  <span className="recurring__item-desc">{rec.description}</span>
+                  <span className="recurring__item-desc">
+                    {rec.description}
+                  </span>
                   <span className="recurring__item-meta">
                     {getFrequencyLabel(rec.frequency)} {getDayLabel(rec)}
-                    {rec.next_due_date && ` · Next: ${formatDate(rec.next_due_date)}`}
+                    {rec.next_due_date &&
+                      ` · Next: ${formatDate(rec.next_due_date)}`}
                   </span>
                 </div>
                 <div className="recurring__item-right">
                   <span className={`recurring__item-amount ${rec.type}`}>
-                    {rec.type === "expense" ? "-" : "+"}{formatMoney(rec.amount)}
+                    {rec.type === "expense" ? "-" : "+"}
+                    {formatMoney(rec.amount)}
                   </span>
                   <div className="recurring__item-actions">
                     <button
                       className={`recurring__toggle ${rec.is_active ? "active" : ""}`}
-                      onClick={(e) => { e.stopPropagation(); toggleActive(rec); }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleActive(rec);
+                      }}
                       title={rec.is_active ? "Pause" : "Resume"}
                     >
                       {rec.is_active ? "●" : "○"}
@@ -383,7 +445,10 @@ function RecurringTransactions({ householdId, userId, categories }) {
                     </button>
                     <button
                       className="recurring__delete-btn"
-                      onClick={() => { setDeleteTarget(rec); deleteModal.openModal(); }}
+                      onClick={() => {
+                        setDeleteTarget(rec);
+                        deleteModal.openModal();
+                      }}
                       title="Delete"
                     >
                       ×
@@ -400,7 +465,10 @@ function RecurringTransactions({ householdId, userId, categories }) {
       <SheetModal
         open={addModal.open || editModal.open}
         closing={addModal.closing || editModal.closing}
-        onClose={() => { addModal.closeModal(); editModal.closeModal(); }}
+        onClose={() => {
+          addModal.closeModal();
+          editModal.closeModal();
+        }}
         title={editingRec ? "Edit recurring" : "New recurring transaction"}
       >
         <div className="recurring__form">
@@ -408,13 +476,17 @@ function RecurringTransactions({ householdId, userId, categories }) {
           <div className="recurring__type-toggle">
             <button
               className={`recurring__type-btn ${form.type === "expense" ? "active expense" : ""}`}
-              onClick={() => setForm((f) => ({ ...f, type: "expense", category_id: "" }))}
+              onClick={() =>
+                setForm((f) => ({ ...f, type: "expense", category_id: "" }))
+              }
             >
               Expense
             </button>
             <button
               className={`recurring__type-btn ${form.type === "income" ? "active income" : ""}`}
-              onClick={() => setForm((f) => ({ ...f, type: "income", category_id: "" }))}
+              onClick={() =>
+                setForm((f) => ({ ...f, type: "income", category_id: "" }))
+              }
             >
               Income
             </button>
@@ -439,7 +511,10 @@ function RecurringTransactions({ householdId, userId, categories }) {
               onBlur={() => {
                 setAmountTouched(true);
                 validateAmount(form.amount, true);
-                if (!form.amount || Number(form.amount) <= 0) { setShakeKey((k) => k + 1); hapticError(); }
+                if (!form.amount || Number(form.amount) <= 0) {
+                  setShakeKey((k) => k + 1);
+                  hapticError();
+                }
               }}
               placeholder="0.00"
               autoFocus
@@ -463,7 +538,10 @@ function RecurringTransactions({ householdId, userId, categories }) {
               onBlur={() => {
                 setDescTouched(true);
                 validateDesc(form.description, true);
-                if (!form.description.trim()) { setShakeKey((k) => k + 1); hapticError(); }
+                if (!form.description.trim()) {
+                  setShakeKey((k) => k + 1);
+                  hapticError();
+                }
               }}
               placeholder="e.g. Netflix, Rent, Salary"
               maxLength={100}
@@ -482,8 +560,17 @@ function RecurringTransactions({ householdId, userId, categories }) {
                     key={catId}
                     type="button"
                     className={`recurring__category-chip ${isActive ? "active" : ""}`}
-                    style={isActive ? { borderColor: cat.color, background: `${cat.color}15` } : {}}
-                    onClick={() => setForm((f) => ({ ...f, category_id: catId }))}
+                    style={
+                      isActive
+                        ? {
+                            borderColor: cat.color,
+                            background: `${cat.color}15`,
+                          }
+                        : {}
+                    }
+                    onClick={() =>
+                      setForm((f) => ({ ...f, category_id: catId }))
+                    }
                   >
                     <span>{cat.icon}</span>
                     <span>{cat.name}</span>
@@ -497,10 +584,14 @@ function RecurringTransactions({ householdId, userId, categories }) {
           <FormField label="Frequency">
             <select
               value={form.frequency}
-              onChange={(e) => setForm((f) => ({ ...f, frequency: e.target.value }))}
+              onChange={(e) =>
+                setForm((f) => ({ ...f, frequency: e.target.value }))
+              }
             >
               {FREQUENCIES.map((f) => (
-                <option key={f.value} value={f.value}>{f.label}</option>
+                <option key={f.value} value={f.value}>
+                  {f.label}
+                </option>
               ))}
             </select>
           </FormField>
@@ -510,10 +601,14 @@ function RecurringTransactions({ householdId, userId, categories }) {
             <FormField label="Day of month">
               <select
                 value={form.day_of_month}
-                onChange={(e) => setForm((f) => ({ ...f, day_of_month: e.target.value }))}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, day_of_month: e.target.value }))
+                }
               >
                 {Array.from({ length: 31 }, (_, i) => i + 1).map((d) => (
-                  <option key={d} value={d}>{d}</option>
+                  <option key={d} value={d}>
+                    {d}
+                  </option>
                 ))}
               </select>
             </FormField>
@@ -524,7 +619,9 @@ function RecurringTransactions({ householdId, userId, categories }) {
             <FormField label="Day of week">
               <select
                 value={form.day_of_week}
-                onChange={(e) => setForm((f) => ({ ...f, day_of_week: e.target.value }))}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, day_of_week: e.target.value }))
+                }
               >
                 <option value="0">Sunday</option>
                 <option value="1">Monday</option>
@@ -551,7 +648,10 @@ function RecurringTransactions({ householdId, userId, categories }) {
             <button
               type="button"
               className="btn btn--ghost"
-              onClick={() => { addModal.closeModal(); editModal.closeModal(); }}
+              onClick={() => {
+                addModal.closeModal();
+                editModal.closeModal();
+              }}
             >
               Cancel
             </button>
@@ -559,7 +659,10 @@ function RecurringTransactions({ householdId, userId, categories }) {
               <button
                 type="button"
                 className="btn btn--danger"
-                onClick={() => { setDeleteTarget(editingRec); deleteModal.openModal(); }}
+                onClick={() => {
+                  setDeleteTarget(editingRec);
+                  deleteModal.openModal();
+                }}
               >
                 Delete
               </button>
