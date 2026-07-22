@@ -48,12 +48,6 @@ function AppContent() {
     setActiveNav(id);
   };
 
-  const handleSignOut = async () => {
-    if (supabase) {
-      await supabase.auth.signOut();
-    }
-  };
-
   // Loading screen
   if (loading) {
     return (
@@ -143,63 +137,6 @@ function AppContent() {
             </Page_transition>
           </main>
           <Navbar activeId={activeNav} onChange={handleNavChange} />
-          {supabase && (
-            <button
-              type="button"
-              onClick={handleSignOut}
-              style={{
-                position: "fixed",
-                top: "calc(env(safe-area-inset-top, 0px) + 0.75rem)",
-                right: "1rem",
-                zIndex: 100,
-                display: "flex",
-                alignItems: "center",
-                gap: "0.35rem",
-                padding: "0.4rem 0.7rem",
-                fontSize: "0.72rem",
-                fontFamily: "var(--font-heading)",
-                fontWeight: 600,
-                letterSpacing: "0.04em",
-                textTransform: "uppercase",
-                color: "var(--text-dim, rgba(255,255,255,0.35))",
-                background: "rgba(255,255,255,0.04)",
-                border: "1px solid rgba(255,255,255,0.08)",
-                borderRadius: "var(--radius-pill, 999px)",
-                cursor: "pointer",
-                backdropFilter: "blur(12px)",
-                WebkitBackdropFilter: "blur(12px)",
-                transition: "color 0.2s, background 0.2s, border-color 0.2s",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.color = "var(--color-danger, #f87171)";
-                e.currentTarget.style.background = "rgba(248,113,113,0.08)";
-                e.currentTarget.style.borderColor = "rgba(248,113,113,0.2)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.color =
-                  "var(--text-dim, rgba(255,255,255,0.35))";
-                e.currentTarget.style.background = "rgba(255,255,255,0.04)";
-                e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)";
-              }}
-              aria-label="Sign out"
-            >
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-                <polyline points="16 17 21 12 16 7" />
-                <line x1="21" y1="12" x2="9" y2="12" />
-              </svg>
-              Sign out
-            </button>
-          )}
         </motion.div>
       )}
     </AnimatePresence>
