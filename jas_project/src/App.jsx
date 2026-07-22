@@ -10,7 +10,9 @@ import { HouseholdProvider } from "./lib/Household_context.jsx";
 // Lazy-loaded page components (route-level code splitting)
 const Shifts = lazy(() => import("./components/Pages/Shifts/Shifts.jsx"));
 const Calendar = lazy(() => import("./components/Pages/Calendar/Calendar.jsx"));
-const Household = lazy(() => import("./components/Pages/Household/Household.jsx"));
+const Household = lazy(
+  () => import("./components/Pages/Household/Household.jsx"),
+);
 const Profile = lazy(() => import("./components/Pages/profile/Profile.jsx"));
 const Workplaces = lazy(
   () => import("./components/Pages/Workplaces/Work_places.jsx"),
@@ -148,7 +150,7 @@ function AppContent() {
               type="button"
               onClick={handleSignOut}
               style={{
-                position: "fixed",
+                position: "absolute",
                 top: "calc(env(safe-area-inset-top, 0px) + 0.75rem)",
                 right: "1rem",
                 zIndex: 100,
