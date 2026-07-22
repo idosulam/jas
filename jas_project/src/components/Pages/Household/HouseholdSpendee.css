@@ -345,37 +345,52 @@
 .transactions__type-toggle,
 .recurring__type-toggle {
   display: flex;
-  gap: 0.35rem;
-  background: rgba(255, 255, 255, 0.03);
-  border-radius: var(--radius);
-  padding: 0.25rem;
-  border: 1px solid var(--border);
+  padding: 0.3rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
+  gap: 0.3rem;
 }
 
 .transactions__type-btn,
 .recurring__type-btn {
   flex: 1;
-  padding: 0.55rem 0.75rem;
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.4);
-  background: transparent;
+  padding: 0.5rem;
   border: none;
-  border-radius: calc(var(--radius) - 2px);
+  border-radius: 999px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.5);
+  font-weight: 700;
+  font-size: 0.8rem;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all var(--duration-fast, 0.15s) ease;
+}
+
+.transactions__type-btn:hover,
+.recurring__type-btn:hover {
+  color: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.04);
 }
 
 .transactions__type-btn--active.expense,
 .recurring__type-btn.active.expense {
   background: rgba(249, 115, 22, 0.12);
   color: #f97316;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .transactions__type-btn--active.income,
 .recurring__type-btn.active.income {
   background: rgba(34, 197, 94, 0.12);
   color: #22c55e;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.transactions__type-btn--active.contribute,
+.recurring__type-btn.active.contribute {
+  background: rgba(129, 140, 248, 0.12);
+  color: #818cf8;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .transactions__category-grid-wrap,

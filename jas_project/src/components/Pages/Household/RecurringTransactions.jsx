@@ -453,22 +453,16 @@ function RecurringTransactions({ householdId, userId, categories }) {
         <div className="recurring__form">
           {/* Type Toggle */}
           <div className="recurring__type-toggle">
-            <button
-              className={`recurring__type-btn ${form.type === "expense" ? "active expense" : ""}`}
-              onClick={() =>
-                setForm((f) => ({ ...f, type: "expense", category_id: "" }))
-              }
-            >
-              Expense
-            </button>
-            <button
-              className={`recurring__type-btn ${form.type === "income" ? "active income" : ""}`}
-              onClick={() =>
-                setForm((f) => ({ ...f, type: "income", category_id: "" }))
-              }
-            >
-              Income
-            </button>
+            {['expense', 'income'].map((t) => (
+              <button
+                key={t}
+                type="button"
+                className={`recurring__type-btn ${form.type === t ? `active ${t}` : ''}`}
+                onClick={() => setForm((f) => ({ ...f, type: t, category_id: '' }))}
+              >
+                {t === 'expense' ? 'Expense' : 'Income'}
+              </button>
+            ))}
           </div>
 
           <FormField

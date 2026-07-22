@@ -11,6 +11,7 @@ import { useModal, useBodyScrollLock } from "../../../hooks";
 import SheetModal from "../../ui/modals/Sheet_modal";
 import ConfirmModal from "../../ui/modals/Confirm_modal";
 import FormField from "../../ui/form/Form_field.jsx";
+import ColorPalettePicker from "../../../lib/Color_palette_picker.jsx";
 
 function formatMoney(amount) {
   return `₪${Number(amount || 0).toFixed(2)}`;
@@ -44,13 +45,7 @@ function formatDateGroup(dateStr) {
 const DEFAULT_ICONS = [
   "🍔", "🚗", "🛍️", "💡", "🎬", "💊", "📚", "🏠",
   "👕", "🎁", "📱", "📦", "💰", "💻", "💵", "🎉",
-  "📈", "☕", "✈️", "🏋️", "🐕", "🎵", "💊", "🔧",
-];
-
-const DEFAULT_COLORS = [
-  "#f97316", "#3b82f6", "#ec4899", "#eab308", "#a855f7",
-  "#22c55e", "#06b6d4", "#78716c", "#f472b6", "#fb923c",
-  "#8b5cf6", "#6b7280", "#ef4444", "#14b8a6", "#f59e0b",
+  "📈", "☕", "✈️", "🏋️", "🐕", "🎵", "🔧", "🛍️",
 ];
 
 function Transactions({ householdId, userId, members, goals = [] }) {
@@ -893,19 +888,10 @@ function Transactions({ householdId, userId, members, goals = [] }) {
           {/* Color picker */}
           <div className="transactions__category-grid-wrap">
             <label className="transactions__form-label">Color</label>
-            <div className="transactions__category-grid">
-              {DEFAULT_COLORS.map((color) => (
-                <button
-                  key={color}
-                  type="button"
-                  className={`transactions__category-chip ${categoryForm.color === color ? "active" : ""}`}
-                  style={categoryForm.color === color ? { borderColor: color, background: `${color}15` } : {}}
-                  onClick={() => setCategoryForm((f) => ({ ...f, color }))}
-                >
-                  <div style={{ width: 20, height: 20, borderRadius: "50%", background: color }} />
-                </button>
-              ))}
-            </div>
+            <ColorPalettePicker
+              value={categoryForm.color}
+              onChange={(color) => setCategoryForm((f) => ({ ...f, color }))}
+            />
           </div>
 
           {/* Type selector */}
