@@ -20,8 +20,8 @@ import {
   FAB,
   LoadingSkeleton,
 } from "../../../components";
-import {
 import { useHousehold } from "../../../lib/Household_context.jsx";
+import {
   useBodyScrollLock,
   useModal,
   useFloatingActions,
@@ -1099,7 +1099,9 @@ function Profile({ onNavigate }) {
     <section>
       <PageHeader
         className="profile__header"
-        eyebrow={householdName ? `Progress · ${householdName}` : "Your progress"}
+        eyebrow={
+          householdName ? `Progress · ${householdName}` : "Your progress"
+        }
         title={`Hi ${displayName}`}
         subtitle="Weight loss analytics tuned for your training."
       >
