@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { getSupabaseClient } from "../../../lib/superbase";
 import {
   getUserFacingError,
@@ -67,6 +67,21 @@ function RecurringTransactions({ householdId, userId, categories }) {
   const [descError, setDescError] = useState(null);
   const [descTouched, setDescTouched] = useState(false);
   const [shakeKey, setShakeKey] = useState(0);
+
+  // Sliding indicator state
+  const typeToggleRef = useRef(null);
+  const typeBtnRefs = useRef({});
+  const [indicatorStyle, setIndicatorStyle] = useState({ left: 0, width: 0 });
+
+  useEffect(() => {
+    const btn = typeBtnRefs.current[form.type];
+    const container = typeToggleRef.current;
+    if (btn && container) {
+      const containerRect = container.getBoundingClientRect();
+      const btnRect = btn.getBoundingClientRect();
+      setIndicatorStyle({ left: btnRect.left - containerRect.left, width: btnRect.width });
+    }
+  }, [form.type]);
 
   useBodyScrollLock(addModal.open, editModal.open, deleteModal.open);
 
@@ -452,10 +467,15 @@ function RecurringTransactions({ householdId, userId, categories }) {
       >
         <div className="recurring__form">
           {/* Type Toggle */}
-          <div className="recurring__type-toggle">
+          <div className="recurring__type-toggle" ref={typeToggleRef}>
+            <span
+              className={`recurring__type-indicator ${form.type}`}
+              style={{ transform: `translateX(${indicatorStyle.left}px)`, width: `${indicatorStyle.width}px` }}
+            />
             {['expense', 'income'].map((t) => (
               <button
                 key={t}
+                ref={(el) => { if (el) typeBtnRefs.current[t] = el; }}
                 type="button"
                 className={`recurring__type-btn ${form.type === t ? `active ${t}` : ''}`}
                 onClick={() => setForm((f) => ({ ...f, type: t, category_id: '' }))}

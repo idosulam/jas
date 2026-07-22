@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getSupabaseClient } from "../../../lib/superbase";
 import {
   getUserFacingError,
@@ -96,6 +96,21 @@ function Transactions({ householdId, userId, members, goals = [] }) {
   const [descError, setDescError] = useState(null);
   const [descTouched, setDescTouched] = useState(false);
   const [shakeKey, setShakeKey] = useState(0);
+
+  // Sliding indicator state
+  const typeToggleRef = useRef(null);
+  const typeBtnRefs = useRef({});
+  const [indicatorStyle, setIndicatorStyle] = useState({ left: 0, width: 0 });
+
+  useEffect(() => {
+    const btn = typeBtnRefs.current[form.type];
+    const container = typeToggleRef.current;
+    if (btn && container) {
+      const containerRect = container.getBoundingClientRect();
+      const btnRect = btn.getBoundingClientRect();
+      setIndicatorStyle({ left: btnRect.left - containerRect.left, width: btnRect.width });
+    }
+  }, [form.type]);
 
   useBodyScrollLock(
     addModal.open, editModal.open, deleteModal.open,
@@ -665,10 +680,15 @@ function Transactions({ householdId, userId, members, goals = [] }) {
       >
         <div className="transactions__form">
           {/* Type Toggle */}
-          <div className="transactions__type-toggle">
+          <div className="transactions__type-toggle" ref={typeToggleRef}>
+            <span
+              className={`transactions__type-indicator ${form.type}`}
+              style={{ transform: `translateX(${indicatorStyle.left}px)`, width: `${indicatorStyle.width}px` }}
+            />
             {["expense", "income", "contribute"].map((t) => (
               <button
                 key={t}
+                ref={(el) => { if (el) typeBtnRefs.current[t] = el; }}
                 className={`transactions__type-btn ${form.type === t ? `transactions__type-btn--active ${t}` : ""}`}
                 onClick={() => setForm((f) => ({ ...f, type: t, category_id: "", goal_id: "" }))}
               >

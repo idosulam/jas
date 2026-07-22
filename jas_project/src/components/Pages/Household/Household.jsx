@@ -1,6 +1,6 @@
 import "./Household.css";
 import "./HouseholdSpendee.css";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getSupabaseClient } from "../../../lib/superbase";
 import { useUserId } from "../../../lib/Auth_context.jsx";
 import { getUserFacingError, hapticError } from "../../../lib/security";
@@ -57,6 +57,21 @@ function Household() {
   const [joinLoading, setJoinLoading] = useState(false);
   const [workplaces, setWorkplaces] = useState({});
   const [activeTab, setActiveTab] = useState("overview");
+
+  // Sliding tab indicator
+  const tabNavRef = useRef(null);
+  const tabBtnRefs = useRef({});
+  const [tabIndicatorStyle, setTabIndicatorStyle] = useState({ left: 0, width: 0 });
+
+  useEffect(() => {
+    const btn = tabBtnRefs.current[activeTab];
+    const container = tabNavRef.current;
+    if (btn && container) {
+      const containerRect = container.getBoundingClientRect();
+      const btnRect = btn.getBoundingClientRect();
+      setTabIndicatorStyle({ left: btnRect.left - containerRect.left, width: btnRect.width });
+    }
+  }, [activeTab]);
   const [allTransactions, setAllTransactions] = useState([]);
   const [categories, setCategories] = useState([]);
   const [goals, setGoals] = useState([]);
@@ -530,12 +545,17 @@ function Household() {
       {error && <div className="household__error">{error}</div>}
 
       {/* Tab Navigation */}
-      <div className="household__tab-nav animate-in animate-in--2">
+      <div className="household__tab-nav animate-in animate-in--2" ref={tabNavRef}>
+        <span
+          className="household__tab-indicator"
+          style={{ transform: `translateX(${tabIndicatorStyle.left}px)`, width: `${tabIndicatorStyle.width}px` }}
+        />
         {TABS.map((tab) => (
           <button
             key={tab.id}
+            ref={(el) => { if (el) tabBtnRefs.current[tab.id] = el; }}
             className={`household__tab ${activeTab === tab.id ? "household__tab--active" : ""}`}
-            onClick={() => setActiveTab(tab.id)}
+            onClick={() => setActiveTab(tab.id)
           >
             <span className="household__tab-icon">{tab.icon}</span>
             <span className="household__tab-label">{tab.label}</span>
