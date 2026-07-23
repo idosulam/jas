@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState, useEffect } from "react";
 
 function formatMoney(amount) {
   return `₪${Number(amount || 0).toFixed(2)}`;
@@ -7,6 +7,24 @@ function formatMoney(amount) {
 function Analytics({ transactions, members, month, year }) {
   const [activeTab, setActiveTab] = useState("expense"); // expense | income
   const [hoveredCategory, setHoveredCategory] = useState(null);
+
+  // Sliding indicator
+  const tabNavRef = useRef(null);
+  const tabBtnRefs = useRef({});
+  const [tabIndicatorStyle, setTabIndicatorStyle] = useState({ left: 0, width: 0 });
+
+  useEffect(() => {
+    const btn = tabBtnRefs.current[activeTab];
+    const container = tabNavRef.current;
+    if (btn && container) {
+      const containerRect = container.getBoundingClientRect();
+      const btnRect = btn.getBoundingClientRect();
+      setTabIndicatorStyle({
+        left: btnRect.left - containerRect.left,
+        width: btnRect.width,
+      });
+    }
+  }, [activeTab]);
 
   const monthNames = [
     "January", "February", "March", "April", "May", "June",
@@ -132,14 +150,23 @@ function Analytics({ transactions, members, month, year }) {
   return (
     <div className="analytics">
       {/* Type Toggle */}
-      <div className="analytics__tabs">
+      <div className="analytics__tabs" ref={tabNavRef}>
+        <span
+          className="analytics__tab-indicator"
+          style={{
+            transform: `translateX(${tabIndicatorStyle.left}px)`,
+            width: `${tabIndicatorStyle.width}px`,
+          }}
+        />
         <button
+          ref={(el) => { if (el) tabBtnRefs.current["expense"] = el; }}
           className={`analytics__tab ${activeTab === "expense" ? "active" : ""}`}
           onClick={() => setActiveTab("expense")}
         >
           Expenses
         </button>
         <button
+          ref={(el) => { if (el) tabBtnRefs.current["income"] = el; }}
           className={`analytics__tab ${activeTab === "income" ? "active" : ""}`}
           onClick={() => setActiveTab("income")}
         >

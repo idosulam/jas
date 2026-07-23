@@ -66,9 +66,12 @@ function EarningsChart({ data, members, month, year }) {
 
   if (!chart || data.every((d) => d.total === 0)) {
     return (
-      <div className="earnings-chart__empty">
-        <p>No earnings this month</p>
-        <span>Log shifts to see the chart.</span>
+      <div className="earnings-chart__empty-wrap">
+        <div className="earnings-chart__empty">
+          <span className="earnings-chart__empty-icon">📊</span>
+          <p>No earnings this month</p>
+          <span>Log shifts to see the chart.</span>
+        </div>
       </div>
     );
   }

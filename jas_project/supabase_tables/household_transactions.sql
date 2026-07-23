@@ -18,6 +18,7 @@ CREATE TABLE public.transaction_categories (
   color        TEXT NOT NULL DEFAULT '#818cf8',
   type         TEXT NOT NULL CHECK (type IN ('expense', 'income')),
   is_default   BOOLEAN NOT NULL DEFAULT false,
+  budget_amount NUMERIC(12, 2) DEFAULT NULL CHECK (budget_amount IS NULL OR budget_amount >= 0),
   created_at   TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
@@ -30,13 +31,14 @@ CREATE TABLE public.transactions (
   household_id    UUID REFERENCES public.households(id) ON DELETE CASCADE,
   user_id         UUID REFERENCES auth.users(id) ON DELETE SET NULL,
   category_id     UUID REFERENCES public.transaction_categories(id) ON DELETE SET NULL,
-  type            TEXT NOT NULL CHECK (type IN ('expense', 'income')),
+  type            TEXT NOT NULL CHECK (type IN ('expense', 'income', 'contribute')),
   amount          NUMERIC(12, 2) NOT NULL CHECK (amount > 0),
   description     TEXT,
   note            TEXT,
   transaction_date DATE NOT NULL DEFAULT CURRENT_DATE,
   is_recurring    BOOLEAN NOT NULL DEFAULT false,
   recurring_id    UUID,
+  goal_id         UUID REFERENCES public.savings_goals(id) ON DELETE SET NULL,
   created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
@@ -44,6 +46,7 @@ CREATE INDEX idx_t_household ON public.transactions(household_id);
 CREATE INDEX idx_t_date ON public.transactions(household_id, transaction_date);
 CREATE INDEX idx_t_user ON public.transactions(user_id);
 CREATE INDEX idx_t_category ON public.transactions(category_id);
+CREATE INDEX idx_t_goal ON public.transactions(goal_id);
 
 -- ── Recurring Transactions ────────────────────────────────────
 
@@ -75,26 +78,26 @@ ALTER TABLE public.transactions
 -- ── Seed default categories ───────────────────────────────────
 
 -- These are global defaults (household_id IS NULL)
-INSERT INTO public.transaction_categories (name, icon, color, type, is_default, household_id) VALUES
+INSERT INTO public.transaction_categories (name, icon, color, type, is_default, budget_amount, household_id) VALUES
   -- Expenses
-  ('Food & Dining',    '🍔', '#f97316', 'expense', true, NULL),
-  ('Transport',        '🚗', '#3b82f6', 'expense', true, NULL),
-  ('Shopping',         '🛍️', '#ec4899', 'expense', true, NULL),
-  ('Bills & Utilities','💡', '#eab308', 'expense', true, NULL),
-  ('Entertainment',    '🎬', '#a855f7', 'expense', true, NULL),
-  ('Health',           '💊', '#22c55e', 'expense', true, NULL),
-  ('Education',        '📚', '#06b6d4', 'expense', true, NULL),
-  ('Home',             '🏠', '#78716c', 'expense', true, NULL),
-  ('Clothing',         '👕', '#f472b6', 'expense', true, NULL),
-  ('Gifts',            '🎁', '#fb923c', 'expense', true, NULL),
-  ('Subscriptions',    '📱', '#8b5cf6', 'expense', true, NULL),
-  ('Other',            '📦', '#6b7280', 'expense', true, NULL),
+  ('Food & Dining',    '🍔', '#f97316', 'expense', true, NULL, NULL),
+  ('Transport',        '🚗', '#3b82f6', 'expense', true, NULL, NULL),
+  ('Shopping',         '🛍️', '#ec4899', 'expense', true, NULL, NULL),
+  ('Bills & Utilities','💡', '#eab308', 'expense', true, NULL, NULL),
+  ('Entertainment',    '🎬', '#a855f7', 'expense', true, NULL, NULL),
+  ('Health',           '💊', '#22c55e', 'expense', true, NULL, NULL),
+  ('Education',        '📚', '#06b6d4', 'expense', true, NULL, NULL),
+  ('Home',             '🏠', '#78716c', 'expense', true, NULL, NULL),
+  ('Clothing',         '👕', '#f472b6', 'expense', true, NULL, NULL),
+  ('Gifts',            '🎁', '#fb923c', 'expense', true, NULL, NULL),
+  ('Subscriptions',    '📱', '#8b5cf6', 'expense', true, NULL, NULL),
+  ('Other',            '📦', '#6b7280', 'expense', true, NULL, NULL),
   -- Income
-  ('Salary',           '💰', '#22c55e', 'income',  true, NULL),
-  ('Freelance',        '💻', '#3b82f6', 'income',  true, NULL),
-  ('Tips',             '💵', '#f97316', 'income',  true, NULL),
-  ('Gifts Received',   '🎉', '#ec4899', 'income',  true, NULL),
-  ('Other Income',     '📈', '#a855f7', 'income',  true, NULL);
+  ('Salary',           '💰', '#22c55e', 'income',  true, NULL, NULL),
+  ('Freelance',        '💻', '#3b82f6', 'income',  true, NULL, NULL),
+  ('Tips',             '💵', '#f97316', 'income',  true, NULL, NULL),
+  ('Gifts Received',   '🎉', '#ec4899', 'income',  true, NULL, NULL),
+  ('Other Income',     '📈', '#a855f7', 'income',  true, NULL, NULL);
 
 -- ── Function: generate recurring transactions ─────────────────
 
@@ -156,8 +159,8 @@ LANGUAGE plpgsql
 SECURITY DEFINER
 AS $$
 BEGIN
-  INSERT INTO public.transaction_categories (household_id, name, icon, color, type, is_default)
-  SELECT household_id_param, name, icon, color, type, true
+  INSERT INTO public.transaction_categories (household_id, name, icon, color, type, is_default, budget_amount)
+  SELECT household_id_param, name, icon, color, type, true, NULL
   FROM public.transaction_categories
   WHERE household_id IS NULL AND is_default = true;
 END;

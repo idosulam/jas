@@ -7,12 +7,13 @@ import SheetModal from "../../ui/modals/Sheet_modal";
 import ConfirmModal from "../../ui/modals/Confirm_modal";
 import FormField from "../../ui/form/Form_field.jsx";
 import GlassCard from "../../ui/Glass_card";
+import EmptyState from "../../ui/Empty_state";
 
 function formatMoney(amount) {
   return `₪${Number(amount || 0).toFixed(2)}`;
 }
 
-function SavingsGoals({ householdId, userId, members }) {
+function SavingsGoals({ householdId, userId, members, hideTitle }) {
   const [goals, setGoals] = useState([]);
   const [loading, setLoading] = useState(true);
   const [deleteTarget, setDeleteTarget] = useState(null);
@@ -271,16 +272,25 @@ function SavingsGoals({ householdId, userId, members }) {
   return (
     <div className="savings-goals">
       <div className="savings-goals__header">
-        <h3 className="household__section-title">💰 Savings Goals</h3>
+        {!hideTitle && <h3 className="household__section-title">💰 Savings Goals</h3>}
+        <div style={{ flex: 1 }} />
         <button type="button" className="btn btn--ghost btn--sm" onClick={openNewGoal}>
           + New goal
         </button>
       </div>
 
       {goals.length === 0 ? (
-        <p className="savings-goals__empty">
-          No savings goals yet. Create one to start tracking together!
-        </p>
+        <EmptyState
+          className="savings-goals__empty-state"
+          icon={<span style={{ fontSize: "2rem" }}>🎯</span>}
+          title="No savings goals yet"
+          text="Create a goal to start tracking your savings together!"
+          action={
+            <button type="button" className="btn btn--primary btn--sm" onClick={openNewGoal}>
+              + Create goal
+            </button>
+          }
+        />
       ) : (
         <div className="savings-goals__list">
           {goals.map((goal) => {

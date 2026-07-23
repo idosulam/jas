@@ -102,6 +102,7 @@
 
 /* Tabs */
 .transactions__tabs {
+  position: relative;
   display: flex;
   gap: 0.35rem;
   margin-bottom: 1rem;
@@ -109,6 +110,19 @@
   border-radius: var(--radius);
   padding: 0.25rem;
   border: 1px solid var(--border);
+}
+
+.transactions__tab-indicator {
+  position: absolute;
+  top: 0.25rem;
+  bottom: 0.25rem;
+  left: 0;
+  border-radius: calc(var(--radius) - 2px);
+  background: rgba(129, 140, 248, 0.15);
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+              width 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  pointer-events: none;
+  z-index: 0;
 }
 
 .transactions__tab {
@@ -121,11 +135,12 @@
   border: none;
   border-radius: calc(var(--radius) - 2px);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: color 0.2s;
+  position: relative;
+  z-index: 1;
 }
 
 .transactions__tab--active {
-  background: rgba(129, 140, 248, 0.15);
   color: var(--color-primary, #818cf8);
 }
 
@@ -344,38 +359,78 @@
 
 .transactions__type-toggle,
 .recurring__type-toggle {
+  position: relative;
   display: flex;
-  gap: 0.35rem;
-  background: rgba(255, 255, 255, 0.03);
-  border-radius: var(--radius);
-  padding: 0.25rem;
-  border: 1px solid var(--border);
+  padding: 0.3rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
+  gap: 0.3rem;
+}
+
+.transactions__type-indicator,
+.recurring__type-indicator {
+  position: absolute;
+  top: 0.3rem;
+  bottom: 0.3rem;
+  left: 0;
+  border-radius: 999px;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+              width 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+              background 0.2s ease;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.transactions__type-indicator.expense,
+.recurring__type-indicator.expense {
+  background: rgba(249, 115, 22, 0.12);
+}
+
+.transactions__type-indicator.income,
+.recurring__type-indicator.income {
+  background: rgba(34, 197, 94, 0.12);
+}
+
+.transactions__type-indicator.contribute,
+.recurring__type-indicator.contribute {
+  background: rgba(129, 140, 248, 0.12);
 }
 
 .transactions__type-btn,
 .recurring__type-btn {
   flex: 1;
-  padding: 0.55rem 0.75rem;
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.4);
-  background: transparent;
+  padding: 0.5rem;
   border: none;
-  border-radius: calc(var(--radius) - 2px);
+  border-radius: 999px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.5);
+  font-weight: 700;
+  font-size: 0.8rem;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: color 0.2s ease;
+  position: relative;
+  z-index: 1;
+}
+
+.transactions__type-btn:hover,
+.recurring__type-btn:hover {
+  color: rgba(255, 255, 255, 0.8);
 }
 
 .transactions__type-btn--active.expense,
 .recurring__type-btn.active.expense {
-  background: rgba(249, 115, 22, 0.12);
   color: #f97316;
 }
 
 .transactions__type-btn--active.income,
 .recurring__type-btn.active.income {
-  background: rgba(34, 197, 94, 0.12);
   color: #22c55e;
+}
+
+.transactions__type-btn--active.contribute,
+.recurring__type-btn.active.contribute {
+  color: #818cf8;
 }
 
 .transactions__category-grid-wrap,
@@ -610,15 +665,29 @@
 /* ── Tab Navigation ─────────────────────────────────────────── */
 
 .household__tab-nav {
+  position: relative;
   display: flex;
   gap: 0.25rem;
   margin-bottom: 1rem;
   background: rgba(255, 255, 255, 0.03);
-  border-radius: var(--radius);
+  border-radius: 999px;
   padding: 0.3rem;
-  border: 1px solid var(--border);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
+}
+
+.household__tab-indicator {
+  position: absolute;
+  top: 0.3rem;
+  bottom: 0.3rem;
+  left: 0;
+  border-radius: 999px;
+  background: rgba(129, 140, 248, 0.15);
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+              width 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  pointer-events: none;
+  z-index: 0;
 }
 
 .household__tab {
@@ -633,14 +702,19 @@
   color: rgba(255, 255, 255, 0.4);
   background: transparent;
   border: none;
-  border-radius: calc(var(--radius) - 2px);
+  border-radius: 999px;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: color 0.2s ease;
   white-space: nowrap;
+  position: relative;
+  z-index: 1;
+}
+
+.household__tab:hover {
+  color: rgba(255, 255, 255, 0.7);
 }
 
 .household__tab--active {
-  background: rgba(129, 140, 248, 0.15);
   color: var(--color-primary, #818cf8);
 }
 
@@ -685,6 +759,7 @@
 /* ── Analytics ──────────────────────────────────────────────── */
 
 .analytics__tabs {
+  position: relative;
   display: flex;
   gap: 0.35rem;
   margin-bottom: 1.25rem;
@@ -692,6 +767,19 @@
   border-radius: var(--radius);
   padding: 0.25rem;
   border: 1px solid var(--border);
+}
+
+.analytics__tab-indicator {
+  position: absolute;
+  top: 0.25rem;
+  bottom: 0.25rem;
+  left: 0;
+  border-radius: calc(var(--radius) - 2px);
+  background: rgba(129, 140, 248, 0.15);
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+              width 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  pointer-events: none;
+  z-index: 0;
 }
 
 .analytics__tab {
@@ -704,11 +792,12 @@
   border: none;
   border-radius: calc(var(--radius) - 2px);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: color 0.2s;
+  position: relative;
+  z-index: 1;
 }
 
 .analytics__tab.active {
-  background: rgba(129, 140, 248, 0.15);
   color: var(--color-primary, #818cf8);
 }
 
@@ -757,6 +846,11 @@
   text-align: center;
   padding: 2rem 1rem;
   color: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
 .analytics__donut-empty-icon {

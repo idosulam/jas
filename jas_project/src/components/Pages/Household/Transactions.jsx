@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getSupabaseClient } from "../../../lib/superbase";
 import {
   getUserFacingError,
@@ -11,6 +11,8 @@ import { useModal, useBodyScrollLock } from "../../../hooks";
 import SheetModal from "../../ui/modals/Sheet_modal";
 import ConfirmModal from "../../ui/modals/Confirm_modal";
 import FormField from "../../ui/form/Form_field.jsx";
+import ColorPalettePicker from "../../../lib/Color_palette_picker.jsx";
+import EmptyState from "../../ui/Empty_state";
 
 function formatMoney(amount) {
   return `₪${Number(amount || 0).toFixed(2)}`;
@@ -41,41 +43,26 @@ function formatDateGroup(dateStr) {
   });
 }
 
-const EXPENSE_CATEGORIES = [
-  { name: "Food & Dining", icon: "🍔", color: "#f97316" },
-  { name: "Transport", icon: "🚗", color: "#3b82f6" },
-  { name: "Shopping", icon: "🛍️", color: "#ec4899" },
-  { name: "Bills & Utilities", icon: "💡", color: "#eab308" },
-  { name: "Entertainment", icon: "🎬", color: "#a855f7" },
-  { name: "Health", icon: "💊", color: "#22c55e" },
-  { name: "Education", icon: "📚", color: "#06b6d4" },
-  { name: "Home", icon: "🏠", color: "#78716c" },
-  { name: "Clothing", icon: "👕", color: "#f472b6" },
-  { name: "Gifts", icon: "🎁", color: "#fb923c" },
-  { name: "Subscriptions", icon: "📱", color: "#8b5cf6" },
-  { name: "Other", icon: "📦", color: "#6b7280" },
+const DEFAULT_ICONS = [
+  "🍔", "🚗", "🛍️", "💡", "🎬", "💊", "📚", "🏠",
+  "👕", "🎁", "📱", "📦", "💰", "💻", "💵", "🎉",
+  "📈", "☕", "✈️", "🏋️", "🐕", "🎵", "🔧", "🛍️",
 ];
 
-const INCOME_CATEGORIES = [
-  { name: "Salary", icon: "💰", color: "#22c55e" },
-  { name: "Freelance", icon: "💻", color: "#3b82f6" },
-  { name: "Tips", icon: "💵", color: "#f97316" },
-  { name: "Gifts Received", icon: "🎉", color: "#ec4899" },
-  { name: "Other Income", icon: "📈", color: "#a855f7" },
-];
-
-function Transactions({ householdId, userId, members }) {
+function Transactions({ householdId, userId, members, goals = [] }) {
   const [transactions, setTransactions] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [month, setMonth] = useState(new Date().getMonth());
   const [year, setYear] = useState(new Date().getFullYear());
-  const [typeFilter, setTypeFilter] = useState("all"); // all | expense | income
+  const [typeFilter, setTypeFilter] = useState("all");
 
   const { success: toastSuccess, error: toastError } = useGlassToast();
   const addModal = useModal(260);
   const editModal = useModal(260);
   const deleteModal = useModal(260);
+  const categoryModal = useModal(260);
+  const deleteCategoryModal = useModal(260);
 
   const [form, setForm] = useState({
     type: "expense",
@@ -83,12 +70,24 @@ function Transactions({ householdId, userId, members }) {
     description: "",
     note: "",
     category_id: "",
+    goal_id: "",
     transaction_date: new Date().toISOString().slice(0, 10),
   });
   const [editingTx, setEditingTx] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleting, setDeleting] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+
+  // Category form
+  const [categoryForm, setCategoryForm] = useState({
+    name: "",
+    icon: "📦",
+    color: "#818cf8",
+    type: "expense",
+  });
+  const [editingCategory, setEditingCategory] = useState(null);
+  const [deleteCategoryTarget, setDeleteCategoryTarget] = useState(null);
+  const [deletingCategory, setDeletingCategory] = useState(false);
 
   // Field states
   const [amountState, setAmountState] = useState("idle");
@@ -99,7 +98,43 @@ function Transactions({ householdId, userId, members }) {
   const [descTouched, setDescTouched] = useState(false);
   const [shakeKey, setShakeKey] = useState(0);
 
-  useBodyScrollLock(addModal.open, editModal.open, deleteModal.open);
+  // Sliding indicator state
+  const typeToggleRef = useRef(null);
+  const typeBtnRefs = useRef({});
+  const [indicatorStyle, setIndicatorStyle] = useState({ left: 0, width: 0 });
+
+  // Filter tabs sliding indicator
+  const filterTabRef = useRef(null);
+  const filterBtnRefs = useRef({});
+  const [filterIndicatorStyle, setFilterIndicatorStyle] = useState({ left: 0, width: 0 });
+
+  useEffect(() => {
+    const btn = typeBtnRefs.current[form.type];
+    const container = typeToggleRef.current;
+    if (btn && container) {
+      const containerRect = container.getBoundingClientRect();
+      const btnRect = btn.getBoundingClientRect();
+      setIndicatorStyle({ left: btnRect.left - containerRect.left, width: btnRect.width });
+    }
+  }, [form.type]);
+
+  useEffect(() => {
+    const btn = filterBtnRefs.current[typeFilter];
+    const container = filterTabRef.current;
+    if (btn && container) {
+      const containerRect = container.getBoundingClientRect();
+      const btnRect = btn.getBoundingClientRect();
+      setFilterIndicatorStyle({
+        left: btnRect.left - containerRect.left,
+        width: btnRect.width,
+      });
+    }
+  }, [typeFilter]);
+
+  useBodyScrollLock(
+    addModal.open, editModal.open, deleteModal.open,
+    categoryModal.open, deleteCategoryModal.open
+  );
 
   const now = new Date();
   const yearOptions = useMemo(() => {
@@ -108,18 +143,8 @@ function Transactions({ householdId, userId, members }) {
   }, []);
 
   const monthNames = [
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-    "August",
-    "September",
-    "October",
-    "November",
-    "December",
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December",
   ];
 
   // Fetch categories
@@ -136,7 +161,7 @@ function Transactions({ householdId, userId, members }) {
       if (error) throw error;
       setCategories(data ?? []);
     } catch {
-      // Use defaults if fetch fails
+      // silent
     }
   }, [householdId]);
 
@@ -150,7 +175,7 @@ function Transactions({ householdId, userId, members }) {
       const supabase = getSupabaseClient();
       const { data, error } = await supabase
         .from("transactions")
-        .select("*, transaction_categories(name, icon, color)")
+        .select("*, transaction_categories(name, icon, color), savings_goals(title, icon, color)")
         .eq("household_id", householdId)
         .gte("transaction_date", startDate)
         .lte("transaction_date", endDate)
@@ -159,9 +184,18 @@ function Transactions({ householdId, userId, members }) {
 
       if (error) throw error;
 
-      // Enrich with member info
       const enriched = (data || []).map((t) => {
         const member = members.find((m) => m.user_id === t.user_id);
+        if (t.type === "contribute") {
+          return {
+            ...t,
+            display_name: member?.display_name || "User",
+            is_me: t.user_id === userId,
+            category_name: t.savings_goals?.title || "Savings",
+            category_icon: t.savings_goals?.icon || "🎯",
+            category_color: t.savings_goals?.color || "#818cf8",
+          };
+        }
         return {
           ...t,
           display_name: member?.display_name || "User",
@@ -179,9 +213,7 @@ function Transactions({ householdId, userId, members }) {
     setLoading(false);
   }, [householdId, members, userId, month, year]);
 
-  useEffect(() => {
-    fetchCategories();
-  }, [fetchCategories]);
+  useEffect(() => { fetchCategories(); }, [fetchCategories]);
   useEffect(() => {
     if (householdId) fetchTransactions();
   }, [householdId, fetchTransactions]);
@@ -207,14 +239,18 @@ function Transactions({ householdId, userId, members }) {
   const stats = useMemo(() => {
     let totalExpense = 0;
     let totalIncome = 0;
+    let totalContribute = 0;
     transactions.forEach((t) => {
-      if (t.type === "expense") totalExpense += Number(t.amount);
-      else totalIncome += Number(t.amount);
+      const amt = Number(t.amount);
+      if (t.type === "expense") totalExpense += amt;
+      else if (t.type === "income") totalIncome += amt;
+      else if (t.type === "contribute") totalContribute += amt;
     });
     return {
       totalExpense,
       totalIncome,
-      balance: totalIncome - totalExpense,
+      totalContribute,
+      balance: totalIncome - totalExpense - totalContribute,
     };
   }, [transactions]);
 
@@ -245,51 +281,45 @@ function Transactions({ householdId, userId, members }) {
       ? Math.max(...categoryBreakdown.map((c) => c.total))
       : 0;
 
+  // Categories for current form type (from DB only)
+  const availableCategories = useMemo(() => {
+    if (form.type === "contribute") return [];
+    return categories.filter((c) => c.type === form.type);
+  }, [categories, form.type]);
+
+  // Active goals for contribute picker
+  const activeGoals = useMemo(() => {
+    return goals.filter((g) => !g.is_completed);
+  }, [goals]);
+
   // Validation
   const validateAmount = (value, isBlur = false) => {
     if (!value) {
-      if (isBlur) {
-        setAmountState("error");
-        setAmountError("Amount is required");
-      } else {
-        setAmountState("idle");
-        setAmountError(null);
-      }
+      if (isBlur) { setAmountState("error"); setAmountError("Amount is required"); }
+      else { setAmountState("idle"); setAmountError(null); }
       return;
     }
     const num = Number(value);
     if (isNaN(num) || num <= 0) {
-      setAmountState("error");
-      setAmountError("Enter a valid amount");
+      setAmountState("error"); setAmountError("Enter a valid amount");
     } else {
-      setAmountState("valid");
-      setAmountError(null);
+      setAmountState("valid"); setAmountError(null);
     }
   };
 
   const validateDesc = (value, isBlur = false) => {
     const trimmed = value.trim();
     if (!trimmed) {
-      if (isBlur) {
-        setDescState("error");
-        setDescError("Description is required");
-      } else {
-        setDescState("idle");
-        setDescError(null);
-      }
+      if (isBlur) { setDescState("error"); setDescError("Description is required"); }
+      else { setDescState("idle"); setDescError(null); }
       return;
     }
-    setDescState("valid");
-    setDescError(null);
+    setDescState("valid"); setDescError(null);
   };
 
   const resetFieldStates = () => {
-    setAmountTouched(false);
-    setAmountState("idle");
-    setAmountError(null);
-    setDescTouched(false);
-    setDescState("idle");
-    setDescError(null);
+    setAmountTouched(false); setAmountState("idle"); setAmountError(null);
+    setDescTouched(false); setDescState("idle"); setDescError(null);
   };
 
   const openAdd = (type = "expense") => {
@@ -300,6 +330,7 @@ function Transactions({ householdId, userId, members }) {
       description: "",
       note: "",
       category_id: "",
+      goal_id: "",
       transaction_date: new Date().toISOString().slice(0, 10),
     });
     resetFieldStates();
@@ -314,6 +345,7 @@ function Transactions({ householdId, userId, members }) {
       description: tx.description || "",
       note: tx.note || "",
       category_id: tx.category_id || "",
+      goal_id: tx.goal_id || "",
       transaction_date: tx.transaction_date,
     });
     resetFieldStates();
@@ -321,7 +353,6 @@ function Transactions({ householdId, userId, members }) {
   };
 
   const handleSubmit = async () => {
-    // Validate
     setAmountTouched(true);
     setDescTouched(true);
     validateAmount(form.amount, true);
@@ -333,15 +364,25 @@ function Transactions({ householdId, userId, members }) {
       return;
     }
 
+    // For contribute, require a goal
+    if (form.type === "contribute" && !form.goal_id) {
+      toastError("Please select a savings goal.");
+      return;
+    }
+
     setSubmitting(true);
     try {
       const supabase = getSupabaseClient();
+      const amount = Number(Number(form.amount).toFixed(2));
+      const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
       const payload = {
         household_id: householdId,
         user_id: userId,
-        category_id: form.category_id || null,
+        category_id: isUUID.test(form.category_id) ? form.category_id : null,
+        goal_id: form.type === "contribute" && isUUID.test(form.goal_id) ? form.goal_id : null,
         type: form.type,
-        amount: Number(Number(form.amount).toFixed(2)),
+        amount,
         description: sanitizeText(form.description, 100),
         note: sanitizeText(form.note, 500) || null,
         transaction_date: form.transaction_date,
@@ -357,9 +398,28 @@ function Transactions({ householdId, userId, members }) {
       } else {
         const { error } = await supabase.from("transactions").insert(payload);
         if (error) throw error;
-        toastSuccess(
-          `${form.type === "expense" ? "Expense" : "Income"} added!`,
-        );
+
+        // For contribute, also update the savings goal and create contribution record
+        if (form.type === "contribute" && form.goal_id) {
+          const goal = goals.find((g) => g.id === form.goal_id);
+          if (goal) {
+            const newAmount = Number(goal.current_amount) + amount;
+            await supabase
+              .from("savings_goals")
+              .update({ current_amount: Number(newAmount.toFixed(2)) })
+              .eq("id", form.goal_id);
+
+            await supabase.from("savings_contributions").insert({
+              goal_id: form.goal_id,
+              user_id: userId,
+              amount,
+              note: sanitizeText(form.note, 200) || null,
+            });
+          }
+        }
+
+        const labels = { expense: "Expense", income: "Income", contribute: "Contribution" };
+        toastSuccess(`${labels[form.type] || "Transaction"} added!`);
       }
 
       addModal.closeModal();
@@ -392,12 +452,85 @@ function Transactions({ householdId, userId, members }) {
     setDeleting(false);
   };
 
-  const currentCategories =
-    form.type === "expense" ? EXPENSE_CATEGORIES : INCOME_CATEGORIES;
-  const availableCategories =
-    categories.length > 0
-      ? categories.filter((c) => c.type === form.type)
-      : currentCategories;
+  // ── Category Management ──────────────────────────────────
+
+  const openNewCategory = (type = "expense") => {
+    setEditingCategory(null);
+    setCategoryForm({ name: "", icon: "📦", color: "#818cf8", type });
+    categoryModal.openModal();
+  };
+
+  const openEditCategory = (cat) => {
+    setEditingCategory(cat);
+    setCategoryForm({
+      name: cat.name,
+      icon: cat.icon,
+      color: cat.color,
+      type: cat.type,
+    });
+    categoryModal.openModal();
+  };
+
+  const saveCategory = async () => {
+    const name = sanitizeText(categoryForm.name, 40);
+    if (!name) return;
+
+    try {
+      const supabase = getSupabaseClient();
+      const payload = {
+        name,
+        icon: categoryForm.icon,
+        color: categoryForm.color,
+        type: categoryForm.type,
+        household_id: householdId,
+      };
+
+      if (editingCategory) {
+        const { error } = await supabase
+          .from("transaction_categories")
+          .update(payload)
+          .eq("id", editingCategory.id);
+        if (error) throw error;
+        toastSuccess("Label updated.");
+      } else {
+        const { error } = await supabase
+          .from("transaction_categories")
+          .insert(payload);
+        if (error) throw error;
+        toastSuccess("Label created!");
+      }
+
+      categoryModal.closeModal();
+      fetchCategories();
+    } catch (err) {
+      toastError(getUserFacingError(err.message));
+    }
+  };
+
+  const confirmDeleteCategory = async () => {
+    if (!deleteCategoryTarget) return;
+    setDeletingCategory(true);
+    try {
+      const supabase = getSupabaseClient();
+      const { error } = await supabase
+        .from("transaction_categories")
+        .delete()
+        .eq("id", deleteCategoryTarget.id);
+      if (error) throw error;
+      deleteCategoryModal.closeModal();
+      categoryModal.closeModal();
+      setEditingCategory(null);
+      toastSuccess("Label deleted.");
+      fetchCategories();
+    } catch (err) {
+      toastError(getUserFacingError(err.message));
+    }
+    setDeletingCategory(false);
+  };
+
+  // ── Render ───────────────────────────────────────────────
+
+  const typeLabel = form.type === "contribute" ? "contribution" : form.type;
 
   return (
     <div className="transactions">
@@ -424,11 +557,22 @@ function Transactions({ householdId, userId, members }) {
             </div>
           </div>
         </div>
+        {stats.totalContribute > 0 && (
+          <div className="transactions__balance-row" style={{ marginTop: 8 }}>
+            <div className="transactions__balance-item" style={{ flex: 1 }}>
+              <span className="transactions__balance-icon">🎯</span>
+              <div>
+                <span className="transactions__balance-label">Contributions</span>
+                <span className="transactions__balance-value" style={{ color: "#818cf8" }}>
+                  {formatMoney(stats.totalContribute)}
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
         <div className="transactions__balance-net">
           <span className="transactions__balance-net-label">Balance</span>
-          <span
-            className={`transactions__balance-net-value ${stats.balance >= 0 ? "positive" : "negative"}`}
-          >
+          <span className={`transactions__balance-net-value ${stats.balance >= 0 ? "positive" : "negative"}`}>
             {stats.balance >= 0 ? "+" : ""}
             {formatMoney(stats.balance)}
           </span>
@@ -436,32 +580,36 @@ function Transactions({ householdId, userId, members }) {
       </div>
 
       {/* Type Filter Tabs */}
-      <div className="transactions__tabs">
-        {["all", "expense", "income"].map((t) => (
+      <div className="transactions__tabs" ref={filterTabRef}>
+        <span
+          className="transactions__tab-indicator"
+          style={{
+            transform: `translateX(${filterIndicatorStyle.left}px)`,
+            width: `${filterIndicatorStyle.width}px`,
+          }}
+        />
+        {["all", "expense", "income", "contribute"].map((t) => (
           <button
             key={t}
+            ref={(el) => { if (el) filterBtnRefs.current[t] = el; }}
             className={`transactions__tab ${typeFilter === t ? "transactions__tab--active" : ""}`}
             onClick={() => setTypeFilter(t)}
           >
-            {t === "all" ? "All" : t === "expense" ? "Expenses" : "Income"}
+            {t === "all" ? "All" : t === "expense" ? "Expenses" : t === "income" ? "Income" : "Contributions"}
           </button>
         ))}
       </div>
 
       {/* Category Breakdown (expenses only) */}
-      {typeFilter !== "income" && categoryBreakdown.length > 0 && (
+      {typeFilter !== "income" && typeFilter !== "contribute" && categoryBreakdown.length > 0 && (
         <div className="transactions__breakdown">
           <h3 className="transactions__section-title">By Category</h3>
           <div className="transactions__category-list">
             {categoryBreakdown.slice(0, 6).map((cat) => (
               <div key={cat.name} className="transactions__category-item">
                 <div className="transactions__category-left">
-                  <span className="transactions__category-icon">
-                    {cat.icon}
-                  </span>
-                  <span className="transactions__category-name">
-                    {cat.name}
-                  </span>
+                  <span className="transactions__category-icon">{cat.icon}</span>
+                  <span className="transactions__category-name">{cat.name}</span>
                 </div>
                 <div className="transactions__category-right">
                   <div className="transactions__category-bar-wrap">
@@ -473,9 +621,7 @@ function Transactions({ householdId, userId, members }) {
                       }}
                     />
                   </div>
-                  <span className="transactions__category-amount">
-                    {formatMoney(cat.total)}
-                  </span>
+                  <span className="transactions__category-amount">{formatMoney(cat.total)}</span>
                 </div>
               </div>
             ))}
@@ -487,69 +633,59 @@ function Transactions({ householdId, userId, members }) {
       <div className="transactions__list-header">
         <h3 className="transactions__section-title">Transactions</h3>
         <div className="transactions__add-btns">
-          <button
-            className="btn btn--ghost btn--sm"
-            onClick={() => openAdd("expense")}
-          >
+          <button className="btn btn--ghost btn--sm" onClick={() => openAdd("expense")}>
             + Expense
           </button>
-          <button
-            className="btn btn--primary btn--sm"
-            onClick={() => openAdd("income")}
-          >
+          <button className="btn btn--ghost btn--sm" onClick={() => openAdd("income")} style={{ marginLeft: 6 }}>
             + Income
           </button>
+          {activeGoals.length > 0 && (
+            <button className="btn btn--primary btn--sm" onClick={() => openAdd("contribute")} style={{ marginLeft: 6 }}>
+              + Contribute
+            </button>
+          )}
         </div>
       </div>
 
       {grouped.length === 0 ? (
-        <div className="transactions__empty">
-          <p>No transactions this month</p>
-          <span>Add an expense or income to get started.</span>
-        </div>
+        <EmptyState
+          className="transactions__empty-state"
+          icon={<span style={{ fontSize: "2rem" }}>💳</span>}
+          title="No transactions this month"
+          text="Add an expense, income, or contribution to get started."
+          action={
+            <button type="button" className="btn btn--primary btn--sm" onClick={() => openAdd("expense")}>
+              + Add transaction
+            </button>
+          }
+        />
       ) : (
         <div className="transactions__groups">
           {grouped.map(([date, items]) => {
             const dayTotal = items.reduce((sum, t) => {
-              return (
-                sum +
-                (t.type === "expense" ? -Number(t.amount) : Number(t.amount))
-              );
+              return sum + (t.type === "expense" ? -Number(t.amount) : Number(t.amount));
             }, 0);
 
             return (
               <div key={date} className="transactions__group">
                 <div className="transactions__group-header">
-                  <span className="transactions__group-date">
-                    {formatDateGroup(date)}
-                  </span>
-                  <span
-                    className={`transactions__group-total ${dayTotal >= 0 ? "positive" : "negative"}`}
-                  >
+                  <span className="transactions__group-date">{formatDateGroup(date)}</span>
+                  <span className={`transactions__group-total ${dayTotal >= 0 ? "positive" : "negative"}`}>
                     {dayTotal >= 0 ? "+" : ""}
                     {formatMoney(Math.abs(dayTotal))}
                   </span>
                 </div>
                 <div className="transactions__group-items">
                   {items.map((tx) => (
-                    <div
-                      key={tx.id}
-                      className="transactions__item"
-                      onClick={() => openEdit(tx)}
-                    >
+                    <div key={tx.id} className="transactions__item" onClick={() => openEdit(tx)}>
                       <div
                         className="transactions__item-icon"
-                        style={{
-                          background: `${tx.category_color}18`,
-                          color: tx.category_color,
-                        }}
+                        style={{ background: `${tx.category_color}18`, color: tx.category_color }}
                       >
                         {tx.category_icon}
                       </div>
                       <div className="transactions__item-info">
-                        <span className="transactions__item-desc">
-                          {tx.description}
-                        </span>
+                        <span className="transactions__item-desc">{tx.description}</span>
                         <span className="transactions__item-meta">
                           {tx.category_name}
                           {` · ${tx.is_me ? "You" : tx.display_name}`}
@@ -569,134 +705,132 @@ function Transactions({ householdId, userId, members }) {
         </div>
       )}
 
-      {/* Add/Edit Modal */}
+      {/* ── Add/Edit Modal ─────────────────────────────────── */}
       <SheetModal
         open={addModal.open || editModal.open}
         closing={addModal.closing || editModal.closing}
-        onClose={() => {
-          addModal.closeModal();
-          editModal.closeModal();
-        }}
-        title={editingTx ? "Edit transaction" : "Add transaction"}
+        onClose={() => { addModal.closeModal(); editModal.closeModal(); }}
+        title={editingTx ? "Edit transaction" : `Add ${typeLabel}`}
       >
         <div className="transactions__form">
           {/* Type Toggle */}
-          <div className="transactions__type-toggle">
-            <button
-              className={`transactions__type-btn ${form.type === "expense" ? "transactions__type-btn--active expense" : ""}`}
-              onClick={() =>
-                setForm((f) => ({ ...f, type: "expense", category_id: "" }))
-              }
-            >
-              Expense
-            </button>
-            <button
-              className={`transactions__type-btn ${form.type === "income" ? "transactions__type-btn--active income" : ""}`}
-              onClick={() =>
-                setForm((f) => ({ ...f, type: "income", category_id: "" }))
-              }
-            >
-              Income
-            </button>
+          <div className="transactions__type-toggle" ref={typeToggleRef}>
+            <span
+              className={`transactions__type-indicator ${form.type}`}
+              style={{ transform: `translateX(${indicatorStyle.left}px)`, width: `${indicatorStyle.width}px` }}
+            />
+            {["expense", "income", "contribute"].map((t) => (
+              <button
+                key={t}
+                ref={(el) => { if (el) typeBtnRefs.current[t] = el; }}
+                className={`transactions__type-btn ${form.type === t ? `transactions__type-btn--active ${t}` : ""}`}
+                onClick={() => setForm((f) => ({ ...f, type: t, category_id: "", goal_id: "" }))}
+              >
+                {t === "expense" ? "Expense" : t === "income" ? "Income" : "🎯 Contribute"}
+              </button>
+            ))}
           </div>
 
-          <FormField
-            label="Amount"
-            error={amountError}
-            state={amountState}
-            showIndicator
-            shake={amountError ? shakeKey : 0}
-          >
+          <FormField label="Amount" error={amountError} state={amountState} showIndicator shake={amountError ? shakeKey : 0}>
             <input
-              type="number"
-              min="0.01"
-              step="0.01"
+              type="number" min="0.01" step="0.01"
               value={form.amount}
-              onChange={(e) => {
-                setForm((f) => ({ ...f, amount: e.target.value }));
-                if (amountTouched) validateAmount(e.target.value);
-              }}
+              onChange={(e) => { setForm((f) => ({ ...f, amount: e.target.value })); if (amountTouched) validateAmount(e.target.value); }}
               onBlur={() => {
-                setAmountTouched(true);
-                validateAmount(form.amount, true);
-                if (!form.amount || Number(form.amount) <= 0) {
-                  setShakeKey((k) => k + 1);
-                  hapticError();
-                }
+                setAmountTouched(true); validateAmount(form.amount, true);
+                if (!form.amount || Number(form.amount) <= 0) { setShakeKey((k) => k + 1); hapticError(); }
               }}
               placeholder="0.00"
-              autoFocus
             />
           </FormField>
 
-          <FormField
-            label="Description"
-            error={descError}
-            state={descState}
-            showIndicator
-            shake={descError ? shakeKey : 0}
-          >
+          <FormField label="Description" error={descError} state={descState} showIndicator shake={descError ? shakeKey : 0}>
             <input
               type="text"
               value={form.description}
-              onChange={(e) => {
-                setForm((f) => ({ ...f, description: e.target.value }));
-                if (descTouched) validateDesc(e.target.value);
-              }}
+              onChange={(e) => { setForm((f) => ({ ...f, description: e.target.value })); if (descTouched) validateDesc(e.target.value); }}
               onBlur={() => {
-                setDescTouched(true);
-                validateDesc(form.description, true);
-                if (!form.description.trim()) {
-                  setShakeKey((k) => k + 1);
-                  hapticError();
-                }
+                setDescTouched(true); validateDesc(form.description, true);
+                if (!form.description.trim()) { setShakeKey((k) => k + 1); hapticError(); }
               }}
-              placeholder="What was this for?"
+              placeholder={form.type === "contribute" ? "e.g. Monthly savings" : "What was this for?"}
               maxLength={100}
             />
           </FormField>
 
-          {/* Category Grid */}
-          <div className="transactions__category-grid-wrap">
-            <label className="transactions__form-label">Category</label>
-            <div className="transactions__category-grid">
-              {availableCategories.map((cat) => {
-                const catId = cat.id || cat.name;
-                const isActive =
-                  form.category_id === catId ||
-                  (!form.category_id && cat.name === "Other");
-                return (
-                  <button
-                    key={catId}
-                    type="button"
-                    className={`transactions__category-chip ${isActive ? "active" : ""}`}
-                    style={
-                      isActive
-                        ? {
-                            borderColor: cat.color,
-                            background: `${cat.color}15`,
-                          }
-                        : {}
-                    }
-                    onClick={() =>
-                      setForm((f) => ({ ...f, category_id: catId }))
-                    }
-                  >
-                    <span>{cat.icon}</span>
-                    <span>{cat.name}</span>
-                  </button>
-                );
-              })}
+          {/* Goal Picker (contribute type) */}
+          {form.type === "contribute" && (
+            <div className="transactions__category-grid-wrap">
+              <label className="transactions__form-label">Savings Goal</label>
+              {activeGoals.length === 0 ? (
+                <p style={{ color: "var(--text-muted, #888)", fontSize: 14 }}>No active goals. Create one first.</p>
+              ) : (
+                <div className="transactions__category-grid">
+                  {activeGoals.map((goal) => {
+                    const isActive = form.goal_id === goal.id;
+                    return (
+                      <button
+                        key={goal.id}
+                        type="button"
+                        className={`transactions__category-chip ${isActive ? "active" : ""}`}
+                        style={isActive ? { borderColor: goal.color, background: `${goal.color}15` } : {}}
+                        onClick={() => setForm((f) => ({ ...f, goal_id: goal.id }))}
+                      >
+                        <span>{goal.icon || "🎯"}</span>
+                        <span>{goal.title}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
             </div>
-          </div>
+          )}
+
+          {/* Category Grid (expense / income) */}
+          {form.type !== "contribute" && (
+            <div className="transactions__category-grid-wrap">
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <label className="transactions__form-label">Category</label>
+                <button
+                  type="button"
+                  className="btn btn--ghost btn--sm"
+                  style={{ fontSize: 12, padding: "2px 8px" }}
+                  onClick={() => openNewCategory(form.type)}
+                >
+                  + Edit labels
+                </button>
+              </div>
+              {availableCategories.length === 0 ? (
+                <p style={{ color: "var(--text-muted, #888)", fontSize: 14 }}>
+                  No labels yet. Tap "+ Edit labels" to create your own.
+                </p>
+              ) : (
+                <div className="transactions__category-grid">
+                  {availableCategories.map((cat) => {
+                    const isActive = form.category_id === cat.id;
+                    return (
+                      <button
+                        key={cat.id}
+                        type="button"
+                        className={`transactions__category-chip ${isActive ? "active" : ""}`}
+                        style={isActive ? { borderColor: cat.color, background: `${cat.color}15` } : {}}
+                        onClick={() => setForm((f) => ({ ...f, category_id: cat.id }))}
+                      >
+                        <span>{cat.icon}</span>
+                        <span>{cat.name}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
 
           <FormField label="Date">
             <input
               type="date"
               value={form.transaction_date}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, transaction_date: e.target.value }))
-              }
+              onChange={(e) => setForm((f) => ({ ...f, transaction_date: e.target.value }))}
             />
           </FormField>
 
@@ -711,41 +845,22 @@ function Transactions({ householdId, userId, members }) {
           </FormField>
 
           <div className="btn-row">
-            <button
-              type="button"
-              className="btn btn--ghost"
-              onClick={() => {
-                addModal.closeModal();
-                editModal.closeModal();
-              }}
-            >
+            <button type="button" className="btn btn--ghost" onClick={() => { addModal.closeModal(); editModal.closeModal(); }}>
               Cancel
             </button>
             {editingTx && (
-              <button
-                type="button"
-                className="btn btn--danger"
-                onClick={() => {
-                  setDeleteTarget(editingTx);
-                  deleteModal.openModal();
-                }}
-              >
+              <button type="button" className="btn btn--danger" onClick={() => { setDeleteTarget(editingTx); deleteModal.openModal(); }}>
                 Delete
               </button>
             )}
-            <button
-              type="button"
-              className="btn btn--primary"
-              onClick={handleSubmit}
-              disabled={submitting}
-            >
+            <button type="button" className="btn btn--primary" onClick={handleSubmit} disabled={submitting}>
               {submitting ? "Saving…" : editingTx ? "Update" : "Add"}
             </button>
           </div>
         </div>
       </SheetModal>
 
-      {/* Delete Confirmation */}
+      {/* ── Delete Confirmation ────────────────────────────── */}
       <ConfirmModal
         open={deleteModal.open}
         closing={deleteModal.closing}
@@ -754,6 +869,135 @@ function Transactions({ householdId, userId, members }) {
         message={`Delete "${deleteTarget?.description}"? This can't be undone.`}
         confirmText={deleting ? "Deleting…" : "Delete"}
         onConfirm={confirmDelete}
+        danger
+      />
+
+      {/* ── Category Management Modal ──────────────────────── */}
+      <SheetModal
+        open={categoryModal.open}
+        closing={categoryModal.closing}
+        onClose={() => categoryModal.closeModal()}
+        title={editingCategory ? "Edit label" : "Manage labels"}
+      >
+        <div className="transactions__form">
+          {/* Existing categories list */}
+          {!editingCategory && (
+            <div style={{ marginBottom: 16 }}>
+              <label className="transactions__form-label">Your {form.type} labels</label>
+              {categories.filter((c) => c.type === form.type).length === 0 ? (
+                <p style={{ color: "var(--text-muted, #888)", fontSize: 14, margin: "8px 0" }}>No labels yet. Create one below.</p>
+              ) : (
+                <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 12 }}>
+                  {categories.filter((c) => c.type === form.type).map((cat) => (
+                    <div
+                      key={cat.id}
+                      style={{
+                        display: "flex", alignItems: "center", gap: 8,
+                        padding: "8px 12px", borderRadius: 10,
+                        background: "rgba(255,255,255,0.05)", cursor: "pointer",
+                      }}
+                      onClick={() => openEditCategory(cat)}
+                    >
+                      <span style={{ fontSize: 20 }}>{cat.icon}</span>
+                      <span style={{ flex: 1, fontSize: 14 }}>{cat.name}</span>
+                      <div style={{ width: 12, height: 12, borderRadius: "50%", background: cat.color }} />
+                      <span style={{ color: "var(--text-muted, #888)", fontSize: 12 }}>✎</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Create / Edit form */}
+          <FormField label="Label name">
+            <input
+              type="text"
+              value={categoryForm.name}
+              onChange={(e) => setCategoryForm((f) => ({ ...f, name: e.target.value }))}
+              placeholder="e.g. Coffee, Rent, Groceries"
+              maxLength={40}
+            />
+          </FormField>
+
+          {/* Icon picker */}
+          <div className="transactions__category-grid-wrap">
+            <label className="transactions__form-label">Icon</label>
+            <div className="transactions__category-grid">
+              {DEFAULT_ICONS.map((icon) => (
+                <button
+                  key={icon}
+                  type="button"
+                  className={`transactions__category-chip ${categoryForm.icon === icon ? "active" : ""}`}
+                  style={categoryForm.icon === icon ? { borderColor: categoryForm.color, background: `${categoryForm.color}15` } : {}}
+                  onClick={() => setCategoryForm((f) => ({ ...f, icon }))}
+                >
+                  <span>{icon}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Color picker */}
+          <div className="transactions__category-grid-wrap">
+            <label className="transactions__form-label">Color</label>
+            <ColorPalettePicker
+              value={categoryForm.color}
+              onChange={(color) => setCategoryForm((f) => ({ ...f, color }))}
+            />
+          </div>
+
+          {/* Type selector */}
+          <div className="transactions__category-grid-wrap">
+            <label className="transactions__form-label">Type</label>
+            <div className="transactions__type-toggle" style={{ maxWidth: 220 }}>
+              {["expense", "income"].map((t) => (
+                <button
+                  key={t}
+                  type="button"
+                  className={`transactions__type-btn ${categoryForm.type === t ? `transactions__type-btn--active ${t}` : ""}`}
+                  onClick={() => setCategoryForm((f) => ({ ...f, type: t }))}
+                >
+                  {t === "expense" ? "Expense" : "Income"}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="btn-row">
+            <button type="button" className="btn btn--ghost" onClick={() => categoryModal.closeModal()}>
+              {editingCategory ? "Back" : "Done"}
+            </button>
+            {editingCategory && (
+              <button
+                type="button"
+                className="btn btn--danger"
+                onClick={() => { setDeleteCategoryTarget(editingCategory); deleteCategoryModal.openModal(); }}
+              >
+                Delete
+              </button>
+            )}
+            <button
+              type="button"
+              className="btn btn--primary"
+              onClick={saveCategory}
+              disabled={!categoryForm.name.trim()}
+            >
+              {editingCategory ? "Update" : "Create"}
+            </button>
+          </div>
+        </div>
+      </SheetModal>
+
+      {/* ── Delete Category Confirmation ───────────────────── */}
+      <ConfirmModal
+        open={deleteCategoryModal.open}
+        closing={deleteCategoryModal.closing}
+        onClose={() => deleteCategoryModal.closeModal()}
+        title="Delete label"
+        message={`Delete "${deleteCategoryTarget?.name}"? Existing transactions will keep their data.`}
+        confirmText={deletingCategory ? "Deleting…" : "Delete"}
+        onConfirm={confirmDeleteCategory}
         danger
       />
     </div>
