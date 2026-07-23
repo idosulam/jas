@@ -80,14 +80,12 @@ function Household() {
     left: 0,
     width: 0,
   });
-  const [tabIndicatorReady, setTabIndicatorReady] = useState(false);
 
   // Goals/Budgets sub-view toggle
   const [savingsSubView, setSavingsSubView] = useState("goals");
   const savingsToggleRef = useRef(null);
   const savingsBtnRefs = useRef({});
   const [savingsIndicatorStyle, setSavingsIndicatorStyle] = useState({ left: 0, width: 0 });
-  const [savingsIndicatorReady, setSavingsIndicatorReady] = useState(false);
 
   useLayoutEffect(() => {
     const btn = tabBtnRefs.current[activeTab];
@@ -100,7 +98,6 @@ function Household() {
           left: btnRect.left - containerRect.left,
           width: btnRect.width,
         });
-        setTabIndicatorReady(true);
       }
     }
   }, [activeTab]);
@@ -116,7 +113,6 @@ function Household() {
           left: btnRect.left - containerRect.left,
           width: btnRect.width,
         });
-        setSavingsIndicatorReady(true);
       }
     }
   }, [savingsSubView, household]);
@@ -911,7 +907,7 @@ function Household() {
         ref={tabNavRef}
       >
         <span
-          className={`household__tab-indicator${tabIndicatorReady ? "" : " household__tab-indicator--init"}`}
+          className="household__tab-indicator"
           style={{
             transform: `translateX(${tabIndicatorStyle.left}px)`,
             width: `${tabIndicatorStyle.width}px`,
@@ -1168,7 +1164,7 @@ function Household() {
             <div className="household__savings-section">
               <div className="household__goals-budgets-toggle" ref={savingsToggleRef}>
                 <span
-                  className={`household__goals-budgets-indicator ${savingsSubView}${savingsIndicatorReady ? "" : " household__goals-budgets-indicator--init"}`}
+                  className={`household__goals-budgets-indicator ${savingsSubView}`}
                   style={{
                     transform: `translateX(${savingsIndicatorStyle.left}px)`,
                     width: `${savingsIndicatorStyle.width}px`,

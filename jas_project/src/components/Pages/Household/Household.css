@@ -728,9 +728,6 @@
   z-index: 0;
 }
 
-.household__goals-budgets-indicator--init {
-  transition: none !important;
-}
 
 .household__goals-budgets-indicator.goals {
   background: rgba(52, 211, 153, 0.12);

@@ -671,9 +671,6 @@
   z-index: 0;
 }
 
-.household__tab-indicator--init {
-  transition: none !important;
-}
 
 .household__tab {
   flex: 1;
