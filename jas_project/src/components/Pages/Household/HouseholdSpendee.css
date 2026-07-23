@@ -485,42 +485,23 @@
 
 /* ── Recurring ──────────────────────────────────────────────── */
 
-.recurring__estimate {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 0.85rem 1rem;
-  margin-bottom: 1rem;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+.recurring__summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
 }
 
-.recurring__estimate-info {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
+.recurring__summary .glass-card {
+  text-align: center;
+  padding: 0.65rem 0.5rem;
 }
 
-.recurring__estimate-label {
-  font-size: 0.7rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: rgba(255, 255, 255, 0.4);
-}
-
-.recurring__estimate-value {
-  font-size: 1.2rem;
+.recurring__summary .glass-card__value {
+  font-size: 1.1rem;
   font-weight: 800;
   color: #f97316;
   font-family: var(--font-mono, monospace);
-}
-
-.recurring__estimate-note {
-  display: block;
-  font-size: 0.7rem;
-  color: rgba(255, 255, 255, 0.3);
-  margin-top: 0.3rem;
 }
 
 .recurring__header {

@@ -11,6 +11,7 @@ import { useModal, useBodyScrollLock } from "../../../hooks";
 import SheetModal from "../../ui/modals/Sheet_modal";
 import ConfirmModal from "../../ui/modals/Confirm_modal";
 import FormField from "../../ui/form/Form_field.jsx";
+import GlassCard from "../../ui/Glass_card";
 
 function formatMoney(amount) {
   return `₪${Number(amount || 0).toFixed(2)}`;
@@ -357,18 +358,20 @@ function RecurringTransactions({ householdId, userId, categories }) {
 
   return (
     <div className="recurring">
-      {/* Monthly Estimate */}
-      <div className="recurring__estimate">
-        <div className="recurring__estimate-info">
-          <span className="recurring__estimate-label">Monthly Estimate</span>
-          <span className="recurring__estimate-value">
-            {formatMoney(monthlyEstimate)}
-          </span>
-        </div>
-        <span className="recurring__estimate-note">
-          Based on {recurring.filter((r) => r.is_active).length} active
-          recurring transactions
-        </span>
+      {/* Summary Cards */}
+      <div className="recurring__summary">
+        <GlassCard
+          value={formatMoney(monthlyEstimate)}
+          label="Monthly Estimate"
+        />
+        <GlassCard
+          value={String(recurring.filter((r) => r.is_active).length)}
+          label="Active"
+        />
+        <GlassCard
+          value={String(recurring.filter((r) => !r.is_active).length)}
+          label="Paused"
+        />
       </div>
 
       {/* List */}
