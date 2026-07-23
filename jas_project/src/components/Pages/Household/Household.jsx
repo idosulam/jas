@@ -39,6 +39,7 @@ const MONTHS = [
 const TABS = [
   { id: "overview", label: "Overview", icon: "📊" },
   { id: "transactions", label: "Transactions", icon: "💳" },
+  { id: "budgets", label: "Budgets", icon: "💰" },
   { id: "recurring", label: "Recurring", icon: "🔄" },
   { id: "analytics", label: "Analytics", icon: "📈" },
 ];
@@ -1185,6 +1186,15 @@ function Household() {
             userId={userId}
             members={members}
             goals={goals}
+          />
+        )}
+
+        {activeTab === "budgets" && (
+          <Budgets
+            householdId={household?.id}
+            transactions={allTransactions}
+            month={month}
+            year={year}
           />
         )}
 
