@@ -20,8 +20,18 @@ import RecurringTransactions from "./RecurringTransactions";
 import Analytics from "./Analytics";
 
 const MONTHS = [
-  "January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December",
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
 ];
 
 const TABS = [
@@ -38,7 +48,9 @@ function formatMoney(amount) {
 function formatDateShort(dateStr) {
   const d = new Date(`${dateStr}T12:00:00`);
   return d.toLocaleDateString(undefined, {
-    weekday: "short", month: "short", day: "numeric",
+    weekday: "short",
+    month: "short",
+    day: "numeric",
   });
 }
 
@@ -61,7 +73,10 @@ function Household() {
   // Sliding tab indicator
   const tabNavRef = useRef(null);
   const tabBtnRefs = useRef({});
-  const [tabIndicatorStyle, setTabIndicatorStyle] = useState({ left: 0, width: 0 });
+  const [tabIndicatorStyle, setTabIndicatorStyle] = useState({
+    left: 0,
+    width: 0,
+  });
 
   useEffect(() => {
     const btn = tabBtnRefs.current[activeTab];
@@ -69,7 +84,10 @@ function Household() {
     if (btn && container) {
       const containerRect = container.getBoundingClientRect();
       const btnRect = btn.getBoundingClientRect();
-      setTabIndicatorStyle({ left: btnRect.left - containerRect.left, width: btnRect.width });
+      setTabIndicatorStyle({
+        left: btnRect.left - containerRect.left,
+        width: btnRect.width,
+      });
     }
   }, [activeTab]);
   const [allTransactions, setAllTransactions] = useState([]);
@@ -101,7 +119,9 @@ function Household() {
       const supabase = getSupabaseClient();
       const { data: membership, error: memError } = await supabase
         .from("household_members")
-        .select("household_id, role, households(id, name, invite_code, created_by)")
+        .select(
+          "household_id, role, households(id, name, invite_code, created_by)",
+        )
         .eq("user_id", userId)
         .maybeSingle();
 
@@ -131,7 +151,9 @@ function Household() {
         .in("user_id", memberUserIds);
 
       const profileMap = {};
-      (profiles || []).forEach((p) => { profileMap[p.user_id] = p.display_name; });
+      (profiles || []).forEach((p) => {
+        profileMap[p.user_id] = p.display_name;
+      });
 
       const enrichedMembers = (memberData || []).map((m) => ({
         ...m,
@@ -169,7 +191,11 @@ function Household() {
 
       const enriched = (shifts || []).map((s) => {
         const member = members.find((m) => m.user_id === s.user_id);
-        return { ...s, display_name: member?.display_name || "User", is_me: s.user_id === userId };
+        return {
+          ...s,
+          display_name: member?.display_name || "User",
+          is_me: s.user_id === userId,
+        };
       });
 
       setMemberShifts(enriched);
@@ -195,10 +221,16 @@ function Household() {
       const wpMap = {};
       (data || []).forEach((wp) => {
         if (!wpMap[wp.user_id]) wpMap[wp.user_id] = {};
-        wpMap[wp.user_id][wp.slug] = { label: wp.label, rate: Number(wp.rate), color: wp.color };
+        wpMap[wp.user_id][wp.slug] = {
+          label: wp.label,
+          rate: Number(wp.rate),
+          color: wp.color,
+        };
       });
       setWorkplaces(wpMap);
-    } catch { /* silent */ }
+    } catch {
+      /* silent */
+    }
   }, [userId, members]);
 
   // Fetch transactions for analytics (full month)
@@ -232,7 +264,9 @@ function Household() {
       });
 
       setAllTransactions(enriched);
-    } catch { /* silent */ }
+    } catch {
+      /* silent */
+    }
   }, [household, members, userId, month, year]);
 
   // Fetch categories
@@ -247,7 +281,9 @@ function Household() {
         .order("name");
       if (error) throw error;
       setCategories(data ?? []);
-    } catch { /* silent */ }
+    } catch {
+      /* silent */
+    }
   }, [household]);
 
   // Fetch savings goals
@@ -262,10 +298,14 @@ function Household() {
         .order("created_at", { ascending: true });
       if (error) throw error;
       setGoals(data ?? []);
-    } catch { /* silent */ }
+    } catch {
+      /* silent */
+    }
   }, [household]);
 
-  useEffect(() => { fetchHousehold(); }, [fetchHousehold]);
+  useEffect(() => {
+    fetchHousehold();
+  }, [fetchHousehold]);
 
   useEffect(() => {
     if (household && members.length > 0) {
@@ -276,30 +316,49 @@ function Household() {
       fetchGoals();
       setLoading(false);
     }
-  }, [household, members, fetchMemberShifts, fetchWorkplaces, fetchAllTransactions, fetchCategories, fetchGoals]);
+  }, [
+    household,
+    members,
+    fetchMemberShifts,
+    fetchWorkplaces,
+    fetchAllTransactions,
+    fetchCategories,
+    fetchGoals,
+  ]);
 
   // Calculate combined stats
   const combinedStats = useMemo(() => {
     const stats = {};
-    let totalHours = 0, totalPay = 0, totalTips = 0;
+    let totalHours = 0,
+      totalPay = 0,
+      totalTips = 0;
 
     members.forEach((member) => {
-      const memberShiftsFiltered = memberShifts.filter((s) => s.user_id === member.user_id);
+      const memberShiftsFiltered = memberShifts.filter(
+        (s) => s.user_id === member.user_id,
+      );
       const wp = workplaces[member.user_id] || {};
-      let mHours = 0, mPay = 0, mTips = 0;
+      let mHours = 0,
+        mPay = 0,
+        mTips = 0;
 
       memberShiftsFiltered.forEach((shift) => {
         const hours = parseFloat(shift.hours) || 0;
         const tips = parseFloat(shift.tips) || 0;
-        const rate = shift.pay_type === "tips_only" ? 0 : (wp[shift.place]?.rate ?? 0);
+        const rate =
+          shift.pay_type === "tips_only" ? 0 : (wp[shift.place]?.rate ?? 0);
         mHours += hours;
         mPay += rate * hours;
         mTips += tips;
       });
 
       stats[member.user_id] = {
-        display_name: member.display_name, is_me: member.is_me,
-        hours: mHours, pay: mPay, tips: mTips, total: mPay + mTips,
+        display_name: member.display_name,
+        is_me: member.is_me,
+        hours: mHours,
+        pay: mPay,
+        tips: mTips,
+        total: mPay + mTips,
         shiftCount: memberShiftsFiltered.length,
       };
 
@@ -310,13 +369,20 @@ function Household() {
 
     return {
       byMember: stats,
-      combined: { hours: totalHours, pay: totalPay, tips: totalTips, total: totalPay + totalTips, shiftCount: memberShifts.length },
+      combined: {
+        hours: totalHours,
+        pay: totalPay,
+        tips: totalTips,
+        total: totalPay + totalTips,
+        shiftCount: memberShifts.length,
+      },
     };
   }, [memberShifts, members, workplaces]);
 
   // Transaction summary for overview
   const txSummary = useMemo(() => {
-    let totalExpense = 0, totalIncome = 0;
+    let totalExpense = 0,
+      totalIncome = 0;
     allTransactions.forEach((t) => {
       if (t.type === "expense") totalExpense += Number(t.amount);
       else totalIncome += Number(t.amount);
@@ -340,7 +406,8 @@ function Household() {
         mShifts.forEach((shift) => {
           const hours = parseFloat(shift.hours) || 0;
           const tips = parseFloat(shift.tips) || 0;
-          const rate = shift.pay_type === "tips_only" ? 0 : (wp[shift.place]?.rate ?? 0);
+          const rate =
+            shift.pay_type === "tips_only" ? 0 : (wp[shift.place]?.rate ?? 0);
           earnings += rate * hours + tips;
         });
         entry[member.user_id] = earnings;
@@ -356,82 +423,140 @@ function Household() {
   const validateNameField = (value, isBlur = false) => {
     const trimmed = value.trim();
     if (!trimmed) {
-      if (isBlur) { setNameFieldState("error"); setNameFieldError("Household name is required"); }
-      else { setNameFieldState("idle"); setNameFieldError(null); }
+      if (isBlur) {
+        setNameFieldState("error");
+        setNameFieldError("Household name is required");
+      } else {
+        setNameFieldState("idle");
+        setNameFieldError(null);
+      }
       return;
     }
-    if (trimmed.length >= 2 && trimmed.length <= 40) { setNameFieldState("valid"); setNameFieldError(null); }
-    else if (trimmed.length > 40) { setNameFieldState("error"); setNameFieldError("Name too long (max 40)"); }
-    else { setNameFieldState("error"); setNameFieldError("At least 2 characters"); }
+    if (trimmed.length >= 2 && trimmed.length <= 40) {
+      setNameFieldState("valid");
+      setNameFieldError(null);
+    } else if (trimmed.length > 40) {
+      setNameFieldState("error");
+      setNameFieldError("Name too long (max 40)");
+    } else {
+      setNameFieldState("error");
+      setNameFieldError("At least 2 characters");
+    }
   };
 
   const validateCodeField = (value, isBlur = false) => {
     const trimmed = value.trim();
     if (!trimmed) {
-      if (isBlur) { setCodeFieldState("error"); setCodeFieldError("Invite code is required"); }
-      else { setCodeFieldState("idle"); setCodeFieldError(null); }
+      if (isBlur) {
+        setCodeFieldState("error");
+        setCodeFieldError("Invite code is required");
+      } else {
+        setCodeFieldState("idle");
+        setCodeFieldError(null);
+      }
       return;
     }
-    setCodeFieldState("valid"); setCodeFieldError(null);
+    setCodeFieldState("valid");
+    setCodeFieldError(null);
   };
 
   const handleNameBlur = () => {
-    setNameTouched(true); validateNameField(householdName, true);
-    if (!householdName.trim() || householdName.trim().length < 2) { setShakeKey((k) => k + 1); hapticError(); }
+    setNameTouched(true);
+    validateNameField(householdName, true);
+    if (!householdName.trim() || householdName.trim().length < 2) {
+      setShakeKey((k) => k + 1);
+      hapticError();
+    }
   };
 
   const handleCodeBlur = () => {
-    setCodeTouched(true); validateCodeField(joinCode, true);
-    if (!joinCode.trim()) { setShakeKey((k) => k + 1); hapticError(); }
+    setCodeTouched(true);
+    validateCodeField(joinCode, true);
+    if (!joinCode.trim()) {
+      setShakeKey((k) => k + 1);
+      hapticError();
+    }
   };
 
-  const handleNameChange = (e) => { const v = e.target.value; setHouseholdName(v); if (nameTouched) validateNameField(v); };
-  const handleCodeChange = (e) => { const v = e.target.value; setJoinCode(v); if (codeTouched) validateCodeField(v); };
+  const handleNameChange = (e) => {
+    const v = e.target.value;
+    setHouseholdName(v);
+    if (nameTouched) validateNameField(v);
+  };
+  const handleCodeChange = (e) => {
+    const v = e.target.value;
+    setJoinCode(v);
+    if (codeTouched) validateCodeField(v);
+  };
 
   // Create household
   const handleCreate = async () => {
     setNameTouched(true);
     if (!householdName.trim() || householdName.trim().length < 2) {
-      validateNameField(householdName, true); setShakeKey((k) => k + 1); return;
+      validateNameField(householdName, true);
+      setShakeKey((k) => k + 1);
+      return;
     }
     setJoinLoading(true);
     try {
       const supabase = getSupabaseClient();
       const { data: hh, error: createError } = await supabase
-        .rpc("create_household", { household_name: householdName.trim() || "Our Household" }).single();
+        .rpc("create_household", {
+          household_name: householdName.trim() || "Our Household",
+        })
+        .single();
       if (createError) throw createError;
       createModal.closeModal();
-      toastSuccess("Household created! Share the invite code with your partner.");
+      toastSuccess(
+        "Household created! Share the invite code with your partner.",
+      );
       fetchHousehold();
-    } catch (err) { toastError(getUserFacingError(err.message)); }
+    } catch (err) {
+      toastError(getUserFacingError(err.message));
+    }
     setJoinLoading(false);
   };
 
   // Join household
   const handleJoin = async () => {
     setCodeTouched(true);
-    if (!joinCode.trim()) { validateCodeField(joinCode, true); setShakeKey((k) => k + 1); return; }
-    if (!userId) { toastError("You must be logged in to join a household."); return; }
+    if (!joinCode.trim()) {
+      validateCodeField(joinCode, true);
+      setShakeKey((k) => k + 1);
+      return;
+    }
+    if (!userId) {
+      toastError("You must be logged in to join a household.");
+      return;
+    }
     setJoinLoading(true);
     try {
       const supabase = getSupabaseClient();
-      const { error: joinError } = await supabase.rpc("join_household", { invite_code_param: joinCode.trim() });
+      const { error: joinError } = await supabase.rpc("join_household", {
+        invite_code_param: joinCode.trim(),
+      });
       if (joinError) {
-        if (joinError.message.includes("duplicate")) toastError("You're already in this household.");
-        else if (joinError.message.includes("Invalid invite code")) toastError("Invalid invite code. Check and try again.");
+        if (joinError.message.includes("duplicate"))
+          toastError("You're already in this household.");
+        else if (joinError.message.includes("Invalid invite code"))
+          toastError("Invalid invite code. Check and try again.");
         else throw joinError;
       } else {
         joinModal.closeModal();
         toastSuccess("Joined household!");
         fetchHousehold();
       }
-    } catch (err) { toastError(getUserFacingError(err.message)); }
+    } catch (err) {
+      toastError(getUserFacingError(err.message));
+    }
     setJoinLoading(false);
   };
 
   const copyInviteCode = () => {
     if (household?.invite_code) {
-      navigator.clipboard.writeText(household.invite_code).then(() => toastSuccess("Invite code copied!"));
+      navigator.clipboard
+        .writeText(household.invite_code)
+        .then(() => toastSuccess("Invite code copied!"));
     }
   };
 
@@ -440,12 +565,18 @@ function Household() {
     setDeleting(true);
     try {
       const supabase = getSupabaseClient();
-      const { error } = await supabase.rpc("delete_household", { household_id_param: household.id });
+      const { error } = await supabase.rpc("delete_household", {
+        household_id_param: household.id,
+      });
       if (error) throw error;
       deleteModal.closeModal();
       toastSuccess("Household deleted.");
-      setHousehold(null); setMembers([]); setMemberShifts([]);
-    } catch (err) { toastError(getUserFacingError(err.message)); }
+      setHousehold(null);
+      setMembers([]);
+      setMemberShifts([]);
+    } catch (err) {
+      toastError(getUserFacingError(err.message));
+    }
     setDeleting(false);
   };
 
@@ -458,48 +589,160 @@ function Household() {
   if (!loading && !household) {
     return (
       <section className="household page">
-        <PageHeader eyebrow="Together" title="Household" className="household__header animate-in" />
+        <PageHeader
+          eyebrow="Together"
+          title="Household"
+          className="household__header animate-in"
+        />
         <EmptyState
           className="household__empty animate-in animate-in--1"
-          icon={<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z" /><path d="M9 22V12h6v10" /><path d="M12 5.5v.01" /></svg>}
+          icon={
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z" />
+              <path d="M9 22V12h6v10" />
+              <path d="M12 5.5v.01" />
+            </svg>
+          }
           title="Set up your household"
           text="Create a household or join your partner's to track expenses, earnings, and savings together."
           action={
             <div className="household__setup-btns">
-              <button type="button" className="btn btn--primary" onClick={() => {
-                setNameTouched(false); setNameFieldState("idle"); setNameFieldError(null); setHouseholdName("");
-                createModal.openModal();
-              }}>Create household</button>
-              <button type="button" className="btn btn--ghost" onClick={() => {
-                setCodeTouched(false); setCodeFieldState("idle"); setCodeFieldError(null); setJoinCode("");
-                joinModal.openModal();
-              }}>Join with code</button>
+              <button
+                type="button"
+                className="btn btn--primary"
+                onClick={() => {
+                  setNameTouched(false);
+                  setNameFieldState("idle");
+                  setNameFieldError(null);
+                  setHouseholdName("");
+                  createModal.openModal();
+                }}
+              >
+                Create household
+              </button>
+              <button
+                type="button"
+                className="btn btn--ghost"
+                onClick={() => {
+                  setCodeTouched(false);
+                  setCodeFieldState("idle");
+                  setCodeFieldError(null);
+                  setJoinCode("");
+                  joinModal.openModal();
+                }}
+              >
+                Join with code
+              </button>
             </div>
           }
         />
 
-        <SheetModal open={createModal.open} closing={createModal.closing} onClose={() => createModal.closeModal()} title="Create household">
+        <SheetModal
+          open={createModal.open}
+          closing={createModal.closing}
+          onClose={() => createModal.closeModal()}
+          title="Create household"
+        >
           <div className="household__form">
-            <FormField label="Household name" error={nameFieldError} state={nameFieldState} showIndicator shake={nameFieldError ? shakeKey : 0}>
-              <input type="text" value={householdName} onChange={handleNameChange} onBlur={handleNameBlur} placeholder="Our Household" maxLength={40} autoFocus />
+            <FormField
+              label="Household name"
+              error={nameFieldError}
+              state={nameFieldState}
+              showIndicator
+              shake={nameFieldError ? shakeKey : 0}
+            >
+              <input
+                type="text"
+                value={householdName}
+                onChange={handleNameChange}
+                onBlur={handleNameBlur}
+                placeholder="Our Household"
+                maxLength={40}
+                autoFocus
+              />
             </FormField>
-            <p className="household__form-hint">You'll get an invite code to share with your partner.</p>
+            <p className="household__form-hint">
+              You'll get an invite code to share with your partner.
+            </p>
             <div className="btn-row">
-              <button type="button" className="btn btn--ghost" onClick={() => { setNameTouched(false); setNameFieldState("idle"); setNameFieldError(null); createModal.closeModal(); }}>Cancel</button>
-              <button type="button" className="btn btn--primary" onClick={handleCreate} disabled={joinLoading || !householdName.trim()}>{joinLoading ? "Creating…" : "Create"}</button>
+              <button
+                type="button"
+                className="btn btn--ghost"
+                onClick={() => {
+                  setNameTouched(false);
+                  setNameFieldState("idle");
+                  setNameFieldError(null);
+                  createModal.closeModal();
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="btn btn--primary"
+                onClick={handleCreate}
+                disabled={joinLoading || !householdName.trim()}
+              >
+                {joinLoading ? "Creating…" : "Create"}
+              </button>
             </div>
           </div>
         </SheetModal>
 
-        <SheetModal open={joinModal.open} closing={joinModal.closing} onClose={() => joinModal.closeModal()} title="Join household">
+        <SheetModal
+          open={joinModal.open}
+          closing={joinModal.closing}
+          onClose={() => joinModal.closeModal()}
+          title="Join household"
+        >
           <div className="household__form">
-            <FormField label="Invite code" error={codeFieldError} state={codeFieldState} showIndicator shake={codeFieldError ? shakeKey : 0}>
-              <input type="text" value={joinCode} onChange={handleCodeChange} onBlur={handleCodeBlur} placeholder="Enter code" autoFocus />
+            <FormField
+              label="Invite code"
+              error={codeFieldError}
+              state={codeFieldState}
+              showIndicator
+              shake={codeFieldError ? shakeKey : 0}
+            >
+              <input
+                type="text"
+                value={joinCode}
+                onChange={handleCodeChange}
+                onBlur={handleCodeBlur}
+                placeholder="Enter code"
+                autoFocus
+              />
             </FormField>
-            <p className="household__form-hint">Ask your partner for the invite code from their Household page.</p>
+            <p className="household__form-hint">
+              Ask your partner for the invite code from their Household page.
+            </p>
             <div className="btn-row">
-              <button type="button" className="btn btn--ghost" onClick={() => { setCodeTouched(false); setCodeFieldState("idle"); setCodeFieldError(null); joinModal.closeModal(); }}>Cancel</button>
-              <button type="button" className="btn btn--primary" onClick={handleJoin} disabled={joinLoading || !joinCode.trim()}>{joinLoading ? "Joining…" : "Join"}</button>
+              <button
+                type="button"
+                className="btn btn--ghost"
+                onClick={() => {
+                  setCodeTouched(false);
+                  setCodeFieldState("idle");
+                  setCodeFieldError(null);
+                  joinModal.closeModal();
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="btn btn--primary"
+                onClick={handleJoin}
+                disabled={joinLoading || !joinCode.trim()}
+              >
+                {joinLoading ? "Joining…" : "Join"}
+              </button>
             </div>
           </div>
         </SheetModal>
@@ -510,7 +753,11 @@ function Household() {
   if (loading) {
     return (
       <section className="household page">
-        <PageHeader eyebrow="Together" title="Household" className="household__header" />
+        <PageHeader
+          eyebrow="Together"
+          title="Household"
+          className="household__header"
+        />
         <LoadingSkeleton lines={6} />
       </section>
     );
@@ -526,18 +773,44 @@ function Household() {
       />
 
       {/* Invite + Delete */}
-      <div className="household__header-actions animate-in animate-in--1" style={{ display: "flex", justifyContent: "center", gap: "0.4rem", marginBottom: "0.75rem" }}>
-        <button type="button" className="household__invite-btn" onClick={copyInviteCode}>
+      <div
+        className="household__header-actions animate-in animate-in--1"
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          gap: "0.4rem",
+          marginBottom: "0.75rem",
+        }}
+      >
+        <button
+          type="button"
+          className="household__invite-btn"
+          onClick={copyInviteCode}
+        >
           <span className="household__invite-icon">🔗</span>
-          <span className="household__invite-code">{household?.invite_code}</span>
+          <span className="household__invite-code">
+            {household?.invite_code}
+          </span>
         </button>
-        <button type="button" className="household__delete-btn" onClick={() => deleteModal.openModal()} title="Delete household">
+        <button
+          type="button"
+          className="household__delete-btn"
+          onClick={() => deleteModal.openModal()}
+          title="Delete household"
+        >
           🗑
         </button>
       </div>
 
       {/* Member count */}
-      <p style={{ textAlign: "center", fontSize: "0.75rem", color: "rgba(255,255,255,0.35)", marginBottom: "1rem" }}>
+      <p
+        style={{
+          textAlign: "center",
+          fontSize: "0.75rem",
+          color: "rgba(255,255,255,0.35)",
+          marginBottom: "1rem",
+        }}
+      >
         {members.length} member{members.length !== 1 ? "s" : ""}
       </p>
 
@@ -545,17 +818,25 @@ function Household() {
       {error && <div className="household__error">{error}</div>}
 
       {/* Tab Navigation */}
-      <div className="household__tab-nav animate-in animate-in--2" ref={tabNavRef}>
+      <div
+        className="household__tab-nav animate-in animate-in--2"
+        ref={tabNavRef}
+      >
         <span
           className="household__tab-indicator"
-          style={{ transform: `translateX(${tabIndicatorStyle.left}px)`, width: `${tabIndicatorStyle.width}px` }}
+          style={{
+            transform: `translateX(${tabIndicatorStyle.left}px)`,
+            width: `${tabIndicatorStyle.width}px`,
+          }}
         />
         {TABS.map((tab) => (
           <button
             key={tab.id}
-            ref={(el) => { if (el) tabBtnRefs.current[tab.id] = el; }}
+            ref={(el) => {
+              if (el) tabBtnRefs.current[tab.id] = el;
+            }}
             className={`household__tab ${activeTab === tab.id ? "household__tab--active" : ""}`}
-            onClick={() => setActiveTab(tab.id)
+            onClick={() => setActiveTab(tab.id)}
           >
             <span className="household__tab-icon">{tab.icon}</span>
             <span className="household__tab-label">{tab.label}</span>
@@ -567,14 +848,28 @@ function Household() {
       <div className="household__filters animate-in animate-in--3">
         <div className="household__filter">
           <label>Month</label>
-          <select value={month} onChange={(e) => setMonth(Number(e.target.value))}>
-            {MONTHS.map((m, i) => <option key={i} value={i}>{m}</option>)}
+          <select
+            value={month}
+            onChange={(e) => setMonth(Number(e.target.value))}
+          >
+            {MONTHS.map((m, i) => (
+              <option key={i} value={i}>
+                {m}
+              </option>
+            ))}
           </select>
         </div>
         <div className="household__filter">
           <label>Year</label>
-          <select value={year} onChange={(e) => setYear(Number(e.target.value))}>
-            {yearOptions.map((y) => <option key={y} value={y}>{y}</option>)}
+          <select
+            value={year}
+            onChange={(e) => setYear(Number(e.target.value))}
+          >
+            {yearOptions.map((y) => (
+              <option key={y} value={y}>
+                {y}
+              </option>
+            ))}
           </select>
         </div>
       </div>
@@ -586,12 +881,24 @@ function Household() {
             {/* Quick Transaction Summary */}
             {allTransactions.length > 0 && (
               <div className="household__tx-summary">
-                <GlassCard value={formatMoney(txSummary.totalIncome)} label="Income" valueClassName="glass-card__value--green" />
-                <GlassCard value={formatMoney(txSummary.totalExpense)} label="Expenses" valueClassName="glass-card__value--orange" />
+                <GlassCard
+                  value={formatMoney(txSummary.totalIncome)}
+                  label="Income"
+                  valueClassName="glass-card__value--green"
+                />
+                <GlassCard
+                  value={formatMoney(txSummary.totalExpense)}
+                  label="Expenses"
+                  valueClassName="glass-card__value--orange"
+                />
                 <GlassCard
                   value={formatMoney(txSummary.balance)}
                   label="Balance"
-                  valueClassName={txSummary.balance >= 0 ? "glass-card__value--green" : "glass-card__value--orange"}
+                  valueClassName={
+                    txSummary.balance >= 0
+                      ? "glass-card__value--green"
+                      : "glass-card__value--orange"
+                  }
                 />
               </div>
             )}
@@ -599,10 +906,26 @@ function Household() {
             {/* Combined Earnings Stats */}
             <h3 className="household__section-title">Shift Earnings</h3>
             <div className="household__stats">
-              <GlassCard className="household__stat" value={`${combinedStats.combined.hours.toFixed(1)}h`} label="Combined Hours" />
-              <GlassCard className="household__stat" value={formatMoney(combinedStats.combined.pay)} label="Combined Pay" />
-              <GlassCard className="household__stat" value={formatMoney(combinedStats.combined.tips)} label="Combined Tips" />
-              <GlassCard className="household__stat household__stat--total" value={formatMoney(combinedStats.combined.total)} label="Combined Total" />
+              <GlassCard
+                className="household__stat"
+                value={`${combinedStats.combined.hours.toFixed(1)}h`}
+                label="Combined Hours"
+              />
+              <GlassCard
+                className="household__stat"
+                value={formatMoney(combinedStats.combined.pay)}
+                label="Combined Pay"
+              />
+              <GlassCard
+                className="household__stat"
+                value={formatMoney(combinedStats.combined.tips)}
+                label="Combined Tips"
+              />
+              <GlassCard
+                className="household__stat household__stat--total"
+                value={formatMoney(combinedStats.combined.total)}
+                label="Combined Total"
+              />
             </div>
 
             {/* Per-Member Breakdown */}
@@ -614,28 +937,56 @@ function Household() {
                     const s = combinedStats.byMember[member.user_id];
                     if (!s) return null;
                     return (
-                      <div key={member.user_id} className="household__member-card">
+                      <div
+                        key={member.user_id}
+                        className="household__member-card"
+                      >
                         <div className="household__member-header">
-                          <span className="household__member-avatar">{s.display_name.charAt(0).toUpperCase()}</span>
-                          <span className="household__member-name">{s.is_me ? "You" : s.display_name}</span>
-                          <span className="household__member-shifts">{s.shiftCount} shifts</span>
+                          <span className="household__member-avatar">
+                            {s.display_name.charAt(0).toUpperCase()}
+                          </span>
+                          <span className="household__member-name">
+                            {s.is_me ? "You" : s.display_name}
+                          </span>
+                          <span className="household__member-shifts">
+                            {s.shiftCount} shifts
+                          </span>
                         </div>
                         <div className="household__member-stats">
                           <div className="household__member-stat">
-                            <span className="household__member-stat-value">{s.hours.toFixed(1)}h</span>
-                            <span className="household__member-stat-label">Hours</span>
+                            <span className="household__member-stat-value">
+                              {s.hours.toFixed(1)}h
+                            </span>
+                            <span className="household__member-stat-label">
+                              Hours
+                            </span>
                           </div>
                           <div className="household__member-stat">
-                            <span className="household__member-stat-value">{formatMoney(s.pay)}</span>
-                            <span className="household__member-stat-label">Pay</span>
+                            <span className="household__member-stat-value">
+                              {formatMoney(s.pay)}
+                            </span>
+                            <span className="household__member-stat-label">
+                              Pay
+                            </span>
                           </div>
                           <div className="household__member-stat">
-                            <span className="household__member-stat-value">{formatMoney(s.tips)}</span>
-                            <span className="household__member-stat-label">Tips</span>
+                            <span className="household__member-stat-value">
+                              {formatMoney(s.tips)}
+                            </span>
+                            <span className="household__member-stat-label">
+                              Tips
+                            </span>
                           </div>
                           <div className="household__member-stat">
-                            <span className="household__member-stat-value" style={{ color: "var(--color-primary, #818cf8)" }}>{formatMoney(s.total)}</span>
-                            <span className="household__member-stat-label">Total</span>
+                            <span
+                              className="household__member-stat-value"
+                              style={{ color: "var(--color-primary, #818cf8)" }}
+                            >
+                              {formatMoney(s.total)}
+                            </span>
+                            <span className="household__member-stat-label">
+                              Total
+                            </span>
                           </div>
                         </div>
                       </div>
@@ -654,10 +1005,17 @@ function Household() {
                     const wp = workplaces[shift.user_id]?.[shift.place];
                     return (
                       <div key={shift.id} className="household__today-card">
-                        <span className="household__today-dot" style={{ background: wp?.color || "#818cf8" }} />
+                        <span
+                          className="household__today-dot"
+                          style={{ background: wp?.color || "#818cf8" }}
+                        />
                         <div className="household__today-info">
-                          <span className="household__today-name">{shift.display_name} — {wp?.label || shift.place}</span>
-                          <span className="household__today-detail">{shift.hours}h · {formatMoney(shift.tips)} tips</span>
+                          <span className="household__today-name">
+                            {shift.display_name} — {wp?.label || shift.place}
+                          </span>
+                          <span className="household__today-detail">
+                            {shift.hours}h · {formatMoney(shift.tips)} tips
+                          </span>
                         </div>
                       </div>
                     );
@@ -669,26 +1027,49 @@ function Household() {
             {/* Earnings Chart */}
             <div className="household__chart-section">
               <h3 className="household__section-title">Daily Earnings</h3>
-              <EarningsChart data={chartData} members={members} month={month} year={year} />
+              <EarningsChart
+                data={chartData}
+                members={members}
+                month={month}
+                year={year}
+              />
             </div>
 
             {/* Savings Goals */}
             <div className="household__savings-section">
-              <SavingsGoals householdId={household?.id} userId={userId} members={members} />
+              <SavingsGoals
+                householdId={household?.id}
+                userId={userId}
+                members={members}
+              />
             </div>
           </>
         )}
 
         {activeTab === "transactions" && (
-          <Transactions householdId={household?.id} userId={userId} members={members} goals={goals} />
+          <Transactions
+            householdId={household?.id}
+            userId={userId}
+            members={members}
+            goals={goals}
+          />
         )}
 
         {activeTab === "recurring" && (
-          <RecurringTransactions householdId={household?.id} userId={userId} categories={categories} />
+          <RecurringTransactions
+            householdId={household?.id}
+            userId={userId}
+            categories={categories}
+          />
         )}
 
         {activeTab === "analytics" && (
-          <Analytics transactions={allTransactions} members={members} month={month} year={year} />
+          <Analytics
+            transactions={allTransactions}
+            members={members}
+            month={month}
+            year={year}
+          />
         )}
       </div>
 
