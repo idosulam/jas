@@ -1,6 +1,6 @@
 import "./Household.css";
 import "./HouseholdSpendee.css";
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getSupabaseClient } from "../../../lib/superbase";
 import { useUserId } from "../../../lib/Auth_context.jsx";
 import { getUserFacingError, hapticError } from "../../../lib/security";
@@ -73,22 +73,18 @@ function Household() {
   const [workplaces, setWorkplaces] = useState({});
   const [activeTab, setActiveTab] = useState("overview");
 
-  // Sliding tab indicator
+  // Sliding tab indicator — uses callback refs for instant positioning
   const tabNavRef = useRef(null);
   const tabBtnRefs = useRef({});
   const [tabIndicatorStyle, setTabIndicatorStyle] = useState({
     left: 0,
     width: 0,
   });
+  const activeTabRef = useRef(activeTab);
+  activeTabRef.current = activeTab;
 
-  // Goals/Budgets sub-view toggle
-  const [savingsSubView, setSavingsSubView] = useState("goals");
-  const savingsToggleRef = useRef(null);
-  const savingsBtnRefs = useRef({});
-  const [savingsIndicatorStyle, setSavingsIndicatorStyle] = useState({ left: 0, width: 0 });
-
-  useLayoutEffect(() => {
-    const btn = tabBtnRefs.current[activeTab];
+  const calcTabIndicator = useCallback(() => {
+    const btn = tabBtnRefs.current[activeTabRef.current];
     const container = tabNavRef.current;
     if (btn && container) {
       const containerRect = container.getBoundingClientRect();
@@ -100,10 +96,38 @@ function Household() {
         });
       }
     }
-  }, [activeTab]);
+  }, []);
 
-  useLayoutEffect(() => {
-    const btn = savingsBtnRefs.current[savingsSubView];
+  const tabBtnRef = useCallback(
+    (el, tabId) => {
+      if (el) {
+        tabBtnRefs.current[tabId] = el;
+        // Recalculate when any tab button mounts
+        requestAnimationFrame(calcTabIndicator);
+      }
+    },
+    [calcTabIndicator],
+  );
+
+  useEffect(() => {
+    calcTabIndicator();
+  }, [activeTab, calcTabIndicator]);
+
+  useEffect(() => {
+    window.addEventListener("resize", calcTabIndicator);
+    return () => window.removeEventListener("resize", calcTabIndicator);
+  }, [calcTabIndicator]);
+
+  // Goals/Budgets sub-view toggle — same callback ref pattern
+  const [savingsSubView, setSavingsSubView] = useState("goals");
+  const savingsToggleRef = useRef(null);
+  const savingsBtnRefs = useRef({});
+  const [savingsIndicatorStyle, setSavingsIndicatorStyle] = useState({ left: 0, width: 0 });
+  const savingsSubViewRef = useRef(savingsSubView);
+  savingsSubViewRef.current = savingsSubView;
+
+  const calcSavingsIndicator = useCallback(() => {
+    const btn = savingsBtnRefs.current[savingsSubViewRef.current];
     const container = savingsToggleRef.current;
     if (btn && container) {
       const containerRect = container.getBoundingClientRect();
@@ -115,27 +139,26 @@ function Household() {
         });
       }
     }
-  }, [savingsSubView, household]);
+  }, []);
 
-  /* Recalculate savings indicator on window resize */
-  useEffect(() => {
-    const recalc = () => {
-      const btn = savingsBtnRefs.current[savingsSubView];
-      const container = savingsToggleRef.current;
-      if (btn && container) {
-        const containerRect = container.getBoundingClientRect();
-        const btnRect = btn.getBoundingClientRect();
-        if (btnRect.width > 0) {
-          setSavingsIndicatorStyle({
-            left: btnRect.left - containerRect.left,
-            width: btnRect.width,
-          });
-        }
+  const savingsBtnRef = useCallback(
+    (el, viewId) => {
+      if (el) {
+        savingsBtnRefs.current[viewId] = el;
+        requestAnimationFrame(calcSavingsIndicator);
       }
-    };
-    window.addEventListener("resize", recalc);
-    return () => window.removeEventListener("resize", recalc);
-  }, [savingsSubView, household]);
+    },
+    [calcSavingsIndicator],
+  );
+
+  useEffect(() => {
+    calcSavingsIndicator();
+  }, [savingsSubView, household, calcSavingsIndicator]);
+
+  useEffect(() => {
+    window.addEventListener("resize", calcSavingsIndicator);
+    return () => window.removeEventListener("resize", calcSavingsIndicator);
+  }, [calcSavingsIndicator]);
   const [allTransactions, setAllTransactions] = useState([]);
   const [categories, setCategories] = useState([]);
   const [goals, setGoals] = useState([]);
@@ -916,9 +939,7 @@ function Household() {
         {TABS.map((tab) => (
           <button
             key={tab.id}
-            ref={(el) => {
-              if (el) tabBtnRefs.current[tab.id] = el;
-            }}
+            ref={(el) => tabBtnRef(el, tab.id)}
             className={`household__tab ${activeTab === tab.id ? "household__tab--active" : ""}`}
             onClick={() => setActiveTab(tab.id)}
           >
@@ -1171,14 +1192,14 @@ function Household() {
                   }}
                 />
                 <button
-                  ref={(el) => { if (el) savingsBtnRefs.current["goals"] = el; }}
+                  ref={(el) => savingsBtnRef(el, "goals")}
                   className={`household__goals-budgets-btn ${savingsSubView === "goals" ? "household__goals-budgets-btn--active goals" : ""}`}
                   onClick={() => setSavingsSubView("goals")}
                 >
                   💰 Goals
                 </button>
                 <button
-                  ref={(el) => { if (el) savingsBtnRefs.current["budgets"] = el; }}
+                  ref={(el) => savingsBtnRef(el, "budgets")}
                   className={`household__goals-budgets-btn ${savingsSubView === "budgets" ? "household__goals-budgets-btn--active budgets" : ""}`}
                   onClick={() => setSavingsSubView("budgets")}
                 >
