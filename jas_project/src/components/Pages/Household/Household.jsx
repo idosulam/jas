@@ -1,6 +1,6 @@
 import "./Household.css";
 import "./HouseholdSpendee.css";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { getSupabaseClient } from "../../../lib/superbase";
 import { useUserId } from "../../../lib/Auth_context.jsx";
 import { getUserFacingError, hapticError } from "../../../lib/security";
@@ -80,37 +80,65 @@ function Household() {
     left: 0,
     width: 0,
   });
+  const [tabIndicatorReady, setTabIndicatorReady] = useState(false);
 
   // Goals/Budgets sub-view toggle
   const [savingsSubView, setSavingsSubView] = useState("goals");
   const savingsToggleRef = useRef(null);
   const savingsBtnRefs = useRef({});
   const [savingsIndicatorStyle, setSavingsIndicatorStyle] = useState({ left: 0, width: 0 });
+  const [savingsIndicatorReady, setSavingsIndicatorReady] = useState(false);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const btn = tabBtnRefs.current[activeTab];
     const container = tabNavRef.current;
     if (btn && container) {
       const containerRect = container.getBoundingClientRect();
       const btnRect = btn.getBoundingClientRect();
-      setTabIndicatorStyle({
-        left: btnRect.left - containerRect.left,
-        width: btnRect.width,
-      });
+      if (btnRect.width > 0) {
+        setTabIndicatorStyle({
+          left: btnRect.left - containerRect.left,
+          width: btnRect.width,
+        });
+        setTabIndicatorReady(true);
+      }
     }
   }, [activeTab]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const btn = savingsBtnRefs.current[savingsSubView];
     const container = savingsToggleRef.current;
     if (btn && container) {
       const containerRect = container.getBoundingClientRect();
       const btnRect = btn.getBoundingClientRect();
-      setSavingsIndicatorStyle({
-        left: btnRect.left - containerRect.left,
-        width: btnRect.width,
-      });
+      if (btnRect.width > 0) {
+        setSavingsIndicatorStyle({
+          left: btnRect.left - containerRect.left,
+          width: btnRect.width,
+        });
+        setSavingsIndicatorReady(true);
+      }
     }
+  }, [savingsSubView]);
+
+  /* Recalculate savings indicator on window resize */
+  useEffect(() => {
+    const recalc = () => {
+      const btn = savingsBtnRefs.current[savingsSubView];
+      const container = savingsToggleRef.current;
+      if (btn && container) {
+        const containerRect = container.getBoundingClientRect();
+        const btnRect = btn.getBoundingClientRect();
+        if (btnRect.width > 0) {
+          setSavingsIndicatorStyle({
+            left: btnRect.left - containerRect.left,
+            width: btnRect.width,
+          });
+        }
+      }
+    };
+    window.addEventListener("resize", recalc);
+    return () => window.removeEventListener("resize", recalc);
   }, [savingsSubView]);
   const [allTransactions, setAllTransactions] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -883,7 +911,7 @@ function Household() {
         ref={tabNavRef}
       >
         <span
-          className="household__tab-indicator"
+          className={`household__tab-indicator${tabIndicatorReady ? "" : " household__tab-indicator--init"}`}
           style={{
             transform: `translateX(${tabIndicatorStyle.left}px)`,
             width: `${tabIndicatorStyle.width}px`,
@@ -1140,7 +1168,7 @@ function Household() {
             <div className="household__savings-section">
               <div className="household__goals-budgets-toggle" ref={savingsToggleRef}>
                 <span
-                  className={`household__goals-budgets-indicator ${savingsSubView}`}
+                  className={`household__goals-budgets-indicator ${savingsSubView}${savingsIndicatorReady ? "" : " household__goals-budgets-indicator--init"}`}
                   style={{
                     transform: `translateX(${savingsIndicatorStyle.left}px)`,
                     width: `${savingsIndicatorStyle.width}px`,
