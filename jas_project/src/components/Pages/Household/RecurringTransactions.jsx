@@ -11,6 +11,8 @@ import { useModal, useBodyScrollLock } from "../../../hooks";
 import SheetModal from "../../ui/modals/Sheet_modal";
 import ConfirmModal from "../../ui/modals/Confirm_modal";
 import FormField from "../../ui/form/Form_field.jsx";
+import GlassCard from "../../ui/Glass_card";
+import EmptyState from "../../ui/Empty_state";
 
 function formatMoney(amount) {
   return `₪${Number(amount || 0).toFixed(2)}`;
@@ -357,18 +359,20 @@ function RecurringTransactions({ householdId, userId, categories }) {
 
   return (
     <div className="recurring">
-      {/* Monthly Estimate */}
-      <div className="recurring__estimate">
-        <div className="recurring__estimate-info">
-          <span className="recurring__estimate-label">Monthly Estimate</span>
-          <span className="recurring__estimate-value">
-            {formatMoney(monthlyEstimate)}
-          </span>
-        </div>
-        <span className="recurring__estimate-note">
-          Based on {recurring.filter((r) => r.is_active).length} active
-          recurring transactions
-        </span>
+      {/* Summary Cards */}
+      <div className="recurring__summary">
+        <GlassCard
+          value={formatMoney(monthlyEstimate)}
+          label="Monthly Estimate"
+        />
+        <GlassCard
+          value={String(recurring.filter((r) => r.is_active).length)}
+          label="Active"
+        />
+        <GlassCard
+          value={String(recurring.filter((r) => !r.is_active).length)}
+          label="Paused"
+        />
       </div>
 
       {/* List */}
@@ -380,12 +384,27 @@ function RecurringTransactions({ householdId, userId, categories }) {
       </div>
 
       {recurring.length === 0 ? (
-        <div className="recurring__empty">
-          <p>No recurring transactions</p>
-          <span>
-            Set up bills, subscriptions, or regular income to auto-track them.
-          </span>
-        </div>
+        <EmptyState
+          icon={
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+            </svg>
+          }
+          title="No recurring transactions"
+          text="Set up bills, subscriptions, or regular income to auto-track them."
+          action={
+            <button className="btn btn--primary" onClick={openAdd}>
+              + Add recurring
+            </button>
+          }
+        />
       ) : (
         <div className="recurring__list">
           {recurring.map((rec) => {
