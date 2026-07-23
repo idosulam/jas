@@ -103,6 +103,11 @@ function Transactions({ householdId, userId, members, goals = [] }) {
   const typeBtnRefs = useRef({});
   const [indicatorStyle, setIndicatorStyle] = useState({ left: 0, width: 0 });
 
+  // Filter tabs sliding indicator
+  const filterTabRef = useRef(null);
+  const filterBtnRefs = useRef({});
+  const [filterIndicatorStyle, setFilterIndicatorStyle] = useState({ left: 0, width: 0 });
+
   useEffect(() => {
     const btn = typeBtnRefs.current[form.type];
     const container = typeToggleRef.current;
@@ -112,6 +117,19 @@ function Transactions({ householdId, userId, members, goals = [] }) {
       setIndicatorStyle({ left: btnRect.left - containerRect.left, width: btnRect.width });
     }
   }, [form.type]);
+
+  useEffect(() => {
+    const btn = filterBtnRefs.current[typeFilter];
+    const container = filterTabRef.current;
+    if (btn && container) {
+      const containerRect = container.getBoundingClientRect();
+      const btnRect = btn.getBoundingClientRect();
+      setFilterIndicatorStyle({
+        left: btnRect.left - containerRect.left,
+        width: btnRect.width,
+      });
+    }
+  }, [typeFilter]);
 
   useBodyScrollLock(
     addModal.open, editModal.open, deleteModal.open,
@@ -562,10 +580,18 @@ function Transactions({ householdId, userId, members, goals = [] }) {
       </div>
 
       {/* Type Filter Tabs */}
-      <div className="transactions__tabs">
+      <div className="transactions__tabs" ref={filterTabRef}>
+        <span
+          className="transactions__tab-indicator"
+          style={{
+            transform: `translateX(${filterIndicatorStyle.left}px)`,
+            width: `${filterIndicatorStyle.width}px`,
+          }}
+        />
         {["all", "expense", "income", "contribute"].map((t) => (
           <button
             key={t}
+            ref={(el) => { if (el) filterBtnRefs.current[t] = el; }}
             className={`transactions__tab ${typeFilter === t ? "transactions__tab--active" : ""}`}
             onClick={() => setTypeFilter(t)}
           >
@@ -714,7 +740,7 @@ function Transactions({ householdId, userId, members, goals = [] }) {
                 setAmountTouched(true); validateAmount(form.amount, true);
                 if (!form.amount || Number(form.amount) <= 0) { setShakeKey((k) => k + 1); hapticError(); }
               }}
-              placeholder="0.00" autoFocus
+              placeholder="0.00"
             />
           </FormField>
 
@@ -891,7 +917,6 @@ function Transactions({ householdId, userId, members, goals = [] }) {
               onChange={(e) => setCategoryForm((f) => ({ ...f, name: e.target.value }))}
               placeholder="e.g. Coffee, Rent, Groceries"
               maxLength={40}
-              autoFocus
             />
           </FormField>
 

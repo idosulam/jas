@@ -11,7 +11,7 @@ function formatMoney(amount) {
   return `₪${Number(amount || 0).toFixed(2)}`;
 }
 
-function Budgets({ householdId, transactions, month, year }) {
+function Budgets({ householdId, transactions, month, year, onNavigateToTransactions }) {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const { success: toastSuccess, error: toastError } = useGlassToast();
@@ -391,9 +391,19 @@ function Budgets({ householdId, transactions, month, year }) {
           title="No budgets set yet"
           text="Set monthly budgets for your expense categories to stay on track."
           action={
-            <p style={{ fontSize: "0.75rem", color: "rgba(255,255,255,0.35)" }}>
-              Add expense categories in the Transactions tab first.
-            </p>
+            onNavigateToTransactions ? (
+              <button
+                type="button"
+                className="btn btn--primary btn--sm"
+                onClick={onNavigateToTransactions}
+              >
+                Go to Transactions
+              </button>
+            ) : (
+              <p style={{ fontSize: "0.75rem", color: "rgba(255,255,255,0.35)" }}>
+                Add expense categories in the Transactions tab first.
+              </p>
+            )
           }
         />
       )}

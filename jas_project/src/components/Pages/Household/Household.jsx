@@ -610,6 +610,8 @@ function Household() {
     setJoinLoading(false);
   };
 
+  const navigateToTransactions = () => setActiveTab("transactions");
+
   const copyInviteCode = () => {
     if (household?.invite_code) {
       navigator.clipboard
@@ -1174,6 +1176,7 @@ function Household() {
                   transactions={allTransactions}
                   month={month}
                   year={year}
+                  onNavigateToTransactions={navigateToTransactions}
                 />
               )}
             </div>
@@ -1195,6 +1198,7 @@ function Household() {
             transactions={allTransactions}
             month={month}
             year={year}
+            onNavigateToTransactions={navigateToTransactions}
           />
         )}
 

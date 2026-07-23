@@ -437,11 +437,25 @@
   flex-shrink: 0;
 }
 
+.earnings-chart__empty-wrap {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
 .earnings-chart__empty {
   text-align: center;
   padding: 2rem 1rem;
   color: rgba(255, 255, 255, 0.35);
   font-size: 0.85rem;
+}
+
+.earnings-chart__empty-icon {
+  font-size: 2rem;
+  display: block;
+  margin-bottom: 0.5rem;
 }
 
 .earnings-chart__empty span {

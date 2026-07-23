@@ -510,7 +510,6 @@ function RecurringTransactions({ householdId, userId, categories }) {
                 }
               }}
               placeholder="0.00"
-              autoFocus
             />
           </FormField>
 
