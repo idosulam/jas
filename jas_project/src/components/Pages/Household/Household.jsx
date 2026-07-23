@@ -119,7 +119,7 @@ function Household() {
         setSavingsIndicatorReady(true);
       }
     }
-  }, [savingsSubView]);
+  }, [savingsSubView, household]);
 
   /* Recalculate savings indicator on window resize */
   useEffect(() => {
@@ -139,7 +139,7 @@ function Household() {
     };
     window.addEventListener("resize", recalc);
     return () => window.removeEventListener("resize", recalc);
-  }, [savingsSubView]);
+  }, [savingsSubView, household]);
   const [allTransactions, setAllTransactions] = useState([]);
   const [categories, setCategories] = useState([]);
   const [goals, setGoals] = useState([]);
