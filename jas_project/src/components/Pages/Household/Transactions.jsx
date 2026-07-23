@@ -12,6 +12,7 @@ import SheetModal from "../../ui/modals/Sheet_modal";
 import ConfirmModal from "../../ui/modals/Confirm_modal";
 import FormField from "../../ui/form/Form_field.jsx";
 import ColorPalettePicker from "../../../lib/Color_palette_picker.jsx";
+import EmptyState from "../../ui/Empty_state";
 
 function formatMoney(amount) {
   return `₪${Number(amount || 0).toFixed(2)}`;
@@ -621,10 +622,17 @@ function Transactions({ householdId, userId, members, goals = [] }) {
       </div>
 
       {grouped.length === 0 ? (
-        <div className="transactions__empty">
-          <p>No transactions this month</p>
-          <span>Add an expense, income, or contribution to get started.</span>
-        </div>
+        <EmptyState
+          className="transactions__empty-state"
+          icon={<span style={{ fontSize: "2rem" }}>💳</span>}
+          title="No transactions this month"
+          text="Add an expense, income, or contribution to get started."
+          action={
+            <button type="button" className="btn btn--primary btn--sm" onClick={() => openAdd("expense")}>
+              + Add transaction
+            </button>
+          }
+        />
       ) : (
         <div className="transactions__groups">
           {grouped.map(([date, items]) => {

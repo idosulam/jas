@@ -39,7 +39,6 @@ const MONTHS = [
 const TABS = [
   { id: "overview", label: "Overview", icon: "📊" },
   { id: "transactions", label: "Transactions", icon: "💳" },
-  { id: "budgets", label: "Budgets", icon: "💰" },
   { id: "recurring", label: "Recurring", icon: "🔄" },
   { id: "analytics", label: "Analytics", icon: "📈" },
 ];
@@ -81,6 +80,12 @@ function Household() {
     width: 0,
   });
 
+  // Goals/Budgets sub-view toggle
+  const [savingsSubView, setSavingsSubView] = useState("goals");
+  const savingsToggleRef = useRef(null);
+  const savingsBtnRefs = useRef({});
+  const [savingsIndicatorStyle, setSavingsIndicatorStyle] = useState({ left: 0, width: 0 });
+
   useEffect(() => {
     const btn = tabBtnRefs.current[activeTab];
     const container = tabNavRef.current;
@@ -93,6 +98,19 @@ function Household() {
       });
     }
   }, [activeTab]);
+
+  useEffect(() => {
+    const btn = savingsBtnRefs.current[savingsSubView];
+    const container = savingsToggleRef.current;
+    if (btn && container) {
+      const containerRect = container.getBoundingClientRect();
+      const btnRect = btn.getBoundingClientRect();
+      setSavingsIndicatorStyle({
+        left: btnRect.left - containerRect.left,
+        width: btnRect.width,
+      });
+    }
+  }, [savingsSubView]);
   const [allTransactions, setAllTransactions] = useState([]);
   const [categories, setCategories] = useState([]);
   const [goals, setGoals] = useState([]);
@@ -1115,13 +1133,48 @@ function Household() {
               />
             </div>
 
-            {/* Savings Goals */}
+            {/* Savings Goals / Budgets Toggle */}
             <div className="household__savings-section">
-              <SavingsGoals
-                householdId={household?.id}
-                userId={userId}
-                members={members}
-              />
+              <div className="household__goals-budgets-toggle" ref={savingsToggleRef}>
+                <span
+                  className={`household__goals-budgets-indicator ${savingsSubView}`}
+                  style={{
+                    transform: `translateX(${savingsIndicatorStyle.left}px)`,
+                    width: `${savingsIndicatorStyle.width}px`,
+                  }}
+                />
+                <button
+                  ref={(el) => { if (el) savingsBtnRefs.current["goals"] = el; }}
+                  className={`household__goals-budgets-btn ${savingsSubView === "goals" ? "household__goals-budgets-btn--active goals" : ""}`}
+                  onClick={() => setSavingsSubView("goals")}
+                >
+                  💰 Goals
+                </button>
+                <button
+                  ref={(el) => { if (el) savingsBtnRefs.current["budgets"] = el; }}
+                  className={`household__goals-budgets-btn ${savingsSubView === "budgets" ? "household__goals-budgets-btn--active budgets" : ""}`}
+                  onClick={() => setSavingsSubView("budgets")}
+                >
+                  📊 Budgets
+                </button>
+              </div>
+
+              {savingsSubView === "goals" && (
+                <SavingsGoals
+                  householdId={household?.id}
+                  userId={userId}
+                  members={members}
+                  hideTitle
+                />
+              )}
+              {savingsSubView === "budgets" && (
+                <Budgets
+                  householdId={household?.id}
+                  transactions={allTransactions}
+                  month={month}
+                  year={year}
+                />
+              )}
             </div>
           </>
         )}
@@ -1140,15 +1193,6 @@ function Household() {
             householdId={household?.id}
             userId={userId}
             categories={categories}
-          />
-        )}
-
-        {activeTab === "budgets" && (
-          <Budgets
-            householdId={household?.id}
-            transactions={allTransactions}
-            month={month}
-            year={year}
           />
         )}
 

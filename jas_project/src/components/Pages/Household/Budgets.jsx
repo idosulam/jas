@@ -5,6 +5,7 @@ import { useGlassToast } from "../../../lib/glass_toast_provider.jsx";
 import { useModal, useBodyScrollLock } from "../../../hooks";
 import SheetModal from "../../ui/modals/Sheet_modal";
 import FormField from "../../ui/form/Form_field.jsx";
+import EmptyState from "../../ui/Empty_state";
 
 function formatMoney(amount) {
   return `₪${Number(amount || 0).toFixed(2)}`;
@@ -379,11 +380,22 @@ function Budgets({ householdId, transactions, month, year }) {
 
       {/* Empty State */}
       {categoryBudgets.length === 0 && (
-        <div className="budgets__empty">
-          <span className="budgets__empty-icon">📊</span>
-          <p>No expense categories yet.</p>
-          <span>Create categories in the Transactions tab first.</span>
-        </div>
+        <EmptyState
+          className="budgets__empty-state"
+          icon={
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ width: 32, height: 32 }}>
+              <path d="M3 3v18h18" />
+              <path d="M7 16l4-8 4 4 4-6" />
+            </svg>
+          }
+          title="No budgets set yet"
+          text="Set monthly budgets for your expense categories to stay on track."
+          action={
+            <p style={{ fontSize: "0.75rem", color: "rgba(255,255,255,0.35)" }}>
+              Add expense categories in the Transactions tab first.
+            </p>
+          }
+        />
       )}
 
       {/* Edit Budget Modal */}
