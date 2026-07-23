@@ -18,6 +18,8 @@ import SavingsGoals from "./SavingsGoals";
 import Transactions from "./Transactions";
 import RecurringTransactions from "./RecurringTransactions";
 import Analytics from "./Analytics";
+import Budgets from "./Budgets";
+import "./Budgets.css";
 
 const MONTHS = [
   "January",
@@ -37,6 +39,7 @@ const MONTHS = [
 const TABS = [
   { id: "overview", label: "Overview", icon: "📊" },
   { id: "transactions", label: "Transactions", icon: "💳" },
+  { id: "budgets", label: "Budgets", icon: "💰" },
   { id: "recurring", label: "Recurring", icon: "🔄" },
   { id: "analytics", label: "Analytics", icon: "📈" },
 ];
@@ -389,6 +392,42 @@ function Household() {
     });
     return { totalExpense, totalIncome, balance: totalIncome - totalExpense };
   }, [allTransactions]);
+
+  // Budget overview for summary cards
+  const budgetOverview = useMemo(() => {
+    const expenseCats = categories.filter(
+      (c) => c.type === "expense" && c.budget_amount != null,
+    );
+    if (expenseCats.length === 0) return null;
+
+    let totalBudget = 0;
+    let totalSpent = 0;
+    const alerts = [];
+
+    expenseCats.forEach((cat) => {
+      const budget = Number(cat.budget_amount);
+      const spent = allTransactions
+        .filter((t) => t.type === "expense" && t.category_id === cat.id)
+        .reduce((sum, t) => sum + Number(t.amount), 0);
+      totalBudget += budget;
+      totalSpent += spent;
+
+      const pct = budget > 0 ? (spent / budget) * 100 : 0;
+      if (pct >= 80) {
+        alerts.push({ name: cat.name, icon: cat.icon, color: cat.color, pct, over: pct >= 100 });
+      }
+    });
+
+    alerts.sort((a, b) => b.pct - a.pct);
+
+    return {
+      totalBudget,
+      totalSpent,
+      remaining: totalBudget - totalSpent,
+      progress: totalBudget > 0 ? Math.min(100, (totalSpent / totalBudget) * 100) : 0,
+      alerts: alerts.slice(0, 3),
+    };
+  }, [categories, allTransactions]);
 
   // Chart data
   const chartData = useMemo(() => {
@@ -903,6 +942,47 @@ function Household() {
               </div>
             )}
 
+            {/* Budget Quick Status */}
+            {budgetOverview && (
+              <div className="household__budget-overview">
+                <div
+                  className="household__budget-bar"
+                  style={{
+                    background: budgetOverview.progress >= 100
+                      ? "var(--color-danger, #f87171)"
+                      : budgetOverview.progress >= 85
+                        ? "var(--color-warning, #fbbf24)"
+                        : "var(--color-success, #34d399)",
+                    width: `${budgetOverview.progress}%`,
+                  }}
+                />
+                <div className="household__budget-info">
+                  <span className="household__budget-label">
+                    💰 Budget: {formatMoney(budgetOverview.totalSpent)} / {formatMoney(budgetOverview.totalBudget)}
+                  </span>
+                  <span
+                    className={`household__budget-remaining ${budgetOverview.remaining >= 0 ? "" : "household__budget-remaining--over"}`}
+                  >
+                    {budgetOverview.remaining >= 0
+                      ? `${formatMoney(budgetOverview.remaining)} left`
+                      : `${formatMoney(Math.abs(budgetOverview.remaining))} over!`}
+                  </span>
+                </div>
+                {budgetOverview.alerts.length > 0 && (
+                  <div className="household__budget-alerts">
+                    {budgetOverview.alerts.map((a) => (
+                      <span
+                        key={a.name}
+                        className={`household__budget-alert ${a.over ? "household__budget-alert--over" : "household__budget-alert--warn"}`}
+                      >
+                        {a.icon} {a.name} ({Math.round(a.pct)}%)
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Combined Earnings Stats */}
             <h3 className="household__section-title">Shift Earnings</h3>
             <div className="household__stats">
@@ -1060,6 +1140,15 @@ function Household() {
             householdId={household?.id}
             userId={userId}
             categories={categories}
+          />
+        )}
+
+        {activeTab === "budgets" && (
+          <Budgets
+            householdId={household?.id}
+            transactions={allTransactions}
+            month={month}
+            year={year}
           />
         )}
 
