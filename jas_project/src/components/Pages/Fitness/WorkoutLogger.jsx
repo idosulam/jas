@@ -592,7 +592,25 @@ function WorkoutLogger() {
     <div className="fitness__workout">
       {/* Weekly date navigation */}
       <div className="fitness__date-nav animate-in animate-in--1">
-        <span className="fitness__date-label">{dayTitle}</span>
+        <div className="fitness__date-top">
+          <button
+            type="button"
+            className="fitness__date-btn"
+            onClick={() => setSelectedDate((d) => addDays(d, -1))}
+            aria-label="Previous day"
+          >
+            ‹
+          </button>
+          <span className="fitness__date-label">{dayTitle}</span>
+          <button
+            type="button"
+            className="fitness__date-btn"
+            onClick={() => setSelectedDate((d) => addDays(d, 1))}
+            aria-label="Next day"
+          >
+            ›
+          </button>
+        </div>
         {!isToday && (
           <button
             type="button"

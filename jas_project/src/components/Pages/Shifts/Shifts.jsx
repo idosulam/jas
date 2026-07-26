@@ -911,7 +911,25 @@ function Shifts({ onNavigate }) {
 
       {/* Weekly date navigation */}
       <div className="shifts__date-nav animate-in animate-in--1">
-        <span className="shifts__date-label">{dayTitle}</span>
+        <div className="shifts__date-top">
+          <button
+            type="button"
+            className="shifts__date-btn"
+            onClick={() => setSelectedDate((d) => addDays(d, -1))}
+            aria-label="Previous day"
+          >
+            ‹
+          </button>
+          <span className="shifts__date-label">{dayTitle}</span>
+          <button
+            type="button"
+            className="shifts__date-btn"
+            onClick={() => setSelectedDate((d) => addDays(d, 1))}
+            aria-label="Next day"
+          >
+            ›
+          </button>
+        </div>
         {!isToday && (
           <button
             type="button"
