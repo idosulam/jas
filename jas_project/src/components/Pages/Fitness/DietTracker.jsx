@@ -25,6 +25,8 @@ import EmptyState from "../../../components/ui/Empty_state";
 import LoadingSkeleton from "../../../components/ui/Loading_skeleton";
 import GlassCard from "../../../components/ui/Glass_card";
 
+const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
 const MODAL_EXIT_MS = 320;
 
 const MEAL_TYPES = [
@@ -238,6 +240,21 @@ function DietTracker({ profileData }) {
   }, [entries]);
 
   // ── Date navigation ──
+  const startOfWeek = (date) => {
+    const d = new Date(date);
+    d.setDate(d.getDate() - d.getDay());
+    d.setHours(0, 0, 0, 0);
+    return d;
+  };
+
+  const addDays = (date, n) => {
+    const d = new Date(date);
+    d.setDate(d.getDate() + n);
+    return d;
+  };
+
+  const toDateKey = (date) => date.toISOString().slice(0, 10);
+
   const changeDate = (offset) => {
     const d = new Date(`${selectedDate}T12:00:00`);
     d.setDate(d.getDate() + offset);
@@ -247,11 +264,19 @@ function DietTracker({ profileData }) {
   const formatSelectedDate = () => {
     const d = new Date(`${selectedDate}T12:00:00`);
     return d.toLocaleDateString(undefined, {
-      weekday: "short",
-      month: "short",
+      weekday: "long",
+      month: "long",
       day: "numeric",
     });
   };
+
+  const isToday = selectedDate === today;
+
+  const weekDays = useMemo(() => {
+    const d = new Date(`${selectedDate}T12:00:00`);
+    const start = startOfWeek(d);
+    return Array.from({ length: 7 }, (_, i) => addDays(start, i));
+  }, [selectedDate]);
 
   // ── Modal open/close ──
   const openAddModal = (mealType = "breakfast") => {
@@ -628,31 +653,60 @@ function DietTracker({ profileData }) {
 
       {/* Date selector */}
       <div className="fitness__date-nav animate-in animate-in--2">
-        <button
-          type="button"
-          className="fitness__date-btn"
-          onClick={() => changeDate(-1)}
-          aria-label="Previous day"
-        >
-          ‹
-        </button>
-        <span className="fitness__date-label">{formatSelectedDate()}</span>
-        <button
-          type="button"
-          className="fitness__date-btn"
-          onClick={() => changeDate(1)}
-          aria-label="Next day"
-        >
-          ›
-        </button>
-        <button
-          type="button"
-          className="fitness__date-today"
-          onClick={() => setSelectedDate(today)}
-          aria-label="Go to today"
-        >
-          Today
-        </button>
+        <div className="fitness__date-top">
+          <button
+            type="button"
+            className="fitness__date-btn"
+            onClick={() => changeDate(-1)}
+            aria-label="Previous day"
+          >
+            ‹
+          </button>
+          <span className="fitness__date-label">{formatSelectedDate()}</span>
+          <button
+            type="button"
+            className="fitness__date-btn"
+            onClick={() => changeDate(1)}
+            aria-label="Next day"
+          >
+            ›
+          </button>
+        </div>
+        {!isToday && (
+          <button
+            type="button"
+            className="fitness__date-today"
+            onClick={() => setSelectedDate(today)}
+          >
+            Today
+          </button>
+        )}
+      </div>
+
+      {/* Week day selector */}
+      <div className="fitness__week-days animate-in animate-in--2">
+        {weekDays.map((day) => {
+          const key = toDateKey(day);
+          const isSelected = key === selectedDate;
+          const isDayToday = key === today;
+          const hasEntries = entries.some((e) => e.entry_date === key);
+
+          return (
+            <button
+              key={key}
+              type="button"
+              className={`fitness__week-day${isSelected ? " fitness__week-day--active" : ""}${isDayToday ? " fitness__week-day--today" : ""}${hasEntries ? " fitness__week-day--busy" : ""}`}
+              onClick={() => setSelectedDate(key)}
+              aria-pressed={isSelected}
+            >
+              <span className="fitness__week-day-label">{WEEKDAYS[day.getDay()]}</span>
+              <span className="fitness__week-day-num">{day.getDate()}</span>
+              {hasEntries && (
+                <span className="fitness__week-day-dot" aria-hidden="true" />
+              )}
+            </button>
+          );
+        })}
       </div>
 
       {/* Daily summary */}
