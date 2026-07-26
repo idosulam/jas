@@ -287,6 +287,70 @@
   outline-offset: 2px;
 }
 
+/* ── View Toggle ───────────────────────────────────────────── */
+
+.fitness__view-toggle {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.25rem;
+  width: max-content;
+  margin: 0 auto 1.5rem;
+  padding: 0.25rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+}
+
+.fitness__view-btn {
+  border: none;
+  border-radius: var(--radius-pill);
+  padding: 0.5rem 1rem;
+  background: transparent;
+  color: var(--text-muted);
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 0.8rem;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: color 0.2s ease, background 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.fitness__view-btn:hover {
+  color: var(--text);
+  background: var(--surface-hover);
+}
+
+.fitness__view-btn--active {
+  color: #fff;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+  box-shadow: 0 4px 16px rgba(129, 140, 248, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+.fitness__view-btn:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* ── Month Grid ────────────────────────────────────────────── */
+
+.fitness__week-days--month {
+  gap: 0.2rem;
+}
+
+.fitness__week-days--month .fitness__week-day {
+  padding: 0.35rem 0.15rem;
+}
+
+.fitness__week-day--muted {
+  opacity: 0.3;
+}
+
+.shifts__week-day--muted {
+  opacity: 0.3;
+}
+
 /* ── Summary ────────────────────────────────────────────────── */
 
 .fitness__summary {

@@ -57,6 +57,7 @@ function WorkoutLogger() {
   const userId = useUserId();
   const now = new Date();
   const [selectedDate, setSelectedDate] = useState(now);
+  const [viewMode, setViewMode] = useState("week");
   const [workouts, setWorkouts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -109,6 +110,14 @@ function WorkoutLogger() {
     return Array.from({ length: 7 }, (_, i) => addDays(start, i));
   }, [selectedDate]);
 
+  const monthDays = useMemo(() => {
+    const d = new Date(selectedDate);
+    const start = startOfWeek(new Date(d.getFullYear(), d.getMonth(), 1));
+    return Array.from({ length: 42 }, (_, i) => addDays(start, i));
+  }, [selectedDate]);
+
+  const visibleDays = viewMode === "week" ? weekDays : monthDays;
+
   const dayTitle = useMemo(() => {
     return selectedDate.toLocaleDateString(undefined, {
       weekday: "long",
@@ -124,10 +133,17 @@ function WorkoutLogger() {
     setLoading(true);
     setError(null);
 
-    const weekStart = startOfWeek(selectedDate);
-    const weekEnd = addDays(weekStart, 6);
-    const startDate = toDateKey(weekStart);
-    const endDate = toDateKey(weekEnd);
+    const d = new Date(selectedDate);
+    const rangeStart =
+      viewMode === "week"
+        ? startOfWeek(d)
+        : new Date(d.getFullYear(), d.getMonth(), 1);
+    const rangeEnd =
+      viewMode === "week"
+        ? addDays(rangeStart, 6)
+        : new Date(d.getFullYear(), d.getMonth() + 1, 0);
+    const startDate = toDateKey(rangeStart);
+    const endDate = toDateKey(rangeEnd);
 
     try {
       const supabase = getSupabaseClient();
@@ -150,7 +166,7 @@ function WorkoutLogger() {
       setWorkouts([]);
     }
     setLoading(false);
-  }, [selectedDate, userId]);
+  }, [selectedDate, viewMode, userId]);
 
   useEffect(() => {
     fetchWorkouts();
@@ -623,18 +639,26 @@ function WorkoutLogger() {
       </div>
 
       {/* Week day selector */}
-      <div className="fitness__week-days animate-in animate-in--1">
-        {weekDays.map((day) => {
+      <div
+        className={`fitness__week-days animate-in animate-in--1${viewMode === "month" ? " fitness__week-days--month" : ""}`}
+        role="group"
+        aria-label={viewMode === "week" ? "Week days" : "Month days"}
+      >
+        {visibleDays.map((day) => {
           const key = toDateKey(day);
           const isSelected = key === selectedKey;
           const isDayToday = key === toDateKey(now);
           const hasWorkout = workouts.some((w) => w.workout_date === key);
+          const isInCurrentMonth =
+            viewMode === "month"
+              ? day.getMonth() === selectedDate.getMonth()
+              : true;
 
           return (
             <button
               key={key}
               type="button"
-              className={`fitness__week-day${isSelected ? " fitness__week-day--active" : ""}${isDayToday ? " fitness__week-day--today" : ""}${hasWorkout ? " fitness__week-day--busy" : ""}`}
+              className={`fitness__week-day${isSelected ? " fitness__week-day--active" : ""}${isDayToday ? " fitness__week-day--today" : ""}${hasWorkout ? " fitness__week-day--busy" : ""}${!isInCurrentMonth ? " fitness__week-day--muted" : ""}`}}
               onClick={() => setSelectedDate(day)}
               aria-pressed={isSelected}
             >
@@ -646,6 +670,30 @@ function WorkoutLogger() {
             </button>
           );
         })}
+      </div>
+
+      {/* View toggle */}
+      <div
+        className="fitness__view-toggle animate-in animate-in--2"
+        role="tablist"
+        aria-label="Workout view"
+      >
+        <button
+          type="button"
+          className={`fitness__view-btn${viewMode === "week" ? " fitness__view-btn--active" : ""}`}
+          onClick={() => setViewMode("week")}
+          aria-pressed={viewMode === "week"}
+        >
+          1 week
+        </button>
+        <button
+          type="button"
+          className={`fitness__view-btn${viewMode === "month" ? " fitness__view-btn--active" : ""}`}
+          onClick={() => setViewMode("month")}
+          aria-pressed={viewMode === "month"}
+        >
+          1 month
+        </button>
       </div>
 
       {/* Summary */}

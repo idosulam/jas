@@ -82,6 +82,7 @@ function Shifts({ onNavigate }) {
   const userId = useUserId();
   const now = new Date();
   const [selectedDate, setSelectedDate] = useState(now);
+  const [viewMode, setViewMode] = useState("week");
   const [placeFilter, setPlaceFilter] = useState("all");
   const [shifts, setShifts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -391,6 +392,14 @@ function Shifts({ onNavigate }) {
     return Array.from({ length: 7 }, (_, i) => addDays(start, i));
   }, [selectedDate]);
 
+  const monthDays = useMemo(() => {
+    const d = new Date(`${selectedDate}T12:00:00`);
+    const start = startOfWeek(new Date(d.getFullYear(), d.getMonth(), 1));
+    return Array.from({ length: 42 }, (_, i) => addDays(start, i));
+  }, [selectedDate]);
+
+  const visibleDays = viewMode === "week" ? weekDays : monthDays;
+
   const dayTitle = useMemo(() => {
     return selectedDate.toLocaleDateString(undefined, {
       weekday: "long",
@@ -405,10 +414,17 @@ function Shifts({ onNavigate }) {
     setLoading(true);
     setError(null);
 
-    const weekStart = startOfWeek(selectedDate);
-    const weekEnd = addDays(weekStart, 6);
-    const startDate = toDateKey(weekStart);
-    const endDate = toDateKey(weekEnd);
+    const d = new Date(`${selectedDate}T12:00:00`);
+    const rangeStart =
+      viewMode === "week"
+        ? startOfWeek(d)
+        : new Date(d.getFullYear(), d.getMonth(), 1);
+    const rangeEnd =
+      viewMode === "week"
+        ? addDays(rangeStart, 6)
+        : new Date(d.getFullYear(), d.getMonth() + 1, 0);
+    const startDate = toDateKey(rangeStart);
+    const endDate = toDateKey(rangeEnd);
 
     try {
       const supabase = getSupabaseClient();
@@ -431,7 +447,7 @@ function Shifts({ onNavigate }) {
       setShifts([]);
     }
     setLoading(false);
-  }, [selectedDate, userId]);
+  }, [selectedDate, viewMode, userId]);
 
   useEffect(() => {
     fetchShifts();
@@ -942,18 +958,27 @@ function Shifts({ onNavigate }) {
       </div>
 
       {/* Week day selector */}
-      <div className="shifts__week-days animate-in animate-in--1">
-        {weekDays.map((day) => {
+      <div
+        className={`shifts__week-days animate-in animate-in--1${viewMode === "month" ? " shifts__week-days--month" : ""}`}
+        role="group"
+        aria-label={viewMode === "week" ? "Week days" : "Month days"}
+      >
+        {visibleDays.map((day) => {
           const key = toDateKey(day);
           const isSelected = key === selectedKey;
           const isDayToday = key === toDateKey(now);
           const hasShift = shifts.some((s) => s.shift_date === key);
+          const d = new Date(`${selectedDate}T12:00:00`);
+          const isInCurrentMonth =
+            viewMode === "month"
+              ? day.getMonth() === d.getMonth()
+              : true;
 
           return (
             <button
               key={key}
               type="button"
-              className={`shifts__week-day${isSelected ? " shifts__week-day--active" : ""}${isDayToday ? " shifts__week-day--today" : ""}${hasShift ? " shifts__week-day--busy" : ""}`}
+              className={`shifts__week-day${isSelected ? " shifts__week-day--active" : ""}${isDayToday ? " shifts__week-day--today" : ""}${hasShift ? " shifts__week-day--busy" : ""}${!isInCurrentMonth ? " shifts__week-day--muted" : ""}`}}
               onClick={() => setSelectedDate(day)}
               aria-pressed={isSelected}
             >
@@ -965,6 +990,30 @@ function Shifts({ onNavigate }) {
             </button>
           );
         })}
+      </div>
+
+      {/* View toggle */}
+      <div
+        className="shifts__view-toggle animate-in animate-in--2"
+        role="tablist"
+        aria-label="Shifts view"
+      >
+        <button
+          type="button"
+          className={`shifts__view-btn${viewMode === "week" ? " shifts__view-btn--active" : ""}`}
+          onClick={() => setViewMode("week")}
+          aria-pressed={viewMode === "week"}
+        >
+          1 week
+        </button>
+        <button
+          type="button"
+          className={`shifts__view-btn${viewMode === "month" ? " shifts__view-btn--active" : ""}`}
+          onClick={() => setViewMode("month")}
+          aria-pressed={viewMode === "month"}
+        >
+          1 month
+        </button>
       </div>
 
       {/* No workplaces CTA */}

@@ -82,6 +82,7 @@ function DietTracker({ profileData }) {
   const userId = useUserId();
   const today = new Date().toISOString().slice(0, 10);
   const [selectedDate, setSelectedDate] = useState(today);
+  const [viewMode, setViewMode] = useState("week");
   const [entries, setEntries] = useState([]);
   const [caloriesBurned, setCaloriesBurned] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -137,13 +138,26 @@ function DietTracker({ profileData }) {
     if (!hasLoadedOnce.current) setLoading(true);
     setError(null);
 
+    const d = new Date(`${selectedDate}T12:00:00`);
+    const rangeStart =
+      viewMode === "week"
+        ? startOfWeek(d)
+        : new Date(d.getFullYear(), d.getMonth(), 1);
+    const rangeEnd =
+      viewMode === "week"
+        ? addDays(rangeStart, 6)
+        : new Date(d.getFullYear(), d.getMonth() + 1, 0);
+    const startDateKey = toDateKey(rangeStart);
+    const endDateKey = toDateKey(rangeEnd);
+
     try {
       const supabase = getSupabaseClient();
       const { data, error: fetchError } = await supabase
         .from("diet_entries")
         .select("*")
         .eq("user_id", userId)
-        .eq("entry_date", selectedDate)
+        .gte("entry_date", startDateKey)
+        .lte("entry_date", endDateKey)
         .order("created_at", { ascending: true });
 
       if (fetchError) {
@@ -171,7 +185,7 @@ function DietTracker({ profileData }) {
     }
     hasLoadedOnce.current = true;
     setLoading(false);
-  }, [selectedDate, userId]);
+  }, [selectedDate, viewMode, userId]);
 
   useEffect(() => {
     fetchEntries();
@@ -216,8 +230,14 @@ function DietTracker({ profileData }) {
   }, []);
 
   // ── Daily totals ──
+  // ── Entries for the selected date only ──
+  const dayEntries = useMemo(
+    () => entries.filter((e) => e.entry_date === selectedDate),
+    [entries, selectedDate],
+  );
+
   const dailyTotals = useMemo(() => {
-    return entries.reduce(
+    return dayEntries.reduce(
       (acc, e) => {
         acc.calories += Number(e.calories) || 0;
         acc.protein += Number(e.protein_g) || 0;
@@ -228,16 +248,16 @@ function DietTracker({ profileData }) {
       },
       { calories: 0, protein: 0, carbs: 0, fats: 0, fiber: 0 },
     );
-  }, [entries]);
+  }, [dayEntries]);
 
   // ── Group entries by meal type ──
   const groupedEntries = useMemo(() => {
     const groups = {};
     MEAL_TYPES.forEach((m) => {
-      groups[m.id] = entries.filter((e) => e.meal_type === m.id);
+      groups[m.id] = dayEntries.filter((e) => e.meal_type === m.id);
     });
     return groups;
-  }, [entries]);
+  }, [dayEntries]);
 
   // ── Date navigation ──
   const startOfWeek = (date) => {
@@ -277,6 +297,14 @@ function DietTracker({ profileData }) {
     const start = startOfWeek(d);
     return Array.from({ length: 7 }, (_, i) => addDays(start, i));
   }, [selectedDate]);
+
+  const monthDays = useMemo(() => {
+    const d = new Date(`${selectedDate}T12:00:00`);
+    const start = startOfWeek(new Date(d.getFullYear(), d.getMonth(), 1));
+    return Array.from({ length: 42 }, (_, i) => addDays(start, i));
+  }, [selectedDate]);
+
+  const visibleDays = viewMode === "week" ? weekDays : monthDays;
 
   // ── Modal open/close ──
   const openAddModal = (mealType = "breakfast") => {
@@ -684,18 +712,27 @@ function DietTracker({ profileData }) {
       </div>
 
       {/* Week day selector */}
-      <div className="fitness__week-days animate-in animate-in--2">
-        {weekDays.map((day) => {
+      <div
+        className={`fitness__week-days animate-in animate-in--2${viewMode === "month" ? " fitness__week-days--month" : ""}`}
+        role="group"
+        aria-label={viewMode === "week" ? "Week days" : "Month days"}
+      >
+        {visibleDays.map((day) => {
           const key = toDateKey(day);
           const isSelected = key === selectedDate;
           const isDayToday = key === today;
           const hasEntries = entries.some((e) => e.entry_date === key);
+          const d = new Date(`${selectedDate}T12:00:00`);
+          const isInCurrentMonth =
+            viewMode === "month"
+              ? day.getMonth() === d.getMonth()
+              : true;
 
           return (
             <button
               key={key}
               type="button"
-              className={`fitness__week-day${isSelected ? " fitness__week-day--active" : ""}${isDayToday ? " fitness__week-day--today" : ""}${hasEntries ? " fitness__week-day--busy" : ""}`}
+              className={`fitness__week-day${isSelected ? " fitness__week-day--active" : ""}${isDayToday ? " fitness__week-day--today" : ""}${hasEntries ? " fitness__week-day--busy" : ""}${!isInCurrentMonth ? " fitness__week-day--muted" : ""}`}
               onClick={() => setSelectedDate(key)}
               aria-pressed={isSelected}
             >
@@ -707,6 +744,30 @@ function DietTracker({ profileData }) {
             </button>
           );
         })}
+      </div>
+
+      {/* View toggle */}
+      <div
+        className="fitness__view-toggle animate-in animate-in--2"
+        role="tablist"
+        aria-label="Diet view"
+      >
+        <button
+          type="button"
+          className={`fitness__view-btn${viewMode === "week" ? " fitness__view-btn--active" : ""}`}
+          onClick={() => setViewMode("week")}
+          aria-pressed={viewMode === "week"}
+        >
+          1 week
+        </button>
+        <button
+          type="button"
+          className={`fitness__view-btn${viewMode === "month" ? " fitness__view-btn--active" : ""}`}
+          onClick={() => setViewMode("month")}
+          aria-pressed={viewMode === "month"}
+        >
+          1 month
+        </button>
       </div>
 
       {/* Daily summary */}
