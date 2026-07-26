@@ -281,6 +281,11 @@ function DietTracker({ profileData }) {
     setSelectedDate(d.toISOString().slice(0, 10));
   };
 
+  const shiftNav = (direction) => {
+    const offset = viewMode === "week" ? 7 : 30;
+    changeDate(direction === "next" ? offset : -offset);
+  };
+
   const formatSelectedDate = () => {
     const d = new Date(`${selectedDate}T12:00:00`);
     return d.toLocaleDateString(undefined, {
@@ -685,7 +690,7 @@ function DietTracker({ profileData }) {
           <button
             type="button"
             className="fitness__date-btn"
-            onClick={() => changeDate(-1)}
+            onClick={() => shiftNav("prev")}
             aria-label="Previous day"
           >
             ‹
@@ -694,7 +699,7 @@ function DietTracker({ profileData }) {
           <button
             type="button"
             className="fitness__date-btn"
-            onClick={() => changeDate(1)}
+            onClick={() => shiftNav("next")}
             aria-label="Next day"
           >
             ›

@@ -616,7 +616,7 @@ function WorkoutLogger() {
           <button
             type="button"
             className="fitness__date-btn"
-            onClick={() => setSelectedDate((d) => addDays(d, -1))}
+            onClick={() => setSelectedDate((d) => addDays(d, viewMode === "week" ? -7 : -30))}
             aria-label="Previous day"
           >
             ‹
@@ -625,7 +625,7 @@ function WorkoutLogger() {
           <button
             type="button"
             className="fitness__date-btn"
-            onClick={() => setSelectedDate((d) => addDays(d, 1))}
+            onClick={() => setSelectedDate((d) => addDays(d, viewMode === "week" ? 7 : 30))}
             aria-label="Next day"
           >
             ›
