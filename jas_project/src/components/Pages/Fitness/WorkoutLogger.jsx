@@ -126,7 +126,6 @@ function WorkoutLogger() {
     });
   }, [selectedDate]);
 
-
   // ── Fetch workouts ──
   const fetchWorkouts = useCallback(async () => {
     if (!userId) return;
@@ -377,7 +376,14 @@ function WorkoutLogger() {
     } catch (err) {
       toastError(getUserFacingError(err.message));
     }
-  }, [presetForm, editingPreset, fetchPresets, toastSuccess, toastError, userId]);
+  }, [
+    presetForm,
+    editingPreset,
+    fetchPresets,
+    toastSuccess,
+    toastError,
+    userId,
+  ]);
 
   const deletePreset = useCallback(
     async (id) => {
@@ -547,9 +553,7 @@ function WorkoutLogger() {
       setSaving(false);
       setError(getUserFacingError(err.message));
       toastError(
-        editingWorkout
-          ? "Couldn't update workout."
-          : "Couldn't save workout.",
+        editingWorkout ? "Couldn't update workout." : "Couldn't save workout.",
       );
     }
   };
@@ -658,11 +662,13 @@ function WorkoutLogger() {
             <button
               key={key}
               type="button"
-              className={`fitness__week-day${isSelected ? " fitness__week-day--active" : ""}${isDayToday ? " fitness__week-day--today" : ""}${hasWorkout ? " fitness__week-day--busy" : ""}${!isInCurrentMonth ? " fitness__week-day--muted" : ""}`}}
+              className={`fitness__week-day${isSelected ? " fitness__week-day--active" : ""}${isDayToday ? " fitness__week-day--today" : ""}${hasWorkout ? " fitness__week-day--busy" : ""}${!isInCurrentMonth ? " fitness__week-day--muted" : ""}`}
               onClick={() => setSelectedDate(day)}
               aria-pressed={isSelected}
             >
-              <span className="fitness__week-day-label">{WEEKDAYS[day.getDay()]}</span>
+              <span className="fitness__week-day-label">
+                {WEEKDAYS[day.getDay()]}
+              </span>
               <span className="fitness__week-day-num">{day.getDate()}</span>
               {hasWorkout && (
                 <span className="fitness__week-day-dot" aria-hidden="true" />
@@ -761,9 +767,7 @@ function WorkoutLogger() {
 
       {/* List header */}
       <div className="fitness__list-header animate-in animate-in--4">
-        <h2 className="fitness__list-title">
-          {dayTitle}
-        </h2>
+        <h2 className="fitness__list-title">{dayTitle}</h2>
         <button
           type="button"
           className="fitness__add-btn"
@@ -783,7 +787,14 @@ function WorkoutLogger() {
         <EmptyState
           className="fitness__empty"
           icon={
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
               <path d="M6.5 6.5h11M6.5 17.5h11M3 12h2m14 0h2M6 12h12" />
               <rect x="1" y="8" width="4" height="8" rx="1" />
               <rect x="19" y="8" width="4" height="8" rx="1" />
@@ -828,7 +839,14 @@ function WorkoutLogger() {
                         }
                         aria-expanded={expandedNoteId === workout.id}
                       >
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+                        <svg
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="1.75"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
                           <path d="M21 12c0 4.418-4.03 8-9 8-1.06 0-2.07-.16-3-.46L3 21l1.5-4.5C3.55 15.13 3 13.62 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8Z" />
                         </svg>
                       </button>
@@ -1046,7 +1064,12 @@ function WorkoutLogger() {
             />
           </FormField>
 
-          <FormField label="Notes" optional charCount={form.notes.length} maxChars={500}>
+          <FormField
+            label="Notes"
+            optional
+            charCount={form.notes.length}
+            maxChars={500}
+          >
             <textarea
               placeholder="e.g. Felt strong, increased bench PR"
               value={form.notes}
@@ -1229,7 +1252,14 @@ function WorkoutLogger() {
         description="This action cannot be undone."
         confirmLabel="Delete workout"
         icon={
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.75"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
             <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6h14Z" />
             <path d="M10 11v6M14 11v6" />
           </svg>

@@ -254,8 +254,6 @@ function Shifts({ onNavigate }) {
     fetchPresets();
   }, [fetchPresets]);
 
-
-
   const savePreset = useCallback(async () => {
     const label = presetForm.label.trim();
     if (!label) return;
@@ -407,7 +405,6 @@ function Shifts({ onNavigate }) {
       day: "numeric",
     });
   }, [selectedDate]);
-
 
   const fetchShifts = useCallback(async () => {
     if (!userId) return;
@@ -920,7 +917,9 @@ function Shifts({ onNavigate }) {
   return (
     <section className="shifts page">
       <PageHeader
-        eyebrow={householdName ? `Earnings · ${householdName}` : "Earnings tracker"}
+        eyebrow={
+          householdName ? `Earnings · ${householdName}` : "Earnings tracker"
+        }
         title="Shifts"
         className="shifts__header animate-in"
       />
@@ -970,19 +969,19 @@ function Shifts({ onNavigate }) {
           const hasShift = shifts.some((s) => s.shift_date === key);
           const d = new Date(`${selectedDate}T12:00:00`);
           const isInCurrentMonth =
-            viewMode === "month"
-              ? day.getMonth() === d.getMonth()
-              : true;
+            viewMode === "month" ? day.getMonth() === d.getMonth() : true;
 
           return (
             <button
               key={key}
               type="button"
-              className={`shifts__week-day${isSelected ? " shifts__week-day--active" : ""}${isDayToday ? " shifts__week-day--today" : ""}${hasShift ? " shifts__week-day--busy" : ""}${!isInCurrentMonth ? " shifts__week-day--muted" : ""}`}}
+              className={`shifts__week-day${isSelected ? " shifts__week-day--active" : ""}${isDayToday ? " shifts__week-day--today" : ""}${hasShift ? " shifts__week-day--busy" : ""}${!isInCurrentMonth ? " shifts__week-day--muted" : ""}`}
               onClick={() => setSelectedDate(day)}
               aria-pressed={isSelected}
             >
-              <span className="shifts__week-day-label">{WEEKDAYS[day.getDay()]}</span>
+              <span className="shifts__week-day-label">
+                {WEEKDAYS[day.getDay()]}
+              </span>
               <span className="shifts__week-day-num">{day.getDate()}</span>
               {hasShift && (
                 <span className="shifts__week-day-dot" aria-hidden="true" />
