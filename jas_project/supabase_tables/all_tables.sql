@@ -1,14 +1,10 @@
 -- ============================================================
 -- JAS App — Full Database Setup
 -- Run this entire script in Supabase SQL Editor
--- Order: profile → household → transactions → shifts → presets → workplaces → events → palettes → fitness
 -- ============================================================
 
--- ============================================================
 -- STEP 1: PROFILE
 -- ============================================================
--- Run this in the Supabase SQL Editor to create profile & weight tracking tables.
-
 GRANT USAGE ON SCHEMA public TO anon, authenticated, service_role;
 GRANT ALL ON ALL TABLES IN SCHEMA public TO anon, authenticated, service_role;
 GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO anon, authenticated, service_role;
@@ -83,11 +79,8 @@ CREATE OR REPLACE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
 
--- ============================================================
 -- STEP 2: HOUSEHOLD
 -- ============================================================
--- ============================================================
--- Household migration — Run in Supabase SQL Editor
 -- RLS disabled — security handled by SECURITY DEFINER functions.
 -- ============================================================
 
@@ -297,11 +290,8 @@ CREATE TRIGGER trg_check_savings_completion
 -- They check auth.uid() internally and raise exceptions if not authenticated.
 NOTIFY pgrst, 'reload schema';
 
--- ============================================================
 -- STEP 3: HOUSEHOLD TRANSACTIONS
 -- ============================================================
--- ============================================================
--- Household Transactions migration — Run AFTER household.sql
 -- Adds expense/income tracking, categories, recurring transactions
 -- ============================================================
 
@@ -499,11 +489,54 @@ $$;
 
 NOTIFY pgrst, 'reload schema';
 
+-- STEP 4: WORKPLACES (table only — trigger added in step 7)
 -- ============================================================
--- STEP 4: SHIFTS
--- ============================================================
--- Run this in the Supabase SQL Editor to create the shifts table.
+-- Run this in the Supabase SQL Editor to create the workplaces table.
+-- This must be run FIRST — it grants schema access to Supabase roles.
 
+GRANT USAGE ON SCHEMA public TO anon, authenticated, service_role;
+GRANT ALL ON ALL TABLES IN SCHEMA public TO anon, authenticated, service_role;
+GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO anon, authenticated, service_role;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO anon, authenticated, service_role;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO anon, authenticated, service_role;
+
+CREATE TABLE IF NOT EXISTS public.workplaces (
+  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  slug        TEXT NOT NULL,
+  label       TEXT NOT NULL,
+  rate        NUMERIC(10, 2) NOT NULL DEFAULT 0 CHECK (rate >= 0),
+  color       TEXT NOT NULL DEFAULT '#818cf8',
+  active      BOOLEAN NOT NULL DEFAULT true,
+  user_id     UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+COMMENT ON TABLE public.workplaces IS 'Configurable workplaces with pay rates. Replaces hardcoded PLACES object.';
+COMMENT ON COLUMN public.workplaces.slug IS 'Short unique identifier used in code (e.g. pasta, coffee, warehouse)';
+COMMENT ON COLUMN public.workplaces.label IS 'Display name (e.g. "Pasta Via", "Cafe Nimrod")';
+COMMENT ON COLUMN public.workplaces.rate IS 'Hourly pay rate in local currency';
+COMMENT ON COLUMN public.workplaces.color IS 'Hex color for badges and UI elements';
+COMMENT ON COLUMN public.workplaces.active IS 'Soft delete — false hides from UI but keeps data';
+COMMENT ON COLUMN public.workplaces.user_id IS 'Owner — references auth.users';
+
+-- Unique per user
+CREATE UNIQUE INDEX IF NOT EXISTS workplaces_user_slug ON public.workplaces(user_id, slug);
+CREATE INDEX IF NOT EXISTS idx_workplaces_user_id ON public.workplaces(user_id);
+
+-- Row Level Security — per-user only
+ALTER TABLE public.workplaces ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can read own workplaces"
+  ON public.workplaces FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can insert own workplaces"
+  ON public.workplaces FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can update own workplaces"
+  ON public.workplaces FOR UPDATE USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can delete own workplaces"
+  ON public.workplaces FOR DELETE USING (auth.uid() = user_id);
+
+-- STEP 5: SHIFTS
+-- ============================================================
 GRANT USAGE ON SCHEMA public TO anon, authenticated, service_role;
 GRANT ALL ON ALL TABLES IN SCHEMA public TO anon, authenticated, service_role;
 GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO anon, authenticated, service_role;
@@ -571,11 +604,8 @@ UPDATE public.shifts s SET color = w.color
 FROM public.workplaces w
 WHERE s.place = w.slug AND s.user_id = w.user_id AND s.color IS NULL;
 
+-- STEP 6: SHIFT PRESETS
 -- ============================================================
--- STEP 5: SHIFT PRESETS
--- ============================================================
--- Run this in the Supabase SQL Editor to create the shift_presets table.
-
 GRANT USAGE ON SCHEMA public TO anon, authenticated, service_role;
 GRANT ALL ON ALL TABLES IN SCHEMA public TO anon, authenticated, service_role;
 GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO anon, authenticated, service_role;
@@ -638,52 +668,8 @@ UPDATE public.shift_presets sp SET color = w.color
 FROM public.workplaces w
 WHERE sp.place = w.slug AND sp.user_id = w.user_id AND sp.color IS NULL;
 
+-- STEP 7: WORKPLACE CASCADE TRIGGER (needs shifts + presets)
 -- ============================================================
--- STEP 6: WORKPLACES
--- ============================================================
--- Run this in the Supabase SQL Editor to create the workplaces table.
--- This must be run FIRST — it grants schema access to Supabase roles.
-
-GRANT USAGE ON SCHEMA public TO anon, authenticated, service_role;
-GRANT ALL ON ALL TABLES IN SCHEMA public TO anon, authenticated, service_role;
-GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO anon, authenticated, service_role;
-ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO anon, authenticated, service_role;
-ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO anon, authenticated, service_role;
-
-CREATE TABLE IF NOT EXISTS public.workplaces (
-  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  slug        TEXT NOT NULL,
-  label       TEXT NOT NULL,
-  rate        NUMERIC(10, 2) NOT NULL DEFAULT 0 CHECK (rate >= 0),
-  color       TEXT NOT NULL DEFAULT '#818cf8',
-  active      BOOLEAN NOT NULL DEFAULT true,
-  user_id     UUID REFERENCES auth.users(id) ON DELETE CASCADE,
-  created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
-COMMENT ON TABLE public.workplaces IS 'Configurable workplaces with pay rates. Replaces hardcoded PLACES object.';
-COMMENT ON COLUMN public.workplaces.slug IS 'Short unique identifier used in code (e.g. pasta, coffee, warehouse)';
-COMMENT ON COLUMN public.workplaces.label IS 'Display name (e.g. "Pasta Via", "Cafe Nimrod")';
-COMMENT ON COLUMN public.workplaces.rate IS 'Hourly pay rate in local currency';
-COMMENT ON COLUMN public.workplaces.color IS 'Hex color for badges and UI elements';
-COMMENT ON COLUMN public.workplaces.active IS 'Soft delete — false hides from UI but keeps data';
-COMMENT ON COLUMN public.workplaces.user_id IS 'Owner — references auth.users';
-
--- Unique per user
-CREATE UNIQUE INDEX IF NOT EXISTS workplaces_user_slug ON public.workplaces(user_id, slug);
-CREATE INDEX IF NOT EXISTS idx_workplaces_user_id ON public.workplaces(user_id);
-
--- Row Level Security — per-user only
-ALTER TABLE public.workplaces ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "Users can read own workplaces"
-  ON public.workplaces FOR SELECT USING (auth.uid() = user_id);
-CREATE POLICY "Users can insert own workplaces"
-  ON public.workplaces FOR INSERT WITH CHECK (auth.uid() = user_id);
-CREATE POLICY "Users can update own workplaces"
-  ON public.workplaces FOR UPDATE USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
-CREATE POLICY "Users can delete own workplaces"
-  ON public.workplaces FOR DELETE USING (auth.uid() = user_id);
 
 -- Cascade color changes to shifts and presets when workplace color is updated
 CREATE OR REPLACE FUNCTION public.cascade_workplace_color()
@@ -714,11 +700,8 @@ CREATE TRIGGER trg_cascade_workplace_color
   AFTER UPDATE OF color ON public.workplaces
   FOR EACH ROW EXECUTE FUNCTION public.cascade_workplace_color();
 
+-- STEP 8: EVENTS
 -- ============================================================
--- STEP 7: EVENTS
--- ============================================================
--- Run this in the Supabase SQL Editor to create the events table.
-
 GRANT USAGE ON SCHEMA public TO anon, authenticated, service_role;
 GRANT ALL ON ALL TABLES IN SCHEMA public TO anon, authenticated, service_role;
 GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO anon, authenticated, service_role;
@@ -767,11 +750,8 @@ FROM public.shifts s
 WHERE e.notes LIKE '%Linked shift id: ' || s.id || '%'
   AND e.color IS DISTINCT FROM s.color;
 
+-- STEP 9: COLOR PALETTES
 -- ============================================================
--- STEP 8: COLOR PALETTES
--- ============================================================
--- Run this in the Supabase SQL Editor to create the color_palettes table.
-
 GRANT USAGE ON SCHEMA public TO anon, authenticated, service_role;
 GRANT ALL ON ALL TABLES IN SCHEMA public TO anon, authenticated, service_role;
 GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO anon, authenticated, service_role;
@@ -808,8 +788,7 @@ CREATE POLICY "Users can update own color_palettes"
 CREATE POLICY "Users can delete own color_palettes"
   ON public.color_palettes FOR DELETE USING (auth.uid() = user_id);
 
--- ============================================================
--- STEP 9: FITNESS
+-- STEP 10: FITNESS
 -- ============================================================
 -- ============================================================
 -- Fitness Feature — Supabase SQL
@@ -957,7 +936,4 @@ CREATE INDEX IF NOT EXISTS idx_workout_presets_user
 CREATE INDEX IF NOT EXISTS idx_diet_presets_user
   ON diet_presets (user_id);
 
--- ============================================================
--- DONE — All tables created
--- ============================================================
 NOTIFY pgrst, 'reload schema';
