@@ -147,10 +147,6 @@ CREATE TABLE public.savings_contributions (
 
 CREATE INDEX idx_sc_goal ON public.savings_contributions(goal_id);
 
--- Add shared_note columns to shifts
-ALTER TABLE public.shifts ADD COLUMN IF NOT EXISTS shared_note TEXT;
-ALTER TABLE public.shifts ADD COLUMN IF NOT EXISTS shared_note_by UUID REFERENCES auth.users(id) ON DELETE SET NULL;
-
 -- ── SECURITY DEFINER functions (handle all auth) ────────────
 
 CREATE FUNCTION public.create_household(household_name TEXT)
@@ -607,7 +603,7 @@ UPDATE public.shifts s SET color = w.color
 FROM public.workplaces w
 WHERE s.place = w.slug AND s.user_id = w.user_id AND s.color IS NULL;
 
--- Add shared_note columns to shifts (moved from household.sql)
+-- Shared note columns for household integration
 ALTER TABLE public.shifts ADD COLUMN IF NOT EXISTS shared_note TEXT;
 ALTER TABLE public.shifts ADD COLUMN IF NOT EXISTS shared_note_by UUID REFERENCES auth.users(id) ON DELETE SET NULL;
 

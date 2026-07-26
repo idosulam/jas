@@ -66,3 +66,7 @@ CREATE TRIGGER trg_sync_shift_color
 UPDATE public.shifts s SET color = w.color
 FROM public.workplaces w
 WHERE s.place = w.slug AND s.user_id = w.user_id AND s.color IS NULL;
+
+-- Shared note columns for household integration
+ALTER TABLE public.shifts ADD COLUMN IF NOT EXISTS shared_note TEXT;
+ALTER TABLE public.shifts ADD COLUMN IF NOT EXISTS shared_note_by UUID REFERENCES auth.users(id) ON DELETE SET NULL;
