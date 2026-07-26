@@ -21,6 +21,9 @@ const Fitness = lazy(
   () => import("./components/Pages/Fitness/Fitness.jsx"),
 );
 const Auth = lazy(() => import("./components/Auth/Auth.jsx"));
+const ProfileOnboarding = lazy(
+  () => import("./components/Pages/profile/ProfileOnboarding.jsx"),
+);
 
 const TAB_ORDER = ["Shifts", "Calendar", "Fitness", "Household", "Profile"];
 
@@ -149,6 +152,9 @@ function AppContent() {
             </Page_transition>
           </main>
           <Navbar activeId={activeNav} onChange={handleNavChange} />
+          <Suspense fallback={null}>
+            <ProfileOnboarding />
+          </Suspense>
           {supabase && (
             <button
               type="button"
