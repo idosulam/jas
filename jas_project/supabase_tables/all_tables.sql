@@ -81,6 +81,9 @@ CREATE OR REPLACE TRIGGER on_auth_user_created
 
 -- STEP 2: HOUSEHOLD
 -- ============================================================
+DROP FUNCTION IF EXISTS public.delete_household(UUID);
+DROP FUNCTION IF EXISTS public.reset_user_password(TEXT, TEXT);
+DROP FUNCTION IF EXISTS public.delete_current_user();
 -- RLS disabled — security handled by SECURITY DEFINER functions.
 -- ============================================================
 
@@ -145,6 +148,8 @@ CREATE TABLE public.savings_contributions (
 CREATE INDEX idx_sc_goal ON public.savings_contributions(goal_id);
 
 -- Add shared_note columns to shifts
+ALTER TABLE public.shifts ADD COLUMN IF NOT EXISTS shared_note TEXT;
+ALTER TABLE public.shifts ADD COLUMN IF NOT EXISTS shared_note_by UUID REFERENCES auth.users(id) ON DELETE SET NULL;
 
 -- ── SECURITY DEFINER functions (handle all auth) ────────────
 
