@@ -1,7 +1,7 @@
 -- ============================================================
 -- Fitness Feature — Supabase SQL
 -- Tables: workout_presets, workout_logs, diet_entries, diet_presets
--- Profile extensions: gender, activity_level
+-- NOTE: gender & activity_level are in profile.sql — run that first
 -- ============================================================
 
 -- ── Workout Presets ────────────────────────────────────────────
@@ -129,13 +129,6 @@ CREATE POLICY "Users can update their own diet presets"
 CREATE POLICY "Users can delete their own diet presets"
   ON diet_presets FOR DELETE
   USING (auth.uid() = user_id);
-
--- ── Profile Extensions ─────────────────────────────────────────
-
-ALTER TABLE profile ADD COLUMN IF NOT EXISTS gender text DEFAULT 'male'
-  CHECK (gender IN ('male', 'female'));
-ALTER TABLE profile ADD COLUMN IF NOT EXISTS activity_level text DEFAULT 'moderate'
-  CHECK (activity_level IN ('sedentary', 'light', 'moderate', 'active', 'very_active'));
 
 -- ── Indexes for performance ────────────────────────────────────
 
