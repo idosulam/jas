@@ -25,7 +25,19 @@ const MODAL_EXIT_MS = 320;
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 function emptyExercise() {
-  return { name: "", weight: "", sets: "", reps: "" };
+  return { name: "", weight: "", weight_lbs: "", sets: "", reps: "" };
+}
+
+const KG_TO_LBS = 2.20462;
+
+function kgToLbs(kg) {
+  const parsed = parseFloat(kg);
+  return isNaN(parsed) ? "" : String(Number((parsed * KG_TO_LBS).toFixed(1)));
+}
+
+function lbsToKg(lbs) {
+  const parsed = parseFloat(lbs);
+  return isNaN(parsed) ? "" : String(Number((parsed / KG_TO_LBS).toFixed(2)));
 }
 
 function emptyForm() {
@@ -263,7 +275,10 @@ function WorkoutLogger() {
     setEditingWorkout(workout);
     const exercises =
       Array.isArray(workout.exercises) && workout.exercises.length > 0
-        ? workout.exercises
+        ? workout.exercises.map((ex) => ({
+            ...ex,
+            weight_lbs: ex.weight ? kgToLbs(ex.weight) : "",
+          }))
         : [emptyExercise()];
     setForm({
       workout_date: workout.workout_date,
@@ -412,6 +427,7 @@ function WorkoutLogger() {
         ? preset.exercises.map((ex) => ({
             ...ex,
             name: sanitizeText(ex.name, 80),
+            weight_lbs: ex.weight ? kgToLbs(ex.weight) : "",
           }))
         : [emptyExercise()];
     setEditingWorkout(null);
@@ -856,7 +872,7 @@ function WorkoutLogger() {
                     {exercises.map((ex, i) => (
                       <span key={i} className="fitness__card-exercise">
                         {ex.name}
-                        {ex.weight ? ` ${ex.weight}kg` : ""}
+                        {ex.weight ? ` ${ex.weight}kg (${kgToLbs(ex.weight)}lbs)` : ""}
                         {ex.sets && ex.reps ? ` ${ex.sets}×${ex.reps}` : ""}
                       </span>
                     ))}
@@ -982,9 +998,22 @@ function WorkoutLogger() {
                       min="0"
                       step="0.5"
                       value={ex.weight}
-                      onChange={(e) =>
-                        updateExercise(i, "weight", e.target.value)
-                      }
+                      onChange={(e) => {
+                        updateExercise(i, "weight", e.target.value);
+                        updateExercise(i, "weight_lbs", kgToLbs(e.target.value));
+                      }}
+                    />
+                    <input
+                      type="number"
+                      className="fitness__exercise-input"
+                      placeholder="lbs"
+                      min="0"
+                      step="0.5"
+                      value={ex.weight_lbs}
+                      onChange={(e) => {
+                        updateExercise(i, "weight_lbs", e.target.value);
+                        updateExercise(i, "weight", lbsToKg(e.target.value));
+                      }}
                     />
                     <input
                       type="number"
@@ -1162,9 +1191,22 @@ function WorkoutLogger() {
                       min="0"
                       step="0.5"
                       value={ex.weight}
-                      onChange={(e) =>
-                        updatePresetExercise(i, "weight", e.target.value)
-                      }
+                      onChange={(e) => {
+                        updatePresetExercise(i, "weight", e.target.value);
+                        updatePresetExercise(i, "weight_lbs", kgToLbs(e.target.value));
+                      }}
+                    />
+                    <input
+                      type="number"
+                      className="fitness__exercise-input"
+                      placeholder="lbs"
+                      min="0"
+                      step="0.5"
+                      value={ex.weight_lbs || ""}
+                      onChange={(e) => {
+                        updatePresetExercise(i, "weight_lbs", e.target.value);
+                        updatePresetExercise(i, "weight", lbsToKg(e.target.value));
+                      }}
                     />
                     <input
                       type="number"
