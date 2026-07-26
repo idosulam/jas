@@ -198,6 +198,79 @@
   border-color: rgba(96, 165, 250, 0.5);
 }
 
+/* ── Week Day Selector ──────────────────────────────────────── */
+
+.fitness__week-days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.35rem;
+  margin-bottom: 1.25rem;
+}
+
+.fitness__week-day {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0.5rem 0.25rem;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: var(--radius);
+  background: transparent;
+  color: rgba(255, 255, 255, 0.45);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.fitness__week-day:hover {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.fitness__week-day--active {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+  border-color: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  box-shadow: 0 4px 16px rgba(129, 140, 248, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+.fitness__week-day--today {
+  border-color: rgba(96, 165, 250, 0.4);
+}
+
+.fitness__week-day--today:not(.fitness__week-day--active) {
+  color: #60a5fa;
+}
+
+.fitness__week-day--busy:not(.fitness__week-day--active)::after {
+  content: "";
+  position: absolute;
+  bottom: 0.3rem;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #34d399;
+}
+
+.fitness__week-day-label {
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.fitness__week-day-num {
+  font-family: var(--font-heading);
+  font-size: 0.95rem;
+  font-weight: 800;
+}
+
+.fitness__week-day:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
 /* ── Summary ────────────────────────────────────────────────── */
 
 .fitness__summary {

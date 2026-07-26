@@ -22,10 +22,8 @@ import FAB from "../../../components/ui/FAB";
 
 const MODAL_EXIT_MS = 320;
 
-const MONTHS = [
-  "January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December",
-];
+const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const MONTHS_SHORT = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 function emptyExercise() {
   return { name: "", weight: "", sets: "", reps: "" };
@@ -59,8 +57,7 @@ function formatVolume(vol) {
 function WorkoutLogger() {
   const userId = useUserId();
   const now = new Date();
-  const [month, setMonth] = useState(now.getMonth());
-  const [year, setYear] = useState(now.getFullYear());
+  const [selectedDate, setSelectedDate] = useState(now);
   const [workouts, setWorkouts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -89,10 +86,43 @@ function WorkoutLogger() {
 
   const { success: toastSuccess, error: toastError } = useGlassToast();
 
-  const yearOptions = useMemo(() => {
-    const current = now.getFullYear();
-    return Array.from({ length: 11 }, (_, i) => current - 5 + i);
-  }, []);
+  // Week helpers
+  const startOfWeek = (date) => {
+    const d = new Date(date);
+    d.setDate(d.getDate() - d.getDay());
+    d.setHours(0, 0, 0, 0);
+    return d;
+  };
+
+  const addDays = (date, n) => {
+    const d = new Date(date);
+    d.setDate(d.getDate() + n);
+    return d;
+  };
+
+  const toDateKey = (date) => date.toISOString().slice(0, 10);
+
+  const selectedKey = toDateKey(selectedDate);
+  const isToday = selectedKey === toDateKey(now);
+
+  const weekDays = useMemo(() => {
+    const start = startOfWeek(selectedDate);
+    return Array.from({ length: 7 }, (_, i) => addDays(start, i));
+  }, [selectedDate]);
+
+  const weekRange = useMemo(() => {
+    const start = startOfWeek(selectedDate);
+    const end = addDays(start, 6);
+    const sameMonth = start.getMonth() === end.getMonth();
+    if (sameMonth) {
+      return `${MONTHS_SHORT[start.getMonth()]} ${start.getDate()} – ${end.getDate()}, ${start.getFullYear()}`;
+    }
+    return `${MONTHS_SHORT[start.getMonth()]} ${start.getDate()} – ${MONTHS_SHORT[end.getMonth()]} ${end.getDate()}, ${end.getFullYear()}`;
+  }, [selectedDate]);
+
+  const shiftWeek = (direction) => {
+    setSelectedDate((d) => addDays(d, direction === "next" ? 7 : -7));
+  };
 
   // ── Fetch workouts ──
   const fetchWorkouts = useCallback(async () => {
@@ -100,8 +130,10 @@ function WorkoutLogger() {
     setLoading(true);
     setError(null);
 
-    const startDate = new Date(year, month, 1).toISOString().slice(0, 10);
-    const endDate = new Date(year, month + 1, 0).toISOString().slice(0, 10);
+    const weekStart = startOfWeek(selectedDate);
+    const weekEnd = addDays(weekStart, 6);
+    const startDate = toDateKey(weekStart);
+    const endDate = toDateKey(weekEnd);
 
     try {
       const supabase = getSupabaseClient();
@@ -124,7 +156,7 @@ function WorkoutLogger() {
       setWorkouts([]);
     }
     setLoading(false);
-  }, [month, year, userId]);
+  }, [selectedDate, userId]);
 
   useEffect(() => {
     fetchWorkouts();
@@ -210,7 +242,9 @@ function WorkoutLogger() {
   // ── Modal open/close ──
   const openAddModal = () => {
     setEditingWorkout(null);
-    setForm(emptyForm());
+    const f = emptyForm();
+    f.workout_date = selectedKey;
+    setForm(f);
     setFieldErrors({});
     setFieldStates({});
     formModal.openModal();
@@ -562,36 +596,66 @@ function WorkoutLogger() {
 
   return (
     <div className="fitness__workout">
-      {/* Month / Year filters */}
-      <div className="fitness__filters animate-in animate-in--1">
-        <label className="fitness__filter">
-          <span>Month</span>
-          <select
-            value={month}
-            onChange={(e) => setMonth(Number(e.target.value))}
+      {/* Weekly date navigation */}
+      <div className="fitness__date-nav animate-in animate-in--1">
+        <button
+          type="button"
+          className="fitness__date-btn"
+          onClick={() => shiftWeek("prev")}
+          aria-label="Previous week"
+        >
+          ‹
+        </button>
+        <span className="fitness__date-label">{weekRange}</span>
+        <button
+          type="button"
+          className="fitness__date-btn"
+          onClick={() => shiftWeek("next")}
+          aria-label="Next week"
+        >
+          ›
+        </button>
+        {!isToday && (
+          <button
+            type="button"
+            className="fitness__date-today"
+            onClick={() => setSelectedDate(new Date())}
           >
-            {MONTHS.map((name, i) => (
-              <option key={name} value={i}>{name}</option>
-            ))}
-          </select>
-        </label>
-        <label className="fitness__filter">
-          <span>Year</span>
-          <select
-            value={year}
-            onChange={(e) => setYear(Number(e.target.value))}
-          >
-            {yearOptions.map((y) => (
-              <option key={y} value={y}>{y}</option>
-            ))}
-          </select>
-        </label>
+            Today
+          </button>
+        )}
+      </div>
+
+      {/* Week day selector */}
+      <div className="fitness__week-days animate-in animate-in--1">
+        {weekDays.map((day) => {
+          const key = toDateKey(day);
+          const isSelected = key === selectedKey;
+          const isDayToday = key === toDateKey(now);
+          const hasWorkout = workouts.some((w) => w.workout_date === key);
+
+          return (
+            <button
+              key={key}
+              type="button"
+              className={`fitness__week-day${isSelected ? " fitness__week-day--active" : ""}${isDayToday ? " fitness__week-day--today" : ""}${hasWorkout ? " fitness__week-day--busy" : ""}`}
+              onClick={() => setSelectedDate(day)}
+              aria-pressed={isSelected}
+            >
+              <span className="fitness__week-day-label">{WEEKDAYS[day.getDay()]}</span>
+              <span className="fitness__week-day-num">{day.getDate()}</span>
+              {hasWorkout && (
+                <span className="fitness__week-day-dot" aria-hidden="true" />
+              )}
+            </button>
+          );
+        })}
       </div>
 
       {/* Summary */}
       <div
         className="fitness__summary animate-in animate-in--2"
-        key={`${month}-${year}`}
+        key={selectedKey}
       >
         <GlassCard
           value={String(totals.workouts)}
@@ -654,7 +718,7 @@ function WorkoutLogger() {
       {/* List header */}
       <div className="fitness__list-header animate-in animate-in--4">
         <h2 className="fitness__list-title">
-          {MONTHS[month]} {year}
+          {weekRange}
         </h2>
         <button
           type="button"
@@ -681,11 +745,11 @@ function WorkoutLogger() {
               <rect x="19" y="8" width="4" height="8" rx="1" />
             </svg>
           }
-          title="No workouts this month"
+          title="No workouts this week"
           text='Tap "+ Add workout" to log your first one.'
         />
       ) : (
-        <ul className="fitness__list" key={`list-${month}-${year}`}>
+        <ul className="fitness__list" key={`list-${selectedKey}`}>
           {workouts.map((workout, index) => {
             const exercises = Array.isArray(workout.exercises)
               ? workout.exercises
