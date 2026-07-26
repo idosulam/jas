@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS public.profile (
   age             INTEGER CHECK (age IS NULL OR (age >= 13 AND age <= 120)),
   height_cm       NUMERIC(5, 2) CHECK (height_cm IS NULL OR height_cm > 0),
   goal_weight_kg  NUMERIC(5, 2) CHECK (goal_weight_kg IS NULL OR goal_weight_kg > 0),
-  gender          TEXT DEFAULT 'male' CHECK (gender IN ('male', 'female')),
+  gender          TEXT CHECK (gender IN ('male', 'female')),
   activity_level  TEXT DEFAULT 'moderate' CHECK (activity_level IN ('sedentary', 'light', 'moderate', 'active', 'very_active')),
   user_id         UUID REFERENCES auth.users(id) ON DELETE CASCADE,
   updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
@@ -145,8 +145,6 @@ CREATE TABLE public.savings_contributions (
 CREATE INDEX idx_sc_goal ON public.savings_contributions(goal_id);
 
 -- Add shared_note columns to shifts
-ALTER TABLE public.shifts ADD COLUMN IF NOT EXISTS shared_note TEXT;
-ALTER TABLE public.shifts ADD COLUMN IF NOT EXISTS shared_note_by UUID REFERENCES auth.users(id) ON DELETE SET NULL;
 
 -- ── SECURITY DEFINER functions (handle all auth) ────────────
 
@@ -603,6 +601,10 @@ CREATE TRIGGER trg_sync_shift_color
 UPDATE public.shifts s SET color = w.color
 FROM public.workplaces w
 WHERE s.place = w.slug AND s.user_id = w.user_id AND s.color IS NULL;
+
+-- Add shared_note columns to shifts (moved from household.sql)
+ALTER TABLE public.shifts ADD COLUMN IF NOT EXISTS shared_note TEXT;
+ALTER TABLE public.shifts ADD COLUMN IF NOT EXISTS shared_note_by UUID REFERENCES auth.users(id) ON DELETE SET NULL;
 
 -- STEP 6: SHIFT PRESETS
 -- ============================================================
