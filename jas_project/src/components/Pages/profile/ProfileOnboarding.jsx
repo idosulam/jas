@@ -388,28 +388,6 @@ export default function ProfileOnboarding() {
           </FormField>
         </div>
 
-        <FormField
-          label="Goal weight (kg)"
-          error={fieldErrors.goal_weight_kg}
-          state={fieldStates.goal_weight_kg}
-          showIndicator
-          shake={fieldErrors.goal_weight_kg ? shakeKey : 0}
-          optional
-        >
-          <input
-            type="number"
-            step="0.1"
-            min="1"
-            placeholder="58"
-            value={form.goal_weight_kg}
-            onChange={(e) => {
-              setForm((f) => ({ ...f, goal_weight_kg: e.target.value }));
-              setFieldErrors((prev) => ({ ...prev, goal_weight_kg: null }));
-            }}
-            onBlur={() => handleFieldBlur("goal_weight_kg")}
-          />
-        </FormField>
-
         <FormField label="Gender" optional>
           <select
             value={form.gender}
@@ -436,6 +414,28 @@ export default function ProfileOnboarding() {
               </option>
             ))}
           </select>
+        </FormField>
+
+        <FormField
+          label="Goal weight (kg)"
+          error={fieldErrors.goal_weight_kg}
+          state={fieldStates.goal_weight_kg}
+          showIndicator
+          shake={fieldErrors.goal_weight_kg ? shakeKey : 0}
+          optional
+        >
+          <input
+            type="number"
+            step="0.1"
+            min="1"
+            placeholder="58"
+            value={form.goal_weight_kg}
+            onChange={(e) => {
+              setForm((f) => ({ ...f, goal_weight_kg: e.target.value }));
+              setFieldErrors((prev) => ({ ...prev, goal_weight_kg: null }));
+            }}
+            onBlur={() => handleFieldBlur("goal_weight_kg")}
+          />
         </FormField>
 
         <div className="btn-row">
