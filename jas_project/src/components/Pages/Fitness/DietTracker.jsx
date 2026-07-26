@@ -168,17 +168,22 @@ function DietTracker({ profileData }) {
       }
 
       // Fetch calories burned from workouts for this date
-      const { data: workoutData } = await supabase
-        .from("workout_logs")
-        .select("calories_burned")
-        .eq("user_id", userId)
-        .eq("workout_date", selectedDate);
+      try {
+        const { data: workoutData } = await supabase
+          .from("workout_logs")
+          .select("calories_burned")
+          .eq("user_id", userId)
+          .eq("workout_date", selectedDate);
 
-      const totalBurned = (workoutData ?? []).reduce(
-        (sum, w) => sum + (parseInt(w.calories_burned, 10) || 0),
-        0,
-      );
-      setCaloriesBurned(totalBurned);
+        const totalBurned = (workoutData ?? []).reduce(
+          (sum, w) => sum + (parseInt(w.calories_burned, 10) || 0),
+          0,
+        );
+        setCaloriesBurned(totalBurned);
+      } catch {
+        // calories_burned column may not exist yet — ignore
+        setCaloriesBurned(0);
+      }
     } catch (err) {
       setError(getUserFacingError(err.message));
       setEntries([]);
