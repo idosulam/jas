@@ -27,6 +27,7 @@ import {
   useFloatingActions,
   useSwipeDownToClose,
 } from "../../../hooks";
+import { ACTIVITY_LEVELS, GENDER_OPTIONS } from "../Fitness/macro_calculator";
 
 const UNIT_STORAGE_KEY = "profile_weight_unit";
 const KG_TO_LBS = 2.20462;
@@ -39,6 +40,8 @@ const emptyProfileForm = () => ({
   height_in: "",
   goal_weight_kg: "",
   goal_weight_lbs: "",
+  gender: "male",
+  activity_level: "moderate",
 });
 
 const emptyWeightForm = () => ({
@@ -571,6 +574,8 @@ function Profile({ onNavigate }) {
         goal_weight_kg: goalKg != null ? String(goalKg.toFixed(1)) : "",
         goal_weight_lbs:
           goalKg != null ? String(kgToLbs(goalKg)?.toFixed(1) ?? "") : "",
+        gender: profile.gender || "male",
+        activity_level: profile.activity_level || "moderate",
       });
     } else {
       setProfileForm(emptyProfileForm());
@@ -783,6 +788,20 @@ function Profile({ onNavigate }) {
         if (kg == null) return "Enter a valid weight";
         return null;
       }
+      case "gender": {
+        if (!profileForm.gender) return null; // optional
+        const valid = GENDER_OPTIONS.some((g) => g.id === profileForm.gender);
+        if (!valid) return "Select a valid option";
+        return null;
+      }
+      case "activity_level": {
+        if (!profileForm.activity_level) return null; // optional
+        const valid = ACTIVITY_LEVELS.some(
+          (l) => l.id === profileForm.activity_level,
+        );
+        if (!valid) return "Select a valid option";
+        return null;
+      }
       default:
         return null;
     }
@@ -936,6 +955,8 @@ function Profile({ onNavigate }) {
       age,
       height_cm: heightCm ?? null,
       goal_weight_kg: goalKg ? Number(goalKg.toFixed(2)) : null,
+      gender: profileForm.gender || "male",
+      activity_level: profileForm.activity_level || "moderate",
       updated_at: new Date().toISOString(),
     };
 
@@ -1690,6 +1711,59 @@ function Profile({ onNavigate }) {
               />
             </FormField>
           </div>
+
+          <FormField
+            label="Gender"
+            error={profileFieldErrors.gender}
+            state={profileFieldStates.gender}
+            showIndicator
+            shake={profileFieldErrors.gender ? profileShakeKey : 0}
+            optional
+          >
+            <select
+              value={profileForm.gender}
+              onChange={(e) => {
+                setProfileForm((f) => ({ ...f, gender: e.target.value }));
+                setProfileFieldErrors((prev) => ({ ...prev, gender: null }));
+              }}
+              onBlur={() => handleProfileFieldBlur("gender")}
+            >
+              {GENDER_OPTIONS.map((g) => (
+                <option key={g.id} value={g.id}>
+                  {g.label}
+                </option>
+              ))}
+            </select>
+          </FormField>
+          <FormField
+            label="Activity Level"
+            error={profileFieldErrors.activity_level}
+            state={profileFieldStates.activity_level}
+            showIndicator
+            shake={profileFieldErrors.activity_level ? profileShakeKey : 0}
+            optional
+          >
+            <select
+              value={profileForm.activity_level}
+              onChange={(e) => {
+                setProfileForm((f) => ({
+                  ...f,
+                  activity_level: e.target.value,
+                }));
+                setProfileFieldErrors((prev) => ({
+                  ...prev,
+                  activity_level: null,
+                }));
+              }}
+              onBlur={() => handleProfileFieldBlur("activity_level")}
+            >
+              {ACTIVITY_LEVELS.map((l) => (
+                <option key={l.id} value={l.id}>
+                  {l.label} — {l.desc}
+                </option>
+              ))}
+            </select>
+          </FormField>
 
           <p className="profile__form-hint">
             Enter height in centimeters or feet and inches. Weight fields follow

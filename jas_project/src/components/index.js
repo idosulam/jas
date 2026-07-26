@@ -15,3 +15,8 @@ export { default as ShakeField } from "./ui/form/Shake_field";
 // Modals
 export { default as ConfirmModal } from "./ui/modals/Confirm_modal";
 export { default as SheetModal } from "./ui/modals/Sheet_modal";
+
+// Fitness
+export { default as Fitness } from "./Pages/Fitness/Fitness";
+export { default as WorkoutLogger } from "./Pages/Fitness/WorkoutLogger";
+export { default as DietTracker } from "./Pages/Fitness/DietTracker";

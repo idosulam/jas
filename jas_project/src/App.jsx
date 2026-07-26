@@ -17,13 +17,17 @@ const Profile = lazy(() => import("./components/Pages/profile/Profile.jsx"));
 const Workplaces = lazy(
   () => import("./components/Pages/Workplaces/Work_places.jsx"),
 );
+const Fitness = lazy(
+  () => import("./components/Pages/Fitness/Fitness.jsx"),
+);
 const Auth = lazy(() => import("./components/Auth/Auth.jsx"));
 
-const TAB_ORDER = ["Shifts", "Calendar", "Household", "Profile"];
+const TAB_ORDER = ["Shifts", "Calendar", "Fitness", "Household", "Profile"];
 
 const PAGES = {
   Shifts: Shifts,
   Calendar: Calendar,
+  Fitness: Fitness,
   Household: Household,
   Profile: Profile,
   Workplaces: Workplaces,

@@ -43,21 +43,4 @@ CREATE POLICY "Users can update own shift_presets"
 CREATE POLICY "Users can delete own shift_presets"
   ON public.shift_presets FOR DELETE USING (auth.uid() = user_id);
 
--- Auto-sync color from workplace on insert/update
-CREATE OR REPLACE FUNCTION public.sync_preset_color_from_workplace()
-RETURNS TRIGGER AS $$
-BEGIN
-  SELECT color INTO NEW.color FROM public.workplaces
-    WHERE slug = NEW.place AND user_id = NEW.user_id LIMIT 1;
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
-
-CREATE TRIGGER trg_sync_preset_color
-  BEFORE INSERT OR UPDATE ON public.shift_presets
-  FOR EACH ROW EXECUTE FUNCTION public.sync_preset_color_from_workplace();
-
--- Backfill: set color on any existing presets that are missing it
-UPDATE public.shift_presets sp SET color = w.color
-FROM public.workplaces w
-WHERE sp.place = w.slug AND sp.user_id = w.user_id AND sp.color IS NULL;
+-- NOTE: Cross-table triggers (color sync from workplaces) are in triggers.sql
