@@ -53,8 +53,8 @@ export default function ProfileOnboarding() {
     height_ft: "",
     height_in: "",
     goal_weight_kg: "",
-    gender: "male",
-    activity_level: "moderate",
+    gender: "",
+    activity_level: "",
   });
 
   const [fieldErrors, setFieldErrors] = useState({});
@@ -103,8 +103,8 @@ export default function ProfileOnboarding() {
             data?.goal_weight_kg != null
               ? String(Number(data.goal_weight_kg).toFixed(1))
               : "",
-          gender: data?.gender || "male",
-          activity_level: data?.activity_level || "moderate",
+          gender: data?.gender || "",
+          activity_level: data?.activity_level || "",
         });
         setOpen(true);
       }
@@ -388,34 +388,6 @@ export default function ProfileOnboarding() {
           </FormField>
         </div>
 
-        <FormField label="Gender" optional>
-          <select
-            value={form.gender}
-            onChange={(e) => setForm((f) => ({ ...f, gender: e.target.value }))}
-          >
-            {GENDER_OPTIONS.map((g) => (
-              <option key={g.id} value={g.id}>
-                {g.label}
-              </option>
-            ))}
-          </select>
-        </FormField>
-
-        <FormField label="Activity level" optional>
-          <select
-            value={form.activity_level}
-            onChange={(e) =>
-              setForm((f) => ({ ...f, activity_level: e.target.value }))
-            }
-          >
-            {ACTIVITY_LEVELS.map((l) => (
-              <option key={l.id} value={l.id}>
-                {l.label} — {l.desc}
-              </option>
-            ))}
-          </select>
-        </FormField>
-
         <FormField
           label="Goal weight (kg)"
           error={fieldErrors.goal_weight_kg}
@@ -436,6 +408,40 @@ export default function ProfileOnboarding() {
             }}
             onBlur={() => handleFieldBlur("goal_weight_kg")}
           />
+        </FormField>
+
+        <FormField label="Gender" optional>
+          <select
+            value={form.gender}
+            onChange={(e) => setForm((f) => ({ ...f, gender: e.target.value }))}
+          >
+            <option value="" disabled>
+              Select gender…
+            </option>
+            {GENDER_OPTIONS.map((g) => (
+              <option key={g.id} value={g.id}>
+                {g.label}
+              </option>
+            ))}
+          </select>
+        </FormField>
+
+        <FormField label="Activity level" optional>
+          <select
+            value={form.activity_level}
+            onChange={(e) =>
+              setForm((f) => ({ ...f, activity_level: e.target.value }))
+            }
+          >
+            <option value="" disabled>
+              Select activity level…
+            </option>
+            {ACTIVITY_LEVELS.map((l) => (
+              <option key={l.id} value={l.id}>
+                {l.label} — {l.desc}
+              </option>
+            ))}
+          </select>
         </FormField>
 
         <div className="btn-row">
