@@ -42,31 +42,4 @@ CREATE POLICY "Users can update own workplaces"
 CREATE POLICY "Users can delete own workplaces"
   ON public.workplaces FOR DELETE USING (auth.uid() = user_id);
 
--- Cascade color changes to shifts and presets when workplace color is updated
-CREATE OR REPLACE FUNCTION public.cascade_workplace_color()
-RETURNS TRIGGER AS $$
-BEGIN
-  IF NEW.color IS DISTINCT FROM OLD.color THEN
-    -- Update shifts
-    UPDATE public.shifts SET color = NEW.color
-      WHERE place = NEW.slug AND user_id = NEW.user_id;
-    -- Update presets
-    UPDATE public.shift_presets SET color = NEW.color
-      WHERE place = NEW.slug AND user_id = NEW.user_id;
-    -- Update linked calendar events
-    UPDATE public.events e SET color = NEW.color
-      WHERE e.user_id = NEW.user_id
-        AND EXISTS (
-          SELECT 1 FROM public.shifts s
-            WHERE s.place = NEW.slug
-              AND s.user_id = NEW.user_id
-              AND e.notes LIKE '%Linked shift id: ' || s.id || '%'
-        );
-  END IF;
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
-
-CREATE TRIGGER trg_cascade_workplace_color
-  AFTER UPDATE OF color ON public.workplaces
-  FOR EACH ROW EXECUTE FUNCTION public.cascade_workplace_color();
+-- NOTE: Cross-table triggers (color cascade to shifts/presets/events) are in triggers.sql

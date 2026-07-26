@@ -48,25 +48,8 @@ CREATE POLICY "Users can update own shifts"
 CREATE POLICY "Users can delete own shifts"
   ON public.shifts FOR DELETE USING (auth.uid() = user_id);
 
--- Auto-sync color from workplace on insert/update
-CREATE OR REPLACE FUNCTION public.sync_shift_color_from_workplace()
-RETURNS TRIGGER AS $$
-BEGIN
-  SELECT color INTO NEW.color FROM public.workplaces
-    WHERE slug = NEW.place AND user_id = NEW.user_id LIMIT 1;
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
-
-CREATE TRIGGER trg_sync_shift_color
-  BEFORE INSERT OR UPDATE ON public.shifts
-  FOR EACH ROW EXECUTE FUNCTION public.sync_shift_color_from_workplace();
-
--- Backfill: set color on any existing shifts that are missing it
-UPDATE public.shifts s SET color = w.color
-FROM public.workplaces w
-WHERE s.place = w.slug AND s.user_id = w.user_id AND s.color IS NULL;
-
 -- Shared note columns for household integration
 ALTER TABLE public.shifts ADD COLUMN IF NOT EXISTS shared_note TEXT;
 ALTER TABLE public.shifts ADD COLUMN IF NOT EXISTS shared_note_by UUID REFERENCES auth.users(id) ON DELETE SET NULL;
+
+-- NOTE: Cross-table triggers (color sync from workplaces) are in triggers.sql
