@@ -81,6 +81,7 @@ function DietTracker({ profileData }) {
   const today = new Date().toISOString().slice(0, 10);
   const [selectedDate, setSelectedDate] = useState(today);
   const [entries, setEntries] = useState([]);
+  const [caloriesBurned, setCaloriesBurned] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [form, setForm] = useState(emptyEntryForm());
@@ -149,6 +150,19 @@ function DietTracker({ profileData }) {
       } else {
         setEntries(data ?? []);
       }
+
+      // Fetch calories burned from workouts for this date
+      const { data: workoutData } = await supabase
+        .from("workout_logs")
+        .select("calories_burned")
+        .eq("user_id", userId)
+        .eq("workout_date", selectedDate);
+
+      const totalBurned = (workoutData ?? []).reduce(
+        (sum, w) => sum + (parseInt(w.calories_burned, 10) || 0),
+        0,
+      );
+      setCaloriesBurned(totalBurned);
     } catch (err) {
       setError(getUserFacingError(err.message));
       setEntries([]);
@@ -565,7 +579,7 @@ function DietTracker({ profileData }) {
               <MacroProgressBar
                 label="Calories"
                 current={dailyTotals.calories}
-                target={macroTargets.calories}
+                target={macroTargets.calories + caloriesBurned}
                 unit=" kcal"
                 color="#f59e0b"
               />
@@ -662,6 +676,11 @@ function DietTracker({ profileData }) {
           value={`${Math.round(dailyTotals.fats)}g`}
           label="Fats"
           className="fitness__stat fitness__stat--diet"
+        />
+        <GlassCard
+          value={caloriesBurned > 0 ? caloriesBurned.toString() : "—"}
+          label="Burned"
+          className="fitness__stat fitness__stat--workout"
         />
       </div>
 
