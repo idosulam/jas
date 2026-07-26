@@ -1,0 +1,1313 @@
+/* ============================================================
+   Fitness.css — All Fitness-specific styles
+   Shared classes live in pages.css / animations.css
+   CSS variables live in index.css :root
+   ============================================================ */
+
+/* ── Base ───────────────────────────────────────────────────── */
+
+.fitness {
+  text-align: left;
+  padding-bottom: 5.5rem;
+  min-width: 0;
+}
+
+@media (min-width: 1024px) {
+  .fitness.page {
+    max-width: 56rem;
+    margin-inline: auto;
+  }
+}
+
+.fitness__header {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+/* ── Sub-tab Toggle ─────────────────────────────────────────── */
+
+.fitness__tabs {
+  position: relative;
+  display: flex;
+  padding: 0.3rem;
+  margin-bottom: 1.25rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.fitness__tab-btn {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  padding: 0.6rem 1rem;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.45);
+  font-family: var(--font-heading);
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: color 0.3s ease;
+  white-space: nowrap;
+}
+
+.fitness__tab-btn:hover {
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.fitness__tab-btn--active {
+  color: #fff;
+}
+
+.fitness__tab-btn:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.fitness__tab-indicator {
+  position: absolute;
+  top: 0.3rem;
+  left: 0.3rem;
+  height: calc(100% - 0.6rem);
+  border-radius: var(--radius-pill);
+  background: linear-gradient(
+    135deg,
+    var(--color-primary),
+    var(--color-secondary)
+  );
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow:
+    0 4px 16px rgba(129, 140, 248, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  transition:
+    transform 0.45s var(--ease-spring),
+    width 0.35s var(--ease-spring);
+  pointer-events: none;
+  z-index: 0;
+  will-change: transform;
+}
+
+/* ── Filters ────────────────────────────────────────────────── */
+
+.fitness__filters {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 0.85rem;
+  min-width: 0;
+}
+
+.fitness__filter {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-family: inherit;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.fitness__filter select {
+  width: 100%;
+  min-width: 0;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all var(--transition);
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.fitness__filter select:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25);
+}
+
+.fitness__filter select:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* ── Date Navigation (Diet) ─────────────────────────────────── */
+
+.fitness__date-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  padding: 0.65rem 1rem;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+
+.fitness__date-btn {
+  width: 2rem;
+  height: 2rem;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text);
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.fitness__date-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.fitness__date-label {
+  flex: 1;
+  text-align: center;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--text);
+}
+
+.fitness__date-today {
+  padding: 0.35rem 0.75rem;
+  border: 1px solid rgba(96, 165, 250, 0.3);
+  border-radius: var(--radius-pill);
+  background: rgba(96, 165, 250, 0.1);
+  color: #60a5fa;
+  font-family: var(--font-heading);
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.fitness__date-today:hover {
+  background: rgba(96, 165, 250, 0.2);
+  border-color: rgba(96, 165, 250, 0.5);
+}
+
+/* ── Summary ────────────────────────────────────────────────── */
+
+.fitness__summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.65rem;
+  margin-bottom: 1.5rem;
+}
+
+.fitness__stat {
+  min-width: 0;
+  padding: 1rem 0.75rem;
+  background: var(--surface-glass);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
+  transition:
+    transform var(--duration-normal) var(--ease-spring),
+    border-color var(--duration-normal) ease,
+    box-shadow var(--duration-normal) ease;
+}
+
+.fitness__stat:hover {
+  transform: translateY(-4px) scale(1.02);
+  border-color: var(--border-hover);
+  box-shadow: var(--shadow-md), var(--shadow-glow);
+}
+
+.fitness__stat--workout {
+  border-color: rgba(52, 211, 153, 0.15);
+}
+
+.fitness__stat--workout:hover {
+  border-color: rgba(52, 211, 153, 0.3);
+  box-shadow: 0 4px 20px rgba(52, 211, 153, 0.15);
+}
+
+.fitness__stat--diet {
+  border-color: rgba(96, 165, 250, 0.15);
+}
+
+.fitness__stat--diet:hover {
+  border-color: rgba(96, 165, 250, 0.3);
+  box-shadow: 0 4px 20px rgba(96, 165, 250, 0.15);
+}
+
+.fitness .glass-card__value {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: 0.2rem;
+}
+
+.fitness .glass-card__label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+/* ── Macro Dashboard (Diet) ─────────────────────────────────── */
+
+.fitness__macro-dashboard {
+  padding: 1.25rem;
+  margin-bottom: 1rem;
+  background: linear-gradient(
+    135deg,
+    rgba(96, 165, 250, 0.08),
+    rgba(52, 211, 153, 0.04)
+  );
+  border: 1px solid rgba(96, 165, 250, 0.15);
+  border-radius: var(--radius-lg);
+}
+
+.fitness__macro-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.fitness__macro-title {
+  font-family: var(--font-heading);
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0;
+}
+
+.fitness__macro-subtitle {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.4);
+  font-weight: 500;
+}
+
+.fitness__macro-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.fitness__macro-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.fitness__macro-bar-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.fitness__macro-bar-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.fitness__macro-bar-values {
+  font-family: var(--font-heading);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.fitness__macro-bar-current {
+  color: #fff;
+}
+
+.fitness__macro-bar-current--over {
+  color: #f87171;
+}
+
+.fitness__macro-bar-sep {
+  color: rgba(255, 255, 255, 0.25);
+  margin: 0 0.15rem;
+}
+
+.fitness__macro-bar-target {
+  color: rgba(255, 255, 255, 0.4);
+  font-weight: 500;
+}
+
+.fitness__macro-bar-track {
+  height: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.fitness__macro-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.4s var(--ease-spring);
+  min-width: 0;
+}
+
+.fitness__macro-bar-fill--over {
+  background: #f87171 !important;
+}
+
+.fitness__macro-missing {
+  text-align: center;
+  padding: 1rem 0.5rem;
+}
+
+.fitness__macro-missing-title {
+  font-family: var(--font-heading);
+  font-size: 1rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0 0 0.35rem;
+}
+
+.fitness__macro-missing-text {
+  font-size: 0.82rem;
+  color: rgba(255, 255, 255, 0.35);
+  margin: 0;
+  max-width: 22rem;
+  margin-inline: auto;
+}
+
+/* ── Quick-Add Templates (Presets) ──────────────────────────── */
+
+.fitness__templates {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  margin-bottom: 1rem;
+  padding-bottom: 0.25rem;
+}
+
+.fitness__templates::-webkit-scrollbar {
+  display: none;
+}
+
+.fitness__template-chip {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.5rem 0.85rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background var(--duration-fast) ease,
+    border-color var(--duration-fast) ease,
+    transform var(--duration-fast) var(--ease-spring);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.fitness__template-chip:hover {
+  background: var(--surface-hover);
+  border-color: var(--border-hover);
+}
+
+.fitness__template-chip:active {
+  transform: scale(0.96);
+}
+
+.fitness__template-chip--add {
+  border-style: dashed;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.fitness__template-chip--add:hover {
+  color: var(--text);
+  border-color: var(--color-primary);
+}
+
+.fitness__template-cal {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.fitness__preset {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  flex-shrink: 0;
+}
+
+.fitness__preset .fitness__template-chip {
+  border-radius: var(--radius-pill) 0 0 var(--radius-pill);
+}
+
+.fitness__preset-edit {
+  padding: 0.5rem 0.6rem;
+  border: 1px solid var(--border);
+  border-left: none;
+  border-radius: 0 var(--radius-pill) var(--radius-pill) 0;
+  background: var(--surface);
+  color: var(--text-dim);
+  font-size: 0.7rem;
+  cursor: pointer;
+  transition:
+    background var(--duration-fast) ease,
+    color var(--duration-fast) ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.fitness__preset-edit:hover {
+  background: var(--surface-hover);
+  color: var(--text);
+}
+
+.fitness__preset-hint {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  margin-bottom: 1.25rem;
+  text-align: center;
+}
+
+/* ── List Header ────────────────────────────────────────────── */
+
+.fitness__list-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.85rem;
+}
+
+.fitness__list-title {
+  font-family: var(--font-heading);
+}
+
+.fitness__add-btn {
+  padding: 0.55rem 1.1rem;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: linear-gradient(
+    135deg,
+    #34d399,
+    #10b981
+  );
+  color: #fff;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 0.8rem;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  box-shadow:
+    0 4px 16px rgba(52, 211, 153, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  transition:
+    transform var(--duration-normal) var(--ease-spring),
+    box-shadow var(--duration-normal) ease;
+  flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.fitness__add-btn:hover {
+  transform: translateY(-2px) scale(1.03);
+  box-shadow:
+    0 8px 24px rgba(52, 211, 153, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.fitness__add-btn:active {
+  transform: scale(0.97);
+}
+
+/* ── List & Cards ───────────────────────────────────────────── */
+
+.fitness__list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.fitness__card {
+  display: flex;
+  align-items: stretch;
+  gap: 0.5rem;
+  padding: 1rem 1.25rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
+  transition:
+    transform var(--duration-normal) var(--ease-spring),
+    border-color var(--duration-normal) ease,
+    background var(--duration-normal) ease,
+    box-shadow var(--duration-normal) ease;
+  min-width: 0;
+  animation: fadeUp 0.5s var(--ease-out) backwards;
+  animation-delay: var(--card-delay, 0s);
+}
+
+.fitness__card:hover {
+  transform: translateX(4px);
+  background: var(--surface-hover);
+  border-color: rgba(52, 211, 153, 0.2);
+  box-shadow: -4px 0 20px rgba(52, 211, 153, 0.08);
+}
+
+.fitness__card-main {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.fitness__card-top {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
+.fitness__card-date {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+.fitness__card-preset {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #34d399;
+  background: rgba(52, 211, 153, 0.1);
+  border: 1px solid rgba(52, 211, 153, 0.15);
+  padding: 0.15rem 0.5rem;
+  border-radius: var(--radius-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.fitness__card-exercises {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.fitness__card-exercise {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 0.2rem 0.55rem;
+  border-radius: var(--radius-sm);
+}
+
+.fitness__card-meta {
+  display: flex;
+  gap: 0.75rem;
+  align-items: baseline;
+}
+
+.fitness__card-volume {
+  font-family: var(--font-heading);
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #34d399;
+}
+
+.fitness__card-duration {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+/* ── Note Toggle ────────────────────────────────────────────── */
+
+.fitness__note-toggle {
+  width: 1.5rem;
+  height: 1.5rem;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.fitness__note-toggle svg {
+  width: 0.85rem;
+  height: 0.85rem;
+}
+
+.fitness__note-toggle:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text);
+}
+
+.fitness__note-toggle--active {
+  background: rgba(129, 140, 248, 0.15);
+  border-color: rgba(129, 140, 248, 0.3);
+  color: var(--color-primary);
+}
+
+.fitness__note-panel {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: var(--radius-sm);
+  padding: 0.6rem 0.8rem;
+  margin-top: 0.15rem;
+  white-space: pre-wrap;
+}
+
+/* ── Card Actions ───────────────────────────────────────────── */
+
+.fitness__card-actions {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-left: 0.75rem;
+  flex-shrink: 0;
+}
+
+.fitness__action {
+  padding: 0.45rem 0.8rem;
+  border-radius: 0.65rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-out);
+  text-align: center;
+  min-width: 4.5rem;
+  min-height: 2.75rem;
+  border: 1px solid transparent;
+}
+
+.fitness__action--edit {
+  background: rgba(168, 85, 247, 0.1);
+  color: #d8b4fe;
+  border-color: rgba(168, 85, 247, 0.2);
+}
+
+.fitness__action--edit:hover {
+  background: rgba(168, 85, 247, 0.25);
+  color: #e9d5ff;
+  border-color: rgba(168, 85, 247, 0.45);
+  transform: scale(1.06);
+}
+
+.fitness__action--delete {
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.15);
+  color: rgba(239, 68, 68, 0.5);
+}
+
+.fitness__action--delete:hover {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.4);
+  color: #fca5a5;
+  transform: scale(1.06);
+}
+
+.fitness__action:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* ── Diet Entry Cards ───────────────────────────────────────── */
+
+.fitness__meal-group {
+  margin-bottom: 1.25rem;
+}
+
+.fitness__meal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.fitness__meal-title {
+  font-family: var(--font-heading);
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0;
+}
+
+.fitness__meal-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.fitness__meal-cals {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.fitness__meal-add {
+  width: 1.75rem;
+  height: 1.75rem;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(96, 165, 250, 0.3);
+  border-radius: 50%;
+  background: rgba(96, 165, 250, 0.1);
+  color: #60a5fa;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.fitness__meal-add:hover {
+  background: rgba(96, 165, 250, 0.2);
+  border-color: rgba(96, 165, 250, 0.5);
+  transform: scale(1.1);
+}
+
+.fitness__meal-empty {
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.2);
+  font-style: italic;
+  padding: 0.35rem 0;
+  margin: 0;
+}
+
+.fitness__meal-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.fitness__entry {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.65rem 0.85rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: var(--radius);
+  transition: all 0.2s ease;
+  animation: fadeUp 0.35s var(--ease-out) backwards;
+}
+
+.fitness__entry:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.fitness__entry-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.fitness__entry-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.fitness__entry-macros {
+  display: flex;
+  gap: 0.65rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.fitness__entry-actions {
+  display: flex;
+  gap: 0.35rem;
+  flex-shrink: 0;
+}
+
+.fitness__entry-btn {
+  width: 1.75rem;
+  height: 1.75rem;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-dim);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.fitness__entry-btn--edit:hover {
+  background: rgba(168, 85, 247, 0.15);
+  border-color: rgba(168, 85, 247, 0.3);
+  color: #d8b4fe;
+}
+
+.fitness__entry-btn--delete:hover {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.3);
+  color: #fca5a5;
+}
+
+/* ── Exercise Rows (Workout form) ───────────────────────────── */
+
+.fitness__exercises-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.fitness__exercises-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.fitness__exercises-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.fitness__field-error-text {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #f87171;
+}
+
+.fitness__exercise-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-start;
+}
+
+.fitness__exercise-fields {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  min-width: 0;
+}
+
+.fitness__exercise-name {
+  width: 100%;
+  padding: 0.65rem 0.85rem;
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-sm);
+  outline: none;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s,
+    background 0.2s;
+}
+
+.fitness__exercise-name:focus {
+  border-color: rgba(52, 211, 153, 0.5);
+  box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.12);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.fitness__exercise-name::placeholder {
+  color: rgba(255, 255, 255, 0.25);
+}
+
+.fitness__exercise-numbers {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.4rem;
+}
+
+.fitness__exercise-input {
+  width: 100%;
+  padding: 0.55rem 0.65rem;
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-sm);
+  outline: none;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+  text-align: center;
+}
+
+.fitness__exercise-input:focus {
+  border-color: rgba(52, 211, 153, 0.5);
+  box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.12);
+}
+
+.fitness__exercise-input::placeholder {
+  color: rgba(255, 255, 255, 0.25);
+}
+
+.fitness__exercise-remove {
+  width: 2rem;
+  height: 2rem;
+  min-width: 44px;
+  min-height: 44px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: var(--radius-sm);
+  background: rgba(239, 68, 68, 0.08);
+  color: rgba(239, 68, 68, 0.6);
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+  margin-top: 0.15rem;
+}
+
+.fitness__exercise-remove:hover {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.4);
+  color: #fca5a5;
+}
+
+.fitness__exercise-add {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.5rem 0.85rem;
+  border: 1px dashed rgba(52, 211, 153, 0.3);
+  border-radius: var(--radius);
+  background: rgba(52, 211, 153, 0.06);
+  color: #34d399;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  align-self: flex-start;
+}
+
+.fitness__exercise-add:hover {
+  background: rgba(52, 211, 153, 0.12);
+  border-color: rgba(52, 211, 153, 0.5);
+}
+
+/* ── Macro Inputs (3-col grid for diet form) ────────────────── */
+
+.fitness__macro-inputs {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.65rem;
+}
+
+/* ── Form ───────────────────────────────────────────────────── */
+
+.fitness__form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.fitness__preview {
+  padding: 1rem;
+  background: rgba(52, 211, 153, 0.1);
+  border: 1px solid rgba(52, 211, 153, 0.2);
+  border-radius: 0.75rem;
+  font-size: 0.9rem;
+  color: #6ee7b7;
+  text-align: center;
+}
+
+.fitness__preview strong {
+  color: #fff;
+  font-size: 1.1rem;
+}
+
+/* ── Delete preview ─────────────────────────────────────────── */
+
+.fitness__delete-date {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.fitness__delete-name {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #fff;
+}
+
+/* ── Error ──────────────────────────────────────────────────── */
+
+.fitness__error {
+  margin-bottom: 1.2rem;
+  padding: 0.9rem 1rem;
+  border-radius: 1rem;
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  background: rgba(239, 68, 68, 0.12);
+  color: #fecaca;
+  font-size: 0.9rem;
+}
+
+.fitness__error--shake {
+  animation: fitnessErrorShake 0.5s ease-in-out;
+}
+
+@keyframes fitnessErrorShake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-8px);
+  }
+  40% {
+    transform: translateX(8px);
+  }
+  60% {
+    transform: translateX(-4px);
+  }
+  80% {
+    transform: translateX(4px);
+  }
+}
+
+/* ── Empty State ────────────────────────────────────────────── */
+
+.fitness__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 2.5rem 1.5rem;
+  text-align: center;
+  animation: fadeUp 0.5s var(--ease-out) backwards;
+}
+
+/* ── Deletion Animation ─────────────────────────────────────── */
+
+.fitness__card--removing {
+  animation: fitnessCardRemove 0.35s var(--ease-smooth) forwards;
+}
+
+.fitness__entry--removing {
+  animation: fitnessCardRemove 0.35s var(--ease-smooth) forwards;
+}
+
+@keyframes fitnessCardRemove {
+  0% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+    max-height: 200px;
+    margin-bottom: 0.65rem;
+    padding: 1rem 1.25rem;
+  }
+  50% {
+    opacity: 0;
+    transform: translateX(30px) scale(0.95);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(30px) scale(0.95);
+    max-height: 0;
+    margin-bottom: 0;
+    padding: 0;
+    border-width: 0;
+    overflow: hidden;
+  }
+}
+
+/* ── Responsive ─────────────────────────────────────────────── */
+
+@media (max-width: 768px) {
+  .fitness {
+    padding-bottom: 6rem;
+  }
+
+  .fitness__filters {
+    flex-wrap: wrap;
+  }
+
+  .fitness__summary {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.55rem;
+  }
+
+  .fitness__diet .fitness__summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .fitness__stat {
+    padding: 0.85rem 0.5rem;
+    border-radius: 1rem;
+  }
+
+  .fitness .glass-card__value {
+    font-size: 1.2rem;
+  }
+
+  .fitness .glass-card__label {
+    font-size: 0.65rem;
+  }
+
+  .fitness__card {
+    flex-direction: column;
+    gap: 0.85rem;
+    padding: 0.9rem;
+    border-radius: 1rem;
+  }
+
+  .fitness__card-actions {
+    flex-direction: row;
+    width: 100%;
+    margin-left: 0;
+    gap: 0.55rem;
+  }
+
+  .fitness__action {
+    flex: 1 1 0;
+    min-width: 0;
+    min-height: 44px;
+  }
+
+  .fitness__macro-inputs {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+}
+
+@media (max-width: 420px) {
+  .fitness__header {
+    margin-bottom: 1.1rem;
+  }
+
+  .fitness__tabs {
+    padding: 0.24rem;
+  }
+
+  .fitness__tab-btn {
+    padding: 0.5rem 0.6rem;
+    font-size: 0.78rem;
+  }
+
+  .fitness__card {
+    padding: 0.82rem;
+  }
+
+  .fitness__stat {
+    padding: 0.75rem 0.5rem;
+  }
+
+  .fitness .glass-card__value {
+    font-size: 1.1rem;
+  }
+
+  .fitness .glass-card__label {
+    font-size: 0.6rem;
+  }
+
+  .fitness__macro-inputs {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .fitness {
+    padding-bottom: 6.25rem;
+  }
+
+  .fitness__filters {
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+
+  .fitness__filter {
+    flex: 1 1 auto;
+  }
+
+  .fitness__filter select {
+    min-height: 46px;
+    font-size: 16px;
+  }
+
+  .fitness__summary {
+    grid-template-columns: 1fr;
+  }
+
+  .fitness__exercise-numbers {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.35rem;
+  }
+
+  .fitness__exercise-input {
+    font-size: 16px;
+    padding: 0.6rem 0.5rem;
+  }
+
+  .fitness__exercise-name {
+    font-size: 16px;
+  }
+}
+
+/* ── Reduced Motion ─────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .fitness__stat,
+  .fitness__card,
+  .fitness__entry,
+  .fitness__tab-btn,
+  .fitness__add-btn,
+  .fitness__template-chip,
+  .fitness__meal-add,
+  .fitness__date-btn,
+  .fitness__macro-bar-fill {
+    animation: none !important;
+    transition: none !important;
+  }
+}

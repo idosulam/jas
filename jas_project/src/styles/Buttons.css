@@ -141,6 +141,24 @@
   cursor: not-allowed;
 }
 
+/* ── Danger Outline ── */
+.btn--danger-outline {
+  background: transparent;
+  color: var(--color-danger, #f87171);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.btn--danger-outline:hover {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.5);
+}
+
+.btn--danger-outline:disabled,
+.btn--danger-outline[disabled] {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
 /* ── Spinner ── */
 .btn__spinner {
   width: 14px;

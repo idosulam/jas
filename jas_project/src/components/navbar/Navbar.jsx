@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Nav_Shifts from "./Nav_Shifts";
 import Nav_Calendar from "./Nav_Calendar";
+import Nav_Fitness from "./Nav_Fitness";
 import Nav_Household from "./Nav_Household";
 import Nav_Profile from "./Nav_Profile";
 import "./Navbar.css";
@@ -8,6 +9,7 @@ import "./Navbar.css";
 const NAV_ITEMS = [
   { id: "Shifts", Component: Nav_Shifts },
   { id: "Calendar", Component: Nav_Calendar },
+  { id: "Fitness", Component: Nav_Fitness },
   { id: "Household", Component: Nav_Household },
   { id: "Profile", Component: Nav_Profile },
 ];
