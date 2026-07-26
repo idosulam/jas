@@ -23,7 +23,6 @@ import FAB from "../../../components/ui/FAB";
 const MODAL_EXIT_MS = 320;
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-const MONTHS_SHORT = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 function emptyExercise() {
   return { name: "", weight: "", sets: "", reps: "" };
@@ -110,19 +109,14 @@ function WorkoutLogger() {
     return Array.from({ length: 7 }, (_, i) => addDays(start, i));
   }, [selectedDate]);
 
-  const weekRange = useMemo(() => {
-    const start = startOfWeek(selectedDate);
-    const end = addDays(start, 6);
-    const sameMonth = start.getMonth() === end.getMonth();
-    if (sameMonth) {
-      return `${MONTHS_SHORT[start.getMonth()]} ${start.getDate()} – ${end.getDate()}, ${start.getFullYear()}`;
-    }
-    return `${MONTHS_SHORT[start.getMonth()]} ${start.getDate()} – ${MONTHS_SHORT[end.getMonth()]} ${end.getDate()}, ${end.getFullYear()}`;
+  const dayTitle = useMemo(() => {
+    return selectedDate.toLocaleDateString(undefined, {
+      weekday: "long",
+      month: "long",
+      day: "numeric",
+    });
   }, [selectedDate]);
 
-  const shiftWeek = (direction) => {
-    setSelectedDate((d) => addDays(d, direction === "next" ? 7 : -7));
-  };
 
   // ── Fetch workouts ──
   const fetchWorkouts = useCallback(async () => {
@@ -598,23 +592,7 @@ function WorkoutLogger() {
     <div className="fitness__workout">
       {/* Weekly date navigation */}
       <div className="fitness__date-nav animate-in animate-in--1">
-        <button
-          type="button"
-          className="fitness__date-btn"
-          onClick={() => shiftWeek("prev")}
-          aria-label="Previous week"
-        >
-          ‹
-        </button>
-        <span className="fitness__date-label">{weekRange}</span>
-        <button
-          type="button"
-          className="fitness__date-btn"
-          onClick={() => shiftWeek("next")}
-          aria-label="Next week"
-        >
-          ›
-        </button>
+        <span className="fitness__date-label">{dayTitle}</span>
         {!isToday && (
           <button
             type="button"
@@ -718,7 +696,7 @@ function WorkoutLogger() {
       {/* List header */}
       <div className="fitness__list-header animate-in animate-in--4">
         <h2 className="fitness__list-title">
-          {weekRange}
+          {dayTitle}
         </h2>
         <button
           type="button"

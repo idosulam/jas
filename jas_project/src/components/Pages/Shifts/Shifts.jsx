@@ -40,7 +40,6 @@ const PAY_TYPES = [
 const FILTER_PICKER_BREAKPOINT = 768;
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-const MONTHS_SHORT = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 function getCurrentLocalTime() {
   const now = new Date();
@@ -392,19 +391,14 @@ function Shifts({ onNavigate }) {
     return Array.from({ length: 7 }, (_, i) => addDays(start, i));
   }, [selectedDate]);
 
-  const weekRange = useMemo(() => {
-    const start = startOfWeek(selectedDate);
-    const end = addDays(start, 6);
-    const sameMonth = start.getMonth() === end.getMonth();
-    if (sameMonth) {
-      return `${MONTHS_SHORT[start.getMonth()]} ${start.getDate()} – ${end.getDate()}, ${start.getFullYear()}`;
-    }
-    return `${MONTHS_SHORT[start.getMonth()]} ${start.getDate()} – ${MONTHS_SHORT[end.getMonth()]} ${end.getDate()}, ${end.getFullYear()}`;
+  const dayTitle = useMemo(() => {
+    return selectedDate.toLocaleDateString(undefined, {
+      weekday: "long",
+      month: "long",
+      day: "numeric",
+    });
   }, [selectedDate]);
 
-  const shiftWeek = (direction) => {
-    setSelectedDate((d) => addDays(d, direction === "next" ? 7 : -7));
-  };
 
   const fetchShifts = useCallback(async () => {
     if (!userId) return;
@@ -917,23 +911,7 @@ function Shifts({ onNavigate }) {
 
       {/* Weekly date navigation */}
       <div className="shifts__date-nav animate-in animate-in--1">
-        <button
-          type="button"
-          className="shifts__date-btn"
-          onClick={() => shiftWeek("prev")}
-          aria-label="Previous week"
-        >
-          ‹
-        </button>
-        <span className="shifts__date-label">{weekRange}</span>
-        <button
-          type="button"
-          className="shifts__date-btn"
-          onClick={() => shiftWeek("next")}
-          aria-label="Next week"
-        >
-          ›
-        </button>
+        <span className="shifts__date-label">{dayTitle}</span>
         {!isToday && (
           <button
             type="button"
@@ -1141,7 +1119,7 @@ function Shifts({ onNavigate }) {
 
       <div className="shifts__list-header animate-in animate-in--4">
         <h2 className="shifts__list-title">
-          {weekRange}
+          {dayTitle}
           {placeFilter !== "all" && (
             <span className="shifts__list-subtitle">
               {" "}
