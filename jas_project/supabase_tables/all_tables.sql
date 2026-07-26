@@ -869,7 +869,7 @@ CREATE INDEX IF NOT EXISTS idx_workout_presets_user
 CREATE INDEX IF NOT EXISTS idx_diet_presets_user
   ON diet_presets (user_id);
 
--- STEP 10: CROSS-TABLE TRIGGERS (must be last)
+-- STEP 10: CROSS-TABLE TRIGGERS
 -- ============================================================
 -- ============================================================
 -- Cross-Table Triggers — Run AFTER all tables are created

@@ -38,6 +38,7 @@ function emptyForm() {
     exercises: [emptyExercise()],
     notes: "",
     duration_minutes: "",
+    calories_burned: "",
   };
 }
 
@@ -175,9 +176,10 @@ function WorkoutLogger() {
         acc.workouts += 1;
         acc.volume += calcVolume(exercises);
         acc.duration += parseInt(w.duration_minutes, 10) || 0;
+        acc.calories += parseInt(w.calories_burned, 10) || 0;
         return acc;
       },
-      { workouts: 0, volume: 0, duration: 0 },
+      { workouts: 0, volume: 0, duration: 0, calories: 0 },
     );
   }, [workouts]);
 
@@ -227,6 +229,9 @@ function WorkoutLogger() {
       notes: workout.notes ?? "",
       duration_minutes: workout.duration_minutes
         ? String(workout.duration_minutes)
+        : "",
+      calories_burned: workout.calories_burned
+        ? String(workout.calories_burned)
         : "",
     });
     setFieldErrors({});
@@ -377,6 +382,13 @@ function WorkoutLogger() {
     switch (fieldName) {
       case "workout_date":
         return !value ? "Pick a date" : null;
+      case "preset_name":
+        return !value || !value.trim() ? "Workout name is required" : null;
+      case "calories_burned": {
+        if (!value) return null;
+        const n = sanitizeNumber(value, 0, 9999);
+        return n == null ? "Enter a valid number" : null;
+      }
       default:
         return null;
     }
@@ -397,6 +409,7 @@ function WorkoutLogger() {
 
   const isFormValid = useMemo(() => {
     if (!form.workout_date) return false;
+    if (!form.preset_name || !form.preset_name.trim()) return false;
     const hasAtLeastOneExercise = form.exercises.some((ex) => ex.name.trim());
     return hasAtLeastOneExercise;
   }, [form]);
@@ -431,7 +444,16 @@ function WorkoutLogger() {
       return;
     }
 
+    const workoutName = form.preset_name.trim();
+    if (!workoutName) {
+      setFieldErrors({ preset_name: "Workout name is required" });
+      setFieldStates({ preset_name: "error" });
+      setShakeKey((k) => k + 1);
+      return;
+    }
+
     const duration = sanitizeNumber(form.duration_minutes, 1, 600);
+    const caloriesBurned = sanitizeNumber(form.calories_burned, 0, 9999);
     const notes = form.notes.trim() ? sanitizeText(form.notes, 500) : null;
 
     setSaving(true);
@@ -439,10 +461,11 @@ function WorkoutLogger() {
 
     const payload = {
       workout_date: workoutDate,
-      preset_name: form.preset_name || null,
+      preset_name: workoutName,
       exercises: cleanedExercises,
       notes,
       duration_minutes: duration ?? null,
+      calories_burned: caloriesBurned ?? null,
       ...(userId && { user_id: userId }),
     };
 
@@ -585,6 +608,11 @@ function WorkoutLogger() {
           label="Duration"
           className="fitness__stat fitness__stat--workout"
         />
+        <GlassCard
+          value={totals.calories > 0 ? `${totals.calories}` : "—"}
+          label="Cal Burned"
+          className="fitness__stat fitness__stat--workout"
+        />
       </div>
 
       {error && (
@@ -718,6 +746,11 @@ function WorkoutLogger() {
                         {workout.duration_minutes}m
                       </span>
                     )}
+                    {workout.calories_burned > 0 && (
+                      <span className="fitness__card-calories">
+                        {workout.calories_burned} kcal
+                      </span>
+                    )}
                   </div>
                   {workout.notes && expandedNoteId === workout.id && (
                     <p className="fitness__note-panel">{workout.notes}</p>
@@ -774,15 +807,24 @@ function WorkoutLogger() {
             />
           </FormField>
 
-          <FormField label="Workout name" optional>
+          <FormField
+            label="Workout name"
+            error={fieldErrors.preset_name}
+            state={fieldStates.preset_name}
+            showIndicator
+            shake={fieldErrors.preset_name ? shakeKey : 0}
+          >
             <input
               type="text"
               placeholder="e.g. Push day, Leg day"
               value={form.preset_name}
               maxLength={60}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, preset_name: e.target.value }))
-              }
+              onChange={(e) => {
+                setForm((f) => ({ ...f, preset_name: e.target.value }));
+                setFieldErrors((prev) => ({ ...prev, preset_name: null }));
+              }}
+              onBlur={() => handleFieldBlur("preset_name")}
+              required
             />
           </FormField>
 
@@ -871,6 +913,28 @@ function WorkoutLogger() {
               onChange={(e) =>
                 setForm((f) => ({ ...f, duration_minutes: e.target.value }))
               }
+            />
+          </FormField>
+
+          <FormField
+            label="Calories burned"
+            error={fieldErrors.calories_burned}
+            state={fieldStates.calories_burned}
+            showIndicator
+            shake={fieldErrors.calories_burned ? shakeKey : 0}
+            optional
+          >
+            <input
+              type="number"
+              min="0"
+              max="9999"
+              placeholder="e.g. 350"
+              value={form.calories_burned}
+              onChange={(e) => {
+                setForm((f) => ({ ...f, calories_burned: e.target.value }));
+                setFieldErrors((prev) => ({ ...prev, calories_burned: null }));
+              }}
+              onBlur={() => handleFieldBlur("calories_burned")}
             />
           </FormField>
 

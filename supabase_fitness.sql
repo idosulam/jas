@@ -42,6 +42,7 @@ CREATE TABLE IF NOT EXISTS workout_logs (
   exercises jsonb NOT NULL DEFAULT '[]',
   notes text,
   duration_minutes int,
+  calories_burned numeric(7,1) DEFAULT 0,
   created_at timestamptz DEFAULT now()
 );
 

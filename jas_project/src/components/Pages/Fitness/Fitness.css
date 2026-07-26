@@ -647,6 +647,12 @@
   color: var(--text-muted);
 }
 
+.fitness__card-calories {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #f97316;
+}
+
 /* ── Note Toggle ────────────────────────────────────────────── */
 
 .fitness__note-toggle {
