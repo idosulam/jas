@@ -313,12 +313,6 @@
   padding: 2rem 1rem;
 }
 
-.budgets__empty-icon {
-  font-size: 2rem;
-  display: block;
-  margin-bottom: 0.5rem;
-}
-
 .budgets__empty p {
   font-size: 0.85rem;
   color: rgba(255, 255, 255, 0.5);

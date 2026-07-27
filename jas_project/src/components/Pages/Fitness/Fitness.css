@@ -91,54 +91,6 @@
 
 /* ── Filters ────────────────────────────────────────────────── */
 
-.fitness__filters {
-  display: flex;
-  gap: 0.75rem;
-  margin-bottom: 0.85rem;
-  min-width: 0;
-}
-
-.fitness__filter {
-  flex: 1 1 0;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-  font-family: inherit;
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: rgba(255, 255, 255, 0.4);
-}
-
-.fitness__filter select {
-  width: 100%;
-  min-width: 0;
-  padding: 0.65rem 0.75rem;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  background: rgba(255, 255, 255, 0.03);
-  color: var(--text);
-  font-family: inherit;
-  font-size: 0.9rem;
-  cursor: pointer;
-  transition: all var(--transition);
-  -webkit-appearance: none;
-  appearance: none;
-}
-
-.fitness__filter select:focus {
-  outline: none;
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25);
-}
-
-.fitness__filter select:focus-visible {
-  outline: 2px solid var(--color-primary);
-  outline-offset: 2px;
-}
-
 /* ── Date Navigation (Shared) ───────────────────────────────── */
 
 .fitness__date-nav {
@@ -212,7 +164,6 @@
 .fitness__date-today:active {
   transform: scale(0.97);
 }
-
 
 /* ── Week Day Selector ──────────────────────────────────────── */
 
@@ -1329,9 +1280,7 @@
     padding-bottom: 6rem;
   }
 
-  .fitness__filters {
-    flex-wrap: wrap;
-  }
+  
 
   .fitness__summary {
     grid-template-columns: repeat(2, 1fr);
@@ -1421,19 +1370,11 @@
     padding-bottom: 6.25rem;
   }
 
-  .fitness__filters {
-    flex-direction: column;
-    gap: 0.6rem;
-  }
+  
 
-  .fitness__filter {
-    flex: 1 1 auto;
-  }
+  
 
-  .fitness__filter select {
-    min-height: 46px;
-    font-size: 16px;
-  }
+  
 
   .fitness__summary {
     grid-template-columns: 1fr;

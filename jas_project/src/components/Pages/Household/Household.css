@@ -644,58 +644,6 @@
 
 /* ── Form Pickers ───────────────────────────────────────────── */
 
-.savings-goals__icon-picker {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
-}
-
-.savings-goals__icon-btn {
-  width: 2.25rem;
-  height: 2.25rem;
-  border-radius: var(--radius);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  background: rgba(255, 255, 255, 0.02);
-  font-size: 1.1rem;
-  cursor: pointer;
-  transition: all 0.15s;
-}
-
-.savings-goals__icon-btn:hover {
-  background: rgba(255, 255, 255, 0.06);
-}
-
-.savings-goals__icon-btn--active {
-  border-color: var(--color-primary, #818cf8);
-  background: rgba(129, 140, 248, 0.1);
-  box-shadow: 0 0 0 2px rgba(129, 140, 248, 0.2);
-}
-
-.savings-goals__color-picker {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
-}
-
-.savings-goals__color-btn {
-  width: 1.75rem;
-  height: 1.75rem;
-  border-radius: 50%;
-  border: 2px solid transparent;
-  cursor: pointer;
-  transition: all 0.15s;
-}
-
-.savings-goals__color-btn:hover {
-  transform: scale(1.15);
-}
-
-.savings-goals__color-btn--active {
-  border-color: #fff;
-  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.2);
-  transform: scale(1.15);
-}
-
 /* ── Savings Section ────────────────────────────────────────── */
 
 .household__savings-section {
@@ -727,7 +675,6 @@
   pointer-events: none;
   z-index: 0;
 }
-
 
 .household__goals-budgets-indicator.goals {
   background: rgba(52, 211, 153, 0.12);

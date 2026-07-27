@@ -214,25 +214,9 @@
   will-change: transform, opacity;
 }
 
-.page-transition--forward {
-  animation-name: pageEnterForward;
-}
-
-.page-transition--backward {
-  animation-name: pageEnterBackward;
-}
-
 /* ── Accessibility ── */
 @media (prefers-reduced-motion: reduce) {
-  .page-transition,
-  .animate-in,
-  .animate-scale,
-  .navbar,
-  .navbar__glass--pulse,
-  .navbar__shine::after,
-  .nav-option--active .nav-option__icon,
-  body::before,
-  body::after {
+  .page-transition, .animate-in, .navbar, .navbar__glass--pulse, .navbar__shine::after, .nav-option--active .nav-option__icon, body::before, body::after{
     animation: none !important;
     transition: none !important;
   }

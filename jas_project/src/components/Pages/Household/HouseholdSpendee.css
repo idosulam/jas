@@ -515,22 +515,6 @@
   margin-bottom: 0;
 }
 
-.recurring__empty {
-  text-align: center;
-  padding: 2rem 1rem;
-  color: rgba(255, 255, 255, 0.3);
-}
-
-.recurring__empty p {
-  font-size: 0.9rem;
-  margin-bottom: 0.25rem;
-}
-
-.recurring__empty span {
-  font-size: 0.78rem;
-  color: rgba(255, 255, 255, 0.2);
-}
-
 .recurring__list {
   display: flex;
   flex-direction: column;
@@ -670,7 +654,6 @@
   pointer-events: none;
   z-index: 0;
 }
-
 
 .household__tab {
   flex: 1;
