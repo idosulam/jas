@@ -20,6 +20,8 @@ import LoadingSkeleton from "../../../components/ui/Loading_skeleton";
 import GlassCard from "../../../components/ui/Glass_card";
 import FAB from "../../../components/ui/FAB";
 
+import { kgToLbs, lbsToKg } from "../../../lib/weight";
+
 const MODAL_EXIT_MS = 320;
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -29,16 +31,6 @@ function emptyExercise() {
 }
 
 const KG_TO_LBS = 2.20462;
-
-function kgToLbs(kg) {
-  const parsed = parseFloat(kg);
-  return isNaN(parsed) ? "" : String(Number((parsed * KG_TO_LBS).toFixed(1)));
-}
-
-function lbsToKg(lbs) {
-  const parsed = parseFloat(lbs);
-  return isNaN(parsed) ? "" : String(Number((parsed / KG_TO_LBS).toFixed(2)));
-}
 
 function emptyForm() {
   return {

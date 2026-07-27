@@ -14,24 +14,10 @@ import FormField from "../../ui/form/Form_field.jsx";
 import ColorPalettePicker from "../../../lib/Color_palette_picker.jsx";
 import EmptyState from "../../ui/Empty_state";
 
+import { formatMoney } from "../../lib/format";
+
 function formatMoney(amount) {
   return `₪${Number(amount || 0).toFixed(2)}`;
-}
-
-function formatDateGroup(dateStr) {
-  const d = new Date(`${dateStr}T12:00:00`);
-  const today = new Date();
-  const yesterday = new Date(today);
-  yesterday.setDate(yesterday.getDate() - 1);
-
-  if (d.toDateString() === today.toDateString()) return "Today";
-  if (d.toDateString() === yesterday.toDateString()) return "Yesterday";
-
-  return d.toLocaleDateString(undefined, {
-    weekday: "long",
-    month: "long",
-    day: "numeric",
-  });
 }
 
 const DEFAULT_ICONS = [

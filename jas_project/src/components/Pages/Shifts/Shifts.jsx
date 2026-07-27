@@ -30,6 +30,8 @@ import PageHeader from "../../../components/ui/Page_header";
 import GlassCard from "../../../components/ui/Glass_card";
 import FAB from "../../../components/ui/FAB";
 
+import { formatMoney } from "../../lib/format";
+
 const PAY_TYPES = [
   { id: "hourly", label: "Hourly + tips" },
   { id: "tips_only", label: "Tips only" },

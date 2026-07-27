@@ -7,6 +7,8 @@ import SheetModal from "../../ui/modals/Sheet_modal";
 import FormField from "../../ui/form/Form_field.jsx";
 import EmptyState from "../../ui/Empty_state";
 
+import { formatMoney } from "../../lib/format";
+
 function formatMoney(amount) {
   return `₪${Number(amount || 0).toFixed(2)}`;
 }

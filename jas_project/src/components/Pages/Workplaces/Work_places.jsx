@@ -20,6 +20,8 @@ import {
 import { useBodyScrollLock, useModal } from "../../../hooks/index.js";
 import { TrashIcon } from "../../../components/ui/modals/Confirm_modal";
 
+import { formatMoney } from "../../lib/format";
+
 const emptyForm = () => ({
   slug: "",
   label: "",

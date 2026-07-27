@@ -19,6 +19,8 @@ import Transactions from "./Transactions";
 import RecurringTransactions from "./RecurringTransactions";
 import Analytics from "./Analytics";
 import Budgets from "./Budgets";
+import { formatMoney } from "../../lib/format";
+
 import "./Budgets.css";
 
 const MONTHS = [
