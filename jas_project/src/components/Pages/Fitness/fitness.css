@@ -8,7 +8,10 @@
 
 /* NOTE: .page--scrollable provides identical base layout */
 
-/* NOTE: .page-header provides identical layout */
+.fitness__header {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
 
 /* ── Sub-tab Toggle ─────────────────────────────────────────── */
 
