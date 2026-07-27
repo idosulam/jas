@@ -22,7 +22,7 @@ export default function ColorPalettePicker({ value, onChange }) {
   const [pickerOpen, setPickerOpen] = useState(false);
   const [pickerClosing, setPickerClosing] = useState(false);
   const [editing, setEditing] = useState(null);
-  const [hex, setHex] = useState("#818cf8");
+  const [hex, setHex] = useState("");
   const [label, setLabel] = useState("");
   const [saving, setSaving] = useState(false);
   const [hexTouched, setHexTouched] = useState(false);
@@ -35,7 +35,7 @@ export default function ColorPalettePicker({ value, onChange }) {
 
   const openAdd = useCallback(() => {
     setEditing(null);
-    setHex("#818cf8");
+    setHex("");
     setLabel("");
     setHexTouched(false);
     setHexState("valid");
