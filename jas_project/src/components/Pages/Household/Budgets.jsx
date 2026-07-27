@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { getSupabaseClient } from "../../../lib/superbase";
-import { getUserFacingError, sanitizeNumber, hapticError } from "../../../lib/security";
+import { getUserFacingError, hapticError } from "../../../lib/security";
 import { useGlassToast } from "../../../lib/glass_toast_provider.jsx";
 import { useModal, useBodyScrollLock } from "../../../hooks";
 import SheetModal from "../../ui/modals/Sheet_modal";

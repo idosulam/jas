@@ -1,5 +1,5 @@
 import "./Work_places.css";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { getSupabaseClient } from "../../../lib/superbase.jsx";
 import { useUserId } from "../../../lib/Auth_context.jsx";
 import {

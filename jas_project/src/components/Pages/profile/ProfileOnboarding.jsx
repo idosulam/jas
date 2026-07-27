@@ -13,8 +13,6 @@ import { ACTIVITY_LEVELS, GENDER_OPTIONS } from "../Fitness/macro_calculator";
 import SheetModal from "../../ui/modals/Sheet_modal";
 import FormField from "../../ui/form/Form_field.jsx";
 
-const MODAL_EXIT_MS = 260;
-
 function cmToFeetAndInches(heightCm) {
   if (heightCm == null || Number.isNaN(heightCm))
     return { feet: "", inches: "" };

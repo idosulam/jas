@@ -14,7 +14,6 @@ import {
 import {
   parseTimeToMinutes,
   minutesToTime,
-  getShiftEventTitle,
   removeGeneratedCalendarEvents,
   syncShiftToCalendar as syncShiftToCalendarUtil,
 } from "../../../lib/calendar_sync";
@@ -678,9 +677,6 @@ function Shifts({ onNavigate }) {
   };
 
   // Thin wrappers that pass local PLACES map to the shared utility functions
-  const _getShiftEventTitle = (shiftRecord) =>
-    getShiftEventTitle(shiftRecord, PLACES);
-
   async function _removeShiftGeneratedCalendarEvents(
     supabase,
     dateKey,

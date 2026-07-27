@@ -48,15 +48,6 @@ function formatMoney(amount) {
   return `₪${Number(amount || 0).toFixed(2)}`;
 }
 
-function formatDateShort(dateStr) {
-  const d = new Date(`${dateStr}T12:00:00`);
-  return d.toLocaleDateString(undefined, {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-  });
-}
-
 function Household() {
   const userId = useUserId();
   const now = new Date();

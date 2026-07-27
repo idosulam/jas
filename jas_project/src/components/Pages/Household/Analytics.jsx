@@ -26,11 +26,6 @@ function Analytics({ transactions, members, month, year }) {
     }
   }, [activeTab]);
 
-  const monthNames = [
-    "January", "February", "March", "April", "May", "June",
-    "July", "August", "September", "October", "November", "December",
-  ];
-
   // Filter by type
   const filtered = useMemo(() => {
     return transactions.filter((t) => t.type === activeTab);

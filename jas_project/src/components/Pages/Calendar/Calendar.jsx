@@ -97,8 +97,6 @@ function Calendar() {
     fetchPalette().then(setPalette);
   }, []);
 
-  const firstColor = palette[0]?.hex || "#818cf8";
-
   const weekDays = useMemo(() => {
     const start = startOfWeek(selectedDate);
     return Array.from({ length: 7 }, (_, i) => addDays(start, i));

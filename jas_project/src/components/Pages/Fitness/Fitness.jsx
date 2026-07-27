@@ -2,7 +2,6 @@ import "./Fitness.css";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { getSupabaseClient } from "../../../lib/superbase";
 import { useUserId } from "../../../lib/Auth_context.jsx";
-import { getUserFacingError } from "../../../lib/security";
 import { useHousehold } from "../../../lib/Household_context.jsx";
 
 import PageHeader from "../../../components/ui/Page_header";

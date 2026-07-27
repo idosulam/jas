@@ -18,15 +18,6 @@ function formatMoney(amount) {
   return `₪${Number(amount || 0).toFixed(2)}`;
 }
 
-function formatDate(dateStr) {
-  const d = new Date(`${dateStr}T12:00:00`);
-  return d.toLocaleDateString(undefined, {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-  });
-}
-
 function formatDateGroup(dateStr) {
   const d = new Date(`${dateStr}T12:00:00`);
   const today = new Date();
@@ -136,17 +127,7 @@ function Transactions({ householdId, userId, members, goals = [] }) {
     categoryModal.open, deleteCategoryModal.open
   );
 
-  const now = new Date();
-  const yearOptions = useMemo(() => {
-    const current = now.getFullYear();
-    return Array.from({ length: 11 }, (_, i) => current - 5 + i);
-  }, []);
-
-  const monthNames = [
-    "January", "February", "March", "April", "May", "June",
-    "July", "August", "September", "October", "November", "December",
-  ];
-
+  
   // Fetch categories
   const fetchCategories = useCallback(async () => {
     if (!householdId) return;

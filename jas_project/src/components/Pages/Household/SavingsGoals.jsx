@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { getSupabaseClient } from "../../../lib/superbase";
 import { getUserFacingError, sanitizeNumber, sanitizeText, hapticError } from "../../../lib/security";
 import { useGlassToast } from "../../../lib/glass_toast_provider.jsx";
@@ -6,7 +6,6 @@ import { useModal, useBodyScrollLock } from "../../../hooks";
 import SheetModal from "../../ui/modals/Sheet_modal";
 import ConfirmModal from "../../ui/modals/Confirm_modal";
 import FormField from "../../ui/form/Form_field.jsx";
-import GlassCard from "../../ui/Glass_card";
 import EmptyState from "../../ui/Empty_state";
 
 function formatMoney(amount) {
