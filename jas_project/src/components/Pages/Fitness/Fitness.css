@@ -139,31 +139,40 @@
   outline-offset: 2px;
 }
 
-/* ── Date Navigation (Diet) ─────────────────────────────────── */
+/* ── Date Navigation (Shared) ───────────────────────────────── */
 
 .fitness__date-nav {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 1rem;
-  padding: 0.65rem 1rem;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+  padding: 0.85rem 1rem;
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
 }
 
+.fitness__date-top {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  justify-content: space-between;
+}
+
 .fitness__date-btn {
-  width: 2rem;
-  height: 2rem;
+  width: 2.25rem;
+  height: 2.25rem;
   display: grid;
   place-items: center;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: var(--radius-sm);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-sm, 0.5rem);
   background: rgba(255, 255, 255, 0.06);
-  color: var(--text);
-  font-size: 1.1rem;
+  color: var(--text, #fff);
+  font-size: 1.15rem;
   cursor: pointer;
   transition: all 0.15s ease;
+  flex-shrink: 0;
 }
 
 .fitness__date-btn:hover {
@@ -172,30 +181,174 @@
 }
 
 .fitness__date-label {
-  flex: 1;
-  text-align: center;
   font-family: var(--font-heading);
-  font-weight: 700;
-  font-size: 0.95rem;
-  color: var(--text);
+  font-weight: 800;
+  font-size: 1.15rem;
+  color: #fff;
+  letter-spacing: -0.01em;
+  text-align: center;
+  min-width: 0;
 }
 
 .fitness__date-today {
-  padding: 0.35rem 0.75rem;
-  border: 1px solid rgba(96, 165, 250, 0.3);
-  border-radius: var(--radius-pill);
-  background: rgba(96, 165, 250, 0.1);
-  color: #60a5fa;
+  padding: 0.4rem 1.25rem;
+  border: none;
+  border-radius: var(--radius-pill, 999px);
+  background: linear-gradient(135deg, #b3a0e0, #9a7de3);
+  color: #fff;
   font-family: var(--font-heading);
-  font-size: 0.75rem;
+  font-size: 0.78rem;
   font-weight: 700;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 16px rgba(154, 125, 227, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 .fitness__date-today:hover {
-  background: rgba(96, 165, 250, 0.2);
-  border-color: rgba(96, 165, 250, 0.5);
+  transform: translateY(-2px) scale(1.04);
+  box-shadow: 0 6px 20px rgba(154, 125, 227, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+
+.fitness__date-today:active {
+  transform: scale(0.97);
+}
+
+
+/* ── Week Day Selector ──────────────────────────────────────── */
+
+.fitness__week-days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.35rem;
+  margin-bottom: 1.25rem;
+}
+
+.fitness__week-day {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0.5rem 0.25rem;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: var(--radius);
+  background: transparent;
+  color: rgba(255, 255, 255, 0.45);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.fitness__week-day:hover {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.fitness__week-day--active {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+  border-color: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  box-shadow: 0 4px 16px rgba(129, 140, 248, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+.fitness__week-day--today {
+  border-color: rgba(96, 165, 250, 0.4);
+}
+
+.fitness__week-day--today:not(.fitness__week-day--active) {
+  color: #60a5fa;
+}
+
+.fitness__week-day--busy:not(.fitness__week-day--active)::after {
+  content: "";
+  position: absolute;
+  bottom: 0.3rem;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #34d399;
+}
+
+.fitness__week-day-label {
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.fitness__week-day-num {
+  font-family: var(--font-heading);
+  font-size: 0.95rem;
+  font-weight: 800;
+}
+
+.fitness__week-day:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* ── View Toggle ───────────────────────────────────────────── */
+
+.fitness__view-toggle {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.25rem;
+  width: max-content;
+  margin: 0 auto 1.5rem;
+  padding: 0.25rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+}
+
+.fitness__view-btn {
+  border: none;
+  border-radius: var(--radius-pill);
+  padding: 0.5rem 1rem;
+  background: transparent;
+  color: var(--text-muted);
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 0.8rem;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: color 0.2s ease, background 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.fitness__view-btn:hover {
+  color: var(--text);
+  background: var(--surface-hover);
+}
+
+.fitness__view-btn--active {
+  color: #fff;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+  box-shadow: 0 4px 16px rgba(129, 140, 248, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+.fitness__view-btn:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* ── Month Grid ────────────────────────────────────────────── */
+
+.fitness__week-days--month {
+  gap: 0.2rem;
+}
+
+.fitness__week-days--month .fitness__week-day {
+  padding: 0.35rem 0.15rem;
+}
+
+.fitness__week-day--muted {
+  opacity: 0.3;
+}
+
+.shifts__week-day--muted {
+  opacity: 0.3;
 }
 
 /* ── Summary ────────────────────────────────────────────────── */
@@ -969,7 +1122,7 @@
 
 .fitness__exercise-numbers {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 0.4rem;
 }
 
@@ -1287,7 +1440,7 @@
   }
 
   .fitness__exercise-numbers {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 0.35rem;
   }
 

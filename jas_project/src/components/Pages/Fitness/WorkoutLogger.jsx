@@ -22,13 +22,22 @@ import FAB from "../../../components/ui/FAB";
 
 const MODAL_EXIT_MS = 320;
 
-const MONTHS = [
-  "January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December",
-];
+const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 function emptyExercise() {
-  return { name: "", weight: "", sets: "", reps: "" };
+  return { name: "", weight: "", weight_lbs: "", sets: "", reps: "" };
+}
+
+const KG_TO_LBS = 2.20462;
+
+function kgToLbs(kg) {
+  const parsed = parseFloat(kg);
+  return isNaN(parsed) ? "" : String(Number((parsed * KG_TO_LBS).toFixed(1)));
+}
+
+function lbsToKg(lbs) {
+  const parsed = parseFloat(lbs);
+  return isNaN(parsed) ? "" : String(Number((parsed / KG_TO_LBS).toFixed(2)));
 }
 
 function emptyForm() {
@@ -59,8 +68,8 @@ function formatVolume(vol) {
 function WorkoutLogger() {
   const userId = useUserId();
   const now = new Date();
-  const [month, setMonth] = useState(now.getMonth());
-  const [year, setYear] = useState(now.getFullYear());
+  const [selectedDate, setSelectedDate] = useState(now);
+  const [viewMode, setViewMode] = useState("week");
   const [workouts, setWorkouts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -89,10 +98,45 @@ function WorkoutLogger() {
 
   const { success: toastSuccess, error: toastError } = useGlassToast();
 
-  const yearOptions = useMemo(() => {
-    const current = now.getFullYear();
-    return Array.from({ length: 11 }, (_, i) => current - 5 + i);
-  }, []);
+  // Week helpers
+  const startOfWeek = (date) => {
+    const d = new Date(date);
+    d.setDate(d.getDate() - d.getDay());
+    d.setHours(0, 0, 0, 0);
+    return d;
+  };
+
+  const addDays = (date, n) => {
+    const d = new Date(date);
+    d.setDate(d.getDate() + n);
+    return d;
+  };
+
+  const toDateKey = (date) => date.toISOString().slice(0, 10);
+
+  const selectedKey = toDateKey(selectedDate);
+  const isToday = selectedKey === toDateKey(now);
+
+  const weekDays = useMemo(() => {
+    const start = startOfWeek(selectedDate);
+    return Array.from({ length: 7 }, (_, i) => addDays(start, i));
+  }, [selectedDate]);
+
+  const monthDays = useMemo(() => {
+    const d = new Date(selectedDate);
+    const start = startOfWeek(new Date(d.getFullYear(), d.getMonth(), 1));
+    return Array.from({ length: 42 }, (_, i) => addDays(start, i));
+  }, [selectedDate]);
+
+  const visibleDays = viewMode === "week" ? weekDays : monthDays;
+
+  const dayTitle = useMemo(() => {
+    return selectedDate.toLocaleDateString(undefined, {
+      weekday: "long",
+      month: "long",
+      day: "numeric",
+    });
+  }, [selectedDate]);
 
   // ── Fetch workouts ──
   const fetchWorkouts = useCallback(async () => {
@@ -100,8 +144,17 @@ function WorkoutLogger() {
     setLoading(true);
     setError(null);
 
-    const startDate = new Date(year, month, 1).toISOString().slice(0, 10);
-    const endDate = new Date(year, month + 1, 0).toISOString().slice(0, 10);
+    const d = new Date(selectedDate);
+    const rangeStart =
+      viewMode === "week"
+        ? startOfWeek(d)
+        : new Date(d.getFullYear(), d.getMonth(), 1);
+    const rangeEnd =
+      viewMode === "week"
+        ? addDays(rangeStart, 6)
+        : new Date(d.getFullYear(), d.getMonth() + 1, 0);
+    const startDate = toDateKey(rangeStart);
+    const endDate = toDateKey(rangeEnd);
 
     try {
       const supabase = getSupabaseClient();
@@ -124,7 +177,7 @@ function WorkoutLogger() {
       setWorkouts([]);
     }
     setLoading(false);
-  }, [month, year, userId]);
+  }, [selectedDate, viewMode, userId]);
 
   useEffect(() => {
     fetchWorkouts();
@@ -210,7 +263,9 @@ function WorkoutLogger() {
   // ── Modal open/close ──
   const openAddModal = () => {
     setEditingWorkout(null);
-    setForm(emptyForm());
+    const f = emptyForm();
+    f.workout_date = selectedKey;
+    setForm(f);
     setFieldErrors({});
     setFieldStates({});
     formModal.openModal();
@@ -220,7 +275,10 @@ function WorkoutLogger() {
     setEditingWorkout(workout);
     const exercises =
       Array.isArray(workout.exercises) && workout.exercises.length > 0
-        ? workout.exercises
+        ? workout.exercises.map((ex) => ({
+            ...ex,
+            weight_lbs: ex.weight ? kgToLbs(ex.weight) : "",
+          }))
         : [emptyExercise()];
     setForm({
       workout_date: workout.workout_date,
@@ -333,7 +391,14 @@ function WorkoutLogger() {
     } catch (err) {
       toastError(getUserFacingError(err.message));
     }
-  }, [presetForm, editingPreset, fetchPresets, toastSuccess, toastError, userId]);
+  }, [
+    presetForm,
+    editingPreset,
+    fetchPresets,
+    toastSuccess,
+    toastError,
+    userId,
+  ]);
 
   const deletePreset = useCallback(
     async (id) => {
@@ -362,6 +427,7 @@ function WorkoutLogger() {
         ? preset.exercises.map((ex) => ({
             ...ex,
             name: sanitizeText(ex.name, 80),
+            weight_lbs: ex.weight ? kgToLbs(ex.weight) : "",
           }))
         : [emptyExercise()];
     setEditingWorkout(null);
@@ -503,9 +569,7 @@ function WorkoutLogger() {
       setSaving(false);
       setError(getUserFacingError(err.message));
       toastError(
-        editingWorkout
-          ? "Couldn't update workout."
-          : "Couldn't save workout.",
+        editingWorkout ? "Couldn't update workout." : "Couldn't save workout.",
       );
     }
   };
@@ -562,36 +626,102 @@ function WorkoutLogger() {
 
   return (
     <div className="fitness__workout">
-      {/* Month / Year filters */}
-      <div className="fitness__filters animate-in animate-in--1">
-        <label className="fitness__filter">
-          <span>Month</span>
-          <select
-            value={month}
-            onChange={(e) => setMonth(Number(e.target.value))}
+      {/* Weekly date navigation */}
+      <div className="fitness__date-nav animate-in animate-in--1">
+        <div className="fitness__date-top">
+          <button
+            type="button"
+            className="fitness__date-btn"
+            onClick={() => setSelectedDate((d) => addDays(d, viewMode === "week" ? -7 : -30))}
+            aria-label="Previous day"
           >
-            {MONTHS.map((name, i) => (
-              <option key={name} value={i}>{name}</option>
-            ))}
-          </select>
-        </label>
-        <label className="fitness__filter">
-          <span>Year</span>
-          <select
-            value={year}
-            onChange={(e) => setYear(Number(e.target.value))}
+            ‹
+          </button>
+          <span className="fitness__date-label">{dayTitle}</span>
+          <button
+            type="button"
+            className="fitness__date-btn"
+            onClick={() => setSelectedDate((d) => addDays(d, viewMode === "week" ? 7 : 30))}
+            aria-label="Next day"
           >
-            {yearOptions.map((y) => (
-              <option key={y} value={y}>{y}</option>
-            ))}
-          </select>
-        </label>
+            ›
+          </button>
+        </div>
+        {!isToday && (
+          <button
+            type="button"
+            className="fitness__date-today"
+            onClick={() => setSelectedDate(new Date())}
+          >
+            Today
+          </button>
+        )}
+      </div>
+
+      {/* Week day selector */}
+      <div
+        className={`fitness__week-days animate-in animate-in--1${viewMode === "month" ? " fitness__week-days--month" : ""}`}
+        role="group"
+        aria-label={viewMode === "week" ? "Week days" : "Month days"}
+      >
+        {visibleDays.map((day) => {
+          const key = toDateKey(day);
+          const isSelected = key === selectedKey;
+          const isDayToday = key === toDateKey(now);
+          const hasWorkout = workouts.some((w) => w.workout_date === key);
+          const isInCurrentMonth =
+            viewMode === "month"
+              ? day.getMonth() === selectedDate.getMonth()
+              : true;
+
+          return (
+            <button
+              key={key}
+              type="button"
+              className={`fitness__week-day${isSelected ? " fitness__week-day--active" : ""}${isDayToday ? " fitness__week-day--today" : ""}${hasWorkout ? " fitness__week-day--busy" : ""}${!isInCurrentMonth ? " fitness__week-day--muted" : ""}`}
+              onClick={() => setSelectedDate(day)}
+              aria-pressed={isSelected}
+            >
+              <span className="fitness__week-day-label">
+                {WEEKDAYS[day.getDay()]}
+              </span>
+              <span className="fitness__week-day-num">{day.getDate()}</span>
+              {hasWorkout && (
+                <span className="fitness__week-day-dot" aria-hidden="true" />
+              )}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* View toggle */}
+      <div
+        className="fitness__view-toggle animate-in animate-in--2"
+        role="tablist"
+        aria-label="Workout view"
+      >
+        <button
+          type="button"
+          className={`fitness__view-btn${viewMode === "week" ? " fitness__view-btn--active" : ""}`}
+          onClick={() => setViewMode("week")}
+          aria-pressed={viewMode === "week"}
+        >
+          1 week
+        </button>
+        <button
+          type="button"
+          className={`fitness__view-btn${viewMode === "month" ? " fitness__view-btn--active" : ""}`}
+          onClick={() => setViewMode("month")}
+          aria-pressed={viewMode === "month"}
+        >
+          1 month
+        </button>
       </div>
 
       {/* Summary */}
       <div
         className="fitness__summary animate-in animate-in--2"
-        key={`${month}-${year}`}
+        key={selectedKey}
       >
         <GlassCard
           value={String(totals.workouts)}
@@ -653,9 +783,7 @@ function WorkoutLogger() {
 
       {/* List header */}
       <div className="fitness__list-header animate-in animate-in--4">
-        <h2 className="fitness__list-title">
-          {MONTHS[month]} {year}
-        </h2>
+        <h2 className="fitness__list-title">{dayTitle}</h2>
         <button
           type="button"
           className="fitness__add-btn"
@@ -675,17 +803,24 @@ function WorkoutLogger() {
         <EmptyState
           className="fitness__empty"
           icon={
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
               <path d="M6.5 6.5h11M6.5 17.5h11M3 12h2m14 0h2M6 12h12" />
               <rect x="1" y="8" width="4" height="8" rx="1" />
               <rect x="19" y="8" width="4" height="8" rx="1" />
             </svg>
           }
-          title="No workouts this month"
+          title="No workouts this week"
           text='Tap "+ Add workout" to log your first one.'
         />
       ) : (
-        <ul className="fitness__list" key={`list-${month}-${year}`}>
+        <ul className="fitness__list" key={`list-${selectedKey}`}>
           {workouts.map((workout, index) => {
             const exercises = Array.isArray(workout.exercises)
               ? workout.exercises
@@ -720,7 +855,14 @@ function WorkoutLogger() {
                         }
                         aria-expanded={expandedNoteId === workout.id}
                       >
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+                        <svg
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="1.75"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
                           <path d="M21 12c0 4.418-4.03 8-9 8-1.06 0-2.07-.16-3-.46L3 21l1.5-4.5C3.55 15.13 3 13.62 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8Z" />
                         </svg>
                       </button>
@@ -730,7 +872,7 @@ function WorkoutLogger() {
                     {exercises.map((ex, i) => (
                       <span key={i} className="fitness__card-exercise">
                         {ex.name}
-                        {ex.weight ? ` ${ex.weight}kg` : ""}
+                        {ex.weight ? ` ${ex.weight}kg (${kgToLbs(ex.weight)}lbs)` : ""}
                         {ex.sets && ex.reps ? ` ${ex.sets}×${ex.reps}` : ""}
                       </span>
                     ))}
@@ -856,9 +998,22 @@ function WorkoutLogger() {
                       min="0"
                       step="0.5"
                       value={ex.weight}
-                      onChange={(e) =>
-                        updateExercise(i, "weight", e.target.value)
-                      }
+                      onChange={(e) => {
+                        updateExercise(i, "weight", e.target.value);
+                        updateExercise(i, "weight_lbs", kgToLbs(e.target.value));
+                      }}
+                    />
+                    <input
+                      type="number"
+                      className="fitness__exercise-input"
+                      placeholder="lbs"
+                      min="0"
+                      step="0.5"
+                      value={ex.weight_lbs}
+                      onChange={(e) => {
+                        updateExercise(i, "weight_lbs", e.target.value);
+                        updateExercise(i, "weight", lbsToKg(e.target.value));
+                      }}
                     />
                     <input
                       type="number"
@@ -938,7 +1093,12 @@ function WorkoutLogger() {
             />
           </FormField>
 
-          <FormField label="Notes" optional charCount={form.notes.length} maxChars={500}>
+          <FormField
+            label="Notes"
+            optional
+            charCount={form.notes.length}
+            maxChars={500}
+          >
             <textarea
               placeholder="e.g. Felt strong, increased bench PR"
               value={form.notes}
@@ -1031,9 +1191,22 @@ function WorkoutLogger() {
                       min="0"
                       step="0.5"
                       value={ex.weight}
-                      onChange={(e) =>
-                        updatePresetExercise(i, "weight", e.target.value)
-                      }
+                      onChange={(e) => {
+                        updatePresetExercise(i, "weight", e.target.value);
+                        updatePresetExercise(i, "weight_lbs", kgToLbs(e.target.value));
+                      }}
+                    />
+                    <input
+                      type="number"
+                      className="fitness__exercise-input"
+                      placeholder="lbs"
+                      min="0"
+                      step="0.5"
+                      value={ex.weight_lbs || ""}
+                      onChange={(e) => {
+                        updatePresetExercise(i, "weight_lbs", e.target.value);
+                        updatePresetExercise(i, "weight", lbsToKg(e.target.value));
+                      }}
                     />
                     <input
                       type="number"
@@ -1121,7 +1294,14 @@ function WorkoutLogger() {
         description="This action cannot be undone."
         confirmLabel="Delete workout"
         icon={
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.75"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
             <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6h14Z" />
             <path d="M10 11v6M14 11v6" />
           </svg>

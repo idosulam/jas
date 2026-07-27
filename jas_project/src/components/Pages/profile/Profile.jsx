@@ -40,8 +40,8 @@ const emptyProfileForm = () => ({
   height_in: "",
   goal_weight_kg: "",
   goal_weight_lbs: "",
-  gender: "male",
-  activity_level: "moderate",
+  gender: "",
+  activity_level: "",
 });
 
 const emptyWeightForm = () => ({
@@ -574,8 +574,8 @@ function Profile({ onNavigate }) {
         goal_weight_kg: goalKg != null ? String(goalKg.toFixed(1)) : "",
         goal_weight_lbs:
           goalKg != null ? String(kgToLbs(goalKg)?.toFixed(1) ?? "") : "",
-        gender: profile.gender || "male",
-        activity_level: profile.activity_level || "moderate",
+        gender: profile.gender || "",
+        activity_level: profile.activity_level || "",
       });
     } else {
       setProfileForm(emptyProfileForm());
@@ -757,7 +757,13 @@ function Profile({ onNavigate }) {
     if (!profileForm.display_name || !profileForm.display_name.trim())
       return false;
     const age = sanitizeNumber(profileForm.age, 13, 120);
-    if (profileForm.age && age == null) return false;
+    if (!profileForm.age || age == null) return false;
+    const heightCm =
+      sanitizeNumber(profileForm.height_cm, 1, 300) ??
+      feetAndInchesToCm(profileForm.height_ft, profileForm.height_in);
+    if (!heightCm) return false;
+    if (!profileForm.gender) return false;
+    if (!profileForm.activity_level) return false;
     return true;
   }, [profileForm]);
 
@@ -771,15 +777,16 @@ function Profile({ onNavigate }) {
         return null;
       }
       case "age": {
-        if (!profileForm.age) return null; // age is optional
+        if (!profileForm.age) return "Age is required";
         const age = sanitizeNumber(profileForm.age, 13, 120);
         if (age == null) return "Enter a valid age (13–120)";
         return null;
       }
       case "height_cm": {
-        if (!profileForm.height_cm) return null; // optional
+        if (!profileForm.height_cm && !profileForm.height_ft && !profileForm.height_in)
+          return "Height is required";
         const cm = sanitizeNumber(profileForm.height_cm, 1, 300);
-        if (cm == null) return "Enter a valid height";
+        if (profileForm.height_cm && cm == null) return "Enter a valid height";
         return null;
       }
       case "goal_weight_kg": {
@@ -789,13 +796,13 @@ function Profile({ onNavigate }) {
         return null;
       }
       case "gender": {
-        if (!profileForm.gender) return null; // optional
+        if (!profileForm.gender) return "Gender is required";
         const valid = GENDER_OPTIONS.some((g) => g.id === profileForm.gender);
         if (!valid) return "Select a valid option";
         return null;
       }
       case "activity_level": {
-        if (!profileForm.activity_level) return null; // optional
+        if (!profileForm.activity_level) return "Activity level is required";
         const valid = ACTIVITY_LEVELS.some(
           (l) => l.id === profileForm.activity_level,
         );
@@ -1609,7 +1616,6 @@ function Profile({ onNavigate }) {
             state={profileFieldStates.age}
             showIndicator
             shake={profileFieldErrors.age ? profileShakeKey : 0}
-            optional
           >
             <input
               type="number"
@@ -1630,7 +1636,6 @@ function Profile({ onNavigate }) {
             state={profileFieldStates.height_cm}
             showIndicator
             shake={profileFieldErrors.height_cm ? profileShakeKey : 0}
-            optional
           >
             <input
               type="number"
@@ -1718,7 +1723,6 @@ function Profile({ onNavigate }) {
             state={profileFieldStates.gender}
             showIndicator
             shake={profileFieldErrors.gender ? profileShakeKey : 0}
-            optional
           >
             <select
               value={profileForm.gender}
@@ -1728,6 +1732,9 @@ function Profile({ onNavigate }) {
               }}
               onBlur={() => handleProfileFieldBlur("gender")}
             >
+              <option value="" disabled>
+                Select gender…
+              </option>
               {GENDER_OPTIONS.map((g) => (
                 <option key={g.id} value={g.id}>
                   {g.label}
@@ -1741,7 +1748,6 @@ function Profile({ onNavigate }) {
             state={profileFieldStates.activity_level}
             showIndicator
             shake={profileFieldErrors.activity_level ? profileShakeKey : 0}
-            optional
           >
             <select
               value={profileForm.activity_level}
@@ -1757,6 +1763,9 @@ function Profile({ onNavigate }) {
               }}
               onBlur={() => handleProfileFieldBlur("activity_level")}
             >
+              <option value="" disabled>
+                Select activity level…
+              </option>
               {ACTIVITY_LEVELS.map((l) => (
                 <option key={l.id} value={l.id}>
                   {l.label} — {l.desc}

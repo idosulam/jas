@@ -39,20 +39,7 @@ const PAY_TYPES = [
 // Breakpoint for pills (desktop) vs picker sheet (mobile).
 const FILTER_PICKER_BREAKPOINT = 768;
 
-const MONTHS = [
-  "January",
-  "February",
-  "March",
-  "April",
-  "May",
-  "June",
-  "July",
-  "August",
-  "September",
-  "October",
-  "November",
-  "December",
-];
+const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 function getCurrentLocalTime() {
   const now = new Date();
@@ -94,8 +81,8 @@ function formatMoney(amount) {
 function Shifts({ onNavigate }) {
   const userId = useUserId();
   const now = new Date();
-  const [month, setMonth] = useState(now.getMonth());
-  const [year, setYear] = useState(now.getFullYear());
+  const [selectedDate, setSelectedDate] = useState(now);
+  const [viewMode, setViewMode] = useState("week");
   const [placeFilter, setPlaceFilter] = useState("all");
   const [shifts, setShifts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -267,8 +254,6 @@ function Shifts({ onNavigate }) {
     fetchPresets();
   }, [fetchPresets]);
 
-
-
   const savePreset = useCallback(async () => {
     const label = presetForm.label.trim();
     if (!label) return;
@@ -381,18 +366,62 @@ function Shifts({ onNavigate }) {
     presetModal.openModal();
   }, [form, PLACES, presetModal]);
 
-  const yearOptions = useMemo(() => {
-    const current = now.getFullYear();
-    return Array.from({ length: 11 }, (_, i) => current - 5 + i);
-  }, []);
+  // Week helpers
+  const startOfWeek = (date) => {
+    const d = new Date(date);
+    d.setDate(d.getDate() - d.getDay());
+    d.setHours(0, 0, 0, 0);
+    return d;
+  };
+
+  const addDays = (date, n) => {
+    const d = new Date(date);
+    d.setDate(d.getDate() + n);
+    return d;
+  };
+
+  const toDateKey = (date) => date.toISOString().slice(0, 10);
+
+  const selectedKey = toDateKey(selectedDate);
+  const isToday = selectedKey === toDateKey(now);
+
+  const weekDays = useMemo(() => {
+    const start = startOfWeek(selectedDate);
+    return Array.from({ length: 7 }, (_, i) => addDays(start, i));
+  }, [selectedDate]);
+
+  const monthDays = useMemo(() => {
+    const d = new Date(`${selectedDate}T12:00:00`);
+    const start = startOfWeek(new Date(d.getFullYear(), d.getMonth(), 1));
+    return Array.from({ length: 42 }, (_, i) => addDays(start, i));
+  }, [selectedDate]);
+
+  const visibleDays = viewMode === "week" ? weekDays : monthDays;
+
+  const dayTitle = useMemo(() => {
+    return selectedDate.toLocaleDateString(undefined, {
+      weekday: "long",
+      month: "long",
+      day: "numeric",
+    });
+  }, [selectedDate]);
 
   const fetchShifts = useCallback(async () => {
     if (!userId) return;
     setLoading(true);
     setError(null);
 
-    const startDate = new Date(year, month, 1).toISOString().slice(0, 10);
-    const endDate = new Date(year, month + 1, 0).toISOString().slice(0, 10);
+    const d = new Date(`${selectedDate}T12:00:00`);
+    const rangeStart =
+      viewMode === "week"
+        ? startOfWeek(d)
+        : new Date(d.getFullYear(), d.getMonth(), 1);
+    const rangeEnd =
+      viewMode === "week"
+        ? addDays(rangeStart, 6)
+        : new Date(d.getFullYear(), d.getMonth() + 1, 0);
+    const startDate = toDateKey(rangeStart);
+    const endDate = toDateKey(rangeEnd);
 
     try {
       const supabase = getSupabaseClient();
@@ -415,7 +444,7 @@ function Shifts({ onNavigate }) {
       setShifts([]);
     }
     setLoading(false);
-  }, [month, year, userId]);
+  }, [selectedDate, viewMode, userId]);
 
   useEffect(() => {
     fetchShifts();
@@ -479,7 +508,9 @@ function Shifts({ onNavigate }) {
 
   const openAddModal = () => {
     setEditingShift(null);
-    setForm(emptyForm(effectiveWorkplaces[0]?.slug));
+    const f = emptyForm(effectiveWorkplaces[0]?.slug);
+    f.shift_date = selectedKey;
+    setForm(f);
     setFieldErrors({});
     setFieldStates({});
     formModal.openModal();
@@ -886,38 +917,102 @@ function Shifts({ onNavigate }) {
   return (
     <section className="shifts page">
       <PageHeader
-        eyebrow={householdName ? `Earnings · ${householdName}` : "Earnings tracker"}
+        eyebrow={
+          householdName ? `Earnings · ${householdName}` : "Earnings tracker"
+        }
         title="Shifts"
         className="shifts__header animate-in"
       />
 
-      <div className="shifts__filters animate-in animate-in--1">
-        <label className="shifts__filter">
-          <span>Month</span>
-          <select
-            value={month}
-            onChange={(e) => setMonth(Number(e.target.value))}
+      {/* Weekly date navigation */}
+      <div className="shifts__date-nav animate-in animate-in--1">
+        <div className="shifts__date-top">
+          <button
+            type="button"
+            className="shifts__date-btn"
+            onClick={() => setSelectedDate((d) => addDays(d, viewMode === "week" ? -7 : -30))}
+            aria-label="Previous day"
           >
-            {MONTHS.map((name, i) => (
-              <option key={name} value={i}>
-                {name}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="shifts__filter">
-          <span>Year</span>
-          <select
-            value={year}
-            onChange={(e) => setYear(Number(e.target.value))}
+            ‹
+          </button>
+          <span className="shifts__date-label">{dayTitle}</span>
+          <button
+            type="button"
+            className="shifts__date-btn"
+            onClick={() => setSelectedDate((d) => addDays(d, viewMode === "week" ? 7 : 30))}
+            aria-label="Next day"
           >
-            {yearOptions.map((y) => (
-              <option key={y} value={y}>
-                {y}
-              </option>
-            ))}
-          </select>
-        </label>
+            ›
+          </button>
+        </div>
+        {!isToday && (
+          <button
+            type="button"
+            className="shifts__date-today"
+            onClick={() => setSelectedDate(new Date())}
+          >
+            Today
+          </button>
+        )}
+      </div>
+
+      {/* Week day selector */}
+      <div
+        className={`shifts__week-days animate-in animate-in--1${viewMode === "month" ? " shifts__week-days--month" : ""}`}
+        role="group"
+        aria-label={viewMode === "week" ? "Week days" : "Month days"}
+      >
+        {visibleDays.map((day) => {
+          const key = toDateKey(day);
+          const isSelected = key === selectedKey;
+          const isDayToday = key === toDateKey(now);
+          const hasShift = shifts.some((s) => s.shift_date === key);
+          const d = new Date(`${selectedDate}T12:00:00`);
+          const isInCurrentMonth =
+            viewMode === "month" ? day.getMonth() === d.getMonth() : true;
+
+          return (
+            <button
+              key={key}
+              type="button"
+              className={`shifts__week-day${isSelected ? " shifts__week-day--active" : ""}${isDayToday ? " shifts__week-day--today" : ""}${hasShift ? " shifts__week-day--busy" : ""}${!isInCurrentMonth ? " shifts__week-day--muted" : ""}`}
+              onClick={() => setSelectedDate(day)}
+              aria-pressed={isSelected}
+            >
+              <span className="shifts__week-day-label">
+                {WEEKDAYS[day.getDay()]}
+              </span>
+              <span className="shifts__week-day-num">{day.getDate()}</span>
+              {hasShift && (
+                <span className="shifts__week-day-dot" aria-hidden="true" />
+              )}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* View toggle */}
+      <div
+        className="shifts__view-toggle animate-in animate-in--2"
+        role="tablist"
+        aria-label="Shifts view"
+      >
+        <button
+          type="button"
+          className={`shifts__view-btn${viewMode === "week" ? " shifts__view-btn--active" : ""}`}
+          onClick={() => setViewMode("week")}
+          aria-pressed={viewMode === "week"}
+        >
+          1 week
+        </button>
+        <button
+          type="button"
+          className={`shifts__view-btn${viewMode === "month" ? " shifts__view-btn--active" : ""}`}
+          onClick={() => setViewMode("month")}
+          aria-pressed={viewMode === "month"}
+        >
+          1 month
+        </button>
       </div>
 
       {/* No workplaces CTA */}
@@ -1011,7 +1106,7 @@ function Shifts({ onNavigate }) {
 
       <div
         className="shifts__summary animate-in animate-in--3"
-        key={`${month}-${year}-${placeFilter}`}
+        key={`${selectedKey}-${placeFilter}`}
       >
         <GlassCard
           value={`${totals.hours.toFixed(1)}h`}
@@ -1090,7 +1185,7 @@ function Shifts({ onNavigate }) {
 
       <div className="shifts__list-header animate-in animate-in--4">
         <h2 className="shifts__list-title">
-          {MONTHS[month]} {year}
+          {dayTitle}
           {placeFilter !== "all" && (
             <span className="shifts__list-subtitle">
               {" "}
@@ -1150,7 +1245,7 @@ function Shifts({ onNavigate }) {
             effectiveWorkplaces.length === 0
               ? "No workplaces yet"
               : placeFilter === "all"
-                ? "No shifts this month"
+                ? "No shifts this week"
                 : `No ${PLACES[placeFilter]?.label} shifts`
           }
           text={
@@ -1158,7 +1253,7 @@ function Shifts({ onNavigate }) {
               ? "Add a workplace to start tracking shifts."
               : placeFilter === "all"
                 ? 'Tap "+ Add shift" to log your first one.'
-                : `No shifts logged for ${PLACES[placeFilter]?.label} this month.`
+                : `No shifts logged for ${PLACES[placeFilter]?.label} this week.`
           }
           action={
             effectiveWorkplaces.length === 0 && onNavigate ? (
