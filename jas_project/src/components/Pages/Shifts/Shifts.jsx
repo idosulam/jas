@@ -75,10 +75,6 @@ function calcPay(places, place, hours, payType = "hourly") {
   return (places[place]?.rate ?? 0) * (parseFloat(hours) || 0);
 }
 
-function formatMoney(amount) {
-  return `₪${amount.toFixed(2)}`;
-}
-
 function Shifts({ onNavigate }) {
   const userId = useUserId();
   const now = new Date();

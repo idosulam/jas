@@ -46,10 +46,6 @@ const TABS = [
   { id: "analytics", label: "Analytics", icon: "📈" },
 ];
 
-function formatMoney(amount) {
-  return `₪${Number(amount || 0).toFixed(2)}`;
-}
-
 function Household() {
   const userId = useUserId();
   const now = new Date();

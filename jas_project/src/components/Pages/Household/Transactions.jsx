@@ -16,10 +16,6 @@ import EmptyState from "../../ui/Empty_state";
 
 import { formatMoney } from "../../lib/format";
 
-function formatMoney(amount) {
-  return `₪${Number(amount || 0).toFixed(2)}`;
-}
-
 const DEFAULT_ICONS = [
   "🍔", "🚗", "🛍️", "💡", "🎬", "💊", "📚", "🏠",
   "👕", "🎁", "📱", "📦", "💰", "💻", "💵", "🎉",

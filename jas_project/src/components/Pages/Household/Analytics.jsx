@@ -2,10 +2,6 @@ import { useMemo, useRef, useState, useEffect } from "react";
 
 import { formatMoney } from "../../lib/format";
 
-function formatMoney(amount) {
-  return `₪${Number(amount || 0).toFixed(2)}`;
-}
-
 function Analytics({ transactions, members, month, year }) {
   const [activeTab, setActiveTab] = useState("expense"); // expense | income
   const [hoveredCategory, setHoveredCategory] = useState(null);

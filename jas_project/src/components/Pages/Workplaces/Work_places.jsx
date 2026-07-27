@@ -29,10 +29,6 @@ const emptyForm = () => ({
   color: "",
 });
 
-function formatMoney(amount) {
-  return `₪${Number(amount).toFixed(2)}`;
-}
-
 function Workplaces({ onNavigate, returnTo }) {
   const userId = useUserId();
   const [workplaces, setWorkplaces] = useState([]);

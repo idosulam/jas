@@ -10,10 +10,6 @@ import EmptyState from "../../ui/Empty_state";
 
 import { formatMoney } from "../../lib/format";
 
-function formatMoney(amount) {
-  return `₪${Number(amount || 0).toFixed(2)}`;
-}
-
 function SavingsGoals({ householdId, userId, members, hideTitle }) {
   const [goals, setGoals] = useState([]);
   const [loading, setLoading] = useState(true);
