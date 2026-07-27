@@ -1,5 +1,5 @@
 import { formatDateLabel } from "../../../lib/format";
-import { toDisplayKg, formatWeight } from "../../../lib/weight";
+import { formatWeightBoth } from "../../../lib/weight";
 
 export default function ProfileHistory({
   sorted,
@@ -41,10 +41,7 @@ export default function ProfileHistory({
           </div>
           <div className="profile__history-actions">
             <span className="profile__history-weight">
-              {formatWeight(
-                toDisplayKg(Number(entry.weight_kg), unit),
-                unitLabel,
-              )}
+              {formatWeightBoth(Number(entry.weight_kg))}
             </span>
             <button
               type="button"

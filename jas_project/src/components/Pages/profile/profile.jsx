@@ -29,7 +29,7 @@ import { ACTIVITY_LEVELS, GENDER_OPTIONS } from "../Fitness/macro_calculator";
 
 import { formatDateLabel } from "../../../lib/format";
 
-import { loadUnit, toDisplayKg, formatWeight, kgToLbs, lbsToKg, cmToFeetAndInches, feetAndInchesToCm, formatHeight, calcBmi, bmiLabel, healthyWeightRangeKg } from "../../../lib/weight";
+import { loadUnit, toDisplayKg, formatWeight, formatWeightBoth, kgToLbs, lbsToKg, cmToFeetAndInches, feetAndInchesToCm, formatHeight, calcBmi, bmiLabel, healthyWeightRangeKg } from "../../../lib/weight";
 
 import WeightChart from "./weight_chart";
 import { daysBetween, buildInsight } from "./weight_utils";
@@ -869,16 +869,13 @@ function Profile({ onNavigate }) {
                   <span>
                     Target{" "}
                     <strong>
-                      {formatWeight(
-                        toDisplayKg(analytics.goalKg, unit),
-                        unitLabel,
-                      )}
+                      {formatWeightBoth(analytics.goalKg)}
                     </strong>
                   </span>
                   {analytics.remainingKg != null && (
                     <span>
                       {analytics.remainingKg > 0
-                        ? `${formatWeight(toDisplayKg(analytics.remainingKg, unit), unitLabel)} to go`
+                        ? `${formatWeightBoth(analytics.remainingKg)} to go`
                         : "🎉 Goal reached!"}
                     </span>
                   )}
@@ -911,17 +908,9 @@ function Profile({ onNavigate }) {
               <p className="profile__insight-meta">
                 Healthy weight for your height:{" "}
                 <strong>
-                  {formatWeight(
-                    toDisplayKg(analytics.range.min, unit),
-                    unitLabel,
-                    0,
-                  )}
+                  {formatWeightBoth(analytics.range.min, 0)}
                   {" – "}
-                  {formatWeight(
-                    toDisplayKg(analytics.range.max, unit),
-                    unitLabel,
-                    0,
-                  )}
+                  {formatWeightBoth(analytics.range.max, 0)}
                 </strong>
                 {analytics.age ? ` · Age ${analytics.age}` : ""}
               </p>
@@ -1232,10 +1221,7 @@ function Profile({ onNavigate }) {
           onConfirm={confirmDelete}
           loading={deleting}
           title="Delete weigh-in?"
-          description={`Remove ${formatDateLabel(deleteTarget.entry_date)} (${formatWeight(
-            toDisplayKg(Number(deleteTarget.weight_kg), unit),
-            unitLabel,
-          )})?`}
+          description={`Remove ${formatDateLabel(deleteTarget.entry_date)} (${formatWeightBoth(Number(deleteTarget.weight_kg))})?`}
           confirmLabel="Delete"
           variant="danger"
         />
@@ -1269,23 +1255,14 @@ function Profile({ onNavigate }) {
           <p className="profile__dup-desc">
             You have{" "}
             <strong>
-              {formatWeight(
-                toDisplayKg(
-                  Number(duplicateDateConfirm.existingEntry.weight_kg),
-                  unit,
-                ),
-                unitLabel,
-              )}
+              {formatWeightBoth(Number(duplicateDateConfirm.existingEntry.weight_kg))}
             </strong>{" "}
             recorded for this day.
           </p>
           <p className="profile__dup-desc">
             Updating to{" "}
             <strong>
-              {formatWeight(
-                toDisplayKg(duplicateDateConfirm.newWeight, unit),
-                unitLabel,
-              )}
+              {formatWeightBoth(duplicateDateConfirm.newWeight)}
             </strong>
             ?
           </p>

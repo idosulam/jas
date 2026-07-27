@@ -32,6 +32,12 @@ export function formatWeight(value, unit, digits = 1) {
   return `${Number(value).toFixed(digits)} ${unit}`;
 }
 
+export function formatWeightBoth(kg, digits = 1) {
+  if (kg == null || isNaN(kg)) return "—";
+  const lbs = kg * 2.20462;
+  return `${Number(kg).toFixed(digits)} kg / ${Number(lbs).toFixed(digits)} lbs`;
+}
+
 export function kgToLbs(kg) {
   return kg * 2.20462;
 }
@@ -67,7 +73,7 @@ export function feetAndInchesToCm(feet, inches) {
 export function formatHeight(heightCm) {
   if (heightCm == null) return "—";
   const { feet, inches } = cmToFeetAndInches(heightCm);
-  return `${feet}'${inches}"`;
+  return `${Math.round(heightCm)} cm · ${feet}'${inches}"`;
 }
 
 export function calcBmi(weightKg, heightCm) {

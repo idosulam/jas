@@ -1,7 +1,7 @@
 import { GlassCard } from "../../../components";
 import {
   toDisplayKg,
-  formatWeight,
+  formatWeightBoth,
   formatSignedDelta,
 } from "../../../lib/weight";
 
@@ -10,12 +10,7 @@ export default function ProfileStats({ analytics, unit, unitLabel }) {
     <div className="profile__summary">
       <GlassCard
         className="profile__stat"
-        value={formatWeight(
-          analytics.currentKg != null
-            ? toDisplayKg(analytics.currentKg, unit)
-            : null,
-          unitLabel,
-        )}
+        value={formatWeightBoth(analytics.currentKg)}
         label="Current weight"
       />
       <GlassCard
