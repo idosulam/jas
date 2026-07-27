@@ -42,6 +42,7 @@
   text-align: center;
   margin-bottom: 2rem;
 }
+/* NOTE: .page-header available as shared class */
 
 /* ==========================================================
    Top Navigation
@@ -111,10 +112,7 @@
   transform: scale(0.95);
 }
 
-.calendar__nav-btn:focus-visible {
-  outline: 2px solid var(--color-primary);
-  outline-offset: 2px;
-}
+
 
 .calendar__today-btn {
   margin-top: 0.45rem;
@@ -140,10 +138,7 @@
   box-shadow: 0 0 18px var(--color-primary-glow);
 }
 
-.calendar__today-btn:focus-visible {
-  outline: 2px solid var(--color-accent);
-  outline-offset: 2px;
-}
+
 
 /* ==========================================================
    View Switch
@@ -198,10 +193,7 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
 
-.calendar__view-btn:focus-visible {
-  outline: 2px solid var(--color-primary);
-  outline-offset: 2px;
-}
+
 
 /* ==========================================================
    Week Grid
@@ -300,10 +292,7 @@
   opacity: 0.45;
 }
 
-.calendar__week-day:focus-visible {
-  outline: 2px solid var(--color-primary);
-  outline-offset: 2px;
-}
+
 
 .calendar__week-label {
   font-size: 0.68rem;
@@ -375,6 +364,7 @@
     box-shadow var(--transition);
 }
 
+/* NOTE: .stat-card:hover available as shared class */
 .calendar__stat:hover {
   transform: translateY(-4px) scale(1.02);
   border-color: var(--border-hover);
@@ -543,10 +533,7 @@
   opacity: 1;
 }
 
-.calendar__grid:focus-visible {
-  outline: 2px solid var(--color-primary);
-  outline-offset: -2px;
-}
+
 
 .calendar__grid-line {
   display: none;
@@ -671,10 +658,7 @@
   border-color: var(--event-accent);
 }
 
-.calendar__check:focus-visible {
-  outline: 2px solid var(--color-primary);
-  outline-offset: 2px;
-}
+
 
 .calendar__check-icon {
   width: 0.46rem;
@@ -785,10 +769,7 @@
   transform: scale(1.04);
 }
 
-.calendar__event-action:focus-visible {
-  outline: 2px solid var(--color-primary);
-  outline-offset: 2px;
-}
+
 
 .calendar__event-action--delete {
   color: #fca5a5;
@@ -900,12 +881,9 @@
   flex-direction: column;
   gap: 1rem;
 }
+/* NOTE: .form-column available as shared class */
 
-@keyframes calendar-spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
+/* NOTE: Use shared @keyframes spin from animations.css */
 
 /* ==========================================================
    Responsive
@@ -1003,62 +981,9 @@
    Calendar-specific Keyframes
    ========================================================== */
 
-@keyframes calendarSpin {
-  to {
-    transform: rotate(360deg);
-  }
-}
+/* NOTE: Use shared @keyframes spin from animations.css */
 
-@keyframes calendarOverlayIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes calendarOverlayOut {
-  from {
-    opacity: 1;
-  }
-  to {
-    opacity: 0;
-  }
-}
-
-@keyframes calendarModalSlideUp {
-  from {
-    opacity: 0;
-    transform: translateY(110%);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes calendarModalIn {
-  from {
-    opacity: 0;
-    transform: translateY(24px) scale(0.92);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-@keyframes calendarModalOut {
-  from {
-    opacity: 1;
-    transform: translateY(0);
-  }
-  to {
-    opacity: 0;
-    transform: translateY(16px);
-  }
-}
+/* NOTE: Use shared keyframes from Sheet_modal.css (sheetOverlayIn/Out, sheetModalSlideUp, sheetModalCenterIn/Out) */
 
 @keyframes calendarFabIn {
   from {
@@ -1107,21 +1032,7 @@
   animation: calendarReminderRemove 0.3s var(--ease-smooth) forwards;
 }
 
-@keyframes calendarEventRemove {
-  0% {
-    opacity: 1;
-    transform: scale(1);
-  }
-  100% {
-    opacity: 0;
-    transform: scale(0.85);
-    width: 0 !important;
-    height: 0 !important;
-    padding: 0;
-    margin: 0;
-    overflow: hidden;
-  }
-}
+/* NOTE: Use shared @keyframes cardRemove from animations.css */
 
 @keyframes calendarReminderRemove {
   0% {

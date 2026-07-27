@@ -1,0 +1,141 @@
+import { SheetModal, FormField } from "../../../components";
+import { useSwipeDownToClose } from "../../../hooks";
+
+export default function WeightForm({
+  weightModal,
+  weightForm,
+  setWeightForm,
+  editingEntry,
+  saving,
+  weightFieldErrors,
+  setWeightFieldErrors,
+  weightFieldStates,
+  weightShakeKey,
+  onSubmit,
+  onClose,
+  onKgChange,
+  onLbsChange,
+  onFieldBlur,
+  isValid,
+}) {
+  const weightSwipe = useSwipeDownToClose(
+    weightModal.open,
+    weightModal.closing,
+    onClose,
+  );
+
+  return (
+    <SheetModal
+      open={weightModal.open}
+      closing={weightModal.closing}
+      onClose={onClose}
+      title={editingEntry ? "Edit weigh-in" : "Log weigh-in"}
+      className={weightSwipe.dragging ? "sheet-modal--dragging" : ""}
+      swipeBind={weightSwipe.bind}
+      swipeStyle={weightSwipe.style}
+    >
+      <form className="profile__form" onSubmit={onSubmit}>
+        <FormField
+          label="Date"
+          error={weightFieldErrors.entry_date}
+          state={weightFieldStates.entry_date}
+          showIndicator
+          shake={weightFieldErrors.entry_date ? weightShakeKey : 0}
+        >
+          <input
+            type="date"
+            value={weightForm.entry_date}
+            onChange={(e) => {
+              setWeightForm((f) => ({
+                ...f,
+                entry_date: e.target.value,
+              }));
+              setWeightFieldErrors((prev) => ({
+                ...prev,
+                entry_date: null,
+              }));
+            }}
+            onBlur={() => onFieldBlur("entry_date")}
+            required
+          />
+        </FormField>
+        <div className="profile__weight-row">
+          <FormField
+            label="Weight (kg)"
+            error={weightFieldErrors.weight_kg}
+            state={weightFieldStates.weight_kg}
+            showIndicator
+            shake={weightFieldErrors.weight_kg ? weightShakeKey : 0}
+          >
+            <input
+              type="number"
+              step="0.1"
+              min="1"
+              placeholder="62.5"
+              value={weightForm.weight_kg}
+              onChange={(e) => {
+                onKgChange(e.target.value);
+                setWeightFieldErrors((prev) => ({
+                  ...prev,
+                  weight_kg: null,
+                  weight_lbs: null,
+                }));
+              }}
+              onBlur={() => onFieldBlur("weight_kg")}
+            />
+          </FormField>
+          <FormField
+            label="Weight (lbs)"
+            error={weightFieldErrors.weight_lbs}
+            state={weightFieldStates.weight_lbs}
+            showIndicator
+            shake={weightFieldErrors.weight_lbs ? weightShakeKey : 0}
+          >
+            <input
+              type="number"
+              step="0.1"
+              min="1"
+              placeholder="137.8"
+              value={weightForm.weight_lbs}
+              onChange={(e) => {
+                onLbsChange(e.target.value);
+                setWeightFieldErrors((prev) => ({
+                  ...prev,
+                  weight_lbs: null,
+                  weight_kg: null,
+                }));
+              }}
+              onBlur={() => onFieldBlur("weight_lbs")}
+            />
+          </FormField>
+        </div>
+        <FormField label="Notes" optional>
+          <input
+            type="text"
+            placeholder="Post-leg day, morning fasted…"
+            value={weightForm.notes}
+            onChange={(e) =>
+              setWeightForm((f) => ({ ...f, notes: e.target.value }))
+            }
+          />
+        </FormField>
+        <div className="btn-row">
+          <button
+            type="button"
+            className="btn btn--ghost"
+            onClick={onClose}
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            className="btn btn--primary"
+            disabled={saving || !isValid}
+          >
+            {saving ? "Saving…" : "Save"}
+          </button>
+        </div>
+      </form>
+    </SheetModal>
+  );
+}

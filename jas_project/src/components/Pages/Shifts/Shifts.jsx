@@ -20,9 +20,7 @@ import {
 import { useBodyScrollLock, useModal } from "../../../hooks";
 import { useGlassToast } from "../../../lib/glass_toast_provider.jsx";
 
-import SheetModal from "../../../components/ui/modals/Sheet_modal";
 import ConfirmModal from "../../../components/ui/modals/Confirm_modal";
-import FormField from "../../ui/form/Form_field.jsx";
 import Badge from "../../../components/ui/Badge";
 import EmptyState from "../../../components/ui/Empty_state";
 import LoadingSkeleton from "../../../components/ui/Loading_skeleton";
@@ -30,50 +28,22 @@ import PageHeader from "../../../components/ui/Page_header";
 import GlassCard from "../../../components/ui/Glass_card";
 import FAB from "../../../components/ui/FAB";
 
-import { formatMoney } from "../../../lib/format";
-
-const PAY_TYPES = [
-  { id: "hourly", label: "Hourly + tips" },
-  { id: "tips_only", label: "Tips only" },
-];
-
-// Breakpoint for pills (desktop) vs picker sheet (mobile).
-const FILTER_PICKER_BREAKPOINT = 768;
-
-const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-
-function getCurrentLocalTime() {
-  const now = new Date();
-  const hours = String(now.getHours()).padStart(2, "0");
-  const minutes = String(now.getMinutes()).padStart(2, "0");
-  return `${hours}:${minutes}`;
-}
-
-const MODAL_EXIT_MS = 320;
-
-const emptyForm = (firstPlace) => ({
-  place: firstPlace || "",
-  pay_type: "hourly",
-  shift_date: new Date().toISOString().slice(0, 10),
-  start_time: getCurrentLocalTime(),
-  end_time: "",
-  hours: "",
-  tips: "",
-  notes: "",
-});
-
-function calculateHoursFromTimes(startTime, endTime) {
-  const start = parseTimeToMinutes(startTime);
-  const end = parseTimeToMinutes(endTime);
-  if (start == null || end == null) return null;
-  const diffMinutes = end >= start ? end - start : 24 * 60 - start + end;
-  return Number((diffMinutes / 60).toFixed(2));
-}
-
-function calcPay(places, place, hours, payType = "hourly") {
-  if (payType === "tips_only") return 0;
-  return (places[place]?.rate ?? 0) * (parseFloat(hours) || 0);
-}
+import {
+  PAY_TYPES,
+  FILTER_PICKER_BREAKPOINT,
+  WEEKDAYS,
+  MODAL_EXIT_MS,
+  getCurrentLocalTime,
+  calculateHoursFromTimes,
+  calcPay,
+  emptyForm,
+  formatMoney,
+} from "./shift_utils";
+import ShiftForm from "./ShiftForm";
+import ShiftDeleteConfirm from "./ShiftDeleteConfirm";
+import PlacePicker from "./PlacePicker";
+import ShiftPresets from "./ShiftPresets";
+import ShiftCard from "./ShiftCard";
 
 function Shifts({ onNavigate }) {
   const userId = useUserId();
@@ -895,18 +865,48 @@ function Shifts({ onNavigate }) {
     }
   };
 
-  const previewPay = calcPay(PLACES, form.place, form.hours, form.pay_type);
+  const handleQuickAddPreset = useCallback(
+    (preset) => {
+      setEditingShift(null);
+      setForm({
+        place: preset.place,
+        pay_type: preset.pay_type,
+        shift_date: new Date().toISOString().slice(0, 10),
+        start_time: preset.start_time,
+        end_time: preset.end_time,
+        hours: preset.hours,
+        tips: "",
+        notes: "",
+      });
+      formModal.openModal();
+    },
+    [formModal],
+  );
 
-  const deletePay = deleteTarget
-    ? calcPay(
-        PLACES,
-        deleteTarget.place,
-        deleteTarget.hours,
-        deleteTarget.pay_type,
-      )
-    : 0;
-  const deleteTips = deleteTarget ? parseFloat(deleteTarget.tips) || 0 : 0;
-  const deletePlaceInfo = deleteTarget ? PLACES[deleteTarget.place] : null;
+  const handleCopyShift = useCallback(
+    (shift) => {
+      setEditingShift(null);
+      setForm({
+        place: shift.place,
+        pay_type: shift.pay_type === "tips_only" ? "tips_only" : "hourly",
+        shift_date: new Date().toISOString().slice(0, 10),
+        start_time: shift.start_time ?? "",
+        end_time: shift.end_time ?? "",
+        hours: String(shift.hours),
+        tips: "",
+        notes: shift.notes ?? "",
+      });
+      formModal.openModal();
+    },
+    [formModal],
+  );
+
+  const handleToggleNote = useCallback(
+    (id) => {
+      setExpandedNoteId(expandedNoteId === id ? null : id);
+    },
+    [expandedNoteId],
+  );
 
   return (
     <section className="shifts page">
@@ -1044,64 +1044,20 @@ function Shifts({ onNavigate }) {
         </div>
       )}
 
-      {useInlineFilters && effectiveWorkplaces.length > 1 ? (
-        <div
-          className="shifts__place-filter animate-in animate-in--2"
-          role="group"
-          aria-label="Filter by place"
-          ref={placeFilterRef}
-        >
-          {PLACE_FILTERS.map(({ id, label, active }) => (
-            <button
-              key={id}
-              type="button"
-              data-place={id}
-              className={`shifts__place-btn${placeFilter === id ? " shifts__place-btn--active" : ""}${id !== "all" ? ` shifts__place-btn--${id}` : ""}${active === false ? " shifts__place-btn--deactivated" : ""}`}
-              onClick={() => setPlaceFilter(id)}
-              aria-pressed={placeFilter === id}
-            >
-              {label}
-              {active === false && (
-                <span
-                  className="shifts__place-deactivated-dot"
-                  aria-label="Deactivated"
-                />
-              )}
-            </button>
-          ))}
-          <span
-            className="shifts__place-indicator"
-            style={{
-              transform: `translateX(${placeIndicator.left}px)`,
-              width: placeIndicator.width,
-            }}
-            aria-hidden="true"
-          />
-        </div>
-      ) : effectiveWorkplaces.length > 1 ? (
-        <button
-          type="button"
-          className="shifts__place-trigger animate-in animate-in--2"
-          onClick={openPlacePicker}
-          aria-haspopup="listbox"
-          aria-expanded={placePicker.open}
-        >
-          <span
-            className="shifts__place-trigger-dot"
-            style={{
-              background:
-                placeFilter === "all"
-                  ? "var(--color-primary, #818cf8)"
-                  : PLACES[placeFilter]?.color ||
-                    "var(--color-primary, #818cf8)",
-            }}
-          />
-          {PLACE_FILTERS.find((f) => f.id === placeFilter)?.label || "All"}
-          <span className="shifts__place-trigger-chevron" aria-hidden="true">
-            ▾
-          </span>
-        </button>
-      ) : null}
+      {/* Place filter */}
+      <PlacePicker
+        places={PLACES}
+        placeFilters={PLACE_FILTERS}
+        selectedPlaceId={placeFilter}
+        onSelect={selectPlaceFilter}
+        isMobile={isMobile}
+        pickerOpen={placePicker.open}
+        pickerClosing={placePicker.closing}
+        onOpenPicker={openPlacePicker}
+        onClosePicker={closePlacePicker}
+        indicator={placeIndicator}
+        containerRef={placeFilterRef}
+      />
 
       <div
         className="shifts__summary animate-in animate-in--3"
@@ -1135,52 +1091,24 @@ function Shifts({ onNavigate }) {
         </p>
       )}
 
-      <div className="shifts__templates animate-in animate-in--3">
-        {presets
-          .filter((p) => placeFilter === "all" || p.place === placeFilter)
-          .map((preset) => (
-            <div key={preset.id} className="shifts__preset">
-              <button
-                type="button"
-                className="shifts__template-chip"
-                onClick={() => {
-                  setEditingShift(null);
-                  setForm({
-                    place: preset.place,
-                    pay_type: preset.pay_type,
-                    shift_date: new Date().toISOString().slice(0, 10),
-                    start_time: preset.start_time,
-                    end_time: preset.end_time,
-                    hours: preset.hours,
-                    tips: "",
-                    notes: "",
-                  });
-                  formModal.openModal();
-                }}
-              >
-                {preset.label}
-                <span className="shifts__template-time">
-                  {preset.start_time}–{preset.end_time}
-                </span>
-              </button>
-              <button
-                type="button"
-                className="shifts__preset-edit"
-                onClick={() => openPresetModal(preset)}
-                aria-label={`Edit ${preset.label} preset`}
-              >
-                ✎
-              </button>
-            </div>
-          ))}
-        <button
-          type="button"
-          className="shifts__template-chip shifts__template-chip--add"
-          onClick={() => openPresetModal()}
-        >
-          + New preset
-        </button>
-      </div>
+      {/* Presets */}
+      <ShiftPresets
+        presets={presets}
+        placeFilter={placeFilter}
+        onQuickAdd={handleQuickAddPreset}
+        onEditPreset={openPresetModal}
+        onAddPreset={() => openPresetModal()}
+        presetModalOpen={presetModal.open}
+        presetModalClosing={presetModal.closing}
+        onClosePresetModal={closePresetModal}
+        editingPreset={editingPreset}
+        presetForm={presetForm}
+        setPresetForm={setPresetForm}
+        places={PLACES}
+        deactivatedSlugs={deactivatedSlugs}
+        onSavePreset={savePreset}
+        onDeletePreset={deletePreset}
+      />
 
       <div className="shifts__list-header animate-in animate-in--4">
         <h2 className="shifts__list-title">
@@ -1268,581 +1196,55 @@ function Shifts({ onNavigate }) {
         />
       ) : (
         <ul className="shifts__list" key={`list-${placeFilter}`}>
-          {filteredShifts.map((shift, index) => {
-            const pay = calcPay(
-              PLACES,
-              shift.place,
-              shift.hours,
-              shift.pay_type,
-            );
-            const tips = parseFloat(shift.tips) || 0;
-            const placeInfo = PLACES[shift.place];
-            const isRemoving = removingId === shift.id;
-            const isTipsOnly = shift.pay_type === "tips_only";
-
-            const isDeactivated = deactivatedSlugs.has(shift.place);
-
-            return (
-              <li
-                key={shift.id}
-                className={`shifts__card${isRemoving ? " shifts__card--removing" : ""}${isDeactivated ? " shifts__card--deactivated" : ""}`}
-                style={{ "--card-delay": `${index * 0.06}s` }}
-              >
-                <div className="shifts__card-main">
-                  <div className="shifts__card-top">
-                    <Badge
-                      className="shifts__badge"
-                      color={
-                        shift.color || PLACES[shift.place]?.color || "#818cf8"
-                      }
-                      deactivated={isDeactivated}
-                    >
-                      {placeInfo?.label ?? shift.place}
-                    </Badge>
-                    <div className="shifts__card-top-right">
-                      <span className="shifts__date">
-                        {formatDateFriendly(shift.shift_date)}
-                      </span>
-                      {shift.notes && (
-                        <button
-                          type="button"
-                          className={`shifts__note-toggle${expandedNoteId === shift.id ? " shifts__note-toggle--active" : ""}`}
-                          onClick={() =>
-                            setExpandedNoteId(
-                              expandedNoteId === shift.id ? null : shift.id,
-                            )
-                          }
-                          aria-expanded={expandedNoteId === shift.id}
-                          aria-label={
-                            expandedNoteId === shift.id
-                              ? "Hide note"
-                              : "View note"
-                          }
-                        >
-                          <svg
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="1.75"
-                            aria-hidden="true"
-                          >
-                            <path
-                              d="M21 12c0 4.418-4.03 8-9 8-1.06 0-2.07-.16-3-.46L3 21l1.5-4.5C3.55 15.13 3 13.62 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8Z"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            />
-                          </svg>
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                  <div className="shifts__card-details">
-                    {isTipsOnly ? (
-                      <span className="shifts__tips-only-tag">Tips only</span>
-                    ) : (
-                      <>
-                        <span>
-                          {shift.hours}h × ₪{placeInfo?.rate}
-                        </span>
-                      </>
-                    )}
-                    {tips > 0 && <span>Tips {formatMoney(tips)}</span>}
-                    <span className="shifts__card-total">
-                      {formatMoney(pay + tips)}
-                    </span>
-                  </div>
-                  {shift.notes && expandedNoteId === shift.id && (
-                    <p className="shifts__note-panel">{shift.notes}</p>
-                  )}
-                </div>
-                <div className="shifts__card-actions">
-                  <button
-                    type="button"
-                    className="shifts__action shifts__action--copy"
-                    onClick={() => {
-                      setEditingShift(null);
-                      setForm({
-                        place: shift.place,
-                        pay_type:
-                          shift.pay_type === "tips_only"
-                            ? "tips_only"
-                            : "hourly",
-                        shift_date: new Date().toISOString().slice(0, 10),
-                        start_time: shift.start_time ?? "",
-                        end_time: shift.end_time ?? "",
-                        hours: String(shift.hours),
-                        tips: "",
-                        notes: shift.notes ?? "",
-                      });
-                      formModal.openModal();
-                    }}
-                    aria-label="Copy shift to today"
-                  >
-                    Copy
-                  </button>
-                  <button
-                    type="button"
-                    className="shifts__action shifts__action--edit"
-                    onClick={() => openEditModal(shift)}
-                    aria-label="Edit shift"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    type="button"
-                    className="shifts__action shifts__action--deactivate"
-                    onClick={() => openDeleteModal(shift)}
-                    aria-label="Delete shift"
-                  >
-                    Delete
-                  </button>
-                </div>
-              </li>
-            );
-          })}
+          {filteredShifts.map((shift, index) => (
+            <ShiftCard
+              key={shift.id}
+              shift={shift}
+              places={PLACES}
+              deactivatedSlugs={deactivatedSlugs}
+              onEdit={openEditModal}
+              onCopy={handleCopyShift}
+              onDelete={openDeleteModal}
+              onToggleNote={handleToggleNote}
+              expandedNoteId={expandedNoteId}
+              isRemoving={removingId === shift.id}
+              animDelay={`${index * 0.06}s`}
+            />
+          ))}
         </ul>
       )}
 
-      <SheetModal
+      {/* Shift form modal */}
+      <ShiftForm
         open={formModal.open}
         closing={formModal.closing}
         onClose={closeFormModal}
-        title={editingShift ? "Edit shift" : "Add shift"}
-      >
-        <form className="shifts__form" onSubmit={handleSubmit}>
-          <FormField
-            label="Place"
-            error={fieldErrors.place}
-            state={fieldStates.place}
-            showIndicator
-          >
-            <select
-              value={form.place}
-              onChange={(e) => {
-                setForm({ ...form, place: e.target.value });
-                setFieldErrors((prev) => ({ ...prev, place: null }));
-              }}
-            >
-              {Object.entries(PLACES).map(([key, { label, rate }]) => (
-                <option key={key} value={key}>
-                  {label} — ₪{rate}/hr
-                  {deactivatedSlugs.has(key) ? " (inactive)" : ""}
-                </option>
-              ))}
-            </select>
-          </FormField>
+        form={form}
+        setForm={setForm}
+        editingShift={editingShift}
+        saving={saving}
+        fieldErrors={fieldErrors}
+        fieldStates={fieldStates}
+        shakeKey={shakeKey}
+        onFieldBlur={handleFieldBlur}
+        onTimeChange={handleTimeChange}
+        onHoursChange={handleHoursChange}
+        onSubmit={handleSubmit}
+        onSaveAsPreset={saveCurrentAsPreset}
+        places={PLACES}
+        deactivatedSlugs={deactivatedSlugs}
+        isFormValid={isFormValid}
+      />
 
-          <div
-            className="shifts__pay-toggle"
-            role="group"
-            aria-label="Pay type"
-          >
-            {PAY_TYPES.map(({ id, label }) => (
-              <button
-                key={id}
-                type="button"
-                className={`shifts__pay-toggle-btn${form.pay_type === id ? " shifts__pay-toggle-btn--active" : ""}`}
-                onClick={() => setForm({ ...form, pay_type: id })}
-                aria-pressed={form.pay_type === id}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-
-          <FormField
-            label="Date"
-            error={fieldErrors.shift_date}
-            state={fieldStates.shift_date}
-            showIndicator
-            shake={fieldErrors.shift_date ? shakeKey : 0}
-          >
-            <input
-              type="date"
-              value={form.shift_date}
-              onChange={(e) => {
-                setForm({ ...form, shift_date: e.target.value });
-                setFieldErrors((prev) => ({ ...prev, shift_date: null }));
-              }}
-              onBlur={() => handleFieldBlur("shift_date")}
-              required
-            />
-          </FormField>
-
-          <div className="form-time-row">
-            <FormField
-              label="Start time"
-              error={fieldErrors.start_time}
-              state={fieldStates.start_time}
-              showIndicator
-              shake={fieldErrors.start_time ? shakeKey : 0}
-            >
-              <input
-                type="time"
-                value={form.start_time}
-                onChange={(e) => handleTimeChange("start_time", e.target.value)}
-                onBlur={() => handleFieldBlur("start_time")}
-              />
-            </FormField>
-            <FormField
-              label="End time"
-              error={fieldErrors.end_time}
-              state={fieldStates.end_time}
-              showIndicator
-              shake={fieldErrors.end_time ? shakeKey : 0}
-            >
-              <input
-                type="time"
-                value={form.end_time}
-                onChange={(e) => handleTimeChange("end_time", e.target.value)}
-                onBlur={() => handleFieldBlur("end_time")}
-              />
-            </FormField>
-          </div>
-
-          {form.start_time && form.hours && !form.end_time && (
-            <p className="form-field__hint">
-              End time will be{" "}
-              {(() => {
-                const startMin = parseTimeToMinutes(form.start_time);
-                const h = parseFloat(form.hours);
-                if (startMin != null && !isNaN(h) && h > 0) {
-                  const endMin = startMin + Math.round(h * 60);
-                  return minutesToTime(endMin);
-                }
-                return "—";
-              })()}
-            </p>
-          )}
-
-          <FormField
-            label="Hours"
-            error={fieldErrors.hours}
-            state={fieldStates.hours}
-            showIndicator
-            shake={fieldErrors.hours ? shakeKey : 0}
-          >
-            <input
-              type="number"
-              min="0.01"
-              step="any"
-              placeholder="e.g. 6.5"
-              value={form.hours}
-              onChange={(e) => handleHoursChange(e.target.value)}
-              onBlur={() => handleFieldBlur("hours")}
-              required
-            />
-          </FormField>
-
-          <FormField
-            label="Tips"
-            error={fieldErrors.tips}
-            state={fieldStates.tips}
-            showIndicator
-            shake={fieldErrors.tips ? shakeKey : 0}
-            optional={form.pay_type !== "tips_only"}
-          >
-            <input
-              type="number"
-              min="0"
-              step="0.01"
-              placeholder="0"
-              value={form.tips}
-              onChange={(e) => setForm({ ...form, tips: e.target.value })}
-              onBlur={() => handleFieldBlur("tips")}
-            />
-          </FormField>
-
-          <FormField
-            label="Notes"
-            optional
-            charCount={form.notes.length}
-            maxChars={500}
-          >
-            <textarea
-              placeholder="e.g. Covered for Dana, closed the register"
-              value={form.notes}
-              maxLength={500}
-              onChange={(e) => setForm({ ...form, notes: e.target.value })}
-            />
-          </FormField>
-
-          {form.hours && (
-            <p className="shifts__preview shifts__preview--pop">
-              {form.pay_type === "tips_only" ? (
-                <>
-                  Tips only shift — total{" "}
-                  <strong>{formatMoney(parseFloat(form.tips) || 0)}</strong>
-                </>
-              ) : (
-                <>
-                  Estimated pay: <strong>{formatMoney(previewPay)}</strong>
-                  {form.tips && (
-                    <>
-                      {" "}
-                      + tips {formatMoney(parseFloat(form.tips) || 0)} ={" "}
-                      <strong>
-                        {formatMoney(previewPay + (parseFloat(form.tips) || 0))}
-                      </strong>
-                    </>
-                  )}
-                </>
-              )}
-            </p>
-          )}
-
-          <div className="btn-row">
-            <button
-              type="button"
-              className="btn btn--ghost"
-              onClick={closeFormModal}
-              disabled={saving}
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              className="btn btn--outline"
-              onClick={saveCurrentAsPreset}
-              disabled={!isFormValid}
-              title="Save current form as a reusable preset"
-            >
-              Save as preset
-            </button>
-            <button
-              type="submit"
-              className="btn btn--primary"
-              disabled={saving || !isFormValid}
-            >
-              {saving ? (
-                <>
-                  <span className="btn__spinner" aria-hidden="true" />
-                  Saving…
-                </>
-              ) : editingShift ? (
-                "Save changes"
-              ) : (
-                "Add shift"
-              )}
-            </button>
-          </div>
-        </form>
-      </SheetModal>
-
-      <SheetModal
-        open={placePicker.open}
-        closing={placePicker.closing}
-        onClose={closePlacePicker}
-        title="Filter by workplace"
-        compact
-      >
-        <ul className="shifts__picker-list">
-          {PLACE_FILTERS.map(({ id, label, active }) => {
-            const isActive = placeFilter === id;
-            const color =
-              id === "all"
-                ? "var(--color-primary, #818cf8)"
-                : PLACES[id]?.color || "var(--color-primary, #818cf8)";
-            return (
-              <li key={id}>
-                <button
-                  type="button"
-                  className={`shifts__picker-item${isActive ? " shifts__picker-item--active" : ""}${active === false ? " shifts__picker-item--deactivated" : ""}`}
-                  onClick={() => selectPlaceFilter(id)}
-                  role="option"
-                  aria-selected={isActive}
-                >
-                  <span
-                    className="shifts__picker-dot"
-                    style={{ background: color }}
-                  />
-                  <span className="shifts__picker-label">{label}</span>
-                  {active === false && (
-                    <span className="shifts__picker-deactivated-tag">
-                      inactive
-                    </span>
-                  )}
-                  {isActive && (
-                    <span className="shifts__picker-check" aria-hidden="true">
-                      ✓
-                    </span>
-                  )}
-                </button>
-              </li>
-            );
-          })}
-        </ul>
-      </SheetModal>
-
-      <ConfirmModal
-        open={!!deleteTarget}
+      {/* Delete confirmation */}
+      <ShiftDeleteConfirm
+        deleteTarget={deleteTarget}
         closing={deleteModal.closing}
         onClose={closeDeleteModal}
         onConfirm={confirmDelete}
-        loading={deleting}
-        title="Delete this shift?"
-        description="This action cannot be undone."
-        confirmLabel="Delete shift"
-        icon={
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.75"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6h14Z" />
-            <path d="M10 11v6M14 11v6" />
-          </svg>
-        }
-        preview={
-          deleteTarget && (
-            <>
-              <Badge
-                className="shifts__badge"
-                color={
-                  deleteTarget.color ||
-                  PLACES[deleteTarget.place]?.color ||
-                  "#818cf8"
-                }
-              >
-                {deletePlaceInfo?.label}
-              </Badge>
-              <span className="shifts__delete-date">
-                {formatDateFriendly(deleteTarget.shift_date)}
-              </span>
-              <span className="shifts__delete-amount">
-                {formatMoney(deletePay + deleteTips)}
-              </span>
-            </>
-          )
-        }
+        deleting={deleting}
+        places={PLACES}
       />
-
-      <SheetModal
-        open={presetModal.open}
-        closing={presetModal.closing}
-        onClose={closePresetModal}
-        title={editingPreset ? "Edit preset" : "Create preset"}
-      >
-        <p className="shifts__preset-hint">
-          Presets let you quick-add common shifts with one tap.
-        </p>
-        <div className="shifts__form">
-          <FormField label="Preset name">
-            <input
-              type="text"
-              value={presetForm.label}
-              onChange={(e) =>
-                setPresetForm((f) => ({ ...f, label: e.target.value }))
-              }
-              placeholder="e.g. Morning shift"
-              maxLength={40}
-              autoFocus
-            />
-          </FormField>
-          <FormField label="Place">
-            <select
-              value={presetForm.place}
-              onChange={(e) =>
-                setPresetForm((f) => ({ ...f, place: e.target.value }))
-              }
-            >
-              {Object.entries(PLACES).map(([key, { label, rate }]) => (
-                <option key={key} value={key}>
-                  {label} — ₪{rate}/hr
-                  {deactivatedSlugs.has(key) ? " (inactive)" : ""}
-                </option>
-              ))}
-            </select>
-          </FormField>
-          <div
-            className="shifts__pay-toggle"
-            role="group"
-            aria-label="Pay type"
-          >
-            {PAY_TYPES.map(({ id, label }) => (
-              <button
-                key={id}
-                type="button"
-                className={`shifts__pay-toggle-btn${presetForm.pay_type === id ? " shifts__pay-toggle-btn--active" : ""}`}
-                onClick={() => setPresetForm((f) => ({ ...f, pay_type: id }))}
-                aria-pressed={presetForm.pay_type === id}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-          <div className="form-time-row">
-            <FormField label="Start time">
-              <input
-                type="time"
-                value={presetForm.start_time}
-                onChange={(e) =>
-                  setPresetForm((f) => ({
-                    ...f,
-                    start_time: e.target.value,
-                  }))
-                }
-              />
-            </FormField>
-            <FormField label="End time">
-              <input
-                type="time"
-                value={presetForm.end_time}
-                onChange={(e) =>
-                  setPresetForm((f) => ({
-                    ...f,
-                    end_time: e.target.value,
-                  }))
-                }
-              />
-            </FormField>
-          </div>
-          <FormField label="Hours">
-            <input
-              type="number"
-              min="0.01"
-              step="any"
-              value={presetForm.hours}
-              onChange={(e) =>
-                setPresetForm((f) => ({ ...f, hours: e.target.value }))
-              }
-              placeholder="8"
-            />
-          </FormField>
-          <div className="btn-row">
-            {editingPreset && (
-              <button
-                type="button"
-                className="btn btn--danger-outline"
-                onClick={() => {
-                  deletePreset(editingPreset.id);
-                  closePresetModal();
-                }}
-              >
-                Delete
-              </button>
-            )}
-            <button
-              type="button"
-              className="btn btn--ghost"
-              onClick={closePresetModal}
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              className="btn btn--primary"
-              onClick={savePreset}
-              disabled={!presetForm.label.trim()}
-            >
-              {editingPreset ? "Update" : "Create"}
-            </button>
-          </div>
-        </div>
-      </SheetModal>
 
       <FAB
         visible={showFloatingActions}

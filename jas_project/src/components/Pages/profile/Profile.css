@@ -10,9 +10,9 @@
   padding-bottom: 3rem;
 }
 
+/* NOTE: .page-header provides identical layout */
 .profile__header {
-  text-align: center;
-  margin-bottom: 1.5rem;
+  /* text-align: center; margin-bottom: 1.5rem; — use .page-header */
 }
 
 .profile__avatar {
@@ -72,10 +72,7 @@
   color: #fff;
 }
 
-.profile__unit-btn:focus-visible {
-  outline: 2px solid var(--color-primary);
-  outline-offset: 2px;
-}
+
 
 .profile__unit-indicator {
   position: absolute;
@@ -179,11 +176,7 @@
   color: #c4b5fd;
 }
 
-.profile__text-btn:focus-visible,
-.profile__link-btn:focus-visible {
-  outline: 2px solid var(--color-primary);
-  outline-offset: 2px;
-}
+
 
 .profile__text-btn--danger {
   color: rgba(248, 113, 113, 0.6);
@@ -550,10 +543,7 @@
   box-shadow: 0 4px 14px rgba(239, 68, 68, 0.3);
 }
 
-.profile__icon-btn:focus-visible {
-  outline: 2px solid var(--color-primary);
-  outline-offset: 2px;
-}
+
 
 /* ── Floating action buttons ── */
 
@@ -589,25 +579,16 @@
   color: #fff;
 }
 
-@keyframes profile-field-shake {
-  0%,
-  100% {
-    transform: translateX(0);
-  }
-  25% {
-    transform: translateX(-6px);
-  }
-  75% {
-    transform: translateX(6px);
-  }
-}
+/* NOTE: Use shared @keyframes shake from animations.css */
 
+/* NOTE: .form-column provides base layout (gap: 1rem) */
 .profile__form {
   display: flex;
   flex-direction: column;
   gap: 0.85rem;
 }
 
+/* NOTE: .form-field-row provides identical 2-col grid */
 .profile__height-row,
 .profile__weight-row {
   display: grid;
@@ -721,67 +702,7 @@
   }
 }
 
-@keyframes profileOverlayIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes profileOverlayOut {
-  from {
-    opacity: 1;
-  }
-  to {
-    opacity: 0;
-  }
-}
-
-@keyframes profileModalSlideUp {
-  from {
-    opacity: 0;
-    transform: translateY(110%);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes profileModalCenterIn {
-  from {
-    opacity: 0;
-    transform: translateY(18px) scale(0.96);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-@keyframes profileModalCenterOut {
-  from {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-  to {
-    opacity: 0;
-    transform: translateY(18px) scale(0.96);
-  }
-}
-
-@keyframes profileModalSlideDown {
-  from {
-    opacity: 1;
-    transform: translateY(0);
-  }
-  to {
-    opacity: 0;
-    transform: translateY(110%);
-  }
-}
+/* NOTE: Use shared keyframes from Sheet_modal.css (sheetOverlayIn/Out, sheetModalSlideUp, sheetModalCenterIn/Out) */
 
 @keyframes profileFabIn {
   from {

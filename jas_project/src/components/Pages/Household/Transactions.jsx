@@ -2,46 +2,18 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getSupabaseClient } from "../../../lib/superbase";
 import {
   getUserFacingError,
-  sanitizeNumber,
   sanitizeText,
-  hapticError,
 } from "../../../lib/security";
 import { useGlassToast } from "../../../lib/glass_toast_provider.jsx";
 import { useModal, useBodyScrollLock } from "../../../hooks";
 import SheetModal from "../../ui/modals/Sheet_modal";
 import ConfirmModal from "../../ui/modals/Confirm_modal";
-import FormField from "../../ui/form/Form_field.jsx";
-import ColorPalettePicker from "../../../lib/Color_palette_picker.jsx";
 import EmptyState from "../../ui/Empty_state";
 
-import { formatMoney } from "../../../lib/format";
-
-const DEFAULT_ICONS = [
-  "🍔",
-  "🚗",
-  "🛍️",
-  "💡",
-  "🎬",
-  "💊",
-  "📚",
-  "🏠",
-  "👕",
-  "🎁",
-  "📱",
-  "📦",
-  "💰",
-  "💻",
-  "💵",
-  "🎉",
-  "📈",
-  "☕",
-  "✈️",
-  "🏋️",
-  "🐕",
-  "🎵",
-  "🔧",
-  "🛍️",
-];
+import { formatMoney, formatDateGroup } from "../../../lib/format";
+import TransactionForm from "./TransactionForm";
+import TransactionCard from "./TransactionCard";
+import CategoryManager from "./CategoryManager";
 
 function Transactions({ householdId, userId, members, goals = [] }) {
   const [transactions, setTransactions] = useState([]);
@@ -83,20 +55,6 @@ function Transactions({ householdId, userId, members, goals = [] }) {
   const [deleteCategoryTarget, setDeleteCategoryTarget] = useState(null);
   const [deletingCategory, setDeletingCategory] = useState(false);
 
-  // Field states
-  const [amountState, setAmountState] = useState("idle");
-  const [amountError, setAmountError] = useState(null);
-  const [amountTouched, setAmountTouched] = useState(false);
-  const [descState, setDescState] = useState("idle");
-  const [descError, setDescError] = useState(null);
-  const [descTouched, setDescTouched] = useState(false);
-  const [shakeKey, setShakeKey] = useState(0);
-
-  // Sliding indicator state
-  const typeToggleRef = useRef(null);
-  const typeBtnRefs = useRef({});
-  const [indicatorStyle, setIndicatorStyle] = useState({ left: 0, width: 0 });
-
   // Filter tabs sliding indicator
   const filterTabRef = useRef(null);
   const filterBtnRefs = useRef({});
@@ -104,19 +62,6 @@ function Transactions({ householdId, userId, members, goals = [] }) {
     left: 0,
     width: 0,
   });
-
-  useEffect(() => {
-    const btn = typeBtnRefs.current[form.type];
-    const container = typeToggleRef.current;
-    if (btn && container) {
-      const containerRect = container.getBoundingClientRect();
-      const btnRect = btn.getBoundingClientRect();
-      setIndicatorStyle({
-        left: btnRect.left - containerRect.left,
-        width: btnRect.width,
-      });
-    }
-  }, [form.type]);
 
   useEffect(() => {
     const btn = filterBtnRefs.current[typeFilter];
@@ -288,53 +233,6 @@ function Transactions({ householdId, userId, members, goals = [] }) {
     return goals.filter((g) => !g.is_completed);
   }, [goals]);
 
-  // Validation
-  const validateAmount = (value, isBlur = false) => {
-    if (!value) {
-      if (isBlur) {
-        setAmountState("error");
-        setAmountError("Amount is required");
-      } else {
-        setAmountState("idle");
-        setAmountError(null);
-      }
-      return;
-    }
-    const num = Number(value);
-    if (isNaN(num) || num <= 0) {
-      setAmountState("error");
-      setAmountError("Enter a valid amount");
-    } else {
-      setAmountState("valid");
-      setAmountError(null);
-    }
-  };
-
-  const validateDesc = (value, isBlur = false) => {
-    const trimmed = value.trim();
-    if (!trimmed) {
-      if (isBlur) {
-        setDescState("error");
-        setDescError("Description is required");
-      } else {
-        setDescState("idle");
-        setDescError(null);
-      }
-      return;
-    }
-    setDescState("valid");
-    setDescError(null);
-  };
-
-  const resetFieldStates = () => {
-    setAmountTouched(false);
-    setAmountState("idle");
-    setAmountError(null);
-    setDescTouched(false);
-    setDescState("idle");
-    setDescError(null);
-  };
-
   const openAdd = (type = "expense") => {
     setEditingTx(null);
     setForm({
@@ -346,7 +244,6 @@ function Transactions({ householdId, userId, members, goals = [] }) {
       goal_id: "",
       transaction_date: new Date().toISOString().slice(0, 10),
     });
-    resetFieldStates();
     addModal.openModal();
   };
 
@@ -361,28 +258,10 @@ function Transactions({ householdId, userId, members, goals = [] }) {
       goal_id: tx.goal_id || "",
       transaction_date: tx.transaction_date,
     });
-    resetFieldStates();
     editModal.openModal();
   };
 
   const handleSubmit = async () => {
-    setAmountTouched(true);
-    setDescTouched(true);
-    validateAmount(form.amount, true);
-    validateDesc(form.description, true);
-
-    if (!form.amount || Number(form.amount) <= 0 || !form.description.trim()) {
-      setShakeKey((k) => k + 1);
-      hapticError();
-      return;
-    }
-
-    // For contribute, require a goal
-    if (form.type === "contribute" && !form.goal_id) {
-      toastError("Please select a savings goal.");
-      return;
-    }
-
     setSubmitting(true);
     try {
       const supabase = getSupabaseClient();
@@ -743,35 +622,11 @@ function Transactions({ householdId, userId, members, goals = [] }) {
                 </div>
                 <div className="transactions__group-items">
                   {items.map((tx) => (
-                    <div
+                    <TransactionCard
                       key={tx.id}
-                      className="transactions__item"
-                      onClick={() => openEdit(tx)}
-                    >
-                      <div
-                        className="transactions__item-icon"
-                        style={{
-                          background: `${tx.category_color}18`,
-                          color: tx.category_color,
-                        }}
-                      >
-                        {tx.category_icon}
-                      </div>
-                      <div className="transactions__item-info">
-                        <span className="transactions__item-desc">
-                          {tx.description}
-                        </span>
-                        <span className="transactions__item-meta">
-                          {tx.category_name}
-                          {` · ${tx.is_me ? "You" : tx.display_name}`}
-                          {tx.is_recurring && " · 🔄"}
-                        </span>
-                      </div>
-                      <span className={`transactions__item-amount ${tx.type}`}>
-                        {tx.type === "expense" ? "-" : "+"}
-                        {formatMoney(tx.amount)}
-                      </span>
-                    </div>
+                      transaction={tx}
+                      onEdit={openEdit}
+                    />
                   ))}
                 </div>
               </div>
@@ -790,247 +645,25 @@ function Transactions({ householdId, userId, members, goals = [] }) {
         }}
         title={editingTx ? "Edit transaction" : `Add ${typeLabel}`}
       >
-        <div className="transactions__form">
-          {/* Type Toggle */}
-          <div className="transactions__type-toggle" ref={typeToggleRef}>
-            <span
-              className={`transactions__type-indicator ${form.type}`}
-              style={{
-                transform: `translateX(${indicatorStyle.left}px)`,
-                width: `${indicatorStyle.width}px`,
-              }}
-            />
-            {["expense", "income", "contribute"].map((t) => (
-              <button
-                key={t}
-                ref={(el) => {
-                  if (el) typeBtnRefs.current[t] = el;
-                }}
-                className={`transactions__type-btn ${form.type === t ? `transactions__type-btn--active ${t}` : ""}`}
-                onClick={() =>
-                  setForm((f) => ({
-                    ...f,
-                    type: t,
-                    category_id: "",
-                    goal_id: "",
-                  }))
-                }
-              >
-                {t === "expense"
-                  ? "Expense"
-                  : t === "income"
-                    ? "Income"
-                    : "🎯 Contribute"}
-              </button>
-            ))}
-          </div>
-
-          <FormField
-            label="Amount"
-            error={amountError}
-            state={amountState}
-            showIndicator
-            shake={amountError ? shakeKey : 0}
-          >
-            <input
-              type="number"
-              min="0.01"
-              step="0.01"
-              value={form.amount}
-              onChange={(e) => {
-                setForm((f) => ({ ...f, amount: e.target.value }));
-                if (amountTouched) validateAmount(e.target.value);
-              }}
-              onBlur={() => {
-                setAmountTouched(true);
-                validateAmount(form.amount, true);
-                if (!form.amount || Number(form.amount) <= 0) {
-                  setShakeKey((k) => k + 1);
-                  hapticError();
-                }
-              }}
-              placeholder="0.00"
-            />
-          </FormField>
-
-          <FormField
-            label="Description"
-            error={descError}
-            state={descState}
-            showIndicator
-            shake={descError ? shakeKey : 0}
-          >
-            <input
-              type="text"
-              value={form.description}
-              onChange={(e) => {
-                setForm((f) => ({ ...f, description: e.target.value }));
-                if (descTouched) validateDesc(e.target.value);
-              }}
-              onBlur={() => {
-                setDescTouched(true);
-                validateDesc(form.description, true);
-                if (!form.description.trim()) {
-                  setShakeKey((k) => k + 1);
-                  hapticError();
-                }
-              }}
-              placeholder={
-                form.type === "contribute"
-                  ? "e.g. Monthly savings"
-                  : "What was this for?"
-              }
-              maxLength={100}
-            />
-          </FormField>
-
-          {/* Goal Picker (contribute type) */}
-          {form.type === "contribute" && (
-            <div className="transactions__category-grid-wrap">
-              <label className="transactions__form-label">Savings Goal</label>
-              {activeGoals.length === 0 ? (
-                <p style={{ color: "var(--text-muted, #888)", fontSize: 14 }}>
-                  No active goals. Create one first.
-                </p>
-              ) : (
-                <div className="transactions__category-grid">
-                  {activeGoals.map((goal) => {
-                    const isActive = form.goal_id === goal.id;
-                    return (
-                      <button
-                        key={goal.id}
-                        type="button"
-                        className={`transactions__category-chip ${isActive ? "active" : ""}`}
-                        style={
-                          isActive
-                            ? {
-                                borderColor: goal.color,
-                                background: `${goal.color}15`,
-                              }
-                            : {}
-                        }
-                        onClick={() =>
-                          setForm((f) => ({ ...f, goal_id: goal.id }))
-                        }
-                      >
-                        <span>{goal.icon || "🎯"}</span>
-                        <span>{goal.title}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Category Grid (expense / income) */}
-          {form.type !== "contribute" && (
-            <div className="transactions__category-grid-wrap">
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                }}
-              >
-                <label className="transactions__form-label">Category</label>
-                <button
-                  type="button"
-                  className="btn btn--ghost btn--sm"
-                  style={{ fontSize: 12, padding: "2px 8px" }}
-                  onClick={() => openNewCategory(form.type)}
-                >
-                  + Edit labels
-                </button>
-              </div>
-              {availableCategories.length === 0 ? (
-                <p style={{ color: "var(--text-muted, #888)", fontSize: 14 }}>
-                  No labels yet. Tap "+ Edit labels" to create your own.
-                </p>
-              ) : (
-                <div className="transactions__category-grid">
-                  {availableCategories.map((cat) => {
-                    const isActive = form.category_id === cat.id;
-                    return (
-                      <button
-                        key={cat.id}
-                        type="button"
-                        className={`transactions__category-chip ${isActive ? "active" : ""}`}
-                        style={
-                          isActive
-                            ? {
-                                borderColor: cat.color,
-                                background: `${cat.color}15`,
-                              }
-                            : {}
-                        }
-                        onClick={() =>
-                          setForm((f) => ({ ...f, category_id: cat.id }))
-                        }
-                      >
-                        <span>{cat.icon}</span>
-                        <span>{cat.name}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          )}
-
-          <FormField label="Date">
-            <input
-              type="date"
-              value={form.transaction_date}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, transaction_date: e.target.value }))
-              }
-            />
-          </FormField>
-
-          <FormField label="Note (optional)">
-            <input
-              type="text"
-              value={form.note}
-              onChange={(e) => setForm((f) => ({ ...f, note: e.target.value }))}
-              placeholder="Add a note..."
-              maxLength={500}
-            />
-          </FormField>
-
-          <div className="btn-row">
-            <button
-              type="button"
-              className="btn btn--ghost"
-              onClick={() => {
-                addModal.closeModal();
-                editModal.closeModal();
-              }}
-            >
-              Cancel
-            </button>
-            {editingTx && (
-              <button
-                type="button"
-                className="btn btn--danger"
-                onClick={() => {
-                  setDeleteTarget(editingTx);
-                  deleteModal.openModal();
-                }}
-              >
-                Delete
-              </button>
-            )}
-            <button
-              type="button"
-              className="btn btn--primary"
-              onClick={handleSubmit}
-              disabled={submitting}
-            >
-              {submitting ? "Saving…" : editingTx ? "Update" : "Add"}
-            </button>
-          </div>
-        </div>
+        <TransactionForm
+          form={form}
+          setForm={setForm}
+          editingTx={editingTx}
+          categories={categories}
+          goals={goals}
+          submitting={submitting}
+          onSubmit={handleSubmit}
+          onCancel={() => {
+            addModal.closeModal();
+            editModal.closeModal();
+          }}
+          onDelete={() => {
+            setDeleteTarget(editingTx);
+            deleteModal.openModal();
+          }}
+          onOpenNewCategory={openNewCategory}
+          onError={toastError}
+        />
       </SheetModal>
 
       {/* ── Delete Confirmation ────────────────────────────── */}

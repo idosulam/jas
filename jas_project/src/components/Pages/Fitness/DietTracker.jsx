@@ -24,6 +24,8 @@ import FormField from "../../../components/ui/form/Form_field.jsx";
 import GlassCard from "../../../components/ui/Glass_card";
 
 import MacroProgressBar from "./MacroProgressBar";
+import DietEntryForm from "./DietEntryForm";
+import MealGroup from "./MealGroup";
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -821,251 +823,37 @@ function DietTracker({ profileData }) {
 
       {/* Food log grouped by meal */}
       <div className="fitness__meals animate-in animate-in--4">
-        {MEAL_TYPES.map((meal) => {
-          const mealEntries = groupedEntries[meal.id];
-          const mealCals = mealEntries.reduce(
-            (s, e) => s + (Number(e.calories) || 0),
-            0,
-          );
-
-          return (
-            <div key={meal.id} className="fitness__meal-group">
-              <div className="fitness__meal-header">
-                <h3 className="fitness__meal-title">{meal.label}</h3>
-                <div className="fitness__meal-actions">
-                  <span className="fitness__meal-cals">
-                    {Math.round(mealCals)} kcal
-                  </span>
-                  <button
-                    type="button"
-                    className="fitness__meal-add"
-                    onClick={() => openAddModal(meal.id)}
-                    ref={meal.id === "breakfast" ? addBtnRef : undefined}
-                    aria-label={`Add ${meal.label} entry`}
-                  >
-                    +
-                  </button>
-                </div>
-              </div>
-              {mealEntries.length === 0 ? (
-                <p className="fitness__meal-empty">No entries</p>
-              ) : (
-                <ul className="fitness__meal-list">
-                  {mealEntries.map((entry) => {
-                    const isRemoving = removingId === entry.id;
-                    return (
-                      <li
-                        key={entry.id}
-                        className={`fitness__entry${isRemoving ? " fitness__entry--removing" : ""}`}
-                      >
-                        <div className="fitness__entry-main">
-                          <span className="fitness__entry-name">
-                            {entry.food_name}
-                          </span>
-                          <span className="fitness__entry-macros">
-                            {Number(entry.calories) > 0 && (
-                              <span>{Math.round(Number(entry.calories))}kcal</span>
-                            )}
-                            {Number(entry.protein_g) > 0 && (
-                              <span>P:{Math.round(Number(entry.protein_g))}g</span>
-                            )}
-                            {Number(entry.carbs_g) > 0 && (
-                              <span>C:{Math.round(Number(entry.carbs_g))}g</span>
-                            )}
-                            {Number(entry.fats_g) > 0 && (
-                              <span>F:{Math.round(Number(entry.fats_g))}g</span>
-                            )}
-                          </span>
-                        </div>
-                        <div className="fitness__entry-actions">
-                          <button
-                            type="button"
-                            className="fitness__entry-btn fitness__entry-btn--edit"
-                            onClick={() => openEditModal(entry)}
-                            aria-label="Edit entry"
-                          >
-                            ✎
-                          </button>
-                          <button
-                            type="button"
-                            className="fitness__entry-btn fitness__entry-btn--delete"
-                            onClick={() => openDeleteModal(entry)}
-                            aria-label="Delete entry"
-                          >
-                            ×
-                          </button>
-                        </div>
-                      </li>
-                    );
-                  })}
-                </ul>
-              )}
-            </div>
-          );
-        })}
+        {MEAL_TYPES.map((meal) => (
+          <MealGroup
+            key={meal.id}
+            meal={meal}
+            entries={groupedEntries[meal.id]}
+            removingId={removingId}
+            onEdit={openEditModal}
+            onDelete={openDeleteModal}
+            onAddForMeal={openAddModal}
+            addBtnRef={addBtnRef}
+          />
+        ))}
       </div>
 
       {/* Add/Edit Entry Modal */}
-      <SheetModal
+      <DietEntryForm
         open={formModal.open}
         closing={formModal.closing}
         onClose={closeFormModal}
-        title={editingEntry ? "Edit food" : "Log food"}
-      >
-        <form className="fitness__form" onSubmit={handleSubmit}>
-          <FormField
-            label="Date"
-            error={fieldErrors.entry_date}
-            state={fieldStates.entry_date}
-            showIndicator
-            shake={fieldErrors.entry_date ? shakeKey : 0}
-          >
-            <input
-              type="date"
-              value={form.entry_date}
-              onChange={(e) => {
-                setForm((f) => ({ ...f, entry_date: e.target.value }));
-                setFieldErrors((prev) => ({ ...prev, entry_date: null }));
-              }}
-              onBlur={() => handleFieldBlur("entry_date")}
-              required
-            />
-          </FormField>
-
-          <FormField label="Meal type">
-            <select
-              value={form.meal_type}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, meal_type: e.target.value }))
-              }
-            >
-              {MEAL_TYPES.map((m) => (
-                <option key={m.id} value={m.id}>
-                  {m.label}
-                </option>
-              ))}
-            </select>
-          </FormField>
-
-          <FormField
-            label="Food name"
-            error={fieldErrors.food_name}
-            state={fieldStates.food_name}
-            showIndicator
-            shake={fieldErrors.food_name ? shakeKey : 0}
-          >
-            <input
-              type="text"
-              placeholder="e.g. Chicken breast, Rice"
-              value={form.food_name}
-              maxLength={120}
-              onChange={(e) => {
-                setForm((f) => ({ ...f, food_name: e.target.value }));
-                setFieldErrors((prev) => ({ ...prev, food_name: null }));
-              }}
-              onBlur={() => handleFieldBlur("food_name")}
-              required
-            />
-          </FormField>
-
-          <FormField label="Calories (kcal)">
-            <input
-              type="number"
-              min="0"
-              max="10000"
-              step="1"
-              placeholder="0"
-              value={form.calories}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, calories: e.target.value }))
-              }
-            />
-          </FormField>
-
-          <div className="fitness__macro-inputs">
-            <FormField label="Protein (g)">
-              <input
-                type="number"
-                min="0"
-                max="999"
-                step="0.1"
-                placeholder="0"
-                value={form.protein_g}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, protein_g: e.target.value }))
-                }
-              />
-            </FormField>
-            <FormField label="Carbs (g)">
-              <input
-                type="number"
-                min="0"
-                max="999"
-                step="0.1"
-                placeholder="0"
-                value={form.carbs_g}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, carbs_g: e.target.value }))
-                }
-              />
-            </FormField>
-            <FormField label="Fats (g)">
-              <input
-                type="number"
-                min="0"
-                max="999"
-                step="0.1"
-                placeholder="0"
-                value={form.fats_g}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, fats_g: e.target.value }))
-                }
-              />
-            </FormField>
-          </div>
-
-          <FormField label="Fiber (g)" optional>
-            <input
-              type="number"
-              min="0"
-              max="99"
-              step="0.1"
-              placeholder="0"
-              value={form.fiber_g}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, fiber_g: e.target.value }))
-              }
-            />
-          </FormField>
-
-          <div className="btn-row">
-            <button
-              type="button"
-              className="btn btn--ghost"
-              onClick={closeFormModal}
-              disabled={saving}
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className="btn btn--primary"
-              disabled={saving || !isFormValid}
-            >
-              {saving ? (
-                <>
-                  <span className="btn__spinner" aria-hidden="true" />
-                  Saving…
-                </>
-              ) : editingEntry ? (
-                "Save changes"
-              ) : (
-                "Log food"
-              )}
-            </button>
-          </div>
-        </form>
-      </SheetModal>
+        editingEntry={editingEntry}
+        form={form}
+        setForm={setForm}
+        saving={saving}
+        isFormValid={isFormValid}
+        fieldErrors={fieldErrors}
+        setFieldErrors={setFieldErrors}
+        fieldStates={fieldStates}
+        shakeKey={shakeKey}
+        onSubmit={handleSubmit}
+        onFieldBlur={handleFieldBlur}
+      />
 
       {/* Preset Modal */}
       <SheetModal

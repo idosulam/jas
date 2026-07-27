@@ -15,7 +15,6 @@ import {
   SheetModal,
   ConfirmModal,
   FormField,
-  GlassCard,
   PageHeader,
   FAB,
   LoadingSkeleton,
@@ -25,15 +24,18 @@ import {
   useBodyScrollLock,
   useModal,
   useFloatingActions,
-  useSwipeDownToClose,
 } from "../../../hooks";
 import { ACTIVITY_LEVELS, GENDER_OPTIONS } from "../Fitness/macro_calculator";
 
 import { formatDateLabel } from "../../../lib/format";
 
-import { loadUnit, toDisplayKg, formatWeight, kgToLbs, lbsToKg, formatSignedDelta, cmToFeetAndInches, feetAndInchesToCm, formatHeight, calcBmi, bmiLabel, healthyWeightRangeKg } from "../../../lib/weight";
+import { loadUnit, toDisplayKg, formatWeight, kgToLbs, lbsToKg, cmToFeetAndInches, feetAndInchesToCm, formatHeight, calcBmi, bmiLabel, healthyWeightRangeKg } from "../../../lib/weight";
 
 import WeightChart from "./WeightChart";
+import { daysBetween, buildInsight } from "./weight_utils";
+import ProfileStats from "./ProfileStats";
+import ProfileHistory from "./ProfileHistory";
+import WeightForm from "./WeightForm";
 
 const UNIT_STORAGE_KEY = "profile_weight_unit";
 const KG_TO_LBS = 2.20462;
@@ -57,62 +59,7 @@ const emptyWeightForm = () => ({
   notes: "",
 });
 
-function daysBetween(a, b) {
-  const ms = new Date(`${b}T12:00:00`) - new Date(`${a}T12:00:00`);
-  return Math.max(1, Math.round(ms / 86400000));
-}
 
-function buildInsight({ age, weeklyChangeKg, bmi, goalProgress, isLosing }) {
-  const parts = [];
-
-  if (age) {
-    parts.push(
-      age < 30
-        ? `At ${age}, your body typically recovers well from training — pair steady nutrition with rest days.`
-        : age < 45
-          ? `At ${age}, strength training helps preserve muscle while you cut — aim for protein at every meal.`
-          : `At ${age}, slower, consistent progress protects joints and muscle — prioritize recovery alongside cardio.`,
-    );
-  }
-
-  if (weeklyChangeKg != null && isLosing) {
-    const abs = Math.abs(weeklyChangeKg);
-    if (abs > 1) {
-      parts.push(
-        "Your weekly pace is aggressive — watch energy levels and consider a refeed day if workouts feel flat.",
-      );
-    } else if (abs >= 0.3) {
-      parts.push(
-        "You are losing at a sustainable rate for someone who trains — keep protein high to protect lean mass.",
-      );
-    } else if (abs > 0) {
-      parts.push(
-        "Progress is gradual, which is ideal for long-term results and performance in the gym.",
-      );
-    }
-  }
-
-  if (bmi != null) {
-    const label = bmiLabel(bmi);
-    if (label === "Healthy") {
-      parts.push(
-        "Your BMI sits in the healthy range — focus on body composition and strength, not just the scale.",
-      );
-    } else if (
-      label === "Overweight" &&
-      goalProgress != null &&
-      goalProgress > 0
-    ) {
-      parts.push(
-        "You are moving toward your goal — consistency beats perfection on rest days.",
-      );
-    }
-  }
-
-  return parts.length
-    ? parts.join(" ")
-    : "Log weigh-ins and set your profile to unlock personalized insights.";
-}
 
 function Profile({ onNavigate }) {
   const { householdName } = useHousehold();
@@ -810,12 +757,6 @@ function Profile({ onNavigate }) {
   const displayName = profile?.display_name || "";
   const unitLabel = unit === "kg" ? "kg" : "lbs";
 
-  const weightSwipe = useSwipeDownToClose(
-    weightModal.open,
-    weightModal.closing,
-    closeWeightModal,
-  );
-
   return (
     <section>
       <PageHeader
@@ -872,52 +813,7 @@ function Profile({ onNavigate }) {
         </div>
       ) : (
         <>
-          <div className="profile__summary">
-            <GlassCard
-              className="profile__stat"
-              value={formatWeight(
-                analytics.currentKg != null
-                  ? toDisplayKg(analytics.currentKg, unit)
-                  : null,
-                unitLabel,
-              )}
-              label="Current weight"
-            />
-            <GlassCard
-              className="profile__stat"
-              valueClassName={
-                analytics.totalChangeKg != null && analytics.totalChangeKg < 0
-                  ? "profile__stat-value--good"
-                  : ""
-              }
-              value={
-                analytics.totalChangeKg != null
-                  ? formatSignedDelta(
-                      toDisplayKg(analytics.totalChangeKg, unit),
-                      unitLabel,
-                    )
-                  : "—"
-              }
-              label="Total change"
-            />
-            <GlassCard
-              className="profile__stat"
-              value={
-                analytics.weeklyChangeKg != null
-                  ? formatSignedDelta(
-                      toDisplayKg(analytics.weeklyChangeKg, unit),
-                      `${unitLabel}/wk`,
-                    )
-                  : "—"
-              }
-              label="Weekly pace"
-            />
-            <GlassCard
-              className="profile__stat"
-              value={analytics.bmi != null ? analytics.bmi.toFixed(1) : "—"}
-              label={`BMI${analytics.bmiCategory ? ` · ${analytics.bmiCategory}` : ""}`}
-            />
-          </div>
+          <ProfileStats analytics={analytics} unit={unit} unitLabel={unitLabel} />
 
           <section
             className="profile__panel"
@@ -1078,199 +974,36 @@ function Profile({ onNavigate }) {
                 </button>
               )}
             </div>
-            {analytics.sorted.length === 0 ? (
-              <p className="profile__empty">
-                No entries yet — log your first weigh-in above.
-              </p>
-            ) : (
-              <ul className="profile__history">
-                {[...analytics.sorted].map((entry) => (
-                  <li
-                    key={entry.id}
-                    className={`profile__history-item${
-                      removingId === entry.id
-                        ? " profile__history-item--removing"
-                        : ""
-                    }`}
-                  >
-                    {" "}
-                    <div>
-                      <span className="profile__history-date">
-                        {formatDateLabel(entry.entry_date)}
-                      </span>
-                      {entry.notes && (
-                        <span className="profile__history-note">
-                          {entry.notes}
-                        </span>
-                      )}
-                    </div>
-                    <div className="profile__history-actions">
-                      <span className="profile__history-weight">
-                        {formatWeight(
-                          toDisplayKg(Number(entry.weight_kg), unit),
-                          unitLabel,
-                        )}
-                      </span>
-                      <button
-                        type="button"
-                        className="profile__icon-btn"
-                        onClick={() => openEditWeight(entry)}
-                        aria-label="Edit weigh-in"
-                      >
-                        <svg
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          aria-hidden="true"
-                        >
-                          <path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
-                          <path d="m15 5 4 4" />
-                        </svg>
-                      </button>
-                      <button
-                        type="button"
-                        className="profile__icon-btn profile__icon-btn--danger"
-                        onClick={() => openDeleteConfirm(entry)}
-                        aria-label="Delete weigh-in"
-                      >
-                        <svg
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          aria-hidden="true"
-                        >
-                          <path d="M18 6 6 18" />
-                          <path d="m6 6 12 12" />
-                        </svg>
-                      </button>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            )}
+            <ProfileHistory
+              sorted={analytics.sorted}
+              removingId={removingId}
+              unit={unit}
+              unitLabel={unitLabel}
+              onEdit={openEditWeight}
+              onDelete={openDeleteConfirm}
+            />
           </section>
         </>
       )}
 
       {/* Weight Log/Edit Modal */}
-      <SheetModal
-        open={weightModal.open}
-        closing={weightModal.closing}
+      <WeightForm
+        weightModal={weightModal}
+        weightForm={weightForm}
+        setWeightForm={setWeightForm}
+        editingEntry={editingEntry}
+        saving={saving}
+        weightFieldErrors={weightFieldErrors}
+        setWeightFieldErrors={setWeightFieldErrors}
+        weightFieldStates={weightFieldStates}
+        weightShakeKey={weightShakeKey}
+        onSubmit={saveWeight}
         onClose={closeWeightModal}
-        title={editingEntry ? "Edit weigh-in" : "Log weigh-in"}
-        className={weightSwipe.dragging ? "sheet-modal--dragging" : ""}
-        swipeBind={weightSwipe.bind}
-        swipeStyle={weightSwipe.style}
-      >
-        <form className="profile__form" onSubmit={saveWeight}>
-          <FormField
-            label="Date"
-            error={weightFieldErrors.entry_date}
-            state={weightFieldStates.entry_date}
-            showIndicator
-            shake={weightFieldErrors.entry_date ? weightShakeKey : 0}
-          >
-            <input
-              type="date"
-              value={weightForm.entry_date}
-              onChange={(e) => {
-                setWeightForm((f) => ({
-                  ...f,
-                  entry_date: e.target.value,
-                }));
-                setWeightFieldErrors((prev) => ({
-                  ...prev,
-                  entry_date: null,
-                }));
-              }}
-              onBlur={() => handleWeightFieldBlur("entry_date")}
-              required
-            />
-          </FormField>
-          <div className="profile__weight-row">
-            <FormField
-              label="Weight (kg)"
-              error={weightFieldErrors.weight_kg}
-              state={weightFieldStates.weight_kg}
-              showIndicator
-              shake={weightFieldErrors.weight_kg ? weightShakeKey : 0}
-            >
-              <input
-                type="number"
-                step="0.1"
-                min="1"
-                placeholder="62.5"
-                value={weightForm.weight_kg}
-                onChange={(e) => {
-                  handleWeightKgChange(e.target.value);
-                  setWeightFieldErrors((prev) => ({
-                    ...prev,
-                    weight_kg: null,
-                    weight_lbs: null,
-                  }));
-                }}
-                onBlur={() => handleWeightFieldBlur("weight_kg")}
-              />
-            </FormField>
-            <FormField
-              label="Weight (lbs)"
-              error={weightFieldErrors.weight_lbs}
-              state={weightFieldStates.weight_lbs}
-              showIndicator
-              shake={weightFieldErrors.weight_lbs ? weightShakeKey : 0}
-            >
-              <input
-                type="number"
-                step="0.1"
-                min="1"
-                placeholder="137.8"
-                value={weightForm.weight_lbs}
-                onChange={(e) => {
-                  handleWeightLbsChange(e.target.value);
-                  setWeightFieldErrors((prev) => ({
-                    ...prev,
-                    weight_lbs: null,
-                    weight_kg: null,
-                  }));
-                }}
-                onBlur={() => handleWeightFieldBlur("weight_lbs")}
-              />
-            </FormField>
-          </div>
-          <FormField label="Notes" optional>
-            <input
-              type="text"
-              placeholder="Post-leg day, morning fasted…"
-              value={weightForm.notes}
-              onChange={(e) =>
-                setWeightForm((f) => ({ ...f, notes: e.target.value }))
-              }
-            />
-          </FormField>
-          <div className="btn-row">
-            <button
-              type="button"
-              className="btn btn--ghost"
-              onClick={closeWeightModal}
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className="btn btn--primary"
-              disabled={saving || !isWeightFormValid}
-            >
-              {saving ? "Saving…" : "Save"}
-            </button>
-          </div>
-        </form>
-      </SheetModal>
+        onKgChange={handleWeightKgChange}
+        onLbsChange={handleWeightLbsChange}
+        onFieldBlur={handleWeightFieldBlur}
+        isValid={isWeightFormValid}
+      />
 
       {/* Profile Edit Modal */}
       <SheetModal

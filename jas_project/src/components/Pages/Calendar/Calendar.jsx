@@ -35,9 +35,7 @@ import {
   useFloatingActions,
 } from "../../../hooks";
 import {
-  SheetModal,
   ConfirmModal,
-  FormField,
   EmptyState,
   LoadingSkeleton,
   PageHeader,
@@ -45,12 +43,14 @@ import {
   FAB,
 } from "../../../components";
 import { useGlassToast } from "../../../lib/glass_toast_provider.jsx";
-import ColorPalettePicker from "../../../lib/Color_palette_picker.jsx";
 import { fetchPalette } from "../../../lib/color_palette.js";
 import { useHousehold } from "../../../lib/Household_context.jsx";
+import EventForm from "./EventForm.jsx";
+import CalendarGrid from "./CalendarGrid.jsx";
+import TimelineView from "./TimelineView.jsx";
+import ReminderList from "./ReminderList.jsx";
 
 const MODAL_EXIT_MS = 260;
-const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 const emptyForm = (dateKey) => ({
   title: "",
@@ -743,42 +743,14 @@ function Calendar() {
         </button>
       </div>
 
-      <div
-        className={`calendar__week animate-in animate-in--2${viewMode === "month" ? " calendar__week--month" : " calendar__week--week"}`}
-        role="group"
-        aria-label={viewMode === "week" ? "Week days" : "Month days"}
-      >
-        {visibleDays.map((day) => {
-          const key = toDateKey(day);
-          const isSelected = key === selectedKey;
-          const isDayToday = key === toDateKey(today);
-          const hasEvents = busyDates.has(key);
-          const isInCurrentMonth =
-            viewMode === "month"
-              ? day.getMonth() === selectedDate.getMonth()
-              : true;
-
-          return (
-            <button
-              key={key}
-              type="button"
-              className={`calendar__week-day${isSelected ? " calendar__week-day--active" : ""}${isDayToday ? " calendar__week-day--today" : ""}${hasEvents ? " calendar__week-day--busy" : ""}${!isInCurrentMonth ? " calendar__week-day--muted" : ""}`}
-              onClick={() => setSelectedDate(day)}
-              aria-pressed={isSelected}
-            >
-              {viewMode === "week" && (
-                <span className="calendar__week-label">
-                  {WEEKDAYS[day.getDay()]}
-                </span>
-              )}
-              <span className="calendar__week-num">{day.getDate()}</span>
-              {hasEvents && (
-                <span className="calendar__week-dot" aria-hidden="true" />
-              )}
-            </button>
-          );
-        })}
-      </div>
+      <CalendarGrid
+        visibleDays={visibleDays}
+        selectedDate={selectedDate}
+        today={today}
+        viewMode={viewMode}
+        busyDates={busyDates}
+        onDaySelect={setSelectedDate}
+      />
 
       <div className="calendar__summary animate-in animate-in--3">
         <GlassCard
@@ -815,140 +787,21 @@ function Calendar() {
         <LoadingSkeleton count={3} height="4rem" />
       ) : (
         <div className="calendar__day animate-in animate-in--4">
-          <div className="calendar__timeline">
-            <div className="calendar__hours" aria-hidden="true">
-              {hourLabels.map((label) => (
-                <div
-                  key={label}
-                  className="calendar__hour-label"
-                  style={{ height: `${HOUR_HEIGHT}px` }}
-                >
-                  {label}
-                </div>
-              ))}
-            </div>
-
-            <div
-              className="calendar__grid"
-              style={{ height: `${TOTAL_HOURS * HOUR_HEIGHT}px` }}
-              onClick={handleGridClick}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault();
-                  handleGridClick(e);
-                }
-              }}
-              tabIndex={0}
-              role="button"
-              aria-label="Click to add event at that time"
-            >
-              {hourLabels.map((_, i) => (
-                <div
-                  key={i}
-                  className="calendar__grid-line"
-                  style={{ top: `${i * HOUR_HEIGHT}px` }}
-                />
-              ))}
-
-              {nowLineTop !== null && (
-                <div
-                  className="calendar__now-line"
-                  style={{ top: `${nowLineTop}px` }}
-                  aria-hidden="true"
-                >
-                  <span className="calendar__now-dot" />
-                </div>
-              )}
-
-              {laidOutEvents.map((event) => {
-                // Render wake events as a thin, full-width line (not a task card)
-                if (isWakeEvent(event)) {
-                  const minutes = parseTimeToMinutes(event.start_time);
-                  const dayStartMin = DAY_START_HOUR * 60;
-                  const top = ((minutes - dayStartMin) / 60) * HOUR_HEIGHT;
-                  return (
-                    <div
-                      key={event.id}
-                      className="calendar__wake-line"
-                      style={{ top: `${top}px` }}
-                      aria-hidden="true"
-                    >
-                      <span className="calendar__wake-label">
-                        {event.title}
-                      </span>
-                    </div>
-                  );
-                }
-
-                const style = eventStyle(event);
-                if (!style) return null;
-
-                const colorInfo = resolveColor(event.color);
-                const isShort = parseInt(style.height, 10) < 44;
-
-                return (
-                  <article
-                    key={event.id}
-                    className={`calendar__event calendar__event--${event.color}${event.is_completed ? " calendar__event--done" : ""}${removingId === event.id ? " calendar__event--removing" : ""}`}
-                    style={{
-                      ...style,
-                      "--event-accent": colorInfo.accent,
-                      "--event-bg": colorInfo.bg,
-                    }}
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <button
-                      type="button"
-                      className="calendar__check"
-                      onClick={() => toggleComplete(event)}
-                      disabled={togglingId === event.id}
-                      aria-label={
-                        event.is_completed
-                          ? `Mark ${event.title} as pending`
-                          : `Mark ${event.title} as done`
-                      }
-                      aria-pressed={event.is_completed}
-                    >
-                      <span
-                        className="calendar__check-icon"
-                        aria-hidden="true"
-                      />
-                    </button>
-
-                    <button
-                      type="button"
-                      className="calendar__event-body"
-                      onClick={() => openEditModal(event)}
-                    >
-                      <span className="calendar__event-title">
-                        {event.title}
-                      </span>
-                      {!isShort && (
-                        <span className="calendar__event-time">
-                          {formatTime12(event.start_time)} –{" "}
-                          {formatTime12(event.end_time)}
-                        </span>
-                      )}
-                    </button>
-
-                    <div className="calendar__event-actions">
-                      <button
-                        type="button"
-                        className="calendar__event-action calendar__event-action--delete"
-                        onClick={() => {
-                          setDeleteTarget(event);
-                          deleteModal.openModal();
-                        }}
-                        aria-label={`Delete ${event.title}`}
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </article>
-                );
-              })}
-            </div>
-          </div>
+          <TimelineView
+            hourLabels={hourLabels}
+            laidOutEvents={laidOutEvents}
+            nowLineTop={nowLineTop}
+            onGridClick={handleGridClick}
+            onEventClick={openEditModal}
+            onCheck={toggleComplete}
+            onDelete={(event) => {
+              setDeleteTarget(event);
+              deleteModal.openModal();
+            }}
+            togglingId={togglingId}
+            removingId={removingId}
+            isWakeEvent={isWakeEvent}
+          />
         </div>
       )}
 
@@ -961,213 +814,40 @@ function Calendar() {
         </div>
       )}
 
-      {events.length > 0 && (
-        <ul className="calendar__reminders animate-in animate-in--4">
-          {events
-            .filter((event) => !isWakeEvent(event))
-            .map((event) => (
-              <li
-                key={`list-${event.id}`}
-                className={`calendar__reminder${event.is_completed ? " calendar__reminder--done" : ""}${removingId === event.id ? " calendar__reminder--removing" : ""}`}
-              >
-                <button
-                  type="button"
-                  className="calendar__check calendar__check--list"
-                  onClick={() => toggleComplete(event)}
-                  disabled={togglingId === event.id}
-                  aria-label={
-                    event.is_completed
-                      ? `Mark ${event.title} as pending`
-                      : `Mark ${event.title} as done`
-                  }
-                  aria-pressed={event.is_completed}
-                >
-                  <span className="calendar__check-icon" aria-hidden="true" />
-                </button>
-                <button
-                  type="button"
-                  className="calendar__reminder-main"
-                  onClick={() => openEditModal(event)}
-                >
-                  <span className="calendar__reminder-title">
-                    {event.title}
-                  </span>
-                  <span className="calendar__reminder-time">
-                    {formatTime12(event.start_time)} –{" "}
-                    {formatTime12(event.end_time)}
-                  </span>
-                </button>
-                <button
-                  type="button"
-                  className="calendar__reminder-delete"
-                  onClick={() => {
-                    setDeleteTarget(event);
-                    deleteModal.openModal();
-                  }}
-                  aria-label={`Delete ${event.title}`}
-                >
-                  Delete
-                </button>
-              </li>
-            ))}
-        </ul>
-      )}
+      <ReminderList
+        events={events}
+        isWakeEvent={isWakeEvent}
+        onCheck={toggleComplete}
+        onEdit={openEditModal}
+        onDelete={(event) => {
+          setDeleteTarget(event);
+          deleteModal.openModal();
+        }}
+        togglingId={togglingId}
+        removingId={removingId}
+      />
 
-      <SheetModal
+      <EventForm
         open={formModal.open}
         closing={formModal.closing}
         onClose={closeFormModal}
-        title={editingEvent ? "Edit event" : "Add event"}
-      >
-        <form className="calendar__form" onSubmit={handleSubmit}>
-          <FormField
-            label="Title"
-            error={fieldErrors.title}
-            state={fieldStates.title}
-            showIndicator
-            shake={fieldErrors.title ? shakeKey : 0}
-          >
-            <input
-              type="text"
-              value={form.title}
-              onChange={(e) => {
-                setForm({ ...form, title: e.target.value });
-                setFieldErrors((prev) => ({ ...prev, title: null }));
-              }}
-              onBlur={() => handleCalendarFieldBlur("title")}
-              placeholder="Workout, meeting…"
-              required
-              autoComplete="off"
-            />
-          </FormField>
-
-          <FormField
-            label="Date"
-            error={fieldErrors.event_date}
-            state={fieldStates.event_date}
-            showIndicator
-            shake={fieldErrors.event_date ? shakeKey : 0}
-          >
-            <input
-              type="date"
-              value={form.event_date}
-              onChange={(e) => {
-                setForm({ ...form, event_date: e.target.value });
-                setFieldErrors((prev) => ({ ...prev, event_date: null }));
-              }}
-              onBlur={() => handleCalendarFieldBlur("event_date")}
-              required
-            />
-          </FormField>
-
-          <FormField
-            label="Start"
-            error={fieldErrors.start_time}
-            state={fieldStates.start_time}
-            showIndicator
-            shake={fieldErrors.start_time ? shakeKey : 0}
-          >
-            <input
-              type="time"
-              value={form.start_time}
-              onChange={(e) => {
-                setForm({ ...form, start_time: e.target.value });
-                setFieldErrors((prev) => ({
-                  ...prev,
-                  start_time: null,
-                  end_time: null,
-                }));
-              }}
-              onBlur={() => handleCalendarFieldBlur("start_time")}
-              required
-            />
-          </FormField>
-
-          <FormField
-            label="End"
-            error={fieldErrors.end_time}
-            state={fieldStates.end_time}
-            showIndicator
-            shake={fieldErrors.end_time ? shakeKey : 0}
-          >
-            <input
-              type="time"
-              value={form.end_time}
-              onChange={(e) => {
-                setForm({ ...form, end_time: e.target.value });
-                setFieldErrors((prev) => ({
-                  ...prev,
-                  end_time: null,
-                  start_time: null,
-                }));
-              }}
-              onBlur={() => handleCalendarFieldBlur("end_time")}
-              required
-            />
-          </FormField>
-
-          <FormField
-            label="Color"
-            error={fieldErrors.color}
-            state={fieldStates.color || (form.color ? "valid" : "idle")}
-            showIndicator
-            shake={fieldErrors.color ? shakeKey : 0}
-          >
-            <ColorPalettePicker
-              value={form.color}
-              onChange={(hex) => {
-                setForm({ ...form, color: hex });
-                setFieldErrors((prev) => ({ ...prev, color: null }));
-                if (hex) {
-                  setFieldStates((prev) => ({ ...prev, color: "valid" }));
-                }
-              }}
-            />
-          </FormField>
-
-          <FormField
-            label="Notes"
-            optional
-            charCount={form.notes.length}
-            maxChars={240}
-          >
-            <textarea
-              rows={3}
-              value={form.notes}
-              maxLength={240}
-              onChange={(e) => setForm({ ...form, notes: e.target.value })}
-              placeholder="Reminder details…"
-            />
-          </FormField>
-
-          <div className="btn-row">
-            <button
-              type="button"
-              className="btn btn--ghost"
-              onClick={closeFormModal}
-              disabled={saving}
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className="btn btn--primary"
-              disabled={saving || !isCalendarFormValid}
-            >
-              {saving ? (
-                <>
-                  <span className="btn__spinner" aria-hidden="true" />
-                  Saving…
-                </>
-              ) : editingEvent ? (
-                "Save changes"
-              ) : (
-                "Add event"
-              )}
-            </button>
-          </div>
-        </form>
-      </SheetModal>
+        editingEvent={editingEvent}
+        form={form}
+        onFormChange={setForm}
+        saving={saving}
+        fieldErrors={fieldErrors}
+        fieldStates={fieldStates}
+        shakeKey={shakeKey}
+        onFieldBlur={handleCalendarFieldBlur}
+        onSubmit={handleSubmit}
+        onClearFieldError={(field) =>
+          setFieldErrors((prev) => ({ ...prev, [field]: null }))
+        }
+        onSetFieldState={(field, state) =>
+          setFieldStates((prev) => ({ ...prev, [field]: state }))
+        }
+        isValid={isCalendarFormValid}
+      />
 
       <ConfirmModal
         open={!!deleteTarget && deleteModal.open}

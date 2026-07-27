@@ -832,11 +832,7 @@
   font-size: 1.1rem;
 }
 
-@keyframes shifts-spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
+/* NOTE: Use shared @keyframes spin from animations.css */
 
 /* ── Buttons ────────────────────────────────────────────────── */
 
@@ -888,82 +884,13 @@
   transform: scale(0.97);
 }
 
-.shifts__add-btn:focus-visible {
-  outline: 2px solid var(--color-accent);
-  outline-offset: 2px;
-}
-
-@keyframes shifts-spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
+/* NOTE: Use shared @keyframes spin from animations.css */
 
 /* ── FAB ────────────────────────────────────────────────────── */
 
 /* ── Shifts-specific Keyframes ──────────────────────────────── */
 
-@keyframes shiftsOverlayIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes shiftsOverlayOut {
-  from {
-    opacity: 1;
-  }
-  to {
-    opacity: 0;
-  }
-}
-
-@keyframes shiftsSheetOut {
-  from {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-  to {
-    opacity: 0;
-    transform: translateY(24px) scale(0.992);
-  }
-}
-
-@keyframes shiftsModalSlideUp {
-  from {
-    opacity: 0;
-    transform: translateY(110%);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes shiftsModalCenterIn {
-  from {
-    opacity: 0;
-    transform: translateY(18px) scale(0.96);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-@keyframes shiftsModalCenterOut {
-  from {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-  to {
-    opacity: 0;
-    transform: translateY(18px) scale(0.96);
-  }
-}
+/* NOTE: Use shared keyframes from Sheet_modal.css (sheetOverlayIn/Out, sheetModalSlideUp, sheetModalCenterIn/Out) */
 
 /* ── Responsive / Adaptive ──────────────────────────────────── */
 
@@ -1171,28 +1098,7 @@
   animation: shiftsCardRemove 0.35s var(--ease-smooth) forwards;
 }
 
-@keyframes shiftsCardRemove {
-  0% {
-    opacity: 1;
-    transform: translateX(0) scale(1);
-    max-height: 200px;
-    margin-bottom: 0.65rem;
-    padding: 1rem 1.25rem;
-  }
-  50% {
-    opacity: 0;
-    transform: translateX(30px) scale(0.95);
-  }
-  100% {
-    opacity: 0;
-    transform: translateX(30px) scale(0.95);
-    max-height: 0;
-    margin-bottom: 0;
-    padding: 0;
-    border-width: 0;
-    overflow: hidden;
-  }
-}
+/* NOTE: Use shared @keyframes cardRemove from animations.css */
 
 /* ── Error message ── */
 
@@ -1210,24 +1116,7 @@
   animation: shiftsErrorShake 0.5s ease-in-out;
 }
 
-@keyframes shiftsErrorShake {
-  0%,
-  100% {
-    transform: translateX(0);
-  }
-  20% {
-    transform: translateX(-8px);
-  }
-  40% {
-    transform: translateX(8px);
-  }
-  60% {
-    transform: translateX(-4px);
-  }
-  80% {
-    transform: translateX(4px);
-  }
-}
+/* NOTE: Use shared @keyframes shake from animations.css */
 
 /* ── Deactivated workplace shifts ── */
 

@@ -6,23 +6,9 @@
 
 /* ── Base ───────────────────────────────────────────────────── */
 
-.fitness {
-  text-align: left;
-  padding-bottom: 5.5rem;
-  min-width: 0;
-}
+/* NOTE: .page--scrollable provides identical base layout */
 
-@media (min-width: 1024px) {
-  .fitness.page {
-    max-width: 56rem;
-    margin-inline: auto;
-  }
-}
-
-.fitness__header {
-  text-align: center;
-  margin-bottom: 1.5rem;
-}
+/* NOTE: .page-header provides identical layout */
 
 /* ── Sub-tab Toggle ─────────────────────────────────────────── */
 
@@ -61,10 +47,7 @@
   color: #fff;
 }
 
-.fitness__tab-btn:focus-visible {
-  outline: 2px solid var(--color-primary);
-  outline-offset: 2px;
-}
+
 
 .fitness__tab-indicator {
   position: absolute;
@@ -233,10 +216,7 @@
   font-weight: 800;
 }
 
-.fitness__week-day:focus-visible {
-  outline: 2px solid var(--color-primary);
-  outline-offset: 2px;
-}
+
 
 /* ── View Toggle ───────────────────────────────────────────── */
 
@@ -279,10 +259,7 @@
   box-shadow: 0 4px 16px rgba(129, 140, 248, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
 
-.fitness__view-btn:focus-visible {
-  outline: 2px solid var(--color-primary);
-  outline-offset: 2px;
-}
+
 
 /* ── Month Grid ────────────────────────────────────────────── */
 
@@ -328,6 +305,7 @@
     box-shadow var(--duration-normal) ease;
 }
 
+/* NOTE: .stat-card:hover provides identical hover */
 .fitness__stat:hover {
   transform: translateY(-4px) scale(1.02);
   border-color: var(--border-hover);
@@ -1209,24 +1187,7 @@
   animation: fitnessErrorShake 0.5s ease-in-out;
 }
 
-@keyframes fitnessErrorShake {
-  0%,
-  100% {
-    transform: translateX(0);
-  }
-  20% {
-    transform: translateX(-8px);
-  }
-  40% {
-    transform: translateX(8px);
-  }
-  60% {
-    transform: translateX(-4px);
-  }
-  80% {
-    transform: translateX(4px);
-  }
-}
+/* NOTE: Use shared @keyframes shake from animations.css */
 
 /* ── Empty State ────────────────────────────────────────────── */
 
@@ -1250,28 +1211,7 @@
   animation: fitnessCardRemove 0.35s var(--ease-smooth) forwards;
 }
 
-@keyframes fitnessCardRemove {
-  0% {
-    opacity: 1;
-    transform: translateX(0) scale(1);
-    max-height: 200px;
-    margin-bottom: 0.65rem;
-    padding: 1rem 1.25rem;
-  }
-  50% {
-    opacity: 0;
-    transform: translateX(30px) scale(0.95);
-  }
-  100% {
-    opacity: 0;
-    transform: translateX(30px) scale(0.95);
-    max-height: 0;
-    margin-bottom: 0;
-    padding: 0;
-    border-width: 0;
-    overflow: hidden;
-  }
-}
+/* NOTE: Use shared @keyframes cardRemove from animations.css */
 
 /* ── Responsive ─────────────────────────────────────────────── */
 

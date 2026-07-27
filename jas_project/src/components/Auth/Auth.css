@@ -180,6 +180,7 @@
 }
 
 /* ── Header ── */
+/* NOTE: .page-header provides identical layout */
 .auth__header {
   text-align: center;
   margin-bottom: 1.5rem;
@@ -201,6 +202,7 @@
 }
 
 /* ── Form ── */
+/* NOTE: .form-column provides identical layout */
 .auth__form {
   display: flex;
   flex-direction: column;
@@ -531,13 +533,8 @@
   border: 2.5px solid rgba(255, 255, 255, 0.3);
   border-top-color: white;
   border-radius: 50%;
-  animation: authSpin 0.6s linear infinite;
-}
-
-@keyframes authSpin {
-  to {
-    transform: rotate(360deg);
-  }
+  /* NOTE: Use shared @keyframes spin from animations.css */
+  animation: spin 0.6s linear infinite;
 }
 
 /* ── Social button ── */

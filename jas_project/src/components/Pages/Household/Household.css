@@ -2,23 +2,9 @@
    Household.css — Couple's shared dashboard
    ============================================================ */
 
-.household {
-  text-align: left;
-  padding-bottom: 5.5rem;
-  min-width: 0;
-}
+/* NOTE: .page--scrollable provides identical base layout */
 
-@media (min-width: 1024px) {
-  .household.page {
-    max-width: 56rem;
-    margin-inline: auto;
-  }
-}
-
-.household__header {
-  text-align: center;
-  margin-bottom: 1.5rem;
-}
+/* NOTE: .page-header provides identical layout */
 
 /* ── Invite Code ────────────────────────────────────────────── */
 
@@ -100,6 +86,7 @@
   flex-wrap: wrap;
 }
 
+/* NOTE: .form-column provides identical layout */
 .household__form {
   display: flex;
   flex-direction: column;

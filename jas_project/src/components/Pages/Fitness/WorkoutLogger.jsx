@@ -20,42 +20,19 @@ import LoadingSkeleton from "../../../components/ui/Loading_skeleton";
 import GlassCard from "../../../components/ui/Glass_card";
 import FAB from "../../../components/ui/FAB";
 
-import { kgToLbs, lbsToKg } from "../../../lib/weight";
+import { kgToLbs } from "../../../lib/weight";
 
-const MODAL_EXIT_MS = 320;
-
-const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-
-function emptyExercise() {
-  return { name: "", weight: "", weight_lbs: "", sets: "", reps: "" };
-}
-
-const KG_TO_LBS = 2.20462;
-
-function emptyForm() {
-  return {
-    workout_date: new Date().toISOString().slice(0, 10),
-    preset_name: "",
-    exercises: [emptyExercise()],
-    notes: "",
-    duration_minutes: "",
-    calories_burned: "",
-  };
-}
-
-function calcVolume(exercises) {
-  return exercises.reduce((sum, ex) => {
-    const w = parseFloat(ex.weight) || 0;
-    const s = parseInt(ex.sets, 10) || 0;
-    const r = parseInt(ex.reps, 10) || 0;
-    return sum + w * s * r;
-  }, 0);
-}
-
-function formatVolume(vol) {
-  if (vol >= 1000) return `${(vol / 1000).toFixed(1)}k`;
-  return String(Math.round(vol));
-}
+import {
+  MODAL_EXIT_MS,
+  WEEKDAYS,
+  emptyExercise,
+  emptyForm,
+  calcVolume,
+  formatVolume,
+} from "./workout_utils";
+import ExerciseRow from "./ExerciseRow";
+import WorkoutCard from "./WorkoutCard";
+import WorkoutForm from "./WorkoutForm";
 
 function WorkoutLogger() {
   const userId = useUserId();
@@ -453,13 +430,13 @@ function WorkoutLogger() {
   };
 
   const handleFieldBlur = (fieldName) => {
-    const error = validateField(fieldName, form[fieldName]);
-    setFieldErrors((prev) => ({ ...prev, [fieldName]: error }));
+    const err = validateField(fieldName, form[fieldName]);
+    setFieldErrors((prev) => ({ ...prev, [fieldName]: err }));
     setFieldStates((prev) => ({
       ...prev,
-      [fieldName]: error ? "error" : form[fieldName] ? "valid" : "idle",
+      [fieldName]: err ? "error" : form[fieldName] ? "valid" : "idle",
     }));
-    if (error) {
+    if (err) {
       setShakeKey((k) => k + 1);
       hapticError();
     }
@@ -613,8 +590,6 @@ function WorkoutLogger() {
       toastError("Failed to delete workout.");
     }
   };
-
-  const volume = calcVolume(form.exercises);
 
   return (
     <div className="fitness__workout">
@@ -813,328 +788,43 @@ function WorkoutLogger() {
         />
       ) : (
         <ul className="fitness__list" key={`list-${selectedKey}`}>
-          {workouts.map((workout, index) => {
-            const exercises = Array.isArray(workout.exercises)
-              ? workout.exercises
-              : [];
-            const vol = calcVolume(exercises);
-            const isRemoving = removingId === workout.id;
-
-            return (
-              <li
-                key={workout.id}
-                className={`fitness__card${isRemoving ? " fitness__card--removing" : ""}`}
-                style={{ "--card-delay": `${index * 0.06}s` }}
-              >
-                <div className="fitness__card-main">
-                  <div className="fitness__card-top">
-                    <span className="fitness__card-date">
-                      {formatDateFriendly(workout.workout_date)}
-                    </span>
-                    {workout.preset_name && (
-                      <span className="fitness__card-preset">
-                        {workout.preset_name}
-                      </span>
-                    )}
-                    {workout.notes && (
-                      <button
-                        type="button"
-                        className={`fitness__note-toggle${expandedNoteId === workout.id ? " fitness__note-toggle--active" : ""}`}
-                        onClick={() =>
-                          setExpandedNoteId(
-                            expandedNoteId === workout.id ? null : workout.id,
-                          )
-                        }
-                        aria-expanded={expandedNoteId === workout.id}
-                      >
-                        <svg
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="1.75"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        >
-                          <path d="M21 12c0 4.418-4.03 8-9 8-1.06 0-2.07-.16-3-.46L3 21l1.5-4.5C3.55 15.13 3 13.62 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8Z" />
-                        </svg>
-                      </button>
-                    )}
-                  </div>
-                  <div className="fitness__card-exercises">
-                    {exercises.map((ex, i) => (
-                      <span key={i} className="fitness__card-exercise">
-                        {ex.name}
-                        {ex.weight ? ` ${ex.weight}kg (${kgToLbs(ex.weight)}lbs)` : ""}
-                        {ex.sets && ex.reps ? ` ${ex.sets}×${ex.reps}` : ""}
-                      </span>
-                    ))}
-                  </div>
-                  <div className="fitness__card-meta">
-                    {vol > 0 && (
-                      <span className="fitness__card-volume">
-                        Vol: {formatVolume(vol)} kg
-                      </span>
-                    )}
-                    {workout.duration_minutes && (
-                      <span className="fitness__card-duration">
-                        {workout.duration_minutes}m
-                      </span>
-                    )}
-                    {workout.calories_burned > 0 && (
-                      <span className="fitness__card-calories">
-                        {workout.calories_burned} kcal
-                      </span>
-                    )}
-                  </div>
-                  {workout.notes && expandedNoteId === workout.id && (
-                    <p className="fitness__note-panel">{workout.notes}</p>
-                  )}
-                </div>
-                <div className="fitness__card-actions">
-                  <button
-                    type="button"
-                    className="fitness__action fitness__action--edit"
-                    onClick={() => openEditModal(workout)}
-                    aria-label="Edit workout"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    type="button"
-                    className="fitness__action fitness__action--delete"
-                    onClick={() => openDeleteModal(workout)}
-                    aria-label="Delete workout"
-                  >
-                    Delete
-                  </button>
-                </div>
-              </li>
-            );
-          })}
+          {workouts.map((workout, index) => (
+            <WorkoutCard
+              key={workout.id}
+              workout={workout}
+              index={index}
+              onEdit={openEditModal}
+              onDelete={openDeleteModal}
+              onToggleNote={(id) =>
+                setExpandedNoteId(expandedNoteId === id ? null : id)
+              }
+              expandedNoteId={expandedNoteId}
+              isRemoving={removingId === workout.id}
+            />
+          ))}
         </ul>
       )}
 
       {/* Add/Edit Workout Modal */}
-      <SheetModal
+      <WorkoutForm
         open={formModal.open}
         closing={formModal.closing}
         onClose={closeFormModal}
-        title={editingWorkout ? "Edit workout" : "Log workout"}
-      >
-        <form className="fitness__form" onSubmit={handleSubmit}>
-          <FormField
-            label="Date"
-            error={fieldErrors.workout_date}
-            state={fieldStates.workout_date}
-            showIndicator
-            shake={fieldErrors.workout_date ? shakeKey : 0}
-          >
-            <input
-              type="date"
-              value={form.workout_date}
-              onChange={(e) => {
-                setForm((f) => ({ ...f, workout_date: e.target.value }));
-                setFieldErrors((prev) => ({ ...prev, workout_date: null }));
-              }}
-              onBlur={() => handleFieldBlur("workout_date")}
-              required
-            />
-          </FormField>
-
-          <FormField
-            label="Workout name"
-            error={fieldErrors.preset_name}
-            state={fieldStates.preset_name}
-            showIndicator
-            shake={fieldErrors.preset_name ? shakeKey : 0}
-          >
-            <input
-              type="text"
-              placeholder="e.g. Push day, Leg day"
-              value={form.preset_name}
-              maxLength={60}
-              onChange={(e) => {
-                setForm((f) => ({ ...f, preset_name: e.target.value }));
-                setFieldErrors((prev) => ({ ...prev, preset_name: null }));
-              }}
-              onBlur={() => handleFieldBlur("preset_name")}
-              required
-            />
-          </FormField>
-
-          <div className="fitness__exercises-section">
-            <div className="fitness__exercises-header">
-              <span className="fitness__exercises-label">Exercises</span>
-              {fieldErrors.exercises && (
-                <span className="fitness__field-error-text">
-                  {fieldErrors.exercises}
-                </span>
-              )}
-            </div>
-            {form.exercises.map((ex, i) => (
-              <div key={i} className="fitness__exercise-row">
-                <div className="fitness__exercise-fields">
-                  <input
-                    type="text"
-                    className="fitness__exercise-name"
-                    placeholder="Exercise name"
-                    value={ex.name}
-                    maxLength={80}
-                    onChange={(e) => updateExercise(i, "name", e.target.value)}
-                  />
-                  <div className="fitness__exercise-numbers">
-                    <input
-                      type="number"
-                      className="fitness__exercise-input"
-                      placeholder="kg"
-                      min="0"
-                      step="0.5"
-                      value={ex.weight}
-                      onChange={(e) => {
-                        updateExercise(i, "weight", e.target.value);
-                        updateExercise(i, "weight_lbs", kgToLbs(e.target.value));
-                      }}
-                    />
-                    <input
-                      type="number"
-                      className="fitness__exercise-input"
-                      placeholder="lbs"
-                      min="0"
-                      step="0.5"
-                      value={ex.weight_lbs}
-                      onChange={(e) => {
-                        updateExercise(i, "weight_lbs", e.target.value);
-                        updateExercise(i, "weight", lbsToKg(e.target.value));
-                      }}
-                    />
-                    <input
-                      type="number"
-                      className="fitness__exercise-input"
-                      placeholder="sets"
-                      min="0"
-                      value={ex.sets}
-                      onChange={(e) =>
-                        updateExercise(i, "sets", e.target.value)
-                      }
-                    />
-                    <input
-                      type="number"
-                      className="fitness__exercise-input"
-                      placeholder="reps"
-                      min="0"
-                      value={ex.reps}
-                      onChange={(e) =>
-                        updateExercise(i, "reps", e.target.value)
-                      }
-                    />
-                  </div>
-                </div>
-                {form.exercises.length > 1 && (
-                  <button
-                    type="button"
-                    className="fitness__exercise-remove"
-                    onClick={() => removeExercise(i)}
-                    aria-label="Remove exercise"
-                  >
-                    ×
-                  </button>
-                )}
-              </div>
-            ))}
-            <button
-              type="button"
-              className="fitness__exercise-add"
-              onClick={addExercise}
-            >
-              + Add exercise
-            </button>
-          </div>
-
-          <FormField label="Duration (minutes)" optional>
-            <input
-              type="number"
-              min="1"
-              max="600"
-              placeholder="e.g. 60"
-              value={form.duration_minutes}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, duration_minutes: e.target.value }))
-              }
-            />
-          </FormField>
-
-          <FormField
-            label="Calories burned"
-            error={fieldErrors.calories_burned}
-            state={fieldStates.calories_burned}
-            showIndicator
-            shake={fieldErrors.calories_burned ? shakeKey : 0}
-            optional
-          >
-            <input
-              type="number"
-              min="0"
-              max="9999"
-              placeholder="e.g. 350"
-              value={form.calories_burned}
-              onChange={(e) => {
-                setForm((f) => ({ ...f, calories_burned: e.target.value }));
-                setFieldErrors((prev) => ({ ...prev, calories_burned: null }));
-              }}
-              onBlur={() => handleFieldBlur("calories_burned")}
-            />
-          </FormField>
-
-          <FormField
-            label="Notes"
-            optional
-            charCount={form.notes.length}
-            maxChars={500}
-          >
-            <textarea
-              placeholder="e.g. Felt strong, increased bench PR"
-              value={form.notes}
-              maxLength={500}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, notes: e.target.value }))
-              }
-            />
-          </FormField>
-
-          {volume > 0 && (
-            <p className="fitness__preview">
-              Total volume: <strong>{formatVolume(volume)} kg</strong>
-            </p>
-          )}
-
-          <div className="btn-row">
-            <button
-              type="button"
-              className="btn btn--ghost"
-              onClick={closeFormModal}
-              disabled={saving}
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className="btn btn--primary"
-              disabled={saving || !isFormValid}
-            >
-              {saving ? (
-                <>
-                  <span className="btn__spinner" aria-hidden="true" />
-                  Saving…
-                </>
-              ) : editingWorkout ? (
-                "Save changes"
-              ) : (
-                "Log workout"
-              )}
-            </button>
-          </div>
-        </form>
-      </SheetModal>
+        editingWorkout={editingWorkout}
+        form={form}
+        setForm={setForm}
+        fieldErrors={fieldErrors}
+        fieldStates={fieldStates}
+        shakeKey={shakeKey}
+        saving={saving}
+        isFormValid={isFormValid}
+        onAddExercise={addExercise}
+        onRemoveExercise={removeExercise}
+        onUpdateExercise={updateExercise}
+        onSubmit={handleSubmit}
+        onFieldBlur={handleFieldBlur}
+        exerciseCount={form.exercises.length}
+      />
 
       {/* Preset Modal */}
       <SheetModal
@@ -1163,76 +853,14 @@ function WorkoutLogger() {
           <div className="fitness__exercises-section">
             <span className="fitness__exercises-label">Exercises</span>
             {presetForm.exercises.map((ex, i) => (
-              <div key={i} className="fitness__exercise-row">
-                <div className="fitness__exercise-fields">
-                  <input
-                    type="text"
-                    className="fitness__exercise-name"
-                    placeholder="Exercise name"
-                    value={ex.name}
-                    maxLength={80}
-                    onChange={(e) =>
-                      updatePresetExercise(i, "name", e.target.value)
-                    }
-                  />
-                  <div className="fitness__exercise-numbers">
-                    <input
-                      type="number"
-                      className="fitness__exercise-input"
-                      placeholder="kg"
-                      min="0"
-                      step="0.5"
-                      value={ex.weight}
-                      onChange={(e) => {
-                        updatePresetExercise(i, "weight", e.target.value);
-                        updatePresetExercise(i, "weight_lbs", kgToLbs(e.target.value));
-                      }}
-                    />
-                    <input
-                      type="number"
-                      className="fitness__exercise-input"
-                      placeholder="lbs"
-                      min="0"
-                      step="0.5"
-                      value={ex.weight_lbs || ""}
-                      onChange={(e) => {
-                        updatePresetExercise(i, "weight_lbs", e.target.value);
-                        updatePresetExercise(i, "weight", lbsToKg(e.target.value));
-                      }}
-                    />
-                    <input
-                      type="number"
-                      className="fitness__exercise-input"
-                      placeholder="sets"
-                      min="0"
-                      value={ex.sets}
-                      onChange={(e) =>
-                        updatePresetExercise(i, "sets", e.target.value)
-                      }
-                    />
-                    <input
-                      type="number"
-                      className="fitness__exercise-input"
-                      placeholder="reps"
-                      min="0"
-                      value={ex.reps}
-                      onChange={(e) =>
-                        updatePresetExercise(i, "reps", e.target.value)
-                      }
-                    />
-                  </div>
-                </div>
-                {presetForm.exercises.length > 1 && (
-                  <button
-                    type="button"
-                    className="fitness__exercise-remove"
-                    onClick={() => removePresetExercise(i)}
-                    aria-label="Remove exercise"
-                  >
-                    ×
-                  </button>
-                )}
-              </div>
+              <ExerciseRow
+                key={i}
+                exercise={ex}
+                index={i}
+                onChange={updatePresetExercise}
+                onRemove={removePresetExercise}
+                showRemove={presetForm.exercises.length > 1}
+              />
             ))}
             <button
               type="button"
