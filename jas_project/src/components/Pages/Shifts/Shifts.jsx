@@ -391,7 +391,7 @@ function Shifts({ onNavigate }) {
   }, [selectedDate]);
 
   const monthDays = useMemo(() => {
-    const d = new Date(`${selectedDate}T12:00:00`);
+    const d = selectedDate; // already a Date object
     const start = startOfWeek(new Date(d.getFullYear(), d.getMonth(), 1));
     return Array.from({ length: 42 }, (_, i) => addDays(start, i));
   }, [selectedDate]);
@@ -411,7 +411,7 @@ function Shifts({ onNavigate }) {
     setLoading(true);
     setError(null);
 
-    const d = new Date(`${selectedDate}T12:00:00`);
+    const d = selectedDate; // already a Date object
     const rangeStart =
       viewMode === "week"
         ? startOfWeek(d)
@@ -930,7 +930,9 @@ function Shifts({ onNavigate }) {
           <button
             type="button"
             className="shifts__date-btn"
-            onClick={() => setSelectedDate((d) => addDays(d, viewMode === "week" ? -7 : -30))}
+            onClick={() =>
+              setSelectedDate((d) => addDays(d, viewMode === "week" ? -7 : -30))
+            }
             aria-label="Previous day"
           >
             ‹
@@ -939,7 +941,9 @@ function Shifts({ onNavigate }) {
           <button
             type="button"
             className="shifts__date-btn"
-            onClick={() => setSelectedDate((d) => addDays(d, viewMode === "week" ? 7 : 30))}
+            onClick={() =>
+              setSelectedDate((d) => addDays(d, viewMode === "week" ? 7 : 30))
+            }
             aria-label="Next day"
           >
             ›
@@ -967,9 +971,10 @@ function Shifts({ onNavigate }) {
           const isSelected = key === selectedKey;
           const isDayToday = key === toDateKey(now);
           const hasShift = shifts.some((s) => s.shift_date === key);
-          const d = new Date(`${selectedDate}T12:00:00`);
           const isInCurrentMonth =
-            viewMode === "month" ? day.getMonth() === d.getMonth() : true;
+            viewMode === "month"
+              ? day.getMonth() === selectedDate.getMonth()
+              : true;
 
           return (
             <button
