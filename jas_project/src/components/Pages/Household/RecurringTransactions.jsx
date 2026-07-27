@@ -14,7 +14,7 @@ import FormField from "../../ui/form/Form_field.jsx";
 import GlassCard from "../../ui/Glass_card";
 import EmptyState from "../../ui/Empty_state";
 
-import { formatMoney } from "../../lib/format";
+import { formatMoney } from "../../../lib/format";
 
 function formatDate(dateStr) {
   if (!dateStr) return "—";
@@ -33,7 +33,6 @@ const FREQUENCIES = [
   { value: "monthly", label: "Monthly" },
   { value: "yearly", label: "Yearly" },
 ];
-
 
 function RecurringTransactions({ householdId, userId, categories }) {
   const [recurring, setRecurring] = useState([]);
@@ -79,7 +78,10 @@ function RecurringTransactions({ householdId, userId, categories }) {
     if (btn && container) {
       const containerRect = container.getBoundingClientRect();
       const btnRect = btn.getBoundingClientRect();
-      setIndicatorStyle({ left: btnRect.left - containerRect.left, width: btnRect.width });
+      setIndicatorStyle({
+        left: btnRect.left - containerRect.left,
+        width: btnRect.width,
+      });
     }
   }, [form.type]);
 
@@ -240,7 +242,12 @@ function RecurringTransactions({ householdId, userId, categories }) {
       const payload = {
         household_id: householdId,
         user_id: userId,
-        category_id: /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(form.category_id) ? form.category_id : null,
+        category_id:
+          /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+            form.category_id,
+          )
+            ? form.category_id
+            : null,
         type: form.type,
         amount: Number(Number(form.amount).toFixed(2)),
         description: sanitizeText(form.description, 100),
@@ -487,17 +494,24 @@ function RecurringTransactions({ householdId, userId, categories }) {
           <div className="recurring__type-toggle" ref={typeToggleRef}>
             <span
               className={`recurring__type-indicator ${form.type}`}
-              style={{ transform: `translateX(${indicatorStyle.left}px)`, width: `${indicatorStyle.width}px` }}
+              style={{
+                transform: `translateX(${indicatorStyle.left}px)`,
+                width: `${indicatorStyle.width}px`,
+              }}
             />
-            {['expense', 'income'].map((t) => (
+            {["expense", "income"].map((t) => (
               <button
                 key={t}
-                ref={(el) => { if (el) typeBtnRefs.current[t] = el; }}
+                ref={(el) => {
+                  if (el) typeBtnRefs.current[t] = el;
+                }}
                 type="button"
-                className={`recurring__type-btn ${form.type === t ? `active ${t}` : ''}`}
-                onClick={() => setForm((f) => ({ ...f, type: t, category_id: '' }))}
+                className={`recurring__type-btn ${form.type === t ? `active ${t}` : ""}`}
+                onClick={() =>
+                  setForm((f) => ({ ...f, type: t, category_id: "" }))
+                }
               >
-                {t === 'expense' ? 'Expense' : 'Income'}
+                {t === "expense" ? "Expense" : "Income"}
               </button>
             ))}
           </div>
@@ -573,8 +587,17 @@ function RecurringTransactions({ householdId, userId, categories }) {
                       key={cat.id}
                       type="button"
                       className={`recurring__category-chip ${isActive ? "active" : ""}`}
-                      style={isActive ? { borderColor: cat.color, background: `${cat.color}15` } : {}}
-                      onClick={() => setForm((f) => ({ ...f, category_id: cat.id }))}
+                      style={
+                        isActive
+                          ? {
+                              borderColor: cat.color,
+                              background: `${cat.color}15`,
+                            }
+                          : {}
+                      }
+                      onClick={() =>
+                        setForm((f) => ({ ...f, category_id: cat.id }))
+                      }
                     >
                       <span>{cat.icon}</span>
                       <span>{cat.name}</span>

@@ -1,6 +1,6 @@
 import { useMemo, useRef, useState, useEffect } from "react";
 
-import { formatMoney } from "../../lib/format";
+import { formatMoney } from "../../../lib/format";
 
 function Analytics({ transactions, members, month, year }) {
   const [activeTab, setActiveTab] = useState("expense"); // expense | income
@@ -9,7 +9,10 @@ function Analytics({ transactions, members, month, year }) {
   // Sliding indicator
   const tabNavRef = useRef(null);
   const tabBtnRefs = useRef({});
-  const [tabIndicatorStyle, setTabIndicatorStyle] = useState({ left: 0, width: 0 });
+  const [tabIndicatorStyle, setTabIndicatorStyle] = useState({
+    left: 0,
+    width: 0,
+  });
 
   useEffect(() => {
     const btn = tabBtnRefs.current[activeTab];
@@ -109,20 +112,24 @@ function Analytics({ transactions, members, month, year }) {
 
   // Per-member breakdown
   const memberBreakdown = useMemo(() => {
-    return members.map((member) => {
-      const memberTx = filtered.filter((t) => t.user_id === member.user_id);
-      const total = memberTx.reduce((sum, t) => sum + Number(t.amount), 0);
-      return {
-        ...member,
-        total,
-        count: memberTx.length,
-      };
-    }).filter((m) => m.total > 0).sort((a, b) => b.total - a.total);
+    return members
+      .map((member) => {
+        const memberTx = filtered.filter((t) => t.user_id === member.user_id);
+        const total = memberTx.reduce((sum, t) => sum + Number(t.amount), 0);
+        return {
+          ...member,
+          total,
+          count: memberTx.length,
+        };
+      })
+      .filter((m) => m.total > 0)
+      .sort((a, b) => b.total - a.total);
   }, [filtered, members]);
 
-  const maxMemberTotal = memberBreakdown.length > 0
-    ? Math.max(...memberBreakdown.map((m) => m.total))
-    : 0;
+  const maxMemberTotal =
+    memberBreakdown.length > 0
+      ? Math.max(...memberBreakdown.map((m) => m.total))
+      : 0;
 
   // Daily trend
   const dailyTrend = useMemo(() => {
@@ -152,14 +159,18 @@ function Analytics({ transactions, members, month, year }) {
           }}
         />
         <button
-          ref={(el) => { if (el) tabBtnRefs.current["expense"] = el; }}
+          ref={(el) => {
+            if (el) tabBtnRefs.current["expense"] = el;
+          }}
           className={`analytics__tab ${activeTab === "expense" ? "active" : ""}`}
           onClick={() => setActiveTab("expense")}
         >
           Expenses
         </button>
         <button
-          ref={(el) => { if (el) tabBtnRefs.current["income"] = el; }}
+          ref={(el) => {
+            if (el) tabBtnRefs.current["income"] = el;
+          }}
           className={`analytics__tab ${activeTab === "income" ? "active" : ""}`}
           onClick={() => setActiveTab("income")}
         >
@@ -177,7 +188,9 @@ function Analytics({ transactions, members, month, year }) {
                   key={i}
                   d={seg.path}
                   fill={seg.color}
-                  opacity={hoveredCategory && hoveredCategory !== seg.name ? 0.3 : 1}
+                  opacity={
+                    hoveredCategory && hoveredCategory !== seg.name ? 0.3 : 1
+                  }
                   onMouseEnter={() => setHoveredCategory(seg.name)}
                   onMouseLeave={() => setHoveredCategory(null)}
                   style={{ transition: "opacity 0.2s", cursor: "pointer" }}
@@ -185,7 +198,9 @@ function Analytics({ transactions, members, month, year }) {
               ))}
             </svg>
             <div className="analytics__donut-center">
-              <span className="analytics__donut-total">{formatMoney(grandTotal)}</span>
+              <span className="analytics__donut-total">
+                {formatMoney(grandTotal)}
+              </span>
               <span className="analytics__donut-label">
                 {activeTab === "expense" ? "Total Spent" : "Total Earned"}
               </span>
@@ -220,15 +235,21 @@ function Analytics({ transactions, members, month, year }) {
                     />
                     <span className="analytics__category-icon">{cat.icon}</span>
                     <div className="analytics__category-info">
-                      <span className="analytics__category-name">{cat.name}</span>
+                      <span className="analytics__category-name">
+                        {cat.name}
+                      </span>
                       <span className="analytics__category-count">
                         {cat.count} transaction{cat.count !== 1 ? "s" : ""}
                       </span>
                     </div>
                   </div>
                   <div className="analytics__category-right">
-                    <span className="analytics__category-amount">{formatMoney(cat.total)}</span>
-                    <span className="analytics__category-pct">{pct.toFixed(1)}%</span>
+                    <span className="analytics__category-amount">
+                      {formatMoney(cat.total)}
+                    </span>
+                    <span className="analytics__category-pct">
+                      {pct.toFixed(1)}%
+                    </span>
                   </div>
                 </div>
               );
@@ -243,7 +264,8 @@ function Analytics({ transactions, members, month, year }) {
           <h3 className="analytics__section-title">By Member</h3>
           <div className="analytics__member-list">
             {memberBreakdown.map((member) => {
-              const pct = grandTotal > 0 ? (member.total / grandTotal) * 100 : 0;
+              const pct =
+                grandTotal > 0 ? (member.total / grandTotal) * 100 : 0;
               return (
                 <div key={member.user_id} className="analytics__member-item">
                   <div className="analytics__member-left">
@@ -263,8 +285,12 @@ function Analytics({ transactions, members, month, year }) {
                         }}
                       />
                     </div>
-                    <span className="analytics__member-amount">{formatMoney(member.total)}</span>
-                    <span className="analytics__member-pct">{pct.toFixed(1)}%</span>
+                    <span className="analytics__member-amount">
+                      {formatMoney(member.total)}
+                    </span>
+                    <span className="analytics__member-pct">
+                      {pct.toFixed(1)}%
+                    </span>
                   </div>
                 </div>
               );
@@ -281,12 +307,17 @@ function Analytics({ transactions, members, month, year }) {
             {dailyTrend.map((d) => {
               const height = maxDaily > 0 ? (d.total / maxDaily) * 100 : 0;
               return (
-                <div key={d.day} className="analytics__trend-bar-wrap" title={`${d.date}: ${formatMoney(d.total)}`}>
+                <div
+                  key={d.day}
+                  className="analytics__trend-bar-wrap"
+                  title={`${d.date}: ${formatMoney(d.total)}`}
+                >
                   <div
                     className="analytics__trend-bar"
                     style={{
                       height: `${Math.max(height, 2)}%`,
-                      background: activeTab === "expense" ? "#f97316" : "#22c55e",
+                      background:
+                        activeTab === "expense" ? "#f97316" : "#22c55e",
                       opacity: d.total > 0 ? 1 : 0.15,
                     }}
                   />

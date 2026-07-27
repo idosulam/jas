@@ -7,9 +7,15 @@ import SheetModal from "../../ui/modals/Sheet_modal";
 import FormField from "../../ui/form/Form_field.jsx";
 import EmptyState from "../../ui/Empty_state";
 
-import { formatMoney } from "../../lib/format";
+import { formatMoney } from "../../../lib/format";
 
-function Budgets({ householdId, transactions, month, year, onNavigateToTransactions }) {
+function Budgets({
+  householdId,
+  transactions,
+  month,
+  year,
+  onNavigateToTransactions,
+}) {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const { success: toastSuccess, error: toastError } = useGlassToast();
@@ -56,11 +62,13 @@ function Budgets({ householdId, transactions, month, year, onNavigateToTransacti
         .filter((t) => t.category_id === cat.id)
         .reduce((sum, t) => sum + Number(t.amount), 0);
 
-      const budget = cat.budget_amount != null ? Number(cat.budget_amount) : null;
+      const budget =
+        cat.budget_amount != null ? Number(cat.budget_amount) : null;
       const remaining = budget != null ? budget - spent : null;
-      const progress = budget != null && budget > 0
-        ? Math.min(100, (spent / budget) * 100)
-        : null;
+      const progress =
+        budget != null && budget > 0
+          ? Math.min(100, (spent / budget) * 100)
+          : null;
 
       return {
         ...cat,
@@ -81,16 +89,16 @@ function Budgets({ householdId, transactions, month, year, onNavigateToTransacti
     const totalBudget = budgeted.reduce((sum, c) => sum + c.budget, 0);
     const totalSpent = budgeted.reduce((sum, c) => sum + c.spent, 0);
     const totalRemaining = totalBudget - totalSpent;
-    const overallProgress = totalBudget > 0
-      ? Math.min(100, (totalSpent / totalBudget) * 100)
-      : 0;
+    const overallProgress =
+      totalBudget > 0 ? Math.min(100, (totalSpent / totalBudget) * 100) : 0;
 
     return { totalBudget, totalSpent, totalRemaining, overallProgress };
   }, [budgeted]);
 
   // Status color
   const getStatusColor = (progress, remaining) => {
-    if (remaining != null && remaining < 0) return "var(--color-danger, #f87171)";
+    if (remaining != null && remaining < 0)
+      return "var(--color-danger, #f87171)";
     if (progress >= 90) return "var(--color-warning, #fbbf24)";
     if (progress >= 70) return "var(--color-orange, #f97316)";
     return "var(--color-success, #34d399)";
@@ -158,7 +166,7 @@ function Budgets({ householdId, transactions, month, year, onNavigateToTransacti
       toastSuccess(
         amount === 0
           ? `Budget removed from "${editingCategory.name}".`
-          : `Budget set for "${editingCategory.name}": ${formatMoney(amount)}/month`
+          : `Budget set for "${editingCategory.name}": ${formatMoney(amount)}/month`,
       );
       fetchCategories();
     } catch (err) {
@@ -189,8 +197,18 @@ function Budgets({ householdId, transactions, month, year, onNavigateToTransacti
   };
 
   const monthNames = [
-    "January", "February", "March", "April", "May", "June",
-    "July", "August", "September", "October", "November", "December",
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
   ];
 
   if (loading) return null;
@@ -324,7 +342,10 @@ function Budgets({ householdId, transactions, month, year, onNavigateToTransacti
                         />
                       )}
                     </div>
-                    <span className="budgets__card-pct" style={{ color: statusColor }}>
+                    <span
+                      className="budgets__card-pct"
+                      style={{ color: statusColor }}
+                    >
                       {Math.round(cat.progress)}%
                     </span>
                   </div>
@@ -342,35 +363,39 @@ function Budgets({ householdId, transactions, month, year, onNavigateToTransacti
             {budgeted.length > 0 ? "Set a Budget" : "Categories"}
           </h3>
           {unbudgeted.length === 0 && budgeted.length > 0 ? (
-            <p className="budgets__all-set">
-              All categories have budgets! 🎉
-            </p>
+            <p className="budgets__all-set">All categories have budgets! 🎉</p>
           ) : (
             <div className="budgets__unbudgeted-list">
-              {(budgeted.length > 0 ? unbudgeted : categoryBudgets).map((cat) => (
-                <div
-                  key={cat.id}
-                  className="budgets__unbudgeted-item"
-                  onClick={() => openEditBudget(cat)}
-                >
+              {(budgeted.length > 0 ? unbudgeted : categoryBudgets).map(
+                (cat) => (
                   <div
-                    className="budgets__unbudgeted-icon"
-                    style={{
-                      background: `${cat.color}18`,
-                      color: cat.color,
-                    }}
+                    key={cat.id}
+                    className="budgets__unbudgeted-item"
+                    onClick={() => openEditBudget(cat)}
                   >
-                    {cat.icon}
-                  </div>
-                  <div className="budgets__unbudgeted-info">
-                    <span className="budgets__unbudgeted-name">{cat.name}</span>
-                    <span className="budgets__unbudgeted-spent">
-                      {formatMoney(cat.spent)} spent this month
+                    <div
+                      className="budgets__unbudgeted-icon"
+                      style={{
+                        background: `${cat.color}18`,
+                        color: cat.color,
+                      }}
+                    >
+                      {cat.icon}
+                    </div>
+                    <div className="budgets__unbudgeted-info">
+                      <span className="budgets__unbudgeted-name">
+                        {cat.name}
+                      </span>
+                      <span className="budgets__unbudgeted-spent">
+                        {formatMoney(cat.spent)} spent this month
+                      </span>
+                    </div>
+                    <span className="budgets__unbudgeted-action">
+                      Set budget →
                     </span>
                   </div>
-                  <span className="budgets__unbudgeted-action">Set budget →</span>
-                </div>
-              ))}
+                ),
+              )}
             </div>
           )}
         </div>
@@ -381,7 +406,15 @@ function Budgets({ householdId, transactions, month, year, onNavigateToTransacti
         <EmptyState
           className="budgets__empty-state"
           icon={
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ width: 32, height: 32 }}>
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              style={{ width: 32, height: 32 }}
+            >
               <path d="M3 3v18h18" />
               <path d="M7 16l4-8 4 4 4-6" />
             </svg>
@@ -398,7 +431,9 @@ function Budgets({ householdId, transactions, month, year, onNavigateToTransacti
                 Go to Transactions
               </button>
             ) : (
-              <p style={{ fontSize: "0.75rem", color: "rgba(255,255,255,0.35)" }}>
+              <p
+                style={{ fontSize: "0.75rem", color: "rgba(255,255,255,0.35)" }}
+              >
                 Add expense categories in the Transactions tab first.
               </p>
             )
@@ -425,7 +460,9 @@ function Budgets({ householdId, transactions, month, year, onNavigateToTransacti
               {editingCategory?.icon}
             </span>
             <div className="budgets__form-cat-info">
-              <span className="budgets__form-cat-name">{editingCategory?.name}</span>
+              <span className="budgets__form-cat-name">
+                {editingCategory?.name}
+              </span>
               <span className="budgets__form-cat-spent">
                 {formatMoney(editingCategory?.spent || 0)} spent this month
               </span>

@@ -14,12 +14,33 @@ import FormField from "../../ui/form/Form_field.jsx";
 import ColorPalettePicker from "../../../lib/Color_palette_picker.jsx";
 import EmptyState from "../../ui/Empty_state";
 
-import { formatMoney } from "../../lib/format";
+import { formatMoney } from "../../../lib/format";
 
 const DEFAULT_ICONS = [
-  "🍔", "🚗", "🛍️", "💡", "🎬", "💊", "📚", "🏠",
-  "👕", "🎁", "📱", "📦", "💰", "💻", "💵", "🎉",
-  "📈", "☕", "✈️", "🏋️", "🐕", "🎵", "🔧", "🛍️",
+  "🍔",
+  "🚗",
+  "🛍️",
+  "💡",
+  "🎬",
+  "💊",
+  "📚",
+  "🏠",
+  "👕",
+  "🎁",
+  "📱",
+  "📦",
+  "💰",
+  "💻",
+  "💵",
+  "🎉",
+  "📈",
+  "☕",
+  "✈️",
+  "🏋️",
+  "🐕",
+  "🎵",
+  "🔧",
+  "🛍️",
 ];
 
 function Transactions({ householdId, userId, members, goals = [] }) {
@@ -79,7 +100,10 @@ function Transactions({ householdId, userId, members, goals = [] }) {
   // Filter tabs sliding indicator
   const filterTabRef = useRef(null);
   const filterBtnRefs = useRef({});
-  const [filterIndicatorStyle, setFilterIndicatorStyle] = useState({ left: 0, width: 0 });
+  const [filterIndicatorStyle, setFilterIndicatorStyle] = useState({
+    left: 0,
+    width: 0,
+  });
 
   useEffect(() => {
     const btn = typeBtnRefs.current[form.type];
@@ -87,7 +111,10 @@ function Transactions({ householdId, userId, members, goals = [] }) {
     if (btn && container) {
       const containerRect = container.getBoundingClientRect();
       const btnRect = btn.getBoundingClientRect();
-      setIndicatorStyle({ left: btnRect.left - containerRect.left, width: btnRect.width });
+      setIndicatorStyle({
+        left: btnRect.left - containerRect.left,
+        width: btnRect.width,
+      });
     }
   }, [form.type]);
 
@@ -105,11 +132,13 @@ function Transactions({ householdId, userId, members, goals = [] }) {
   }, [typeFilter]);
 
   useBodyScrollLock(
-    addModal.open, editModal.open, deleteModal.open,
-    categoryModal.open, deleteCategoryModal.open
+    addModal.open,
+    editModal.open,
+    deleteModal.open,
+    categoryModal.open,
+    deleteCategoryModal.open,
   );
 
-  
   // Fetch categories
   const fetchCategories = useCallback(async () => {
     if (!householdId) return;
@@ -138,7 +167,9 @@ function Transactions({ householdId, userId, members, goals = [] }) {
       const supabase = getSupabaseClient();
       const { data, error } = await supabase
         .from("transactions")
-        .select("*, transaction_categories(name, icon, color), savings_goals(title, icon, color)")
+        .select(
+          "*, transaction_categories(name, icon, color), savings_goals(title, icon, color)",
+        )
         .eq("household_id", householdId)
         .gte("transaction_date", startDate)
         .lte("transaction_date", endDate)
@@ -176,7 +207,9 @@ function Transactions({ householdId, userId, members, goals = [] }) {
     setLoading(false);
   }, [householdId, members, userId, month, year]);
 
-  useEffect(() => { fetchCategories(); }, [fetchCategories]);
+  useEffect(() => {
+    fetchCategories();
+  }, [fetchCategories]);
   useEffect(() => {
     if (householdId) fetchTransactions();
   }, [householdId, fetchTransactions]);
@@ -258,31 +291,48 @@ function Transactions({ householdId, userId, members, goals = [] }) {
   // Validation
   const validateAmount = (value, isBlur = false) => {
     if (!value) {
-      if (isBlur) { setAmountState("error"); setAmountError("Amount is required"); }
-      else { setAmountState("idle"); setAmountError(null); }
+      if (isBlur) {
+        setAmountState("error");
+        setAmountError("Amount is required");
+      } else {
+        setAmountState("idle");
+        setAmountError(null);
+      }
       return;
     }
     const num = Number(value);
     if (isNaN(num) || num <= 0) {
-      setAmountState("error"); setAmountError("Enter a valid amount");
+      setAmountState("error");
+      setAmountError("Enter a valid amount");
     } else {
-      setAmountState("valid"); setAmountError(null);
+      setAmountState("valid");
+      setAmountError(null);
     }
   };
 
   const validateDesc = (value, isBlur = false) => {
     const trimmed = value.trim();
     if (!trimmed) {
-      if (isBlur) { setDescState("error"); setDescError("Description is required"); }
-      else { setDescState("idle"); setDescError(null); }
+      if (isBlur) {
+        setDescState("error");
+        setDescError("Description is required");
+      } else {
+        setDescState("idle");
+        setDescError(null);
+      }
       return;
     }
-    setDescState("valid"); setDescError(null);
+    setDescState("valid");
+    setDescError(null);
   };
 
   const resetFieldStates = () => {
-    setAmountTouched(false); setAmountState("idle"); setAmountError(null);
-    setDescTouched(false); setDescState("idle"); setDescError(null);
+    setAmountTouched(false);
+    setAmountState("idle");
+    setAmountError(null);
+    setDescTouched(false);
+    setDescState("idle");
+    setDescError(null);
   };
 
   const openAdd = (type = "expense") => {
@@ -337,13 +387,17 @@ function Transactions({ householdId, userId, members, goals = [] }) {
     try {
       const supabase = getSupabaseClient();
       const amount = Number(Number(form.amount).toFixed(2));
-      const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      const isUUID =
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
       const payload = {
         household_id: householdId,
         user_id: userId,
         category_id: isUUID.test(form.category_id) ? form.category_id : null,
-        goal_id: form.type === "contribute" && isUUID.test(form.goal_id) ? form.goal_id : null,
+        goal_id:
+          form.type === "contribute" && isUUID.test(form.goal_id)
+            ? form.goal_id
+            : null,
         type: form.type,
         amount,
         description: sanitizeText(form.description, 100),
@@ -381,7 +435,11 @@ function Transactions({ householdId, userId, members, goals = [] }) {
           }
         }
 
-        const labels = { expense: "Expense", income: "Income", contribute: "Contribution" };
+        const labels = {
+          expense: "Expense",
+          income: "Income",
+          contribute: "Contribution",
+        };
         toastSuccess(`${labels[form.type] || "Transaction"} added!`);
       }
 
@@ -525,8 +583,13 @@ function Transactions({ householdId, userId, members, goals = [] }) {
             <div className="transactions__balance-item" style={{ flex: 1 }}>
               <span className="transactions__balance-icon">🎯</span>
               <div>
-                <span className="transactions__balance-label">Contributions</span>
-                <span className="transactions__balance-value" style={{ color: "#818cf8" }}>
+                <span className="transactions__balance-label">
+                  Contributions
+                </span>
+                <span
+                  className="transactions__balance-value"
+                  style={{ color: "#818cf8" }}
+                >
                   {formatMoney(stats.totalContribute)}
                 </span>
               </div>
@@ -535,7 +598,9 @@ function Transactions({ householdId, userId, members, goals = [] }) {
         )}
         <div className="transactions__balance-net">
           <span className="transactions__balance-net-label">Balance</span>
-          <span className={`transactions__balance-net-value ${stats.balance >= 0 ? "positive" : "negative"}`}>
+          <span
+            className={`transactions__balance-net-value ${stats.balance >= 0 ? "positive" : "negative"}`}
+          >
             {stats.balance >= 0 ? "+" : ""}
             {formatMoney(stats.balance)}
           </span>
@@ -554,56 +619,83 @@ function Transactions({ householdId, userId, members, goals = [] }) {
         {["all", "expense", "income", "contribute"].map((t) => (
           <button
             key={t}
-            ref={(el) => { if (el) filterBtnRefs.current[t] = el; }}
+            ref={(el) => {
+              if (el) filterBtnRefs.current[t] = el;
+            }}
             className={`transactions__tab ${typeFilter === t ? "transactions__tab--active" : ""}`}
             onClick={() => setTypeFilter(t)}
           >
-            {t === "all" ? "All" : t === "expense" ? "Expenses" : t === "income" ? "Income" : "Contributions"}
+            {t === "all"
+              ? "All"
+              : t === "expense"
+                ? "Expenses"
+                : t === "income"
+                  ? "Income"
+                  : "Contributions"}
           </button>
         ))}
       </div>
 
       {/* Category Breakdown (expenses only) */}
-      {typeFilter !== "income" && typeFilter !== "contribute" && categoryBreakdown.length > 0 && (
-        <div className="transactions__breakdown">
-          <h3 className="transactions__section-title">By Category</h3>
-          <div className="transactions__category-list">
-            {categoryBreakdown.slice(0, 6).map((cat) => (
-              <div key={cat.name} className="transactions__category-item">
-                <div className="transactions__category-left">
-                  <span className="transactions__category-icon">{cat.icon}</span>
-                  <span className="transactions__category-name">{cat.name}</span>
-                </div>
-                <div className="transactions__category-right">
-                  <div className="transactions__category-bar-wrap">
-                    <div
-                      className="transactions__category-bar"
-                      style={{
-                        width: `${maxCategoryTotal > 0 ? (cat.total / maxCategoryTotal) * 100 : 0}%`,
-                        background: cat.color,
-                      }}
-                    />
+      {typeFilter !== "income" &&
+        typeFilter !== "contribute" &&
+        categoryBreakdown.length > 0 && (
+          <div className="transactions__breakdown">
+            <h3 className="transactions__section-title">By Category</h3>
+            <div className="transactions__category-list">
+              {categoryBreakdown.slice(0, 6).map((cat) => (
+                <div key={cat.name} className="transactions__category-item">
+                  <div className="transactions__category-left">
+                    <span className="transactions__category-icon">
+                      {cat.icon}
+                    </span>
+                    <span className="transactions__category-name">
+                      {cat.name}
+                    </span>
                   </div>
-                  <span className="transactions__category-amount">{formatMoney(cat.total)}</span>
+                  <div className="transactions__category-right">
+                    <div className="transactions__category-bar-wrap">
+                      <div
+                        className="transactions__category-bar"
+                        style={{
+                          width: `${maxCategoryTotal > 0 ? (cat.total / maxCategoryTotal) * 100 : 0}%`,
+                          background: cat.color,
+                        }}
+                      />
+                    </div>
+                    <span className="transactions__category-amount">
+                      {formatMoney(cat.total)}
+                    </span>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
       {/* Transaction List */}
       <div className="transactions__list-header">
         <h3 className="transactions__section-title">Transactions</h3>
         <div className="transactions__add-btns">
-          <button className="btn btn--ghost btn--sm" onClick={() => openAdd("expense")}>
+          <button
+            className="btn btn--ghost btn--sm"
+            onClick={() => openAdd("expense")}
+          >
             + Expense
           </button>
-          <button className="btn btn--ghost btn--sm" onClick={() => openAdd("income")} style={{ marginLeft: 6 }}>
+          <button
+            className="btn btn--ghost btn--sm"
+            onClick={() => openAdd("income")}
+            style={{ marginLeft: 6 }}
+          >
             + Income
           </button>
           {activeGoals.length > 0 && (
-            <button className="btn btn--primary btn--sm" onClick={() => openAdd("contribute")} style={{ marginLeft: 6 }}>
+            <button
+              className="btn btn--primary btn--sm"
+              onClick={() => openAdd("contribute")}
+              style={{ marginLeft: 6 }}
+            >
               + Contribute
             </button>
           )}
@@ -617,7 +709,11 @@ function Transactions({ householdId, userId, members, goals = [] }) {
           title="No transactions this month"
           text="Add an expense, income, or contribution to get started."
           action={
-            <button type="button" className="btn btn--primary btn--sm" onClick={() => openAdd("expense")}>
+            <button
+              type="button"
+              className="btn btn--primary btn--sm"
+              onClick={() => openAdd("expense")}
+            >
               + Add transaction
             </button>
           }
@@ -626,29 +722,45 @@ function Transactions({ householdId, userId, members, goals = [] }) {
         <div className="transactions__groups">
           {grouped.map(([date, items]) => {
             const dayTotal = items.reduce((sum, t) => {
-              return sum + (t.type === "expense" ? -Number(t.amount) : Number(t.amount));
+              return (
+                sum +
+                (t.type === "expense" ? -Number(t.amount) : Number(t.amount))
+              );
             }, 0);
 
             return (
               <div key={date} className="transactions__group">
                 <div className="transactions__group-header">
-                  <span className="transactions__group-date">{formatDateGroup(date)}</span>
-                  <span className={`transactions__group-total ${dayTotal >= 0 ? "positive" : "negative"}`}>
+                  <span className="transactions__group-date">
+                    {formatDateGroup(date)}
+                  </span>
+                  <span
+                    className={`transactions__group-total ${dayTotal >= 0 ? "positive" : "negative"}`}
+                  >
                     {dayTotal >= 0 ? "+" : ""}
                     {formatMoney(Math.abs(dayTotal))}
                   </span>
                 </div>
                 <div className="transactions__group-items">
                   {items.map((tx) => (
-                    <div key={tx.id} className="transactions__item" onClick={() => openEdit(tx)}>
+                    <div
+                      key={tx.id}
+                      className="transactions__item"
+                      onClick={() => openEdit(tx)}
+                    >
                       <div
                         className="transactions__item-icon"
-                        style={{ background: `${tx.category_color}18`, color: tx.category_color }}
+                        style={{
+                          background: `${tx.category_color}18`,
+                          color: tx.category_color,
+                        }}
                       >
                         {tx.category_icon}
                       </div>
                       <div className="transactions__item-info">
-                        <span className="transactions__item-desc">{tx.description}</span>
+                        <span className="transactions__item-desc">
+                          {tx.description}
+                        </span>
                         <span className="transactions__item-meta">
                           {tx.category_name}
                           {` · ${tx.is_me ? "You" : tx.display_name}`}
@@ -672,7 +784,10 @@ function Transactions({ householdId, userId, members, goals = [] }) {
       <SheetModal
         open={addModal.open || editModal.open}
         closing={addModal.closing || editModal.closing}
-        onClose={() => { addModal.closeModal(); editModal.closeModal(); }}
+        onClose={() => {
+          addModal.closeModal();
+          editModal.closeModal();
+        }}
         title={editingTx ? "Edit transaction" : `Add ${typeLabel}`}
       >
         <div className="transactions__form">
@@ -680,43 +795,91 @@ function Transactions({ householdId, userId, members, goals = [] }) {
           <div className="transactions__type-toggle" ref={typeToggleRef}>
             <span
               className={`transactions__type-indicator ${form.type}`}
-              style={{ transform: `translateX(${indicatorStyle.left}px)`, width: `${indicatorStyle.width}px` }}
+              style={{
+                transform: `translateX(${indicatorStyle.left}px)`,
+                width: `${indicatorStyle.width}px`,
+              }}
             />
             {["expense", "income", "contribute"].map((t) => (
               <button
                 key={t}
-                ref={(el) => { if (el) typeBtnRefs.current[t] = el; }}
+                ref={(el) => {
+                  if (el) typeBtnRefs.current[t] = el;
+                }}
                 className={`transactions__type-btn ${form.type === t ? `transactions__type-btn--active ${t}` : ""}`}
-                onClick={() => setForm((f) => ({ ...f, type: t, category_id: "", goal_id: "" }))}
+                onClick={() =>
+                  setForm((f) => ({
+                    ...f,
+                    type: t,
+                    category_id: "",
+                    goal_id: "",
+                  }))
+                }
               >
-                {t === "expense" ? "Expense" : t === "income" ? "Income" : "🎯 Contribute"}
+                {t === "expense"
+                  ? "Expense"
+                  : t === "income"
+                    ? "Income"
+                    : "🎯 Contribute"}
               </button>
             ))}
           </div>
 
-          <FormField label="Amount" error={amountError} state={amountState} showIndicator shake={amountError ? shakeKey : 0}>
+          <FormField
+            label="Amount"
+            error={amountError}
+            state={amountState}
+            showIndicator
+            shake={amountError ? shakeKey : 0}
+          >
             <input
-              type="number" min="0.01" step="0.01"
+              type="number"
+              min="0.01"
+              step="0.01"
               value={form.amount}
-              onChange={(e) => { setForm((f) => ({ ...f, amount: e.target.value })); if (amountTouched) validateAmount(e.target.value); }}
+              onChange={(e) => {
+                setForm((f) => ({ ...f, amount: e.target.value }));
+                if (amountTouched) validateAmount(e.target.value);
+              }}
               onBlur={() => {
-                setAmountTouched(true); validateAmount(form.amount, true);
-                if (!form.amount || Number(form.amount) <= 0) { setShakeKey((k) => k + 1); hapticError(); }
+                setAmountTouched(true);
+                validateAmount(form.amount, true);
+                if (!form.amount || Number(form.amount) <= 0) {
+                  setShakeKey((k) => k + 1);
+                  hapticError();
+                }
               }}
               placeholder="0.00"
             />
           </FormField>
 
-          <FormField label="Description" error={descError} state={descState} showIndicator shake={descError ? shakeKey : 0}>
+          <FormField
+            label="Description"
+            error={descError}
+            state={descState}
+            showIndicator
+            shake={descError ? shakeKey : 0}
+          >
             <input
               type="text"
               value={form.description}
-              onChange={(e) => { setForm((f) => ({ ...f, description: e.target.value })); if (descTouched) validateDesc(e.target.value); }}
-              onBlur={() => {
-                setDescTouched(true); validateDesc(form.description, true);
-                if (!form.description.trim()) { setShakeKey((k) => k + 1); hapticError(); }
+              onChange={(e) => {
+                setForm((f) => ({ ...f, description: e.target.value }));
+                if (descTouched) validateDesc(e.target.value);
               }}
-              placeholder={form.type === "contribute" ? "e.g. Monthly savings" : "What was this for?"}
+              onBlur={() => {
+                setDescTouched(true);
+                validateDesc(form.description, true);
+                if (!form.description.trim()) {
+                  setShakeKey((k) => k + 1);
+                  hapticError();
+                }
+              }}
+              placeholder={
+                form.type === "contribute"
+                  ? "e.g. Monthly savings"
+                  : "What was this for?"
+              }
               maxLength={100}
             />
           </FormField>
@@ -726,7 +889,9 @@ function Transactions({ householdId, userId, members, goals = [] }) {
             <div className="transactions__category-grid-wrap">
               <label className="transactions__form-label">Savings Goal</label>
               {activeGoals.length === 0 ? (
-                <p style={{ color: "var(--text-muted, #888)", fontSize: 14 }}>No active goals. Create one first.</p>
+                <p style={{ color: "var(--text-muted, #888)", fontSize: 14 }}>
+                  No active goals. Create one first.
+                </p>
               ) : (
                 <div className="transactions__category-grid">
                   {activeGoals.map((goal) => {
@@ -736,8 +901,17 @@ function Transactions({ householdId, userId, members, goals = [] }) {
                         key={goal.id}
                         type="button"
                         className={`transactions__category-chip ${isActive ? "active" : ""}`}
-                        style={isActive ? { borderColor: goal.color, background: `${goal.color}15` } : {}}
-                        onClick={() => setForm((f) => ({ ...f, goal_id: goal.id }))}
+                        style={
+                          isActive
+                            ? {
+                                borderColor: goal.color,
+                                background: `${goal.color}15`,
+                              }
+                            : {}
+                        }
+                        onClick={() =>
+                          setForm((f) => ({ ...f, goal_id: goal.id }))
+                        }
                       >
                         <span>{goal.icon || "🎯"}</span>
                         <span>{goal.title}</span>
@@ -752,7 +926,13 @@ function Transactions({ householdId, userId, members, goals = [] }) {
           {/* Category Grid (expense / income) */}
           {form.type !== "contribute" && (
             <div className="transactions__category-grid-wrap">
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
                 <label className="transactions__form-label">Category</label>
                 <button
                   type="button"
@@ -776,8 +956,17 @@ function Transactions({ householdId, userId, members, goals = [] }) {
                         key={cat.id}
                         type="button"
                         className={`transactions__category-chip ${isActive ? "active" : ""}`}
-                        style={isActive ? { borderColor: cat.color, background: `${cat.color}15` } : {}}
-                        onClick={() => setForm((f) => ({ ...f, category_id: cat.id }))}
+                        style={
+                          isActive
+                            ? {
+                                borderColor: cat.color,
+                                background: `${cat.color}15`,
+                              }
+                            : {}
+                        }
+                        onClick={() =>
+                          setForm((f) => ({ ...f, category_id: cat.id }))
+                        }
                       >
                         <span>{cat.icon}</span>
                         <span>{cat.name}</span>
@@ -793,7 +982,9 @@ function Transactions({ householdId, userId, members, goals = [] }) {
             <input
               type="date"
               value={form.transaction_date}
-              onChange={(e) => setForm((f) => ({ ...f, transaction_date: e.target.value }))}
+              onChange={(e) =>
+                setForm((f) => ({ ...f, transaction_date: e.target.value }))
+              }
             />
           </FormField>
 
@@ -808,15 +999,34 @@ function Transactions({ householdId, userId, members, goals = [] }) {
           </FormField>
 
           <div className="btn-row">
-            <button type="button" className="btn btn--ghost" onClick={() => { addModal.closeModal(); editModal.closeModal(); }}>
+            <button
+              type="button"
+              className="btn btn--ghost"
+              onClick={() => {
+                addModal.closeModal();
+                editModal.closeModal();
+              }}
+            >
               Cancel
             </button>
             {editingTx && (
-              <button type="button" className="btn btn--danger" onClick={() => { setDeleteTarget(editingTx); deleteModal.openModal(); }}>
+              <button
+                type="button"
+                className="btn btn--danger"
+                onClick={() => {
+                  setDeleteTarget(editingTx);
+                  deleteModal.openModal();
+                }}
+              >
                 Delete
               </button>
             )}
-            <button type="button" className="btn btn--primary" onClick={handleSubmit} disabled={submitting}>
+            <button
+              type="button"
+              className="btn btn--primary"
+              onClick={handleSubmit}
+              disabled={submitting}
+            >
               {submitting ? "Saving…" : editingTx ? "Update" : "Add"}
             </button>
           </div>
@@ -846,27 +1056,66 @@ function Transactions({ householdId, userId, members, goals = [] }) {
           {/* Existing categories list */}
           {!editingCategory && (
             <div style={{ marginBottom: 16 }}>
-              <label className="transactions__form-label">Your {form.type} labels</label>
+              <label className="transactions__form-label">
+                Your {form.type} labels
+              </label>
               {categories.filter((c) => c.type === form.type).length === 0 ? (
-                <p style={{ color: "var(--text-muted, #888)", fontSize: 14, margin: "8px 0" }}>No labels yet. Create one below.</p>
+                <p
+                  style={{
+                    color: "var(--text-muted, #888)",
+                    fontSize: 14,
+                    margin: "8px 0",
+                  }}
+                >
+                  No labels yet. Create one below.
+                </p>
               ) : (
-                <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 12 }}>
-                  {categories.filter((c) => c.type === form.type).map((cat) => (
-                    <div
-                      key={cat.id}
-                      style={{
-                        display: "flex", alignItems: "center", gap: 8,
-                        padding: "8px 12px", borderRadius: 10,
-                        background: "rgba(255,255,255,0.05)", cursor: "pointer",
-                      }}
-                      onClick={() => openEditCategory(cat)}
-                    >
-                      <span style={{ fontSize: 20 }}>{cat.icon}</span>
-                      <span style={{ flex: 1, fontSize: 14 }}>{cat.name}</span>
-                      <div style={{ width: 12, height: 12, borderRadius: "50%", background: cat.color }} />
-                      <span style={{ color: "var(--text-muted, #888)", fontSize: 12 }}>✎</span>
-                    </div>
-                  ))}
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 6,
+                    marginBottom: 12,
+                  }}
+                >
+                  {categories
+                    .filter((c) => c.type === form.type)
+                    .map((cat) => (
+                      <div
+                        key={cat.id}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 8,
+                          padding: "8px 12px",
+                          borderRadius: 10,
+                          background: "rgba(255,255,255,0.05)",
+                          cursor: "pointer",
+                        }}
+                        onClick={() => openEditCategory(cat)}
+                      >
+                        <span style={{ fontSize: 20 }}>{cat.icon}</span>
+                        <span style={{ flex: 1, fontSize: 14 }}>
+                          {cat.name}
+                        </span>
+                        <div
+                          style={{
+                            width: 12,
+                            height: 12,
+                            borderRadius: "50%",
+                            background: cat.color,
+                          }}
+                        />
+                        <span
+                          style={{
+                            color: "var(--text-muted, #888)",
+                            fontSize: 12,
+                          }}
+                        >
+                          ✎
+                        </span>
+                      </div>
+                    ))}
                 </div>
               )}
             </div>
@@ -877,7 +1126,9 @@ function Transactions({ householdId, userId, members, goals = [] }) {
             <input
               type="text"
               value={categoryForm.name}
-              onChange={(e) => setCategoryForm((f) => ({ ...f, name: e.target.value }))}
+              onChange={(e) =>
+                setCategoryForm((f) => ({ ...f, name: e.target.value }))
+              }
               placeholder="e.g. Coffee, Rent, Groceries"
               maxLength={40}
             />
@@ -892,7 +1143,14 @@ function Transactions({ householdId, userId, members, goals = [] }) {
                   key={icon}
                   type="button"
                   className={`transactions__category-chip ${categoryForm.icon === icon ? "active" : ""}`}
-                  style={categoryForm.icon === icon ? { borderColor: categoryForm.color, background: `${categoryForm.color}15` } : {}}
+                  style={
+                    categoryForm.icon === icon
+                      ? {
+                          borderColor: categoryForm.color,
+                          background: `${categoryForm.color}15`,
+                        }
+                      : {}
+                  }
                   onClick={() => setCategoryForm((f) => ({ ...f, icon }))}
                 >
                   <span>{icon}</span>
@@ -913,7 +1171,10 @@ function Transactions({ householdId, userId, members, goals = [] }) {
           {/* Type selector */}
           <div className="transactions__category-grid-wrap">
             <label className="transactions__form-label">Type</label>
-            <div className="transactions__type-toggle" style={{ maxWidth: 220 }}>
+            <div
+              className="transactions__type-toggle"
+              style={{ maxWidth: 220 }}
+            >
               {["expense", "income"].map((t) => (
                 <button
                   key={t}
@@ -928,14 +1189,21 @@ function Transactions({ householdId, userId, members, goals = [] }) {
           </div>
 
           <div className="btn-row">
-            <button type="button" className="btn btn--ghost" onClick={() => categoryModal.closeModal()}>
+            <button
+              type="button"
+              className="btn btn--ghost"
+              onClick={() => categoryModal.closeModal()}
+            >
               {editingCategory ? "Back" : "Done"}
             </button>
             {editingCategory && (
               <button
                 type="button"
                 className="btn btn--danger"
-                onClick={() => { setDeleteCategoryTarget(editingCategory); deleteCategoryModal.openModal(); }}
+                onClick={() => {
+                  setDeleteCategoryTarget(editingCategory);
+                  deleteCategoryModal.openModal();
+                }}
               >
                 Delete
               </button>

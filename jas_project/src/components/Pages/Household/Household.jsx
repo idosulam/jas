@@ -19,7 +19,7 @@ import Transactions from "./Transactions";
 import RecurringTransactions from "./RecurringTransactions";
 import Analytics from "./Analytics";
 import Budgets from "./Budgets";
-import { formatMoney } from "../../lib/format";
+import { formatMoney } from "../../../lib/format.js";
 
 import "./Budgets.css";
 
@@ -111,7 +111,10 @@ function Household() {
   const [savingsSubView, setSavingsSubView] = useState("goals");
   const savingsToggleRef = useRef(null);
   const savingsBtnRefs = useRef({});
-  const [savingsIndicatorStyle, setSavingsIndicatorStyle] = useState({ left: 0, width: 0 });
+  const [savingsIndicatorStyle, setSavingsIndicatorStyle] = useState({
+    left: 0,
+    width: 0,
+  });
   const savingsSubViewRef = useRef(savingsSubView);
   savingsSubViewRef.current = savingsSubView;
 
@@ -469,7 +472,13 @@ function Household() {
 
       const pct = budget > 0 ? (spent / budget) * 100 : 0;
       if (pct >= 80) {
-        alerts.push({ name: cat.name, icon: cat.icon, color: cat.color, pct, over: pct >= 100 });
+        alerts.push({
+          name: cat.name,
+          icon: cat.icon,
+          color: cat.color,
+          pct,
+          over: pct >= 100,
+        });
       }
     });
 
@@ -479,7 +488,8 @@ function Household() {
       totalBudget,
       totalSpent,
       remaining: totalBudget - totalSpent,
-      progress: totalBudget > 0 ? Math.min(100, (totalSpent / totalBudget) * 100) : 0,
+      progress:
+        totalBudget > 0 ? Math.min(100, (totalSpent / totalBudget) * 100) : 0,
       alerts: alerts.slice(0, 3),
     };
   }, [categories, allTransactions]);
@@ -1003,17 +1013,19 @@ function Household() {
                 <div
                   className="household__budget-bar"
                   style={{
-                    background: budgetOverview.progress >= 100
-                      ? "var(--color-danger, #f87171)"
-                      : budgetOverview.progress >= 85
-                        ? "var(--color-warning, #fbbf24)"
-                        : "var(--color-success, #34d399)",
+                    background:
+                      budgetOverview.progress >= 100
+                        ? "var(--color-danger, #f87171)"
+                        : budgetOverview.progress >= 85
+                          ? "var(--color-warning, #fbbf24)"
+                          : "var(--color-success, #34d399)",
                     width: `${budgetOverview.progress}%`,
                   }}
                 />
                 <div className="household__budget-info">
                   <span className="household__budget-label">
-                    💰 Budget: {formatMoney(budgetOverview.totalSpent)} / {formatMoney(budgetOverview.totalBudget)}
+                    💰 Budget: {formatMoney(budgetOverview.totalSpent)} /{" "}
+                    {formatMoney(budgetOverview.totalBudget)}
                   </span>
                   <span
                     className={`household__budget-remaining ${budgetOverview.remaining >= 0 ? "" : "household__budget-remaining--over"}`}
@@ -1172,7 +1184,10 @@ function Household() {
 
             {/* Savings Goals / Budgets Toggle */}
             <div className="household__savings-section">
-              <div className="household__goals-budgets-toggle" ref={savingsToggleRef}>
+              <div
+                className="household__goals-budgets-toggle"
+                ref={savingsToggleRef}
+              >
                 <span
                   className={`household__goals-budgets-indicator ${savingsSubView}`}
                   style={{

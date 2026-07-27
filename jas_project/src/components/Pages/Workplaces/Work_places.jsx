@@ -20,7 +20,7 @@ import {
 import { useBodyScrollLock, useModal } from "../../../hooks/index.js";
 import { TrashIcon } from "../../../components/ui/modals/Confirm_modal";
 
-import { formatMoney } from "../../lib/format";
+import { formatMoney } from "../../../lib/format";
 
 const emptyForm = () => ({
   slug: "",
@@ -174,7 +174,8 @@ function Workplaces({ onNavigate, returnTo }) {
     if (!form.label.trim()) return false;
     const rate = parseFloat(form.rate);
     if (!form.rate || isNaN(rate) || rate < 0) return false;
-    if (!form.color || !/^#[0-9a-fA-F]{6}$/.test(form.color.trim())) return false;
+    if (!form.color || !/^#[0-9a-fA-F]{6}$/.test(form.color.trim()))
+      return false;
     return true;
   }, [form, editing, workplaces]);
 
@@ -603,7 +604,9 @@ function Workplaces({ onNavigate, returnTo }) {
                   }}
                   className="workplaces__color-native-hidden"
                 />
-                {!form.color && <span className="workplaces__color-placeholder">?</span>}
+                {!form.color && (
+                  <span className="workplaces__color-placeholder">?</span>
+                )}
               </label>
               <input
                 type="text"

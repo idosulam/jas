@@ -1,6 +1,11 @@
 import { useCallback, useEffect, useState } from "react";
 import { getSupabaseClient } from "../../../lib/superbase";
-import { getUserFacingError, sanitizeNumber, sanitizeText, hapticError } from "../../../lib/security";
+import {
+  getUserFacingError,
+  sanitizeNumber,
+  sanitizeText,
+  hapticError,
+} from "../../../lib/security";
 import { useGlassToast } from "../../../lib/glass_toast_provider.jsx";
 import { useModal, useBodyScrollLock } from "../../../hooks";
 import SheetModal from "../../ui/modals/Sheet_modal";
@@ -8,7 +13,7 @@ import ConfirmModal from "../../ui/modals/Confirm_modal";
 import FormField from "../../ui/form/Form_field.jsx";
 import EmptyState from "../../ui/Empty_state";
 
-import { formatMoney } from "../../lib/format";
+import { formatMoney } from "../../../lib/format";
 
 function SavingsGoals({ householdId, userId, members, hideTitle }) {
   const [goals, setGoals] = useState([]);
@@ -269,9 +274,15 @@ function SavingsGoals({ householdId, userId, members, hideTitle }) {
   return (
     <div className="savings-goals">
       <div className="savings-goals__header">
-        {!hideTitle && <h3 className="household__section-title">💰 Savings Goals</h3>}
+        {!hideTitle && (
+          <h3 className="household__section-title">💰 Savings Goals</h3>
+        )}
         <div style={{ flex: 1 }} />
-        <button type="button" className="btn btn--ghost btn--sm" onClick={openNewGoal}>
+        <button
+          type="button"
+          className="btn btn--ghost btn--sm"
+          onClick={openNewGoal}
+        >
           + New goal
         </button>
       </div>
@@ -283,7 +294,11 @@ function SavingsGoals({ householdId, userId, members, hideTitle }) {
           title="No savings goals yet"
           text="Create a goal to start tracking your savings together!"
           action={
-            <button type="button" className="btn btn--primary btn--sm" onClick={openNewGoal}>
+            <button
+              type="button"
+              className="btn btn--primary btn--sm"
+              onClick={openNewGoal}
+            >
               + Create goal
             </button>
           }
@@ -291,10 +306,17 @@ function SavingsGoals({ householdId, userId, members, hideTitle }) {
       ) : (
         <div className="savings-goals__list">
           {goals.map((goal) => {
-            const progress = goal.target_amount > 0
-              ? Math.min(100, (goal.current_amount / goal.target_amount) * 100)
-              : 0;
-            const remaining = Math.max(0, goal.target_amount - goal.current_amount);
+            const progress =
+              goal.target_amount > 0
+                ? Math.min(
+                    100,
+                    (goal.current_amount / goal.target_amount) * 100,
+                  )
+                : 0;
+            const remaining = Math.max(
+              0,
+              goal.target_amount - goal.current_amount,
+            );
 
             return (
               <div
@@ -302,11 +324,14 @@ function SavingsGoals({ householdId, userId, members, hideTitle }) {
                 className={`savings-goals__card${goal.is_completed ? " savings-goals__card--completed" : ""}`}
               >
                 <div className="savings-goals__card-header">
-                  <span className="savings-goals__icon">{goal.icon || "🎯"}</span>
+                  <span className="savings-goals__icon">
+                    {goal.icon || "🎯"}
+                  </span>
                   <div className="savings-goals__card-info">
                     <span className="savings-goals__title">{goal.title}</span>
                     <span className="savings-goals__amounts">
-                      {formatMoney(goal.current_amount)} / {formatMoney(goal.target_amount)}
+                      {formatMoney(goal.current_amount)} /{" "}
+                      {formatMoney(goal.target_amount)}
                     </span>
                   </div>
                   <div className="savings-goals__card-actions">
@@ -331,7 +356,10 @@ function SavingsGoals({ householdId, userId, members, hideTitle }) {
                     <button
                       type="button"
                       className="savings-goals__delete-btn"
-                      onClick={() => { setDeleteTarget(goal); deleteModal.openModal(); }}
+                      onClick={() => {
+                        setDeleteTarget(goal);
+                        deleteModal.openModal();
+                      }}
                       title="Delete goal"
                     >
                       ×
@@ -360,13 +388,18 @@ function SavingsGoals({ householdId, userId, members, hideTitle }) {
                     {remaining > 0 ? (
                       <span>{formatMoney(remaining)} to go</span>
                     ) : (
-                      <span className="savings-goals__reached">🎉 Reached!</span>
+                      <span className="savings-goals__reached">
+                        🎉 Reached!
+                      </span>
                     )}
                   </div>
                 </div>
 
                 {goal.is_completed && (
-                  <div className="savings-goals__celebration" aria-hidden="true">
+                  <div
+                    className="savings-goals__celebration"
+                    aria-hidden="true"
+                  >
                     {[...Array(8)].map((_, i) => (
                       <span
                         key={i}
@@ -436,7 +469,10 @@ function SavingsGoals({ householdId, userId, members, hideTitle }) {
               onBlur={() => {
                 setGoalAmountTouched(true);
                 validateGoalAmount(goalForm.target_amount, true);
-                if (!goalForm.target_amount || Number(goalForm.target_amount) <= 0) {
+                if (
+                  !goalForm.target_amount ||
+                  Number(goalForm.target_amount) <= 0
+                ) {
                   setGoalShakeKey((k) => k + 1);
                   hapticError();
                 }
@@ -445,14 +481,22 @@ function SavingsGoals({ householdId, userId, members, hideTitle }) {
             />
           </FormField>
           <div className="btn-row">
-            <button type="button" className="btn btn--ghost" onClick={() => goalModal.closeModal()}>
+            <button
+              type="button"
+              className="btn btn--ghost"
+              onClick={() => goalModal.closeModal()}
+            >
               Cancel
             </button>
             <button
               type="button"
               className="btn btn--primary"
               onClick={saveGoal}
-              disabled={!goalForm.title.trim() || !goalForm.target_amount || Number(goalForm.target_amount) <= 0}
+              disabled={
+                !goalForm.title.trim() ||
+                !goalForm.target_amount ||
+                Number(goalForm.target_amount) <= 0
+              }
             >
               {editingGoal ? "Update" : "Create"}
             </button>
@@ -487,7 +531,10 @@ function SavingsGoals({ householdId, userId, members, hideTitle }) {
               onBlur={() => {
                 setContribAmountTouched(true);
                 validateContribAmount(contributeForm.amount, true);
-                if (!contributeForm.amount || Number(contributeForm.amount) <= 0) {
+                if (
+                  !contributeForm.amount ||
+                  Number(contributeForm.amount) <= 0
+                ) {
                   setGoalShakeKey((k) => k + 1);
                   hapticError();
                 }
@@ -500,22 +547,33 @@ function SavingsGoals({ householdId, userId, members, hideTitle }) {
             <input
               type="text"
               value={contributeForm.note}
-              onChange={(e) => setContributeForm((f) => ({ ...f, note: e.target.value }))}
+              onChange={(e) =>
+                setContributeForm((f) => ({ ...f, note: e.target.value }))
+              }
               placeholder="e.g. From my tips this week"
               maxLength={200}
             />
           </FormField>
           <div className="btn-row">
-            <button type="button" className="btn btn--ghost" onClick={() => contributeModal.closeModal()}>
+            <button
+              type="button"
+              className="btn btn--ghost"
+              onClick={() => contributeModal.closeModal()}
+            >
               Cancel
             </button>
             <button
               type="button"
               className="btn btn--primary"
               onClick={submitContribution}
-              disabled={!contributeForm.amount || Number(contributeForm.amount) <= 0}
+              disabled={
+                !contributeForm.amount || Number(contributeForm.amount) <= 0
+              }
             >
-              Add {contributeForm.amount ? formatMoney(Number(contributeForm.amount)) : ""}
+              Add{" "}
+              {contributeForm.amount
+                ? formatMoney(Number(contributeForm.amount))
+                : ""}
             </button>
           </div>
         </div>
@@ -525,7 +583,10 @@ function SavingsGoals({ householdId, userId, members, hideTitle }) {
       <ConfirmModal
         open={!!deleteTarget}
         closing={deleteModal.closing}
-        onClose={() => { deleteModal.closeModal(); setTimeout(() => setDeleteTarget(null), 260); }}
+        onClose={() => {
+          deleteModal.closeModal();
+          setTimeout(() => setDeleteTarget(null), 260);
+        }}
         onConfirm={confirmDeleteGoal}
         loading={deleting}
         title="Delete this goal?"
