@@ -1,11 +1,11 @@
-import { MODES } from "./PasswordStrengthBar";
+import { MODES } from "./password_strength_bar";
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { getSupabaseClient } from "../../lib/superbase.jsx";
 import { useGlassToast } from "../../lib/glass_toast_provider.jsx";
 import { hapticError } from "../../lib/security";
-import AuthForm, { slideVariants } from "./AuthForm";
-import "./Auth.css";
+import AuthForm, { slideVariants } from "./auth_form";
+import "./auth.css";
 
 /* ── Main Auth component ── */
 function Auth() {

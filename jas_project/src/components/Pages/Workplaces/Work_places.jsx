@@ -1,7 +1,7 @@
 import "./Work_places.css";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { getSupabaseClient } from "../../../lib/superbase.jsx";
-import { useUserId } from "../../../lib/Auth_context.jsx";
+import { useUserId } from "../../../lib/auth_context.jsx";
 import {
   getUserFacingError,
   sanitizeText,
@@ -18,7 +18,7 @@ import {
   LoadingSkeleton,
 } from "../../index.js";
 import { useBodyScrollLock, useModal } from "../../../hooks/index.js";
-import { TrashIcon } from "../../../components/ui/modals/Confirm_modal";
+import { TrashIcon } from "../../../components/ui/modals/confirm_modal";
 
 import { formatMoney } from "../../../lib/format";
 
