@@ -227,6 +227,16 @@ function WorkoutLogger() {
       next[index] = { ...next[index], [field]: value };
       return { ...f, exercises: next };
     });
+    // Re-validate if field was previously validated (has a state)
+    const key = `${index}_${field}`;
+    if (fieldStates[key]) {
+      const err = validateExerciseField(index, field, value);
+      setFieldErrors((prev) => ({ ...prev, [key]: err }));
+      setFieldStates((prev) => ({
+        ...prev,
+        [key]: err ? "error" : value ? "valid" : "idle",
+      }));
+    }
   };
 
   // ── Modal open/close ──
@@ -429,10 +439,10 @@ function WorkoutLogger() {
     }
   };
 
-  const validateExerciseField = (index, field) => {
+  const validateExerciseField = (index, field, overrideValue) => {
     const ex = form.exercises[index];
     if (!ex) return null;
-    const val = ex[field];
+    const val = overrideValue !== undefined ? overrideValue : ex[field];
     switch (field) {
       case "name":
         return !val || !val.trim() ? "Required" : null;
