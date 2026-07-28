@@ -1,5 +1,6 @@
 import { kgToLbs, lbsToKg } from "../../../lib/weight";
 import ShakeField from "../../../components/ui/form/shake_field";
+import FieldIndicator from "../../../components/ui/form/field_indicator";
 
 export default function ExerciseRow({
   exercise,
@@ -38,6 +39,7 @@ export default function ExerciseRow({
           onChange={(e) => onChange(index, "name", e.target.value)}
           onBlur={() => handleBlur("name")}
         />
+        <FieldIndicator state={state("name")} />
       </div>
     </>
   );
