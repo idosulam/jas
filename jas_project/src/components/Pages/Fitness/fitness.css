@@ -1084,6 +1084,55 @@
   color: rgba(255, 255, 255, 0.25);
 }
 
+/* ── Exercise field validation states ── */
+.fitness__exercise-field--error {
+  border-color: var(--color-warning, #fbbf24) !important;
+  background: rgba(251, 191, 36, 0.04) !important;
+}
+
+.fitness__exercise-field--error:focus {
+  border-color: var(--color-warning, #fbbf24) !important;
+  box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.15) !important;
+}
+
+.fitness__exercise-field--valid {
+  border-color: var(--color-success, #34d399) !important;
+  background: rgba(52, 211, 153, 0.04) !important;
+}
+
+.fitness__exercise-field--valid:focus {
+  border-color: var(--color-success, #34d399) !important;
+  box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.15) !important;
+}
+
+.fitness__exercise-input-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+/* Smaller indicator for number inputs */
+.form-field__input-wrap--num {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.form-field__input-wrap--num .fitness__exercise-input {
+  padding-right: 1.8rem;
+}
+
+.form-field__input-wrap--num .form-field__indicator {
+  right: 0.4rem;
+  width: 18px;
+  height: 18px;
+}
+
+.form-field__input-wrap--num .form-field__indicator svg {
+  width: 10px;
+  height: 10px;
+}
+
 .fitness__exercise-remove {
   width: 2rem;
   height: 2rem;

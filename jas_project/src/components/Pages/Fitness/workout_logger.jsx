@@ -57,6 +57,9 @@ function WorkoutLogger() {
     name: "",
     exercises: [emptyExercise()],
   });
+  const [presetFieldErrors, setPresetFieldErrors] = useState({});
+  const [presetFieldStates, setPresetFieldStates] = useState({});
+  const [presetShakeKey, setPresetShakeKey] = useState(0);
   const [expandedNoteId, setExpandedNoteId] = useState(null);
   const [showFloatingActions, setShowFloatingActions] = useState(false);
   const addBtnRef = useRef(null);
@@ -227,6 +230,31 @@ function WorkoutLogger() {
       next[index] = { ...next[index], [field]: value };
       return { ...f, exercises: next };
     });
+    // Re-validate if field was previously validated (has a state)
+    const key = `${index}_${field}`;
+    if (fieldStates[key]) {
+      const err = validateExerciseField(index, field, value);
+      setFieldErrors((prev) => ({ ...prev, [key]: err }));
+      setFieldStates((prev) => ({
+        ...prev,
+        [key]: err ? "error" : value ? "valid" : "idle",
+      }));
+    }
+    // Also re-validate the paired weight field
+    const pairedField = field === "weight" ? "weight_lbs" : field === "weight_lbs" ? "weight" : null;
+    if (pairedField) {
+      const pairedKey = `${index}_${pairedField}`;
+      if (fieldStates[pairedKey]) {
+        // Compute the paired value from the current form state
+        const pairedValue = field === "weight" ? kgToLbs(value) : lbsToKg(value);
+        const err = validateExerciseField(index, pairedField, pairedValue);
+        setFieldErrors((prev) => ({ ...prev, [pairedKey]: err }));
+        setFieldStates((prev) => ({
+          ...prev,
+          [pairedKey]: err ? "error" : pairedValue ? "valid" : "idle",
+        }));
+      }
+    }
   };
 
   // ── Modal open/close ──
@@ -288,6 +316,8 @@ function WorkoutLogger() {
       setEditingPreset(null);
       setPresetForm({ name: "", exercises: [emptyExercise()] });
     }
+    setPresetFieldErrors({});
+    setPresetFieldStates({});
     presetModal.openModal();
   };
 
@@ -295,6 +325,7 @@ function WorkoutLogger() {
     presetModal.closeModal();
     setTimeout(() => {
       setEditingPreset(null);
+      setPresetFieldStates({});
     }, MODAL_EXIT_MS);
   };
 
@@ -319,6 +350,84 @@ function WorkoutLogger() {
       next[index] = { ...next[index], [field]: value };
       return { ...f, exercises: next };
     });
+    // Re-validate if field was previously validated
+    const key = `${index}_${field}`;
+    if (presetFieldStates[key]) {
+      const err = validatePresetExerciseField(index, field, value);
+      setPresetFieldErrors((prev) => ({ ...prev, [key]: err }));
+      setPresetFieldStates((prev) => ({
+        ...prev,
+        [key]: err ? "error" : value ? "valid" : "idle",
+      }));
+    }
+    // Also re-validate the paired weight field
+    const pairedField = field === "weight" ? "weight_lbs" : field === "weight_lbs" ? "weight" : null;
+    if (pairedField) {
+      const pairedKey = `${index}_${pairedField}`;
+      if (presetFieldStates[pairedKey]) {
+        const pairedValue = field === "weight" ? kgToLbs(value) : lbsToKg(value);
+        const err = validatePresetExerciseField(index, pairedField, pairedValue);
+        setPresetFieldErrors((prev) => ({ ...prev, [pairedKey]: err }));
+        setPresetFieldStates((prev) => ({
+          ...prev,
+          [pairedKey]: err ? "error" : pairedValue ? "valid" : "idle",
+        }));
+      }
+    }
+  };
+
+  const validatePresetExerciseField = (index, field, overrideValue) => {
+    const ex = presetForm.exercises[index];
+    if (!ex) return null;
+    const val = overrideValue !== undefined ? overrideValue : ex[field];
+    switch (field) {
+      case "name":
+        return !val || !val.trim() ? "Required" : null;
+      case "weight":
+      case "weight_lbs": {
+        if (!val && val !== 0) return "Required";
+        const n = sanitizeNumber(val, 0, 9999);
+        return n == null ? "Invalid" : null;
+      }
+      case "sets": {
+        if (!val && val !== 0) return "Required";
+        const n = sanitizeNumber(val, 0, 999);
+        return n == null ? "Invalid" : null;
+      }
+      case "reps": {
+        if (!val && val !== 0) return "Required";
+        const n = sanitizeNumber(val, 0, 9999);
+        return n == null ? "Invalid" : null;
+      }
+      default:
+        return null;
+    }
+  };
+
+  const handlePresetExerciseFieldBlur = (index, field) => {
+    const err = validatePresetExerciseField(index, field);
+    const key = `${index}_${field}`;
+    setPresetFieldErrors((prev) => ({ ...prev, [key]: err }));
+    setPresetFieldStates((prev) => ({
+      ...prev,
+      [key]: err ? "error" : presetForm.exercises[index]?.[field] ? "valid" : "idle",
+    }));
+    if (err) {
+      setPresetShakeKey((k) => k + 1);
+      hapticError();
+    }
+    // Also validate the paired weight field
+    const pairedField = field === "weight" ? "weight_lbs" : field === "weight_lbs" ? "weight" : null;
+    if (pairedField) {
+      const pairedKey = `${index}_${pairedField}`;
+      const pairedVal = presetForm.exercises[index]?.[pairedField];
+      const pairedErr = validatePresetExerciseField(index, pairedField);
+      setPresetFieldErrors((prev) => ({ ...prev, [pairedKey]: pairedErr }));
+      setPresetFieldStates((prev) => ({
+        ...prev,
+        [pairedKey]: pairedErr ? "error" : pairedVal ? "valid" : "idle",
+      }));
+    }
   };
 
   const savePreset = useCallback(async () => {
@@ -429,6 +538,34 @@ function WorkoutLogger() {
     }
   };
 
+  const validateExerciseField = (index, field, overrideValue) => {
+    const ex = form.exercises[index];
+    if (!ex) return null;
+    const val = overrideValue !== undefined ? overrideValue : ex[field];
+    switch (field) {
+      case "name":
+        return !val || !val.trim() ? "Required" : null;
+      case "weight":
+      case "weight_lbs": {
+        if (!val && val !== 0) return "Required";
+        const n = sanitizeNumber(val, 0, 9999);
+        return n == null ? "Invalid" : null;
+      }
+      case "sets": {
+        if (!val && val !== 0) return "Required";
+        const n = sanitizeNumber(val, 0, 999);
+        return n == null ? "Invalid" : null;
+      }
+      case "reps": {
+        if (!val && val !== 0) return "Required";
+        const n = sanitizeNumber(val, 0, 9999);
+        return n == null ? "Invalid" : null;
+      }
+      default:
+        return null;
+    }
+  };
+
   const handleFieldBlur = (fieldName) => {
     const err = validateField(fieldName, form[fieldName]);
     setFieldErrors((prev) => ({ ...prev, [fieldName]: err }));
@@ -442,10 +579,51 @@ function WorkoutLogger() {
     }
   };
 
+  const handleExerciseFieldBlur = (index, field) => {
+    const err = validateExerciseField(index, field);
+    const key = `${index}_${field}`;
+    setFieldErrors((prev) => ({ ...prev, [key]: err }));
+    setFieldStates((prev) => ({
+      ...prev,
+      [key]: err ? "error" : form.exercises[index]?.[field] ? "valid" : "idle",
+    }));
+    if (err) {
+      setShakeKey((k) => k + 1);
+      hapticError();
+    }
+    // Also validate the paired weight field
+    const pairedField = field === "weight" ? "weight_lbs" : field === "weight_lbs" ? "weight" : null;
+    if (pairedField) {
+      const pairedKey = `${index}_${pairedField}`;
+      const pairedVal = form.exercises[index]?.[pairedField];
+      const pairedErr = validateExerciseField(index, pairedField);
+      setFieldErrors((prev) => ({ ...prev, [pairedKey]: pairedErr }));
+      setFieldStates((prev) => ({
+        ...prev,
+        [pairedKey]: pairedErr ? "error" : pairedVal ? "valid" : "idle",
+      }));
+    }
+  };
+
+  const exerciseErrors = {};
+  const exerciseStates = {};
+  Object.keys(fieldErrors).forEach((k) => {
+    if (k.includes("_")) exerciseErrors[k] = fieldErrors[k];
+  });
+  Object.keys(fieldStates).forEach((k) => {
+    if (k.includes("_")) exerciseStates[k] = fieldStates[k];
+  });
+
   const isFormValid = useMemo(() => {
     if (!form.workout_date) return false;
     if (!form.preset_name || !form.preset_name.trim()) return false;
-    const hasAtLeastOneExercise = form.exercises.some((ex) => ex.name.trim());
+    const hasAtLeastOneExercise = form.exercises.some(
+      (ex) =>
+        ex.name.trim() &&
+        (ex.weight || ex.weight_lbs) &&
+        ex.sets &&
+        ex.reps,
+    );
     return hasAtLeastOneExercise;
   }, [form]);
 
@@ -824,6 +1002,9 @@ function WorkoutLogger() {
         onSubmit={handleSubmit}
         onFieldBlur={handleFieldBlur}
         exerciseCount={form.exercises.length}
+        exerciseErrors={exerciseErrors}
+        exerciseStates={exerciseStates}
+        onExerciseFieldBlur={handleExerciseFieldBlur}
       />
 
       {/* Preset Modal */}
@@ -837,13 +1018,31 @@ function WorkoutLogger() {
           Presets let you quick-add common workouts with one tap.
         </p>
         <div className="fitness__form">
-          <FormField label="Preset name">
+          <FormField
+            label="Preset name"
+            error={presetFieldErrors.preset_name}
+            state={presetFieldStates.preset_name}
+            showIndicator
+            shake={presetFieldErrors.preset_name ? presetShakeKey : 0}
+          >
             <input
               type="text"
               value={presetForm.name}
               onChange={(e) =>
                 setPresetForm((f) => ({ ...f, name: e.target.value }))
               }
+              onBlur={() => {
+                const err = !presetForm.name.trim() ? "Preset name is required" : null;
+                setPresetFieldErrors((prev) => ({ ...prev, preset_name: err }));
+                setPresetFieldStates((prev) => ({
+                  ...prev,
+                  preset_name: err ? "error" : presetForm.name ? "valid" : "idle",
+                }));
+                if (err) {
+                  setPresetShakeKey((k) => k + 1);
+                  hapticError();
+                }
+              }}
               placeholder="e.g. Push day"
               maxLength={40}
               autoFocus
@@ -860,6 +1059,10 @@ function WorkoutLogger() {
                 onChange={updatePresetExercise}
                 onRemove={removePresetExercise}
                 showRemove={presetForm.exercises.length > 1}
+                errors={presetFieldErrors}
+                states={presetFieldStates}
+                shakeKey={presetShakeKey}
+                onFieldBlur={handlePresetExerciseFieldBlur}
               />
             ))}
             <button
