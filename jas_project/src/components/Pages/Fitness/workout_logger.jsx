@@ -1018,13 +1018,31 @@ function WorkoutLogger() {
           Presets let you quick-add common workouts with one tap.
         </p>
         <div className="fitness__form">
-          <FormField label="Preset name">
+          <FormField
+            label="Preset name"
+            error={presetFieldErrors.preset_name}
+            state={presetFieldStates.preset_name}
+            showIndicator
+            shake={presetFieldErrors.preset_name ? presetShakeKey : 0}
+          >
             <input
               type="text"
               value={presetForm.name}
               onChange={(e) =>
                 setPresetForm((f) => ({ ...f, name: e.target.value }))
               }
+              onBlur={() => {
+                const err = !presetForm.name.trim() ? "Preset name is required" : null;
+                setPresetFieldErrors((prev) => ({ ...prev, preset_name: err }));
+                setPresetFieldStates((prev) => ({
+                  ...prev,
+                  preset_name: err ? "error" : presetForm.name ? "valid" : "idle",
+                }));
+                if (err) {
+                  setPresetShakeKey((k) => k + 1);
+                  hapticError();
+                }
+              }}
               placeholder="e.g. Push day"
               maxLength={40}
               autoFocus
