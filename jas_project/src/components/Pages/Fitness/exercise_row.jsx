@@ -1,6 +1,7 @@
 import { kgToLbs, lbsToKg } from "../../../lib/weight";
 import ShakeField from "../../../components/ui/form/shake_field";
 import FieldError from "../../../components/ui/form/field_error";
+import FieldIndicator from "../../../components/ui/form/field_indicator";
 
 export default function ExerciseRow({
   exercise,
@@ -30,15 +31,18 @@ export default function ExerciseRow({
 
   const nameField = (
     <>
-      <input
-        type="text"
-        className={`fitness__exercise-name${fieldClass("name", "fitness__exercise-name")}`}
-        placeholder="Exercise name"
-        value={exercise.name}
-        maxLength={80}
-        onChange={(e) => onChange(index, "name", e.target.value)}
-        onBlur={() => handleBlur("name")}
-      />
+      <div className="fitness__exercise-input-wrap-indicator">
+        <input
+          type="text"
+          className={`fitness__exercise-name${fieldClass("name", "fitness__exercise-name")}`}
+          placeholder="Exercise name"
+          value={exercise.name}
+          maxLength={80}
+          onChange={(e) => onChange(index, "name", e.target.value)}
+          onBlur={() => handleBlur("name")}
+        />
+        <FieldIndicator state={state("name")} />
+      </div>
       <FieldError message={err("name")} />
     </>
   );
@@ -63,29 +67,29 @@ export default function ExerciseRow({
             const step = isWeight || isLbs ? "0.5" : undefined;
 
             const input = (
-              <input
-                key={field}
-                type="number"
-                className={`fitness__exercise-input${fieldClass(field, "fitness__exercise-input")}`}
-                placeholder={placeholder}
-                min="0"
-                step={step}
-                value={exercise[field]}
-                onChange={(e) => {
-                  onChange(index, field, e.target.value);
-                  if (isWeight) onChange(index, "weight_lbs", kgToLbs(e.target.value));
-                  if (isLbs) onChange(index, "weight", lbsToKg(e.target.value));
-                }}
-                onBlur={() => handleBlur(field)}
-              />
+              <div key={field} className="fitness__exercise-input-wrap-indicator fitness__exercise-input-wrap-indicator--num">
+                <input
+                  type="number"
+                  className={`fitness__exercise-input${fieldClass(field, "fitness__exercise-input")}`}
+                  placeholder={placeholder}
+                  min="0"
+                  step={step}
+                  value={exercise[field]}
+                  onChange={(e) => {
+                    onChange(index, field, e.target.value);
+                    if (isWeight) onChange(index, "weight_lbs", kgToLbs(e.target.value));
+                    if (isLbs) onChange(index, "weight", lbsToKg(e.target.value));
+                  }}
+                  onBlur={() => handleBlur(field)}
+                />
+                <FieldIndicator state={state(field)} />
+                {err(field) && <FieldError message={err(field)} />}
+              </div>
             );
 
             if (err(field)) {
               return (
-                <div key={field} className="fitness__exercise-input-wrap">
-                  <ShakeField trigger={shakeKey}>{input}</ShakeField>
-                  <FieldError message={err(field)} />
-                </div>
+                <ShakeField key={field} trigger={shakeKey}>{input}</ShakeField>
               );
             }
             return input;
