@@ -1084,6 +1084,37 @@
   color: rgba(255, 255, 255, 0.25);
 }
 
+/* ── Exercise field validation states ── */
+.fitness__exercise-name--error,
+.fitness__exercise-input--error {
+  border-color: var(--color-warning, #fbbf24) !important;
+  background: rgba(251, 191, 36, 0.04) !important;
+}
+
+.fitness__exercise-name--error:focus,
+.fitness__exercise-input--error:focus {
+  border-color: var(--color-warning, #fbbf24) !important;
+  box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.15) !important;
+}
+
+.fitness__exercise-name--valid,
+.fitness__exercise-input--valid {
+  border-color: var(--color-success, #34d399) !important;
+  background: rgba(52, 211, 153, 0.04) !important;
+}
+
+.fitness__exercise-name--valid:focus,
+.fitness__exercise-input--valid:focus {
+  border-color: var(--color-success, #34d399) !important;
+  box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.15) !important;
+}
+
+.fitness__exercise-input-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
 .fitness__exercise-remove {
   width: 2rem;
   height: 2rem;

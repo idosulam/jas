@@ -22,6 +22,9 @@ export default function WorkoutForm({
   onSubmit,
   onFieldBlur,
   exerciseCount,
+  exerciseErrors = {},
+  exerciseStates = {},
+  onExerciseFieldBlur,
 }) {
   const volume = useMemo(() => calcVolume(form.exercises), [form.exercises]);
 
@@ -96,6 +99,10 @@ export default function WorkoutForm({
               onChange={handleExerciseChange}
               onRemove={handleExerciseRemove}
               showRemove={exerciseCount > 1}
+              errors={exerciseErrors}
+              states={exerciseStates}
+              shakeKey={shakeKey}
+              onFieldBlur={onExerciseFieldBlur}
             />
           ))}
           <button

@@ -429,6 +429,34 @@ function WorkoutLogger() {
     }
   };
 
+  const validateExerciseField = (index, field) => {
+    const ex = form.exercises[index];
+    if (!ex) return null;
+    const val = ex[field];
+    switch (field) {
+      case "name":
+        return !val || !val.trim() ? "Required" : null;
+      case "weight":
+      case "weight_lbs": {
+        if (!val && val !== 0) return null;
+        const n = sanitizeNumber(val, 0, 9999);
+        return n == null ? "Invalid" : null;
+      }
+      case "sets": {
+        if (!val && val !== 0) return null;
+        const n = sanitizeNumber(val, 0, 999);
+        return n == null ? "Invalid" : null;
+      }
+      case "reps": {
+        if (!val && val !== 0) return null;
+        const n = sanitizeNumber(val, 0, 9999);
+        return n == null ? "Invalid" : null;
+      }
+      default:
+        return null;
+    }
+  };
+
   const handleFieldBlur = (fieldName) => {
     const err = validateField(fieldName, form[fieldName]);
     setFieldErrors((prev) => ({ ...prev, [fieldName]: err }));
@@ -441,6 +469,29 @@ function WorkoutLogger() {
       hapticError();
     }
   };
+
+  const handleExerciseFieldBlur = (index, field) => {
+    const err = validateExerciseField(index, field);
+    const key = `${index}_${field}`;
+    setFieldErrors((prev) => ({ ...prev, [key]: err }));
+    setFieldStates((prev) => ({
+      ...prev,
+      [key]: err ? "error" : form.exercises[index]?.[field] ? "valid" : "idle",
+    }));
+    if (err) {
+      setShakeKey((k) => k + 1);
+      hapticError();
+    }
+  };
+
+  const exerciseErrors = {};
+  const exerciseStates = {};
+  Object.keys(fieldErrors).forEach((k) => {
+    if (k.includes("_")) exerciseErrors[k] = fieldErrors[k];
+  });
+  Object.keys(fieldStates).forEach((k) => {
+    if (k.includes("_")) exerciseStates[k] = fieldStates[k];
+  });
 
   const isFormValid = useMemo(() => {
     if (!form.workout_date) return false;
@@ -824,6 +875,9 @@ function WorkoutLogger() {
         onSubmit={handleSubmit}
         onFieldBlur={handleFieldBlur}
         exerciseCount={form.exercises.length}
+        exerciseErrors={exerciseErrors}
+        exerciseStates={exerciseStates}
+        onExerciseFieldBlur={handleExerciseFieldBlur}
       />
 
       {/* Preset Modal */}
