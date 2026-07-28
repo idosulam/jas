@@ -39,10 +39,12 @@ export function formatWeightBoth(kg, digits = 1) {
 }
 
 export function kgToLbs(kg) {
+  if (!kg && kg !== 0) return "";
   return kg * 2.20462;
 }
 
 export function lbsToKg(lbs) {
+  if (!lbs && lbs !== 0) return "";
   return lbs / 2.20462;
 }
 
