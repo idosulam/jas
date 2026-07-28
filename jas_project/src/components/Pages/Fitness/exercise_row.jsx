@@ -1,6 +1,5 @@
 import { kgToLbs, lbsToKg } from "../../../lib/weight";
 import ShakeField from "../../../components/ui/form/shake_field";
-import FieldError from "../../../components/ui/form/field_error";
 
 export default function ExerciseRow({
   exercise,
@@ -40,7 +39,6 @@ export default function ExerciseRow({
           onBlur={() => handleBlur("name")}
         />
       </div>
-      <FieldError message={err("name")} />
     </>
   );
 
@@ -79,7 +77,6 @@ export default function ExerciseRow({
                   }}
                   onBlur={() => handleBlur(field)}
                 />
-                {err(field) && <FieldError message={err(field)} />}
               </div>
             );
 
