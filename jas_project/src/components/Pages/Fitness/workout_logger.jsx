@@ -448,17 +448,17 @@ function WorkoutLogger() {
         return !val || !val.trim() ? "Required" : null;
       case "weight":
       case "weight_lbs": {
-        if (!val && val !== 0) return null;
+        if (!val && val !== 0) return "Required";
         const n = sanitizeNumber(val, 0, 9999);
         return n == null ? "Invalid" : null;
       }
       case "sets": {
-        if (!val && val !== 0) return null;
+        if (!val && val !== 0) return "Required";
         const n = sanitizeNumber(val, 0, 999);
         return n == null ? "Invalid" : null;
       }
       case "reps": {
-        if (!val && val !== 0) return null;
+        if (!val && val !== 0) return "Required";
         const n = sanitizeNumber(val, 0, 9999);
         return n == null ? "Invalid" : null;
       }
@@ -506,7 +506,13 @@ function WorkoutLogger() {
   const isFormValid = useMemo(() => {
     if (!form.workout_date) return false;
     if (!form.preset_name || !form.preset_name.trim()) return false;
-    const hasAtLeastOneExercise = form.exercises.some((ex) => ex.name.trim());
+    const hasAtLeastOneExercise = form.exercises.some(
+      (ex) =>
+        ex.name.trim() &&
+        (ex.weight || ex.weight_lbs) &&
+        ex.sets &&
+        ex.reps,
+    );
     return hasAtLeastOneExercise;
   }, [form]);
 
