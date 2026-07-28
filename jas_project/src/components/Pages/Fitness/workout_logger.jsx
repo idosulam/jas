@@ -237,6 +237,21 @@ function WorkoutLogger() {
         [key]: err ? "error" : value ? "valid" : "idle",
       }));
     }
+    // Also re-validate the paired weight field
+    const pairedField = field === "weight" ? "weight_lbs" : field === "weight_lbs" ? "weight" : null;
+    if (pairedField) {
+      const pairedKey = `${index}_${pairedField}`;
+      if (fieldStates[pairedKey]) {
+        // Compute the paired value from the current form state
+        const pairedValue = field === "weight" ? kgToLbs(value) : lbsToKg(value);
+        const err = validateExerciseField(index, pairedField, pairedValue);
+        setFieldErrors((prev) => ({ ...prev, [pairedKey]: err }));
+        setFieldStates((prev) => ({
+          ...prev,
+          [pairedKey]: err ? "error" : pairedValue ? "valid" : "idle",
+        }));
+      }
+    }
   };
 
   // ── Modal open/close ──
@@ -491,6 +506,18 @@ function WorkoutLogger() {
     if (err) {
       setShakeKey((k) => k + 1);
       hapticError();
+    }
+    // Also validate the paired weight field
+    const pairedField = field === "weight" ? "weight_lbs" : field === "weight_lbs" ? "weight" : null;
+    if (pairedField) {
+      const pairedKey = `${index}_${pairedField}`;
+      const pairedVal = form.exercises[index]?.[pairedField];
+      const pairedErr = validateExerciseField(index, pairedField);
+      setFieldErrors((prev) => ({ ...prev, [pairedKey]: pairedErr }));
+      setFieldStates((prev) => ({
+        ...prev,
+        [pairedKey]: pairedErr ? "error" : pairedVal ? "valid" : "idle",
+      }));
     }
   };
 
