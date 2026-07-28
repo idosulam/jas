@@ -142,20 +142,6 @@ export function formatDateFriendly(dateStr, opts = {}) {
 }
 
 /**
- * Format a time string (HH:MM) to 12-hour format.
- * @param {string} timeStr - Time string like "14:30"
- * @returns {string} Formatted time like "2:30 PM"
- */
-export function formatTimeFriendly(timeStr) {
-  if (!timeStr || typeof timeStr !== "string") return "";
-  const [h, m] = timeStr.slice(0, 5).split(":").map(Number);
-  if (isNaN(h) || isNaN(m)) return timeStr;
-  const period = h >= 12 ? "PM" : "AM";
-  const hour12 = h % 12 || 12;
-  return `${hour12}:${String(m).padStart(2, "0")} ${period}`;
-}
-
-/**
  * Haptic feedback — vibrate the device briefly.
  * Safe no-op on desktop / unsupported browsers.
  */

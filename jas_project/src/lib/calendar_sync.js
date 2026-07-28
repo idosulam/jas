@@ -72,15 +72,6 @@ export function getVisibleEventNotes(value) {
 }
 
 /**
- * Extract the linked shift ID from event notes.
- */
-export function getLinkedShiftId(notes) {
-  if (typeof notes !== "string") return null;
-  const m = notes.match(/Linked shift id:\s*([a-zA-Z0-9-]+)/);
-  return m ? m[1] : null;
-}
-
-/**
  * Remove generated calendar events (wake, walk, shift-linked) for a date.
  */
 export async function removeGeneratedCalendarEvents(

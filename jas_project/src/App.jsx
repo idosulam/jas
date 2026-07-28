@@ -1,28 +1,28 @@
 import { useRef, useState, lazy, Suspense } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import Navbar from "./components/navbar/Navbar.jsx";
-import Page_transition from "./components/Page_transition.jsx";
+import Navbar from "./components/navbar/navbar.jsx";
+import Page_transition from "./components/page_transition.jsx";
 import { ToastProvider } from "./lib/glass_toast_provider.jsx";
 import { supabase } from "./lib/superbase.jsx";
-import { AuthProvider, useAuth } from "./lib/Auth_context.jsx";
-import { HouseholdProvider } from "./lib/Household_context.jsx";
+import { AuthProvider, useAuth } from "./lib/auth_context.jsx";
+import { HouseholdProvider } from "./lib/household_context.jsx";
 
 // Lazy-loaded page components (route-level code splitting)
-const Shifts = lazy(() => import("./components/Pages/Shifts/Shifts.jsx"));
-const Calendar = lazy(() => import("./components/Pages/Calendar/Calendar.jsx"));
+const Shifts = lazy(() => import("./components/Pages/Shifts/shifts.jsx"));
+const Calendar = lazy(() => import("./components/Pages/Calendar/calendar.jsx"));
 const Household = lazy(
-  () => import("./components/Pages/Household/Household.jsx"),
+  () => import("./components/Pages/Household/household.jsx"),
 );
-const Profile = lazy(() => import("./components/Pages/profile/Profile.jsx"));
+const Profile = lazy(() => import("./components/Pages/profile/profile.jsx"));
 const Workplaces = lazy(
   () => import("./components/Pages/Workplaces/Work_places.jsx"),
 );
 const Fitness = lazy(
-  () => import("./components/Pages/Fitness/Fitness.jsx"),
+  () => import("./components/Pages/Fitness/fitness.jsx"),
 );
 const Auth = lazy(() => import("./components/Auth/Auth.jsx"));
 const ProfileOnboarding = lazy(
-  () => import("./components/Pages/profile/ProfileOnboarding.jsx"),
+  () => import("./components/Pages/profile/profile_onboarding.jsx"),
 );
 
 const TAB_ORDER = ["Shifts", "Calendar", "Fitness", "Household", "Profile"];

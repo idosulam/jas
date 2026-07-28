@@ -203,6 +203,50 @@
   }
 }
 
+/* ── Shared utility keyframes ── */
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-6px);
+  }
+  75% {
+    transform: translateX(6px);
+  }
+}
+
+@keyframes cardRemove {
+  0% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+    max-height: 200px;
+    margin-bottom: 0.65rem;
+    padding: 1rem 1.25rem;
+  }
+  50% {
+    opacity: 0;
+    transform: translateX(30px) scale(0.95);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(30px) scale(0.95);
+    max-height: 0;
+    margin-bottom: 0;
+    padding: 0;
+    border-width: 0;
+    overflow: hidden;
+  }
+}
+
 /* ── Page transition classes ── */
 .page-transition {
   width: 100%;
@@ -214,25 +258,9 @@
   will-change: transform, opacity;
 }
 
-.page-transition--forward {
-  animation-name: pageEnterForward;
-}
-
-.page-transition--backward {
-  animation-name: pageEnterBackward;
-}
-
 /* ── Accessibility ── */
 @media (prefers-reduced-motion: reduce) {
-  .page-transition,
-  .animate-in,
-  .animate-scale,
-  .navbar,
-  .navbar__glass--pulse,
-  .navbar__shine::after,
-  .nav-option--active .nav-option__icon,
-  body::before,
-  body::after {
+  .page-transition, .animate-in, .navbar, .navbar__glass--pulse, .navbar__shine::after, .nav-option--active .nav-option__icon, body::before, body::after{
     animation: none !important;
     transition: none !important;
   }
