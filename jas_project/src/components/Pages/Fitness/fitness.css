@@ -1085,26 +1085,22 @@
 }
 
 /* ── Exercise field validation states ── */
-.fitness__exercise-name--error,
-.fitness__exercise-input--error {
+.fitness__exercise-field--error {
   border-color: var(--color-warning, #fbbf24) !important;
   background: rgba(251, 191, 36, 0.04) !important;
 }
 
-.fitness__exercise-name--error:focus,
-.fitness__exercise-input--error:focus {
+.fitness__exercise-field--error:focus {
   border-color: var(--color-warning, #fbbf24) !important;
   box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.15) !important;
 }
 
-.fitness__exercise-name--valid,
-.fitness__exercise-input--valid {
+.fitness__exercise-field--valid {
   border-color: var(--color-success, #34d399) !important;
   background: rgba(52, 211, 153, 0.04) !important;
 }
 
-.fitness__exercise-name--valid:focus,
-.fitness__exercise-input--valid:focus {
+.fitness__exercise-field--valid:focus {
   border-color: var(--color-success, #34d399) !important;
   box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.15) !important;
 }

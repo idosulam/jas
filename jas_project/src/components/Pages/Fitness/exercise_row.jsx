@@ -18,10 +18,10 @@ export default function ExerciseRow({
   const state = (field) => states[`${index}_${field}`] || "idle";
   const shake = (field) => (err(field) ? shakeKey : 0);
 
-  const fieldClass = (field, base) => {
+  const fieldClass = (field) => {
     const s = state(field);
-    if (s === "error") return ` ${base}--error`;
-    if (s === "valid") return ` ${base}--valid`;
+    if (s === "error") return " fitness__exercise-field--error";
+    if (s === "valid") return " fitness__exercise-field--valid";
     return "";
   };
 
@@ -34,7 +34,7 @@ export default function ExerciseRow({
       <div className="fitness__exercise-input-wrap-indicator">
         <input
           type="text"
-          className={`fitness__exercise-name${fieldClass("name", "fitness__exercise-name")}`}
+          className={`fitness__exercise-name${fieldClass("name")}`}
           placeholder="Exercise name"
           value={exercise.name}
           maxLength={80}
@@ -70,7 +70,7 @@ export default function ExerciseRow({
               <div key={field} className="fitness__exercise-input-wrap-indicator fitness__exercise-input-wrap-indicator--num">
                 <input
                   type="number"
-                  className={`fitness__exercise-input${fieldClass(field, "fitness__exercise-input")}`}
+                  className={`fitness__exercise-input${fieldClass(field)}`}
                   placeholder={placeholder}
                   min="0"
                   step={step}
