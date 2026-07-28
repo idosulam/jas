@@ -1111,42 +1111,24 @@
   gap: 0.15rem;
 }
 
-.fitness__exercise-input-wrap-indicator {
+/* Smaller indicator for number inputs */
+.form-field__input-wrap--num {
   position: relative;
   display: flex;
   align-items: center;
 }
 
-.fitness__exercise-input-wrap-indicator .fitness__exercise-name {
-  padding-right: 2.5rem;
+.form-field__input-wrap--num .fitness__exercise-input {
+  padding-right: 1.8rem;
 }
 
-.fitness__exercise-input-wrap-indicator--num {
-  display: flex;
-  flex-direction: column;
-  gap: 0.1rem;
-}
-
-.fitness__exercise-input-wrap-indicator--num .fitness__exercise-input {
-  padding-right: 2rem;
-}
-
-.fitness__exercise-input-wrap-indicator .form-field__indicator {
-  position: absolute;
-  right: 0.6rem;
-  top: 50%;
-  transform: translateY(-50%);
-}
-
-.fitness__exercise-input-wrap-indicator--num .form-field__indicator {
+.form-field__input-wrap--num .form-field__indicator {
   right: 0.4rem;
-  top: 50%;
-  transform: translateY(-50%);
   width: 18px;
   height: 18px;
 }
 
-.fitness__exercise-input-wrap-indicator--num .form-field__indicator svg {
+.form-field__input-wrap--num .form-field__indicator svg {
   width: 10px;
   height: 10px;
 }
