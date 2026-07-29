@@ -77,16 +77,35 @@ function AppContent() {
           style={{ textAlign: "center" }}
         >
           <div
+            className="app__spinner"
             style={{
-              width: 36,
-              height: 36,
-              border: "3px solid rgba(255,255,255,0.15)",
-              borderTopColor: "var(--color-primary, #818cf8)",
-              borderRadius: "50%",
-              animation: "authSpin 0.7s linear infinite",
+              width: 40,
+              height: 40,
               margin: "0 auto 1rem",
+              position: "relative",
             }}
-          />
+          >
+            <div
+              style={{
+                position: "absolute",
+                inset: 0,
+                border: "3px solid rgba(255,255,255,0.08)",
+                borderTopColor: "var(--color-primary, #818cf8)",
+                borderRadius: "50%",
+                animation: "spin 0.8s linear infinite",
+              }}
+            />
+            <div
+              style={{
+                position: "absolute",
+                inset: "6px",
+                border: "2px solid transparent",
+                borderBottomColor: "var(--color-secondary, #c084fc)",
+                borderRadius: "50%",
+                animation: "spin 1.2s linear infinite reverse",
+              }}
+            />
+          </div>
           <p style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>
             Loading…
           </p>
@@ -159,6 +178,7 @@ function AppContent() {
             <button
               type="button"
               onClick={handleSignOut}
+              className="sign-out-btn"
               style={{
                 position: "absolute",
                 top: "calc(env(safe-area-inset-top, 0px) + 0.75rem)",
@@ -167,31 +187,33 @@ function AppContent() {
                 display: "flex",
                 alignItems: "center",
                 gap: "0.35rem",
-                padding: "0.4rem 0.7rem",
+                padding: "0.4rem 0.75rem",
                 fontSize: "0.72rem",
                 fontFamily: "var(--font-heading)",
                 fontWeight: 600,
                 letterSpacing: "0.04em",
                 textTransform: "uppercase",
-                color: "var(--text-dim, rgba(255,255,255,0.35))",
+                color: "var(--text-dim, rgba(255,255,255,0.4))",
                 background: "rgba(255,255,255,0.04)",
                 border: "1px solid rgba(255,255,255,0.08)",
                 borderRadius: "var(--radius-pill, 999px)",
                 cursor: "pointer",
-                backdropFilter: "blur(12px)",
-                WebkitBackdropFilter: "blur(12px)",
-                transition: "color 0.2s, background 0.2s, border-color 0.2s",
+                backdropFilter: "blur(16px)",
+                WebkitBackdropFilter: "blur(16px)",
+                transition: "color 0.2s, background 0.2s, border-color 0.2s, box-shadow 0.2s",
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.color = "var(--color-danger, #f87171)";
                 e.currentTarget.style.background = "rgba(248,113,113,0.08)";
                 e.currentTarget.style.borderColor = "rgba(248,113,113,0.2)";
+                e.currentTarget.style.boxShadow = "0 0 12px rgba(248,113,113,0.1)";
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.color =
-                  "var(--text-dim, rgba(255,255,255,0.35))";
+                  "var(--text-dim, rgba(255,255,255,0.4))";
                 e.currentTarget.style.background = "rgba(255,255,255,0.04)";
                 e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)";
+                e.currentTarget.style.boxShadow = "none";
               }}
               aria-label="Sign out"
             >

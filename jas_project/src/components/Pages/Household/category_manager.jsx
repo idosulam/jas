@@ -1,7 +1,7 @@
 import FormField from "../../ui/form/form_field.jsx";
 import ColorPalettePicker from "../../../lib/color_palette_picker.jsx";
 
-const DEFAULT_ICONS = [
+export const DEFAULT_ICONS = [
   "🍔",
   "🚗",
   "🛍️",

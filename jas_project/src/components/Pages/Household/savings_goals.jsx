@@ -57,7 +57,10 @@ function SavingsGoals({ householdId, userId, members, hideTitle }) {
   useBodyScrollLock(goalModal.open, contributeModal.open, deleteModal.open);
 
   const fetchGoals = useCallback(async () => {
-    if (!householdId) return;
+    if (!householdId) {
+      setLoading(false);
+      return;
+    }
     try {
       const supabase = getSupabaseClient();
       const { data, error: fetchError } = await supabase
@@ -67,12 +70,36 @@ function SavingsGoals({ householdId, userId, members, hideTitle }) {
         .order("created_at", { ascending: true });
 
       if (fetchError) throw fetchError;
-      setGoals(data ?? []);
+
+      // Also fetch orphaned goals (created before householdId was available)
+      const { data: orphanData } = await supabase
+        .from("savings_goals")
+        .select("*")
+        .is("household_id", null)
+        .eq("created_by", userId);
+
+      // Backfill orphaned goals with correct household_id
+      if (orphanData && orphanData.length > 0) {
+        await supabase
+          .from("savings_goals")
+          .update({ household_id: householdId })
+          .is("household_id", null)
+          .eq("created_by", userId);
+        // Re-fetch after fixing
+        const { data: fixed } = await supabase
+          .from("savings_goals")
+          .select("*")
+          .eq("household_id", householdId)
+          .order("created_at", { ascending: true });
+        setGoals(fixed ?? []);
+      } else {
+        setGoals(data ?? []);
+      }
     } catch (err) {
       // silent
     }
     setLoading(false);
-  }, [householdId]);
+  }, [householdId, userId]);
 
   useEffect(() => {
     fetchGoals();
@@ -219,6 +246,8 @@ function SavingsGoals({ householdId, userId, members, hideTitle }) {
       if (error) throw error;
       deleteModal.closeModal();
       toastSuccess("Goal deleted.");
+      setGoals((prev) => prev.filter((g) => g.id !== deleteTarget.id));
+      setDeleteTarget(null);
       fetchGoals();
     } catch (err) {
       toastError(getUserFacingError(err.message));
@@ -512,6 +541,43 @@ function SavingsGoals({ householdId, userId, members, hideTitle }) {
         title={`Add to "${activeGoal?.title || ""}"`}
       >
         <div className="savings-goals__form">
+          {/* Goal progress preview */}
+          {activeGoal && (() => {
+            const progress = activeGoal.target_amount > 0
+              ? Math.min(100, (activeGoal.current_amount / activeGoal.target_amount) * 100)
+              : 0;
+            const remaining = Math.max(0, activeGoal.target_amount - activeGoal.current_amount);
+            return (
+              <div className="savings-goals__contrib-preview">
+                <div className="savings-goals__contrib-header">
+                  <span className="savings-goals__contrib-icon">{activeGoal.icon || "🎯"}</span>
+                  <div className="savings-goals__contrib-info">
+                    <span className="savings-goals__contrib-title">{activeGoal.title}</span>
+                    <span className="savings-goals__contrib-amounts">
+                      {formatMoney(activeGoal.current_amount)} / {formatMoney(activeGoal.target_amount)}
+                    </span>
+                  </div>
+                </div>
+                <div className="savings-goals__progress-wrap">
+                  <div className="savings-goals__progress-bar">
+                    <div
+                      className="savings-goals__progress-fill"
+                      style={{ width: `${progress}%`, background: activeGoal.color || "#818cf8" }}
+                    />
+                  </div>
+                  <div className="savings-goals__progress-meta">
+                    <span>{Math.round(progress)}%</span>
+                    {remaining > 0 ? (
+                      <span>{formatMoney(remaining)} to go</span>
+                    ) : (
+                      <span className="savings-goals__reached">🎉 Reached!</span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
+
           <FormField
             label="Amount (₪)"
             error={contribAmountError}

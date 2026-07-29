@@ -404,6 +404,7 @@ function Auth() {
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ duration: 0.5, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
       >
+        <div className="auth__card-pattern" aria-hidden="true" />
         <div className="auth__card-shine" aria-hidden="true" />
 
         <AnimatePresence mode="wait" custom={direction}>

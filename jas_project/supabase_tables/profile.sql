@@ -36,6 +36,10 @@ CREATE INDEX IF NOT EXISTS idx_weight_entries_user_id ON public.weight_entries(u
 CREATE INDEX IF NOT EXISTS idx_profile_user_id ON public.profile(user_id);
 
 COMMENT ON TABLE public.profile IS 'Single-user profile — height is stored in cm and goal weight in kg; the app converts lbs in the UI before saving.';
+
+-- ── Weight unit preference (kg/lbs) ─────────────────────────
+ALTER TABLE public.profile
+  ADD COLUMN IF NOT EXISTS weight_unit TEXT NOT NULL DEFAULT 'kg' CHECK (weight_unit IN ('kg', 'lbs'));
 COMMENT ON TABLE public.weight_entries IS 'Daily weigh-ins — weight is stored in kg for consistent analytics.';
 COMMENT ON COLUMN public.profile.user_id IS 'Owner — references auth.users';
 COMMENT ON COLUMN public.weight_entries.user_id IS 'Owner — references auth.users';

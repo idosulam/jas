@@ -20,13 +20,13 @@
   -webkit-overflow-scrolling: touch;
 }
 
-/* ── Ambient orbs ── */
+/* ── Ambient orbs (enhanced) ── */
 .auth__orb {
   position: fixed;
   border-radius: 50%;
   pointer-events: none;
   will-change: transform;
-  filter: blur(80px);
+  filter: blur(90px);
 }
 
 .auth__orb--1 {
@@ -36,8 +36,8 @@
   left: -10%;
   background: radial-gradient(
     circle,
-    rgba(99, 102, 241, 0.25) 0%,
-    rgba(139, 92, 246, 0.08) 50%,
+    rgba(99, 102, 241, 0.3) 0%,
+    rgba(139, 92, 246, 0.1) 50%,
     transparent 70%
   );
   animation: authOrb1 18s ease-in-out infinite;
@@ -50,8 +50,8 @@
   right: -8%;
   background: radial-gradient(
     circle,
-    rgba(236, 72, 153, 0.18) 0%,
-    rgba(168, 85, 247, 0.06) 50%,
+    rgba(236, 72, 153, 0.22) 0%,
+    rgba(168, 85, 247, 0.08) 50%,
     transparent 70%
   );
   animation: authOrb2 22s ease-in-out infinite;
@@ -65,7 +65,7 @@
   transform: translateX(-50%);
   background: radial-gradient(
     circle,
-    rgba(129, 140, 248, 0.12) 0%,
+    rgba(129, 140, 248, 0.15) 0%,
     transparent 60%
   );
   animation: authOrb3 15s ease-in-out infinite;
@@ -142,7 +142,7 @@
   background-clip: text;
 }
 
-/* ── Card ── */
+/* ── Card (enhanced) ── */
 .auth__card {
   position: relative;
   z-index: 1;
@@ -155,13 +155,28 @@
     rgba(255, 255, 255, 0.08) 0%,
     rgba(255, 255, 255, 0.02) 100%
   );
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(24px) saturate(180%);
-  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(28px) saturate(200%);
+  -webkit-backdrop-filter: blur(28px) saturate(200%);
   box-shadow:
     0 8px 32px rgba(0, 0, 0, 0.4),
-    0 1px 0 rgba(255, 255, 255, 0.06) inset;
+    0 1px 0 rgba(255, 255, 255, 0.06) inset,
+    0 0 60px rgba(129, 140, 248, 0.04);
   overflow: hidden;
+}
+
+/* Subtle pattern overlay */
+.auth__card-pattern {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-image: var(--noise);
+  background-repeat: repeat;
+  background-size: 128px 128px;
+  pointer-events: none;
+  opacity: 0.3;
+  mix-blend-mode: overlay;
+  z-index: 0;
 }
 
 .auth__card-shine {
@@ -245,7 +260,7 @@
   color: var(--color-primary, #818cf8);
 }
 
-/* ── Input base ── */
+/* ── Input base (enhanced) ── */
 .auth__input {
   width: 100%;
   padding: 0.8rem 2.5rem 0.8rem 2.75rem;
@@ -265,13 +280,15 @@
 }
 
 .auth__input::placeholder {
-  color: var(--text-dim, rgba(255, 255, 255, 0.3));
+  color: rgba(255, 255, 255, 0.3);
+  font-style: italic;
+  font-weight: 400;
 }
 
 .auth__input:focus {
   border-color: var(--color-primary, #818cf8);
   background: rgba(255, 255, 255, 0.07);
-  box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.15);
+  box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.15), 0 0 20px rgba(129, 140, 248, 0.08);
 }
 
 /* ── Valid state ── */
@@ -510,7 +527,11 @@
 }
 
 .auth__submit:hover:not(:disabled) {
-  box-shadow: 0 6px 24px rgba(129, 140, 248, 0.4);
+  box-shadow: 0 6px 24px rgba(129, 140, 248, 0.4), 0 0 24px rgba(129, 140, 248, 0.15);
+}
+
+.auth__submit:active:not(:disabled) {
+  transform: scale(0.98);
 }
 
 .auth__submit:disabled {

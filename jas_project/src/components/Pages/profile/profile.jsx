@@ -37,7 +37,6 @@ import ProfileStats from "./profile_stats";
 import ProfileHistory from "./profile_history";
 import WeightForm from "./weight_form";
 
-const UNIT_STORAGE_KEY = "profile_weight_unit";
 const KG_TO_LBS = 2.20462;
 const MODAL_EXIT_MS = 260;
 const emptyProfileForm = () => ({
@@ -65,7 +64,7 @@ function Profile({ onNavigate }) {
   const { householdName } = useHousehold();
   const userId = useUserId();
   const [removingId, setRemovingId] = useState(null);
-  const [unit, setUnit] = useState(loadUnit);
+  const [unit, setUnit] = useState("kg");
   const [profile, setProfile] = useState(null);
   const [entries, setEntries] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -126,6 +125,9 @@ function Profile({ onNavigate }) {
         setProfile(null);
       } else {
         setProfile(profileRes.data);
+        if (profileRes.data?.weight_unit) {
+          setUnit(profileRes.data.weight_unit);
+        }
       }
 
       if (entriesRes.error) {
@@ -157,12 +159,18 @@ function Profile({ onNavigate }) {
     deleteModal.closing,
   );
 
-  const handleUnitChange = (nextUnit) => {
+  const handleUnitChange = async (nextUnit) => {
     setUnit(nextUnit);
-    try {
-      window.localStorage.setItem(UNIT_STORAGE_KEY, nextUnit);
-    } catch {
-      // Ignore storage access errors and keep the UI state intact.
+    if (profile) {
+      try {
+        const supabase = getSupabaseClient();
+        await supabase
+          .from("profile")
+          .update({ weight_unit: nextUnit })
+          .eq("id", profile.id);
+      } catch {
+        // silent
+      }
     }
   };
 
@@ -602,8 +610,8 @@ function Profile({ onNavigate }) {
       age,
       height_cm: heightCm ?? null,
       goal_weight_kg: goalKg ? Number(goalKg.toFixed(2)) : null,
-      gender: profileForm.gender || "male",
-      activity_level: profileForm.activity_level || "moderate",
+      gender: profileForm.gender,
+      activity_level: profileForm.activity_level,
       updated_at: new Date().toISOString(),
     };
 
@@ -1141,6 +1149,7 @@ function Profile({ onNavigate }) {
           >
             <select
               value={profileForm.gender}
+              className={!profileForm.gender ? "select--placeholder" : ""}
               onChange={(e) => {
                 setProfileForm((f) => ({ ...f, gender: e.target.value }));
                 setProfileFieldErrors((prev) => ({ ...prev, gender: null }));
@@ -1166,6 +1175,7 @@ function Profile({ onNavigate }) {
           >
             <select
               value={profileForm.activity_level}
+              className={!profileForm.activity_level ? "select--placeholder" : ""}
               onChange={(e) => {
                 setProfileForm((f) => ({
                   ...f,

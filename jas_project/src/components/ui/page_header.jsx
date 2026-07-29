@@ -7,6 +7,7 @@ export default function PageHeader({ eyebrow, title, subtitle, className = "", c
     <header className={`${className}`}>
       {eyebrow && <p className="page__eyebrow">{eyebrow}</p>}
       {title && <h1 className="page__title">{title}</h1>}
+      <div className="page__accent-line" aria-hidden="true" />
       {subtitle && <p className="page__subtitle">{subtitle}</p>}
       {children}
     </header>

@@ -148,9 +148,10 @@
 
 .shifts__week-day--active {
   background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
-  border-color: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.18);
   color: #fff;
-  box-shadow: 0 4px 16px rgba(129, 140, 248, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  box-shadow: 0 4px 16px rgba(129, 140, 248, 0.35), 0 0 12px rgba(129, 140, 248, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  transform: scale(1.05);
 }
 
 .shifts__week-day--today {
@@ -452,27 +453,45 @@
   align-items: center;
   backdrop-filter: var(--blur);
   -webkit-backdrop-filter: var(--blur);
+  box-shadow: var(--shadow-sm), var(--shadow-inner-glow);
+  position: relative;
+  overflow: hidden;
   transition:
     transform var(--duration-normal) var(--ease-spring),
     border-color var(--duration-normal) ease,
-    box-shadow var(--duration-normal) ease;
+    box-shadow var(--duration-normal) ease,
+    background var(--duration-normal) ease;
+}
+
+.shifts__stat::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-image: var(--noise);
+  background-repeat: repeat;
+  background-size: 128px 128px;
+  pointer-events: none;
+  opacity: 0.3;
+  mix-blend-mode: overlay;
 }
 
 .shifts__stat:hover {
-  transform: translateY(-4px) scale(1.02);
+  transform: translateY(-5px) scale(1.02);
   border-color: var(--border-hover);
-  box-shadow: var(--shadow-md), var(--shadow-glow);
+  box-shadow: var(--shadow-md), var(--shadow-glow-sm);
+  background: rgba(255, 255, 255, 0.06);
 }
 
 .shifts__stat--total {
   grid-column: span 2;
   background: linear-gradient(
     135deg,
-    rgba(129, 140, 248, 0.12),
-    rgba(192, 132, 252, 0.06)
+    rgba(129, 140, 248, 0.14),
+    rgba(192, 132, 252, 0.07)
   );
-  border-color: rgba(129, 140, 248, 0.2);
-  box-shadow: 0 0 20px rgba(129, 140, 248, 0.08);
+  border-color: rgba(129, 140, 248, 0.22);
+  box-shadow: 0 0 24px rgba(129, 140, 248, 0.1), var(--shadow-inner-glow);
 }
 
 /* ── Empty State ────────────────────────────────────────────── */
@@ -609,6 +628,7 @@
   background: var(--surface);
   backdrop-filter: var(--blur);
   -webkit-backdrop-filter: var(--blur);
+  box-shadow: var(--shadow-xs);
   transition:
     transform var(--duration-normal) var(--ease-spring),
     border-color var(--duration-normal) ease,
@@ -622,8 +642,8 @@
 .shifts__card:hover {
   transform: translateX(4px);
   background: var(--surface-hover);
-  border-color: rgba(129, 140, 248, 0.2);
-  box-shadow: -4px 0 20px rgba(129, 140, 248, 0.08);
+  border-color: rgba(129, 140, 248, 0.22);
+  box-shadow: -4px 0 24px rgba(129, 140, 248, 0.1), 0 0 16px rgba(129, 140, 248, 0.06);
 }
 
 .shifts__card-main {

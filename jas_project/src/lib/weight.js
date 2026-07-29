@@ -2,19 +2,15 @@
  * weight.js — Weight, height, and BMI utilities
  */
 
-const STORAGE_KEY = "jas_weight_unit";
-
 /**
- * Load the user's preferred unit from localStorage.
+ * Load the user's preferred unit.
+ * Unit is now stored in DB (profile.weight_unit).
+ * This function returns the default; the profile component
+ * manages the actual state.
  * @returns {"kg"|"lbs"}
  */
 export function loadUnit() {
-  try {
-    const v = localStorage.getItem(STORAGE_KEY);
-    return v === "lbs" ? "lbs" : "kg";
-  } catch {
-    return "kg";
-  }
+  return "kg";
 }
 
 /**

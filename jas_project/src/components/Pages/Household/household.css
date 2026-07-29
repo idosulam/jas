@@ -604,6 +604,47 @@
   font-weight: 600;
 }
 
+/* ── Contribute preview (progress in modal) ── */
+
+.savings-goals__contrib-preview {
+  padding: 0.85rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin-bottom: 0.5rem;
+}
+
+.savings-goals__contrib-header {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin-bottom: 0.65rem;
+}
+
+.savings-goals__contrib-icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.savings-goals__contrib-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.savings-goals__contrib-title {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.savings-goals__contrib-amounts {
+  display: block;
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.4);
+  font-family: var(--font-mono, monospace);
+}
+
 /* ── Celebration Confetti ───────────────────────────────────── */
 
 .savings-goals__celebration {

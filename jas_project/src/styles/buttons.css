@@ -45,6 +45,7 @@
 
 /* ── Primary ── */
 .btn--primary {
+  position: relative;
   background: linear-gradient(
     135deg,
     var(--color-primary),
@@ -52,10 +53,25 @@
   );
   color: #fff;
   box-shadow: 0 4px 16px rgba(129, 140, 248, 0.3);
+  overflow: hidden;
+}
+
+/* Inner highlight sheen */
+.btn--primary::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.18) 0%,
+    transparent 50%
+  );
+  border-radius: inherit;
+  pointer-events: none;
 }
 
 .btn--primary:hover {
-  box-shadow: 0 6px 20px rgba(129, 140, 248, 0.45);
+  box-shadow: 0 6px 24px rgba(129, 140, 248, 0.45), 0 0 20px rgba(129, 140, 248, 0.15);
 }
 
 .btn--primary:active {
@@ -64,11 +80,16 @@
 
 .btn--primary:disabled,
 .btn--primary[disabled] {
-  opacity: 0.4;
+  opacity: 0.35;
   cursor: not-allowed;
   box-shadow: none;
-  background: rgba(255, 255, 255, 0.08);
-  color: rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.btn--primary:disabled::before,
+.btn--primary[disabled]::before {
+  display: none;
 }
 
 /* ── Warning ── */
@@ -153,4 +174,32 @@
 .btn-row .btn {
   flex: 1;
   min-width: 0;
+}
+
+/* ── Glass variant ── */
+.btn--glass {
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: var(--shadow-xs), var(--shadow-inner-glow);
+}
+
+.btn--glass:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.18);
+  box-shadow: var(--shadow-sm), var(--shadow-glow-sm);
+}
+
+.btn--glass:active {
+  transform: scale(0.97);
+}
+
+.btn--glass:disabled,
+.btn--glass[disabled] {
+  opacity: 0.35;
+  cursor: not-allowed;
+  backdrop-filter: none;
 }
