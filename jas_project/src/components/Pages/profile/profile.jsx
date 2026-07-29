@@ -602,8 +602,8 @@ function Profile({ onNavigate }) {
       age,
       height_cm: heightCm ?? null,
       goal_weight_kg: goalKg ? Number(goalKg.toFixed(2)) : null,
-      gender: profileForm.gender || "male",
-      activity_level: profileForm.activity_level || "moderate",
+      gender: profileForm.gender,
+      activity_level: profileForm.activity_level,
       updated_at: new Date().toISOString(),
     };
 
@@ -1141,6 +1141,7 @@ function Profile({ onNavigate }) {
           >
             <select
               value={profileForm.gender}
+              className={!profileForm.gender ? "select--placeholder" : ""}
               onChange={(e) => {
                 setProfileForm((f) => ({ ...f, gender: e.target.value }));
                 setProfileFieldErrors((prev) => ({ ...prev, gender: null }));
@@ -1166,6 +1167,7 @@ function Profile({ onNavigate }) {
           >
             <select
               value={profileForm.activity_level}
+              className={!profileForm.activity_level ? "select--placeholder" : ""}
               onChange={(e) => {
                 setProfileForm((f) => ({
                   ...f,

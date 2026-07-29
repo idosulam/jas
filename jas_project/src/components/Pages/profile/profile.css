@@ -619,6 +619,12 @@
   line-height: 1.45;
 }
 
+/* ── Select placeholder state ── */
+.profile__form .select--placeholder {
+  color: rgba(255, 255, 255, 0.3);
+  font-style: italic;
+}
+
 /* ── Profile-specific stat overrides ── */
 .page.profile {
   position: relative;
