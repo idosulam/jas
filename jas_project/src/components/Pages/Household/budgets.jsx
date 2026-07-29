@@ -579,17 +579,6 @@ function Budgets({
           }
           title="No budgets yet"
           text="Create a budget to track spending across your categories."
-          action={
-            onNavigateToTransactions ? (
-              <button
-                type="button"
-                className="btn btn--primary btn--sm"
-                onClick={onNavigateToTransactions}
-              >
-                Go to Transactions
-              </button>
-            ) : null
-          }
         />
       )}
 
