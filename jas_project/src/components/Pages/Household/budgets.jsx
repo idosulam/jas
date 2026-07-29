@@ -579,6 +579,15 @@ function Budgets({
           }
           title="No budgets yet"
           text="Create your first budget to start tracking spending across your categories."
+          action={
+            <button
+              type="button"
+              className="btn btn--primary btn--sm"
+              onClick={openCreateModal}
+            >
+              + Add budget
+            </button>
+          }
         />
       )}
 
