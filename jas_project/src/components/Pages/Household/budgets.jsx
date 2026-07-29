@@ -74,7 +74,10 @@ function Budgets({
   }, [householdId]);
 
   const fetchBudgets = useCallback(async () => {
-    if (!householdId) return;
+    if (!householdId) {
+      setLoading(false);
+      return;
+    }
     try {
       const supabase = getSupabaseClient();
       const { data: budgetData, error: budgetErr } = await supabase

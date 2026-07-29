@@ -57,7 +57,10 @@ function SavingsGoals({ householdId, userId, members, hideTitle }) {
   useBodyScrollLock(goalModal.open, contributeModal.open, deleteModal.open);
 
   const fetchGoals = useCallback(async () => {
-    if (!householdId) return;
+    if (!householdId) {
+      setLoading(false);
+      return;
+    }
     try {
       const supabase = getSupabaseClient();
       const { data, error: fetchError } = await supabase
