@@ -200,7 +200,60 @@ CREATE TRIGGER trg_check_savings_completion
   BEFORE UPDATE OF current_amount ON public.savings_goals
   FOR EACH ROW EXECUTE FUNCTION public.check_savings_goal_completion();
 
--- ── Done — RLS intentionally not enabled ────────────────────
--- Security is handled by SECURITY DEFINER functions above.
--- They check auth.uid() internally and raise exceptions if not authenticated.
+-- ── Helper: check if user is a household member ────────────
+
+CREATE OR REPLACE FUNCTION public.is_household_member(household_id_param UUID)
+RETURNS BOOLEAN
+LANGUAGE sql
+SECURITY DEFINER
+STABLE
+AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM public.household_members
+    WHERE household_id = household_id_param
+    AND user_id = auth.uid()
+  );
+$$;
+
+-- ── Goal ↔ Category junction ────────────────────────────────
+
+DROP TABLE IF EXISTS public.goal_categories CASCADE;
+
+CREATE TABLE public.goal_categories (
+  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  goal_id     UUID REFERENCES public.savings_goals(id) ON DELETE CASCADE,
+  category_id UUID REFERENCES public.transaction_categories(id) ON DELETE CASCADE,
+  UNIQUE (goal_id, category_id)
+);
+
+CREATE INDEX idx_gc_goal ON public.goal_categories(goal_id);
+CREATE INDEX idx_gc_category ON public.goal_categories(category_id);
+
+ALTER TABLE public.goal_categories ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Household members can view goal_categories"
+  ON public.goal_categories FOR SELECT
+  USING (EXISTS (
+    SELECT 1 FROM public.savings_goals g
+    WHERE g.id = goal_categories.goal_id
+    AND public.is_household_member(g.household_id)
+  ));
+
+CREATE POLICY "Household members can insert goal_categories"
+  ON public.goal_categories FOR INSERT
+  WITH CHECK (EXISTS (
+    SELECT 1 FROM public.savings_goals g
+    WHERE g.id = goal_categories.goal_id
+    AND public.is_household_member(g.household_id)
+  ));
+
+CREATE POLICY "Household members can delete goal_categories"
+  ON public.goal_categories FOR DELETE
+  USING (EXISTS (
+    SELECT 1 FROM public.savings_goals g
+    WHERE g.id = goal_categories.goal_id
+    AND public.is_household_member(g.household_id)
+  ));
+
+-- ── Done ────────────────────────────────────────────────────
 NOTIFY pgrst, 'reload schema';
