@@ -9,6 +9,21 @@ DROP TABLE IF EXISTS public.budget_categories CASCADE;
 DROP TABLE IF EXISTS public.budgets CASCADE;
 DROP TABLE IF EXISTS public.goal_categories CASCADE;
 
+-- ── Helper function ────────────────────────────────────────
+
+CREATE OR REPLACE FUNCTION public.is_household_member(household_id_param UUID)
+RETURNS BOOLEAN
+LANGUAGE sql
+SECURITY DEFINER
+STABLE
+AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM public.household_members
+    WHERE household_id = household_id_param
+    AND user_id = auth.uid()
+  );
+$$;
+
 -- ── Budgets ──────────────────────────────────────────────────
 
 CREATE TABLE public.budgets (
