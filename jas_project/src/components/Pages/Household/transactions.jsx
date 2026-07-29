@@ -14,7 +14,7 @@ import FormField from "../../ui/form/form_field";
 import { formatMoney, formatDateGroup } from "../../../lib/format";
 import TransactionForm from "./transaction_form";
 import TransactionCard from "./transaction_card";
-import CategoryManager from "./category_manager";
+import CategoryManager, { DEFAULT_ICONS } from "./category_manager";
 
 function Transactions({ householdId, userId, members, goals = [] }) {
   const [transactions, setTransactions] = useState([]);
