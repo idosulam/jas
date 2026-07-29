@@ -404,6 +404,69 @@
   color: var(--color-primary, #818cf8);
 }
 
+/* ── Create Budget Bar ── */
+
+.budgets__create-bar {
+  margin-bottom: 1.25rem;
+}
+
+.budgets__create-btn {
+  width: 100%;
+  padding: 0.7rem 1rem;
+  border: 2px dashed rgba(129, 140, 248, 0.25);
+  border-radius: var(--radius);
+  background: rgba(129, 140, 248, 0.04);
+  color: var(--color-primary, #818cf8);
+  font-family: var(--font-heading);
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.budgets__create-btn:hover {
+  background: rgba(129, 140, 248, 0.1);
+  border-color: rgba(129, 140, 248, 0.4);
+  transform: translateY(-1px);
+}
+
+.budgets__create-btn:active {
+  transform: scale(0.98);
+}
+
+/* ── Icon Picker ── */
+
+.budgets__icon-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.budgets__icon-btn {
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 2px solid transparent;
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.04);
+  font-size: 1.15rem;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition: all 0.15s ease;
+}
+
+.budgets__icon-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.budgets__icon-btn--active {
+  border-color: var(--color-primary, #818cf8);
+  background: rgba(129, 140, 248, 0.15);
+  box-shadow: 0 0 12px rgba(129, 140, 248, 0.2);
+}
+
 /* ============================================================
    Budget Overview (compact widget on Overview tab)
    ============================================================ */

@@ -8,6 +8,8 @@ import FormField from "../../ui/form/form_field.jsx";
 import EmptyState from "../../ui/Empty_state";
 
 import { formatMoney } from "../../../lib/format";
+import ColorPalettePicker from "../../../lib/color_palette_picker.jsx";
+import { DEFAULT_ICONS } from "./category_manager";
 
 function Budgets({
   householdId,
@@ -21,6 +23,7 @@ function Budgets({
   const { success: toastSuccess, error: toastError } = useGlassToast();
 
   const editModal = useModal(260);
+  const createModal = useModal(260);
   const [editingCategory, setEditingCategory] = useState(null);
   const [budgetInput, setBudgetInput] = useState("");
   const [budgetState, setBudgetState] = useState("idle");
@@ -29,7 +32,15 @@ function Budgets({
   const [shakeKey, setShakeKey] = useState(0);
   const [submitting, setSubmitting] = useState(false);
 
-  useBodyScrollLock(editModal.open);
+  // Create budget state
+  const [newName, setNewName] = useState("");
+  const [newIcon, setNewIcon] = useState("📦");
+  const [newColor, setNewColor] = useState("#818cf8");
+  const [newAmount, setNewAmount] = useState("");
+  const [newNameError, setNewNameError] = useState(null);
+  const [newAmountError, setNewAmountError] = useState(null);
+
+  useBodyScrollLock(editModal.open, createModal.open);
 
   const fetchCategories = useCallback(async () => {
     if (!householdId) return;
@@ -175,6 +186,58 @@ function Budgets({
     setSubmitting(false);
   };
 
+  const openCreateModal = () => {
+    setNewName("");
+    setNewIcon("📦");
+    setNewColor("#818cf8");
+    setNewAmount("");
+    setNewNameError(null);
+    setNewAmountError(null);
+    createModal.openModal();
+  };
+
+  const createBudget = async () => {
+    let hasError = false;
+    if (!newName.trim()) {
+      setNewNameError("Name is required");
+      hasError = true;
+    }
+    const amount = Number(newAmount);
+    if (!newAmount || isNaN(amount) || amount <= 0) {
+      setNewAmountError("Enter a valid amount");
+      hasError = true;
+    }
+    if (hasError) {
+      setShakeKey((k) => k + 1);
+      hapticError();
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      const supabase = getSupabaseClient();
+      const { error } = await supabase
+        .from("transaction_categories")
+        .insert({
+          household_id: householdId,
+          name: newName.trim(),
+          icon: newIcon,
+          color: newColor,
+          type: "expense",
+          budget_amount: Number(Number(amount).toFixed(2)),
+        });
+
+      if (error) throw error;
+
+      createModal.closeModal();
+      toastSuccess(`Budget "${newName.trim()}" created.`);
+      fetchCategories();
+    } catch (err) {
+      toastError(getUserFacingError(err.message));
+    }
+    setSubmitting(false);
+  };
+
   const removeBudget = async () => {
     if (!editingCategory) return;
     setSubmitting(true);
@@ -215,6 +278,17 @@ function Budgets({
 
   return (
     <div className="budgets">
+      {/* Create Budget Button */}
+      <div className="budgets__create-bar">
+        <button
+          type="button"
+          className="budgets__create-btn"
+          onClick={openCreateModal}
+        >
+          + Create budget
+        </button>
+      </div>
+
       {/* Overall Budget Summary */}
       {budgeted.length > 0 && (
         <div className="budgets__summary">
@@ -541,6 +615,109 @@ function Budgets({
               disabled={submitting || (!budgetInput && budgetInput !== "0")}
             >
               {submitting ? "Saving…" : "Save"}
+            </button>
+          </div>
+        </div>
+      </SheetModal>
+
+      {/* Create Budget Modal */}
+      <SheetModal
+        open={createModal.open}
+        closing={createModal.closing}
+        onClose={() => createModal.closeModal()}
+        title="Create budget"
+      >
+        <div className="budgets__form">
+          <FormField
+            label="Budget name"
+            error={newNameError}
+            state={newNameError ? "error" : newName ? "valid" : "idle"}
+            showIndicator
+            shake={newNameError ? shakeKey : 0}
+          >
+            <input
+              type="text"
+              value={newName}
+              onChange={(e) => {
+                setNewName(e.target.value);
+                setNewNameError(null);
+              }}
+              placeholder="e.g. Groceries, Rent, Fun"
+              maxLength={32}
+              autoFocus
+            />
+          </FormField>
+
+          <FormField label="Icon">
+            <div className="budgets__icon-picker">
+              {DEFAULT_ICONS.map((icon) => (
+                <button
+                  key={icon}
+                  type="button"
+                  className={`budgets__icon-btn${newIcon === icon ? " budgets__icon-btn--active" : ""}`}
+                  onClick={() => setNewIcon(icon)}
+                >
+                  {icon}
+                </button>
+              ))}
+            </div>
+          </FormField>
+
+          <FormField label="Color">
+            <ColorPalettePicker value={newColor} onChange={setNewColor} />
+          </FormField>
+
+          <FormField
+            label="Monthly budget (₪)"
+            error={newAmountError}
+            state={newAmountError ? "error" : newAmount ? "valid" : "idle"}
+            showIndicator
+            shake={newAmountError ? shakeKey : 0}
+          >
+            <input
+              type="number"
+              min="1"
+              step="10"
+              value={newAmount}
+              onChange={(e) => {
+                setNewAmount(e.target.value);
+                setNewAmountError(null);
+              }}
+              placeholder="500"
+            />
+          </FormField>
+
+          <div className="budgets__quick-amounts">
+            {[100, 200, 500, 1000, 2000].map((amt) => (
+              <button
+                key={amt}
+                type="button"
+                className={`budgets__quick-btn ${newAmount === String(amt) ? "active" : ""}`}
+                onClick={() => {
+                  setNewAmount(String(amt));
+                  setNewAmountError(null);
+                }}
+              >
+                {formatMoney(amt)}
+              </button>
+            ))}
+          </div>
+
+          <div className="btn-row">
+            <button
+              type="button"
+              className="btn btn--ghost"
+              onClick={() => createModal.closeModal()}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              className="btn btn--primary"
+              onClick={createBudget}
+              disabled={submitting || !newName.trim() || !newAmount}
+            >
+              {submitting ? "Creating…" : "Create budget"}
             </button>
           </div>
         </div>
