@@ -400,35 +400,38 @@
   color: var(--color-primary, #818cf8);
 }
 
-/* ── Create Budget Bar ── */
+/* ── Header (matches goals header) ── */
 
-.budgets__create-bar {
-  margin-bottom: 1.25rem;
+.budgets__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
 }
 
-.budgets__create-btn {
-  width: 100%;
-  padding: 0.7rem 1rem;
-  border: 2px dashed rgba(129, 140, 248, 0.25);
-  border-radius: var(--radius);
-  background: rgba(129, 140, 248, 0.04);
-  color: var(--color-primary, #818cf8);
-  font-family: var(--font-heading);
+.budgets__header .household__section-title {
+  margin-bottom: 0;
+}
+
+.budgets__header-add {
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(255, 255, 255, 0.4);
   font-size: 0.85rem;
-  font-weight: 700;
-  letter-spacing: 0.02em;
   cursor: pointer;
-  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
 }
 
-.budgets__create-btn:hover {
-  background: rgba(129, 140, 248, 0.1);
-  border-color: rgba(129, 140, 248, 0.4);
-  transform: translateY(-1px);
-}
-
-.budgets__create-btn:active {
-  transform: scale(0.98);
+.budgets__header-add:hover {
+  background: rgba(52, 211, 153, 0.12);
+  border-color: rgba(52, 211, 153, 0.25);
+  color: #34d399;
 }
 
 /* ── Icon Picker ── */

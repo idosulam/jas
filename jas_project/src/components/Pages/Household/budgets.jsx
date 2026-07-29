@@ -391,14 +391,17 @@ function Budgets({
 
   return (
     <div className="budgets">
-      {/* Create Budget Button */}
-      <div className="budgets__create-bar">
+      {/* Create Budget Button — match goals header */}
+      <div className="budgets__header">
+        <h3 className="household__section-title">Budgets</h3>
+        <div style={{ flex: 1 }} />
         <button
           type="button"
-          className="budgets__create-btn"
+          className="budgets__header-add"
           onClick={openCreateModal}
+          title="Create budget"
         >
-          + Create budget
+          +
         </button>
       </div>
 
