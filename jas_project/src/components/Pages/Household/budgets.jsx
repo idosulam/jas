@@ -560,7 +560,7 @@ function Budgets({
       )}
 
       {/* Empty State */}
-      {budgetData.length === 0 && categories.length === 0 && (
+      {budgetData.length === 0 && (
         <EmptyState
           className="budgets__empty-state"
           icon={
@@ -578,7 +578,7 @@ function Budgets({
             </svg>
           }
           title="No budgets yet"
-          text="Create a budget to track spending across your categories."
+          text="Create your first budget to start tracking spending across your categories."
         />
       )}
 
