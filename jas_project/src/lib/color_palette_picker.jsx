@@ -107,8 +107,7 @@ export default function ColorPalettePicker({ value, onChange }) {
     if (editing) {
       await updatePaletteColor(editing.id, cleanHex, label.trim() || cleanHex);
     } else {
-      const entry = await addPaletteColor(cleanHex, label.trim() || cleanHex);
-      if (entry) onChange(entry.hex);
+      await addPaletteColor(cleanHex, label.trim() || cleanHex);
     }
 
     const updated = await fetchPalette();
