@@ -467,6 +467,73 @@
   box-shadow: 0 0 12px rgba(129, 140, 248, 0.2);
 }
 
+/* ── Category Picker ── */
+
+.budgets__form-hint {
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.4);
+  margin-bottom: 0.5rem;
+}
+
+.budgets__cat-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.budgets__cat-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.45rem 0.7rem;
+  border: 1.5px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-pill, 999px);
+  background: rgba(255, 255, 255, 0.03);
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.budgets__cat-chip:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.budgets__cat-chip--selected {
+  background: color-mix(in srgb, var(--chip-color) 15%, transparent);
+  color: #fff;
+  border-color: var(--chip-color);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--chip-color) 25%, transparent);
+}
+
+.budgets__cat-chip-icon {
+  font-size: 0.9rem;
+}
+
+.budgets__cat-chip-name {
+  white-space: nowrap;
+}
+
+/* ── Card category tags ── */
+
+.budgets__card-cats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin-bottom: 0.55rem;
+}
+
+.budgets__card-cat-tag {
+  font-size: 0.65rem;
+  font-weight: 600;
+  padding: 0.15rem 0.5rem;
+  border-radius: var(--radius-pill, 999px);
+  white-space: nowrap;
+}
+
 /* ============================================================
    Budget Overview (compact widget on Overview tab)
    ============================================================ */

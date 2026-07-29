@@ -4,9 +4,9 @@ import { getUserFacingError, hapticError } from "../../../lib/security";
 import { useGlassToast } from "../../../lib/glass_toast_provider.jsx";
 import { useModal, useBodyScrollLock } from "../../../hooks";
 import SheetModal from "../../ui/modals/sheet_modal";
+import ConfirmModal from "../../ui/modals/confirm_modal";
 import FormField from "../../ui/form/form_field.jsx";
 import EmptyState from "../../ui/Empty_state";
-
 import { formatMoney } from "../../../lib/format";
 import ColorPalettePicker from "../../../lib/color_palette_picker.jsx";
 import { DEFAULT_ICONS } from "./category_manager";
@@ -18,29 +18,43 @@ function Budgets({
   year,
   onNavigateToTransactions,
 }) {
+  const [budgets, setBudgets] = useState([]);
+  const [budgetCategories, setBudgetCategories] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const { success: toastSuccess, error: toastError } = useGlassToast();
 
+  // Edit budget modal
   const editModal = useModal(260);
-  const createModal = useModal(260);
-  const [editingCategory, setEditingCategory] = useState(null);
-  const [budgetInput, setBudgetInput] = useState("");
-  const [budgetState, setBudgetState] = useState("idle");
-  const [budgetError, setBudgetError] = useState(null);
-  const [budgetTouched, setBudgetTouched] = useState(false);
-  const [shakeKey, setShakeKey] = useState(0);
-  const [submitting, setSubmitting] = useState(false);
+  const [editingBudget, setEditingBudget] = useState(null);
+  const [editName, setEditName] = useState("");
+  const [editIcon, setEditIcon] = useState("📊");
+  const [editColor, setEditColor] = useState("#818cf8");
+  const [editAmount, setEditAmount] = useState("");
+  const [editSelectedCats, setEditSelectedCats] = useState(new Set());
+  const [editNameError, setEditNameError] = useState(null);
+  const [editAmountError, setEditAmountError] = useState(null);
 
-  // Create budget state
+  // Create budget modal
+  const createModal = useModal(260);
   const [newName, setNewName] = useState("");
-  const [newIcon, setNewIcon] = useState("📦");
+  const [newIcon, setNewIcon] = useState("📊");
   const [newColor, setNewColor] = useState("#818cf8");
   const [newAmount, setNewAmount] = useState("");
+  const [newSelectedCats, setNewSelectedCats] = useState(new Set());
   const [newNameError, setNewNameError] = useState(null);
   const [newAmountError, setNewAmountError] = useState(null);
 
-  useBodyScrollLock(editModal.open, createModal.open);
+  // Delete confirm
+  const deleteModal = useModal(260);
+  const [deleteTarget, setDeleteTarget] = useState(null);
+
+  const [shakeKey, setShakeKey] = useState(0);
+  const [submitting, setSubmitting] = useState(false);
+
+  useBodyScrollLock(editModal.open, createModal.open, deleteModal.open);
+
+  // ── Fetch ──
 
   const fetchCategories = useCallback(async () => {
     if (!householdId) return;
@@ -57,56 +71,91 @@ function Budgets({
     } catch {
       // silent
     }
+  }, [householdId]);
+
+  const fetchBudgets = useCallback(async () => {
+    if (!householdId) return;
+    try {
+      const supabase = getSupabaseClient();
+      const { data: budgetData, error: budgetErr } = await supabase
+        .from("budgets")
+        .select("*")
+        .eq("household_id", householdId)
+        .order("created_at");
+
+      if (budgetErr) throw budgetErr;
+
+      const budgetIds = (budgetData ?? []).map((b) => b.id);
+      let catLinks = [];
+      if (budgetIds.length > 0) {
+        const { data: linkData, error: linkErr } = await supabase
+          .from("budget_categories")
+          .select("*")
+          .in("budget_id", budgetIds);
+        if (linkErr) throw linkErr;
+        catLinks = linkData ?? [];
+      }
+
+      setBudgets(budgetData ?? []);
+      setBudgetCategories(catLinks);
+    } catch {
+      // silent
+    }
     setLoading(false);
   }, [householdId]);
 
   useEffect(() => {
     fetchCategories();
-  }, [fetchCategories]);
+    fetchBudgets();
+  }, [fetchCategories, fetchBudgets]);
 
-  // Calculate spending per category for current month
-  const categoryBudgets = useMemo(() => {
+  // ── Derived data ──
+
+  const catMap = useMemo(() => {
+    const m = {};
+    categories.forEach((c) => (m[c.id] = c));
+    return m;
+  }, [categories]);
+
+  const budgetData = useMemo(() => {
     const expenseTx = transactions.filter((t) => t.type === "expense");
 
-    return categories.map((cat) => {
+    return budgets.map((budget) => {
+      const catIds = budgetCategories
+        .filter((bc) => bc.budget_id === budget.id)
+        .map((bc) => bc.category_id);
+
       const spent = expenseTx
-        .filter((t) => t.category_id === cat.id)
+        .filter((t) => catIds.includes(t.category_id))
         .reduce((sum, t) => sum + Number(t.amount), 0);
 
-      const budget =
-        cat.budget_amount != null ? Number(cat.budget_amount) : null;
-      const remaining = budget != null ? budget - spent : null;
+      const amount = Number(budget.amount);
+      const remaining = amount - spent;
       const progress =
-        budget != null && budget > 0
-          ? Math.min(100, (spent / budget) * 100)
-          : null;
+        amount > 0 ? Math.min(100, (spent / amount) * 100) : 0;
+
+      const linkedCats = catIds.map((id) => catMap[id]).filter(Boolean);
 
       return {
-        ...cat,
+        ...budget,
+        catIds,
+        linkedCats,
         spent,
-        budget,
         remaining,
         progress,
       };
     });
-  }, [categories, transactions]);
+  }, [budgets, budgetCategories, transactions, catMap]);
 
-  // Split into budgeted and unbudgeted
-  const budgeted = categoryBudgets.filter((c) => c.budget != null);
-  const unbudgeted = categoryBudgets.filter((c) => c.budget == null);
-
-  // Overall summary
-  const summary = useMemo(() => {
-    const totalBudget = budgeted.reduce((sum, c) => sum + c.budget, 0);
-    const totalSpent = budgeted.reduce((sum, c) => sum + c.spent, 0);
+  const overallSummary = useMemo(() => {
+    const totalBudget = budgetData.reduce((s, b) => s + Number(b.amount), 0);
+    const totalSpent = budgetData.reduce((s, b) => s + b.spent, 0);
     const totalRemaining = totalBudget - totalSpent;
-    const overallProgress =
+    const progress =
       totalBudget > 0 ? Math.min(100, (totalSpent / totalBudget) * 100) : 0;
+    return { totalBudget, totalSpent, totalRemaining, progress };
+  }, [budgetData]);
 
-    return { totalBudget, totalSpent, totalRemaining, overallProgress };
-  }, [budgeted]);
-
-  // Status color
   const getStatusColor = (progress, remaining) => {
     if (remaining != null && remaining < 0)
       return "var(--color-danger, #f87171)";
@@ -115,85 +164,26 @@ function Budgets({
     return "var(--color-success, #34d399)";
   };
 
-  // Validation
-  const validateBudget = (value, isBlur = false) => {
-    if (!value && value !== "0") {
-      if (isBlur) {
-        setBudgetState("error");
-        setBudgetError("Budget amount is required");
-      } else {
-        setBudgetState("idle");
-        setBudgetError(null);
-      }
-      return;
-    }
-    const num = Number(value);
-    if (isNaN(num) || num < 0) {
-      setBudgetState("error");
-      setBudgetError("Enter a valid amount");
-    } else {
-      setBudgetState("valid");
-      setBudgetError(null);
-    }
-  };
-
-  const openEditBudget = (cat) => {
-    setEditingCategory(cat);
-    setBudgetInput(cat.budget != null ? String(cat.budget) : "");
-    setBudgetTouched(false);
-    setBudgetState("idle");
-    setBudgetError(null);
-    editModal.openModal();
-  };
-
-  const saveBudget = async () => {
-    setBudgetTouched(true);
-    validateBudget(budgetInput, true);
-
-    if (!budgetInput && budgetInput !== "0") {
-      setShakeKey((k) => k + 1);
-      hapticError();
-      return;
-    }
-
-    const amount = Number(Number(budgetInput).toFixed(2));
-    if (isNaN(amount) || amount < 0) {
-      setShakeKey((k) => k + 1);
-      hapticError();
-      return;
-    }
-
-    setSubmitting(true);
-    try {
-      const supabase = getSupabaseClient();
-      const { error } = await supabase
-        .from("transaction_categories")
-        .update({ budget_amount: amount === 0 ? null : amount })
-        .eq("id", editingCategory.id);
-
-      if (error) throw error;
-
-      editModal.closeModal();
-      toastSuccess(
-        amount === 0
-          ? `Budget removed from "${editingCategory.name}".`
-          : `Budget set for "${editingCategory.name}": ${formatMoney(amount)}/month`,
-      );
-      fetchCategories();
-    } catch (err) {
-      toastError(getUserFacingError(err.message));
-    }
-    setSubmitting(false);
-  };
+  // ── Create ──
 
   const openCreateModal = () => {
     setNewName("");
-    setNewIcon("📦");
+    setNewIcon("📊");
     setNewColor("#818cf8");
     setNewAmount("");
+    setNewSelectedCats(new Set());
     setNewNameError(null);
     setNewAmountError(null);
     createModal.openModal();
+  };
+
+  const toggleNewCat = (catId) => {
+    setNewSelectedCats((prev) => {
+      const next = new Set(prev);
+      if (next.has(catId)) next.delete(catId);
+      else next.add(catId);
+      return next;
+    });
   };
 
   const createBudget = async () => {
@@ -207,6 +197,10 @@ function Budgets({
       setNewAmountError("Enter a valid amount");
       hasError = true;
     }
+    if (newSelectedCats.size === 0) {
+      toastError("Select at least one category to track.");
+      return;
+    }
     if (hasError) {
       setShakeKey((k) => k + 1);
       hapticError();
@@ -216,63 +210,182 @@ function Budgets({
     setSubmitting(true);
     try {
       const supabase = getSupabaseClient();
-      const { error } = await supabase
-        .from("transaction_categories")
+      const { data: budgetRow, error: budgetErr } = await supabase
+        .from("budgets")
         .insert({
           household_id: householdId,
           name: newName.trim(),
           icon: newIcon,
           color: newColor,
-          type: "expense",
-          budget_amount: Number(Number(amount).toFixed(2)),
-        });
+          amount: Number(Number(amount).toFixed(2)),
+        })
+        .select()
+        .single();
 
-      if (error) throw error;
+      if (budgetErr) throw budgetErr;
+
+      const links = [...newSelectedCats].map((catId) => ({
+        budget_id: budgetRow.id,
+        category_id: catId,
+      }));
+      const { error: linkErr } = await supabase
+        .from("budget_categories")
+        .insert(links);
+
+      if (linkErr) throw linkErr;
 
       createModal.closeModal();
       toastSuccess(`Budget "${newName.trim()}" created.`);
-      fetchCategories();
+      fetchBudgets();
     } catch (err) {
       toastError(getUserFacingError(err.message));
     }
     setSubmitting(false);
   };
 
-  const removeBudget = async () => {
-    if (!editingCategory) return;
+  // ── Edit ──
+
+  const openEditBudget = (budget) => {
+    setEditingBudget(budget);
+    setEditName(budget.name);
+    setEditIcon(budget.icon);
+    setEditColor(budget.color);
+    setEditAmount(String(budget.amount));
+    setEditSelectedCats(new Set(budget.catIds));
+    setEditNameError(null);
+    setEditAmountError(null);
+    editModal.openModal();
+  };
+
+  const toggleEditCat = (catId) => {
+    setEditSelectedCats((prev) => {
+      const next = new Set(prev);
+      if (next.has(catId)) next.delete(catId);
+      else next.add(catId);
+      return next;
+    });
+  };
+
+  const saveEdit = async () => {
+    let hasError = false;
+    if (!editName.trim()) {
+      setEditNameError("Name is required");
+      hasError = true;
+    }
+    const amount = Number(editAmount);
+    if (!editAmount || isNaN(amount) || amount <= 0) {
+      setEditAmountError("Enter a valid amount");
+      hasError = true;
+    }
+    if (editSelectedCats.size === 0) {
+      toastError("Select at least one category to track.");
+      return;
+    }
+    if (hasError) {
+      setShakeKey((k) => k + 1);
+      hapticError();
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      const supabase = getSupabaseClient();
+
+      // Update budget row
+      const { error: updateErr } = await supabase
+        .from("budgets")
+        .update({
+          name: editName.trim(),
+          icon: editIcon,
+          color: editColor,
+          amount: Number(Number(amount).toFixed(2)),
+        })
+        .eq("id", editingBudget.id);
+
+      if (updateErr) throw updateErr;
+
+      // Replace category links: delete old, insert new
+      await supabase
+        .from("budget_categories")
+        .delete()
+        .eq("budget_id", editingBudget.id);
+
+      const links = [...editSelectedCats].map((catId) => ({
+        budget_id: editingBudget.id,
+        category_id: catId,
+      }));
+      if (links.length > 0) {
+        const { error: linkErr } = await supabase
+          .from("budget_categories")
+          .insert(links);
+        if (linkErr) throw linkErr;
+      }
+
+      editModal.closeModal();
+      toastSuccess(`Budget "${editName.trim()}" updated.`);
+      fetchBudgets();
+    } catch (err) {
+      toastError(getUserFacingError(err.message));
+    }
+    setSubmitting(false);
+  };
+
+  // ── Delete ──
+
+  const openDeleteBudget = (budget) => {
+    setDeleteTarget(budget);
+    deleteModal.openModal();
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
     setSubmitting(true);
     try {
       const supabase = getSupabaseClient();
       const { error } = await supabase
-        .from("transaction_categories")
-        .update({ budget_amount: null })
-        .eq("id", editingCategory.id);
-
+        .from("budgets")
+        .delete()
+        .eq("id", deleteTarget.id);
       if (error) throw error;
 
-      editModal.closeModal();
-      toastSuccess(`Budget removed from "${editingCategory.name}".`);
-      fetchCategories();
+      deleteModal.closeModal();
+      toastSuccess(`Budget "${deleteTarget.name}" deleted.`);
+      fetchBudgets();
     } catch (err) {
       toastError(getUserFacingError(err.message));
     }
     setSubmitting(false);
   };
 
+  // ── Render helpers ──
+
   const monthNames = [
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-    "August",
-    "September",
-    "October",
-    "November",
-    "December",
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December",
   ];
+
+  const renderCategoryPicker = (selectedSet, toggleFn) => (
+    <div className="budgets__cat-picker">
+      {categories.map((cat) => {
+        const isSelected = selectedSet.has(cat.id);
+        return (
+          <button
+            key={cat.id}
+            type="button"
+            className={`budgets__cat-chip${isSelected ? " budgets__cat-chip--selected" : ""}`}
+            style={{
+              "--chip-color": cat.color,
+              borderColor: isSelected ? cat.color : undefined,
+            }}
+            onClick={() => toggleFn(cat.id)}
+          >
+            <span className="budgets__cat-chip-icon">{cat.icon}</span>
+            <span className="budgets__cat-chip-name">{cat.name}</span>
+          </button>
+        );
+      })}
+    </div>
+  );
 
   if (loading) return null;
 
@@ -289,8 +402,8 @@ function Budgets({
         </button>
       </div>
 
-      {/* Overall Budget Summary */}
-      {budgeted.length > 0 && (
+      {/* Overall Summary */}
+      {budgetData.length > 0 && (
         <div className="budgets__summary">
           <div className="budgets__summary-header">
             <h3 className="household__section-title">
@@ -303,24 +416,24 @@ function Budgets({
               <div className="budgets__summary-item">
                 <span className="budgets__summary-label">Budget</span>
                 <span className="budgets__summary-value">
-                  {formatMoney(summary.totalBudget)}
+                  {formatMoney(overallSummary.totalBudget)}
                 </span>
               </div>
               <div className="budgets__summary-divider" />
               <div className="budgets__summary-item">
                 <span className="budgets__summary-label">Spent</span>
                 <span className="budgets__summary-value budgets__summary-value--spent">
-                  {formatMoney(summary.totalSpent)}
+                  {formatMoney(overallSummary.totalSpent)}
                 </span>
               </div>
               <div className="budgets__summary-divider" />
               <div className="budgets__summary-item">
                 <span className="budgets__summary-label">Remaining</span>
                 <span
-                  className={`budgets__summary-value ${summary.totalRemaining >= 0 ? "budgets__summary-value--ok" : "budgets__summary-value--over"}`}
+                  className={`budgets__summary-value ${overallSummary.totalRemaining >= 0 ? "budgets__summary-value--ok" : "budgets__summary-value--over"}`}
                 >
-                  {summary.totalRemaining >= 0 ? "" : "-"}
-                  {formatMoney(Math.abs(summary.totalRemaining))}
+                  {overallSummary.totalRemaining >= 0 ? "" : "-"}
+                  {formatMoney(Math.abs(overallSummary.totalRemaining))}
                 </span>
               </div>
             </div>
@@ -329,71 +442,89 @@ function Budgets({
               <div
                 className="budgets__overall-fill"
                 style={{
-                  width: `${summary.overallProgress}%`,
+                  width: `${overallSummary.progress}%`,
                   background:
-                    summary.overallProgress >= 100
+                    overallSummary.progress >= 100
                       ? "var(--color-danger, #f87171)"
-                      : summary.overallProgress >= 85
+                      : overallSummary.progress >= 85
                         ? "var(--color-warning, #fbbf24)"
                         : "var(--color-success, #34d399)",
                 }}
               />
             </div>
             <span className="budgets__overall-pct">
-              {Math.round(summary.overallProgress)}% used
+              {Math.round(overallSummary.progress)}% used
             </span>
           </div>
         </div>
       )}
 
-      {/* Budgeted Categories */}
-      {budgeted.length > 0 && (
+      {/* Budget Cards */}
+      {budgetData.length > 0 && (
         <div className="budgets__section">
-          <h3 className="household__section-title">Budgeted</h3>
           <div className="budgets__list">
-            {budgeted.map((cat) => {
-              const statusColor = getStatusColor(cat.progress, cat.remaining);
-              const isOver = cat.remaining != null && cat.remaining < 0;
+            {budgetData.map((budget) => {
+              const statusColor = getStatusColor(
+                budget.progress,
+                budget.remaining,
+              );
+              const isOver =
+                budget.remaining != null && budget.remaining < 0;
 
               return (
                 <div
-                  key={cat.id}
+                  key={budget.id}
                   className={`budgets__card ${isOver ? "budgets__card--over" : ""}`}
-                  onClick={() => openEditBudget(cat)}
+                  onClick={() => openEditBudget(budget)}
                 >
                   <div className="budgets__card-header">
                     <div
                       className="budgets__card-icon"
                       style={{
-                        background: `${cat.color}18`,
-                        color: cat.color,
+                        background: `${budget.color}18`,
+                        color: budget.color,
                       }}
                     >
-                      {cat.icon}
+                      {budget.icon}
                     </div>
                     <div className="budgets__card-info">
-                      <span className="budgets__card-name">{cat.name}</span>
+                      <span className="budgets__card-name">
+                        {budget.name}
+                      </span>
                       <span className="budgets__card-amounts">
-                        {formatMoney(cat.spent)}{" "}
+                        {formatMoney(budget.spent)}{" "}
                         <span className="budgets__card-sep">of</span>{" "}
-                        {formatMoney(cat.budget)}
+                        {formatMoney(budget.amount)}
                       </span>
                     </div>
                     <div className="budgets__card-status">
                       {isOver ? (
                         <span className="budgets__card-over-badge">
-                          Over by {formatMoney(Math.abs(cat.remaining))}
+                          Over by {formatMoney(Math.abs(budget.remaining))}
                         </span>
-                      ) : cat.progress >= 90 ? (
+                      ) : budget.progress >= 90 ? (
                         <span className="budgets__card-warn-badge">
-                          {formatMoney(cat.remaining)} left
+                          {formatMoney(budget.remaining)} left
                         </span>
                       ) : (
                         <span className="budgets__card-remaining">
-                          {formatMoney(cat.remaining)} left
+                          {formatMoney(budget.remaining)} left
                         </span>
                       )}
                     </div>
+                  </div>
+
+                  {/* Linked categories */}
+                  <div className="budgets__card-cats">
+                    {budget.linkedCats.map((cat) => (
+                      <span
+                        key={cat.id}
+                        className="budgets__card-cat-tag"
+                        style={{ color: cat.color, background: `${cat.color}15` }}
+                      >
+                        {cat.icon} {cat.name}
+                      </span>
+                    ))}
                   </div>
 
                   <div className="budgets__card-bar-wrap">
@@ -401,7 +532,7 @@ function Budgets({
                       <div
                         className="budgets__card-fill"
                         style={{
-                          width: `${Math.min(cat.progress, 100)}%`,
+                          width: `${Math.min(budget.progress, 100)}%`,
                           background: statusColor,
                         }}
                       />
@@ -409,7 +540,7 @@ function Budgets({
                         <div
                           className="budgets__card-fill budgets__card-fill--over"
                           style={{
-                            width: `${Math.min(cat.progress - 100, 100)}%`,
+                            width: `${Math.min(budget.progress - 100, 100)}%`,
                             background: "var(--color-danger, #f87171)",
                             opacity: 0.4,
                           }}
@@ -420,7 +551,7 @@ function Budgets({
                       className="budgets__card-pct"
                       style={{ color: statusColor }}
                     >
-                      {Math.round(cat.progress)}%
+                      {Math.round(budget.progress)}%
                     </span>
                   </div>
                 </div>
@@ -430,53 +561,8 @@ function Budgets({
         </div>
       )}
 
-      {/* Unbudgeted Categories */}
-      {categoryBudgets.length > 0 && (
-        <div className="budgets__section">
-          <h3 className="household__section-title">
-            {budgeted.length > 0 ? "Set a Budget" : "Categories"}
-          </h3>
-          {unbudgeted.length === 0 && budgeted.length > 0 ? (
-            <p className="budgets__all-set">All categories have budgets! 🎉</p>
-          ) : (
-            <div className="budgets__unbudgeted-list">
-              {(budgeted.length > 0 ? unbudgeted : categoryBudgets).map(
-                (cat) => (
-                  <div
-                    key={cat.id}
-                    className="budgets__unbudgeted-item"
-                    onClick={() => openEditBudget(cat)}
-                  >
-                    <div
-                      className="budgets__unbudgeted-icon"
-                      style={{
-                        background: `${cat.color}18`,
-                        color: cat.color,
-                      }}
-                    >
-                      {cat.icon}
-                    </div>
-                    <div className="budgets__unbudgeted-info">
-                      <span className="budgets__unbudgeted-name">
-                        {cat.name}
-                      </span>
-                      <span className="budgets__unbudgeted-spent">
-                        {formatMoney(cat.spent)} spent this month
-                      </span>
-                    </div>
-                    <span className="budgets__unbudgeted-action">
-                      Set budget →
-                    </span>
-                  </div>
-                ),
-              )}
-            </div>
-          )}
-        </div>
-      )}
-
       {/* Empty State */}
-      {categoryBudgets.length === 0 && (
+      {budgetData.length === 0 && categories.length === 0 && (
         <EmptyState
           className="budgets__empty-state"
           icon={
@@ -493,8 +579,8 @@ function Budgets({
               <path d="M7 16l4-8 4 4 4-6" />
             </svg>
           }
-          title="No budgets set yet"
-          text="Set monthly budgets for your expense categories to stay on track."
+          title="No budgets yet"
+          text="Create a budget to track spending across your categories."
           action={
             onNavigateToTransactions ? (
               <button
@@ -504,123 +590,12 @@ function Budgets({
               >
                 Go to Transactions
               </button>
-            ) : (
-              <p
-                style={{ fontSize: "0.75rem", color: "rgba(255,255,255,0.35)" }}
-              >
-                Add expense categories in the Transactions tab first.
-              </p>
-            )
+            ) : null
           }
         />
       )}
 
-      {/* Edit Budget Modal */}
-      <SheetModal
-        open={editModal.open}
-        closing={editModal.closing}
-        onClose={() => editModal.closeModal()}
-        title={`${editingCategory?.budget != null ? "Edit" : "Set"} budget for ${editingCategory?.name || ""}`}
-      >
-        <div className="budgets__form">
-          <div className="budgets__form-category">
-            <span
-              className="budgets__form-icon"
-              style={{
-                background: `${editingCategory?.color}18`,
-                color: editingCategory?.color,
-              }}
-            >
-              {editingCategory?.icon}
-            </span>
-            <div className="budgets__form-cat-info">
-              <span className="budgets__form-cat-name">
-                {editingCategory?.name}
-              </span>
-              <span className="budgets__form-cat-spent">
-                {formatMoney(editingCategory?.spent || 0)} spent this month
-              </span>
-            </div>
-          </div>
-
-          <FormField
-            label="Monthly budget (₪)"
-            error={budgetError}
-            state={budgetState}
-            showIndicator
-            shake={budgetError ? shakeKey : 0}
-          >
-            <input
-              type="number"
-              min="0"
-              step="10"
-              value={budgetInput}
-              onChange={(e) => {
-                setBudgetInput(e.target.value);
-                if (budgetTouched) validateBudget(e.target.value);
-              }}
-              onBlur={() => {
-                setBudgetTouched(true);
-                validateBudget(budgetInput, true);
-                if (!budgetInput && budgetInput !== "0") {
-                  setShakeKey((k) => k + 1);
-                  hapticError();
-                }
-              }}
-              placeholder="500"
-              autoFocus
-            />
-          </FormField>
-
-          {/* Quick amount buttons */}
-          <div className="budgets__quick-amounts">
-            {[100, 200, 500, 1000, 2000].map((amt) => (
-              <button
-                key={amt}
-                type="button"
-                className={`budgets__quick-btn ${budgetInput === String(amt) ? "active" : ""}`}
-                onClick={() => {
-                  setBudgetInput(String(amt));
-                  setBudgetTouched(true);
-                  validateBudget(String(amt));
-                }}
-              >
-                {formatMoney(amt)}
-              </button>
-            ))}
-          </div>
-
-          <div className="btn-row">
-            <button
-              type="button"
-              className="btn btn--ghost"
-              onClick={() => editModal.closeModal()}
-            >
-              Cancel
-            </button>
-            {editingCategory?.budget != null && (
-              <button
-                type="button"
-                className="btn btn--danger"
-                onClick={removeBudget}
-                disabled={submitting}
-              >
-                Remove
-              </button>
-            )}
-            <button
-              type="button"
-              className="btn btn--primary"
-              onClick={saveBudget}
-              disabled={submitting || (!budgetInput && budgetInput !== "0")}
-            >
-              {submitting ? "Saving…" : "Save"}
-            </button>
-          </div>
-        </div>
-      </SheetModal>
-
-      {/* Create Budget Modal */}
+      {/* ── Create Modal ── */}
       <SheetModal
         open={createModal.open}
         closing={createModal.closing}
@@ -642,7 +617,7 @@ function Budgets({
                 setNewName(e.target.value);
                 setNewNameError(null);
               }}
-              placeholder="e.g. Groceries, Rent, Fun"
+              placeholder="e.g. Monthly essentials, Ido, Fun"
               maxLength={32}
               autoFocus
             />
@@ -665,6 +640,20 @@ function Budgets({
 
           <FormField label="Color">
             <ColorPalettePicker value={newColor} onChange={setNewColor} />
+          </FormField>
+
+          <FormField
+            label="Track categories"
+            error={
+              newSelectedCats.size === 0
+                ? undefined
+                : undefined
+            }
+          >
+            <p className="budgets__form-hint">
+              Pick which expense categories this budget tracks.
+            </p>
+            {renderCategoryPicker(newSelectedCats, toggleNewCat)}
           </FormField>
 
           <FormField
@@ -715,13 +704,155 @@ function Budgets({
               type="button"
               className="btn btn--primary"
               onClick={createBudget}
-              disabled={submitting || !newName.trim() || !newAmount}
+              disabled={
+                submitting ||
+                !newName.trim() ||
+                !newAmount ||
+                newSelectedCats.size === 0
+              }
             >
               {submitting ? "Creating…" : "Create budget"}
             </button>
           </div>
         </div>
       </SheetModal>
+
+      {/* ── Edit Modal ── */}
+      <SheetModal
+        open={editModal.open}
+        closing={editModal.closing}
+        onClose={() => editModal.closeModal()}
+        title={`Edit ${editingBudget?.name || "budget"}`}
+      >
+        <div className="budgets__form">
+          <FormField
+            label="Budget name"
+            error={editNameError}
+            state={editNameError ? "error" : editName ? "valid" : "idle"}
+            showIndicator
+            shake={editNameError ? shakeKey : 0}
+          >
+            <input
+              type="text"
+              value={editName}
+              onChange={(e) => {
+                setEditName(e.target.value);
+                setEditNameError(null);
+              }}
+              maxLength={32}
+            />
+          </FormField>
+
+          <FormField label="Icon">
+            <div className="budgets__icon-picker">
+              {DEFAULT_ICONS.map((icon) => (
+                <button
+                  key={icon}
+                  type="button"
+                  className={`budgets__icon-btn${editIcon === icon ? " budgets__icon-btn--active" : ""}`}
+                  onClick={() => setEditIcon(icon)}
+                >
+                  {icon}
+                </button>
+              ))}
+            </div>
+          </FormField>
+
+          <FormField label="Color">
+            <ColorPalettePicker value={editColor} onChange={setEditColor} />
+          </FormField>
+
+          <FormField label="Track categories">
+            <p className="budgets__form-hint">
+              Pick which expense categories this budget tracks.
+            </p>
+            {renderCategoryPicker(editSelectedCats, toggleEditCat)}
+          </FormField>
+
+          <FormField
+            label="Monthly budget (₪)"
+            error={editAmountError}
+            state={editAmountError ? "error" : editAmount ? "valid" : "idle"}
+            showIndicator
+            shake={editAmountError ? shakeKey : 0}
+          >
+            <input
+              type="number"
+              min="1"
+              step="10"
+              value={editAmount}
+              onChange={(e) => {
+                setEditAmount(e.target.value);
+                setEditAmountError(null);
+              }}
+            />
+          </FormField>
+
+          <div className="budgets__quick-amounts">
+            {[100, 200, 500, 1000, 2000].map((amt) => (
+              <button
+                key={amt}
+                type="button"
+                className={`budgets__quick-btn ${editAmount === String(amt) ? "active" : ""}`}
+                onClick={() => {
+                  setEditAmount(String(amt));
+                  setEditAmountError(null);
+                }}
+              >
+                {formatMoney(amt)}
+              </button>
+            ))}
+          </div>
+
+          <div className="btn-row">
+            <button
+              type="button"
+              className="btn btn--danger-outline"
+              onClick={() => {
+                editModal.closeModal();
+                setTimeout(() => openDeleteBudget(editingBudget), 280);
+              }}
+            >
+              Delete
+            </button>
+            <button
+              type="button"
+              className="btn btn--ghost"
+              onClick={() => editModal.closeModal()}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              className="btn btn--primary"
+              onClick={saveEdit}
+              disabled={
+                submitting ||
+                !editName.trim() ||
+                !editAmount ||
+                editSelectedCats.size === 0
+              }
+            >
+              {submitting ? "Saving…" : "Save"}
+            </button>
+          </div>
+        </div>
+      </SheetModal>
+
+      {/* ── Delete Confirm ── */}
+      {deleteTarget && (
+        <ConfirmModal
+          open={deleteModal.open}
+          closing={deleteModal.closing}
+          onClose={() => deleteModal.closeModal()}
+          onConfirm={confirmDelete}
+          loading={submitting}
+          title={`Delete "${deleteTarget.name}"?`}
+          description="This will remove the budget. Transactions and categories are not affected."
+          confirmLabel="Delete"
+          variant="danger"
+        />
+      )}
     </div>
   );
 }
