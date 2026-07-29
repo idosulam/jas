@@ -70,12 +70,36 @@ function SavingsGoals({ householdId, userId, members, hideTitle }) {
         .order("created_at", { ascending: true });
 
       if (fetchError) throw fetchError;
-      setGoals(data ?? []);
+
+      // Also fetch orphaned goals (created before householdId was available)
+      const { data: orphanData } = await supabase
+        .from("savings_goals")
+        .select("*")
+        .is("household_id", null)
+        .eq("created_by", userId);
+
+      // Backfill orphaned goals with correct household_id
+      if (orphanData && orphanData.length > 0) {
+        await supabase
+          .from("savings_goals")
+          .update({ household_id: householdId })
+          .is("household_id", null)
+          .eq("created_by", userId);
+        // Re-fetch after fixing
+        const { data: fixed } = await supabase
+          .from("savings_goals")
+          .select("*")
+          .eq("household_id", householdId)
+          .order("created_at", { ascending: true });
+        setGoals(fixed ?? []);
+      } else {
+        setGoals(data ?? []);
+      }
     } catch (err) {
       // silent
     }
     setLoading(false);
-  }, [householdId]);
+  }, [householdId, userId]);
 
   useEffect(() => {
     fetchGoals();

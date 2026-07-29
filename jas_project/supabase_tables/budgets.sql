@@ -140,4 +140,9 @@ CREATE POLICY "Household members can delete goal_categories"
 -- (optional: keep for backward compat, but new budgets use budgets table)
 -- ALTER TABLE public.transaction_categories DROP COLUMN IF EXISTS budget_amount;
 
+-- ── Add weight_unit to profile ──────────────────────────────
+
+ALTER TABLE public.profile
+  ADD COLUMN IF NOT EXISTS weight_unit TEXT NOT NULL DEFAULT 'kg' CHECK (weight_unit IN ('kg', 'lbs'));
+
 NOTIFY pgrst, 'reload schema';
