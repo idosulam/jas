@@ -246,6 +246,8 @@ function SavingsGoals({ householdId, userId, members, hideTitle }) {
       if (error) throw error;
       deleteModal.closeModal();
       toastSuccess("Goal deleted.");
+      setGoals((prev) => prev.filter((g) => g.id !== deleteTarget.id));
+      setDeleteTarget(null);
       fetchGoals();
     } catch (err) {
       toastError(getUserFacingError(err.message));
