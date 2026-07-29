@@ -539,6 +539,43 @@ function SavingsGoals({ householdId, userId, members, hideTitle }) {
         title={`Add to "${activeGoal?.title || ""}"`}
       >
         <div className="savings-goals__form">
+          {/* Goal progress preview */}
+          {activeGoal && (() => {
+            const progress = activeGoal.target_amount > 0
+              ? Math.min(100, (activeGoal.current_amount / activeGoal.target_amount) * 100)
+              : 0;
+            const remaining = Math.max(0, activeGoal.target_amount - activeGoal.current_amount);
+            return (
+              <div className="savings-goals__contrib-preview">
+                <div className="savings-goals__contrib-header">
+                  <span className="savings-goals__contrib-icon">{activeGoal.icon || "🎯"}</span>
+                  <div className="savings-goals__contrib-info">
+                    <span className="savings-goals__contrib-title">{activeGoal.title}</span>
+                    <span className="savings-goals__contrib-amounts">
+                      {formatMoney(activeGoal.current_amount)} / {formatMoney(activeGoal.target_amount)}
+                    </span>
+                  </div>
+                </div>
+                <div className="savings-goals__progress-wrap">
+                  <div className="savings-goals__progress-bar">
+                    <div
+                      className="savings-goals__progress-fill"
+                      style={{ width: `${progress}%`, background: activeGoal.color || "#818cf8" }}
+                    />
+                  </div>
+                  <div className="savings-goals__progress-meta">
+                    <span>{Math.round(progress)}%</span>
+                    {remaining > 0 ? (
+                      <span>{formatMoney(remaining)} to go</span>
+                    ) : (
+                      <span className="savings-goals__reached">🎉 Reached!</span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
+
           <FormField
             label="Amount (₪)"
             error={contribAmountError}
