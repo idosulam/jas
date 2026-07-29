@@ -474,43 +474,38 @@ function Budgets({
               return (
                 <div
                   key={budget.id}
-                  className={`budgets__card ${isOver ? "budgets__card--over" : ""}`}
-                  onClick={() => openEditBudget(budget)}
+                  className={`budgets__card${isOver ? " budgets__card--over" : ""}`}
                 >
                   <div className="budgets__card-header">
-                    <div
-                      className="budgets__card-icon"
-                      style={{
-                        background: `${budget.color}18`,
-                        color: budget.color,
-                      }}
-                    >
-                      {budget.icon}
-                    </div>
+                    <span className="budgets__card-icon">
+                      {budget.icon || "📊"}
+                    </span>
                     <div className="budgets__card-info">
                       <span className="budgets__card-name">
                         {budget.name}
                       </span>
                       <span className="budgets__card-amounts">
-                        {formatMoney(budget.spent)}{" "}
-                        <span className="budgets__card-sep">of</span>{" "}
+                        {formatMoney(budget.spent)} /{" "}
                         {formatMoney(budget.amount)}
                       </span>
                     </div>
-                    <div className="budgets__card-status">
-                      {isOver ? (
-                        <span className="budgets__card-over-badge">
-                          Over by {formatMoney(Math.abs(budget.remaining))}
-                        </span>
-                      ) : budget.progress >= 90 ? (
-                        <span className="budgets__card-warn-badge">
-                          {formatMoney(budget.remaining)} left
-                        </span>
-                      ) : (
-                        <span className="budgets__card-remaining">
-                          {formatMoney(budget.remaining)} left
-                        </span>
-                      )}
+                    <div className="budgets__card-actions">
+                      <button
+                        type="button"
+                        className="budgets__card-edit"
+                        onClick={() => openEditBudget(budget)}
+                        title="Edit budget"
+                      >
+                        ✎
+                      </button>
+                      <button
+                        type="button"
+                        className="budgets__card-delete"
+                        onClick={() => openDeleteBudget(budget)}
+                        title="Delete budget"
+                      >
+                        ×
+                      </button>
                     </div>
                   </div>
 
@@ -527,32 +522,32 @@ function Budgets({
                     ))}
                   </div>
 
-                  <div className="budgets__card-bar-wrap">
-                    <div className="budgets__card-bar">
+                  <div className="budgets__progress-wrap">
+                    <div
+                      className="budgets__progress-bar"
+                      role="progressbar"
+                      aria-valuenow={Math.round(budget.progress)}
+                      aria-valuemin={0}
+                      aria-valuemax={100}
+                    >
                       <div
-                        className="budgets__card-fill"
+                        className="budgets__progress-fill"
                         style={{
                           width: `${Math.min(budget.progress, 100)}%`,
                           background: statusColor,
                         }}
                       />
-                      {isOver && (
-                        <div
-                          className="budgets__card-fill budgets__card-fill--over"
-                          style={{
-                            width: `${Math.min(budget.progress - 100, 100)}%`,
-                            background: "var(--color-danger, #f87171)",
-                            opacity: 0.4,
-                          }}
-                        />
+                    </div>
+                    <div className="budgets__progress-meta">
+                      <span>{Math.round(budget.progress)}%</span>
+                      {budget.remaining >= 0 ? (
+                        <span>{formatMoney(budget.remaining)} left</span>
+                      ) : (
+                        <span style={{ color: "var(--color-danger, #f87171)" }}>
+                          Over by {formatMoney(Math.abs(budget.remaining))}
+                        </span>
                       )}
                     </div>
-                    <span
-                      className="budgets__card-pct"
-                      style={{ color: statusColor }}
-                    >
-                      {Math.round(budget.progress)}%
-                    </span>
                   </div>
                 </div>
               );
