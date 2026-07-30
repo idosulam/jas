@@ -40,9 +40,9 @@ export default function Weight_chart({ entries, unit, goalKg }) {
 
     const points = sorted.map((entry, i) => ({
       x: xScale(i),
-      y: yScale(To_display_kg(Number(entry.Weight_kg), unit)),
-      date: entry.Entry_date,
-      value: To_display_kg(Number(entry.Weight_kg), unit),
+      y: yScale(To_display_kg(Number(entry.weight_kg), unit)),
+      date: entry.entry_date,
+      value: To_display_kg(Number(entry.weight_kg), unit),
     }));
 
     const linePath = points

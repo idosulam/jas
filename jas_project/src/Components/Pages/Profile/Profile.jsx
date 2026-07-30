@@ -117,7 +117,7 @@ function Profile({ onNavigate }) {
           .from("weight_entries")
           .select("*")
           .eq("user_id", user_id)
-          .order("Entry_date", { ascending: true }),
+          .order("entry_date", { ascending: true }),
       ]);
 
       if (profileRes.error) {
@@ -125,8 +125,8 @@ function Profile({ onNavigate }) {
         setProfile(null);
       } else {
         setProfile(profileRes.data);
-        if (profileRes.data?.Weight_unit) {
-          setUnit(profileRes.data.Weight_unit);
+        if (profileRes.data?.weight_unit) {
+          setUnit(profileRes.data.weight_unit);
         }
       }
 
@@ -166,7 +166,7 @@ function Profile({ onNavigate }) {
         const supabase = Get_supabase_client();
         await supabase
           .from("profile")
-          .update({ Weight_unit: nextUnit })
+          .update({ weight_unit: nextUnit })
           .eq("id", profile.id);
       } catch {
         // silent
@@ -183,10 +183,10 @@ function Profile({ onNavigate }) {
   };
 
   const openEditWeight = (entry) => {
-    const Weight_kg = Number(entry.Weight_kg);
+    const Weight_kg = Number(entry.weight_kg);
     setEditingEntry(entry);
     setWeightForm({
-      Entry_date: entry.Entry_date,
+      Entry_date: entry.entry_date,
       Weight_kg: String(Weight_kg.toFixed(1)),
       weight_lbs: String(Kg_to_lbs(Weight_kg)?.toFixed(1) ?? ""),
       notes: entry.notes ?? "",
@@ -209,7 +209,7 @@ function Profile({ onNavigate }) {
   const openProfileEdit = () => {
     if (profile) {
       const Height_cm =
-        profile.Height_cm != null ? Number(profile.Height_cm) : null;
+        profile.height_cm != null ? Number(profile.height_cm) : null;
       const { feet, inches } = Cm_to_feet_and_inches(Height_cm);
       const goalKg =
         profile.goal_weight_kg != null ? Number(profile.goal_weight_kg) : null;
@@ -335,8 +335,8 @@ function Profile({ onNavigate }) {
     Set_duplicate_date_confirm(null);
 
     const payload = {
-      Entry_date: Entry_date,
-      Weight_kg: Number(Weight_kg.toFixed(2)),
+      entry_date: Entry_date,
+      weight_kg: Number(Weight_kg.toFixed(2)),
       notes: notes || null,
       ...(user_id && { user_id: user_id }),
     };
@@ -350,7 +350,7 @@ function Profile({ onNavigate }) {
             .eq("id", editingEntry.id)
         : supabase
             .from("weight_entries")
-            .upsert(payload, { onConflict: "user_id,Entry_date" });
+            .upsert(payload, { onConflict: "user_id,entry_date" });
 
       const { error: saveError } = await query;
       Set_saving(false);
@@ -608,7 +608,7 @@ function Profile({ onNavigate }) {
     const payload = {
       display_name: display_name,
       age,
-      Height_cm: Height_cm ?? null,
+      height_cm: Height_cm ?? null,
       goal_weight_kg: goalKg ? Number(goalKg.toFixed(2)) : null,
       gender: profileForm.gender,
       activity_level: profileForm.activity_level,
@@ -700,7 +700,7 @@ function Profile({ onNavigate }) {
     );
     const latest = sorted[sorted.length - 1];
     const first = sorted[0];
-    const Height_cm = profile?.Height_cm ? Number(profile.Height_cm) : null;
+    const Height_cm = profile?.Height_cm ? Number(profile.height_cm) : null;
     const goalKg = profile?.goal_weight_kg
       ? Number(profile.goal_weight_kg)
       : null;
@@ -1260,12 +1260,12 @@ function Profile({ onNavigate }) {
           </div>
           <h2 className="sheet-modal__title sheet-modal__title--compact">
             Already logged for{" "}
-            {Format_date_label(Duplicate_date_confirm.Existing_entry.Entry_date)}
+            {Format_date_label(Duplicate_date_confirm.Existing_entry.entry_date)}
           </h2>
           <p className="profile__dup-desc">
             You have{" "}
             <strong>
-              {Format_weight_both(Number(Duplicate_date_confirm.Existing_entry.Weight_kg))}
+              {Format_weight_both(Number(Duplicate_date_confirm.Existing_entry.weight_kg))}
             </strong>{" "}
             recorded for this day.
           </p>

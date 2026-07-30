@@ -36,15 +36,15 @@ function Fitness() {
         // Fetch latest weight
         const { data: weightData } = await supabase
           .from("weight_entries")
-          .select("Weight_kg")
+          .select("weight_kg")
           .eq("user_id", user_id)
-          .order("Entry_date", { ascending: false })
+          .order("entry_date", { ascending: false })
           .limit(1)
           .maybeSingle();
 
         setProfileData({
           ...data,
-          Weight_kg: weightData?.Weight_kg ?? data?.goal_weight_kg ?? null,
+          Weight_kg: weightData?.weight_kg ?? data?.goal_weight_kg ?? null,
         });
       }
     } catch {

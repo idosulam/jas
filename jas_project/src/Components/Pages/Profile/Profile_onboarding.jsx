@@ -85,11 +85,11 @@ export default function Profile_onboarding() {
         !data ||
         !data.display_name?.trim() ||
         data.age == null ||
-        !data.Height_cm;
+        !data.height_cm;
 
       if (isIncomplete) {
         // Pre-fill form with existing data
-        const Height_cm = data?.Height_cm != null ? Number(data.Height_cm) : null;
+        const Height_cm = data?.height_cm != null ? Number(data.height_cm) : null;
         const { feet, inches } = Cm_to_feet_and_inches(Height_cm);
         Set_form({
           display_name: data?.display_name ?? "",
@@ -240,7 +240,7 @@ export default function Profile_onboarding() {
     const payload = {
       display_name: display_name,
       age,
-      Height_cm: Height_cm ?? null,
+      height_cm: Height_cm ?? null,
       goal_weight_kg: goalKg ? Number(goalKg.toFixed(2)) : null,
       gender: form.gender || "male",
       activity_level: form.activity_level || "moderate",

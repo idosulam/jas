@@ -92,8 +92,8 @@ function Diet_tracker({ profileData }) {
 
   // ── Profile-derived macro targets ──
   const profile = profileData;
-  const Weight_kg = profile?.Weight_kg ? Number(profile.Weight_kg) : null;
-  const Height_cm = profile?.Height_cm ? Number(profile.Height_cm) : null;
+  const Weight_kg = profile?.weight_kg ? Number(profile.weight_kg) : null;
+  const Height_cm = profile?.height_cm ? Number(profile.height_cm) : null;
   const age = profile?.age ? Number(profile.age) : null;
   const gender = profile?.gender || "male";
   const rawActivityLevel = profile?.activity_level || "moderate";
@@ -129,8 +129,8 @@ function Diet_tracker({ profileData }) {
         .from("diet_entries")
         .select("*")
         .eq("user_id", user_id)
-        .gte("Entry_date", startDateKey)
-        .lte("Entry_date", endDateKey)
+        .gte("entry_date", startDateKey)
+        .lte("entry_date", endDateKey)
         .order("created_at", { ascending: true });
 
       if (fetch_error) {
@@ -144,7 +144,7 @@ function Diet_tracker({ profileData }) {
       try {
         const { data: workoutData } = await supabase
           .from("workout_logs")
-          .select("Calories_burned")
+          .select("calories_burned")
           .eq("user_id", user_id)
           .eq("workout_date", Selected_date);
 
@@ -305,7 +305,7 @@ function Diet_tracker({ profileData }) {
   const Open_edit_modal = (entry) => {
     setEditingEntry(entry);
     Set_form({
-      Entry_date: entry.Entry_date,
+      Entry_date: entry.entry_date,
       meal_type: entry.meal_type,
       food_name: entry.food_name ?? "",
       calories: entry.calories ? String(entry.calories) : "",
@@ -501,7 +501,7 @@ function Diet_tracker({ profileData }) {
     Set_error(null);
 
     const payload = {
-      Entry_date: Entry_date,
+      entry_date: Entry_date,
       meal_type: form.meal_type,
       food_name: foodName,
       calories: Sanitize_number(form.calories, 0, 10000) ?? 0,

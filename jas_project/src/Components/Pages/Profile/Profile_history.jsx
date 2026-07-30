@@ -31,7 +31,7 @@ export default function Profile_history({
           {" "}
           <div>
             <span className="profile__history-date">
-              {Format_date_label(entry.Entry_date)}
+              {Format_date_label(entry.entry_date)}
             </span>
             {entry.notes && (
               <span className="profile__history-note">
@@ -41,7 +41,7 @@ export default function Profile_history({
           </div>
           <div className="profile__history-actions">
             <span className="profile__history-weight">
-              {Format_weight_both(Number(entry.Weight_kg))}
+              {Format_weight_both(Number(entry.weight_kg))}
             </span>
             <button
               type="button"
