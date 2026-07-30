@@ -90,7 +90,7 @@ function Shifts({ onNavigate }) {
   const Form_modal = Use_modal(MODAL_EXIT_MS);
   const Delete_modal = Use_modal(MODAL_EXIT_MS);
   const Preset_modal = Use_modal(MODAL_EXIT_MS);
-  const Place_picker = Use_modal(MODAL_EXIT_MS);
+  const Place_picker_modal = Use_modal(MODAL_EXIT_MS);
 
   // Track viewport width for responsive filter layout
   useEffect(() => {
@@ -187,12 +187,12 @@ function Shifts({ onNavigate }) {
   }, [Update_place_indicator, Effective_workplaces]);
 
   const Open_place_picker = useCallback(() => {
-    Place_picker.open_modal();
-  }, [Place_picker]);
+    Place_picker_modal.open_modal();
+  }, [Place_picker_modal]);
 
   const Close_place_picker = useCallback(() => {
-    Place_picker.close_modal();
-  }, [Place_picker]);
+    Place_picker_modal.close_modal();
+  }, [Place_picker_modal]);
 
   const Select_place_filter = useCallback(
     (id) => {
@@ -432,7 +432,7 @@ function Shifts({ onNavigate }) {
     Form_modal.open,
     Delete_modal.open,
     Preset_modal.open,
-    Place_picker.open,
+    Place_picker_modal.open,
   );
 
   useEffect(() => {
@@ -1051,8 +1051,8 @@ function Shifts({ onNavigate }) {
         selectedPlaceId={Place_filter}
         onSelect={Select_place_filter}
         Is_mobile={Is_mobile}
-        Picker_open={Place_picker.open}
-        Picker_closing={Place_picker.closing}
+        Picker_open={Place_picker_modal.open}
+        Picker_closing={Place_picker_modal.closing}
         onOpenPicker={Open_place_picker}
         onClosePicker={Close_place_picker}
         indicator={Place_indicator}
