@@ -1016,8 +1016,9 @@ function Shifts({ onNavigate }) {
 
       {/* No Workplaces CTA */}
       {!Loading && Effective_workplaces.length === 0 && onNavigate && (
-        <div className="shifts__no-Workplaces animate-in animate-in--1">
-          <div className="shifts__no-Workplaces-icon" aria-hidden="true">
+        <Empty_state
+          className="animate-in animate-in--1"
+          icon={(
             <svg
               viewBox="0 0 24 24"
               fill="none"
@@ -1029,19 +1030,19 @@ function Shifts({ onNavigate }) {
               <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z" />
               <path d="M9 22V12h6v10" />
             </svg>
-          </div>
-          <p className="shifts__no-Workplaces-title">No Workplaces yet</p>
-          <p className="shifts__no-Workplaces-text">
-            Add a workplace first to start tracking your shifts.
-          </p>
-          <button
-            type="button"
-            className="shifts__no-Workplaces-btn"
-            onClick={() => onNavigate("Workplaces")}
-          >
-            + Add workplace
-          </button>
-        </div>
+          )}
+          title="No Workplaces yet"
+          text="Add a workplace first to start tracking your shifts."
+          action={(
+            <button
+              type="button"
+              className="btn btn--primary"
+              onClick={() => onNavigate("Workplaces")}
+            >
+              + Add workplace
+            </button>
+          )}
+        />
       )}
 
       {/* Place filter */}
@@ -1186,7 +1187,7 @@ function Shifts({ onNavigate }) {
             Effective_workplaces.length === 0 && onNavigate ? (
               <button
                 type="button"
-                className="shifts__no-Workplaces-btn"
+                className="btn btn--primary"
                 onClick={() => onNavigate("Workplaces")}
               >
                 + Add workplace
