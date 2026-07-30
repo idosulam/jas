@@ -1,4 +1,4 @@
-function MealGroup({
+function Meal_group({
   meal,
   entries,
   Removing_id,
@@ -88,4 +88,4 @@ function MealGroup({
   );
 }
 
-export default MealGroup;
+export default Meal_group;

@@ -1,7 +1,7 @@
 /**
- * MacroProgressBar — Animated progress bar for macro nutrient tracking.
+ * Macro_progress_bar — Animated progress bar for macro nutrient tracking.
  */
-export default function MacroProgressBar({ label, current, target, unit, color }) {
+export default function Macro_progress_bar({ label, current, target, unit, color }) {
   const pct = target > 0 ? Math.min((current / target) * 100, 100) : 0;
   const over = current > target;
 

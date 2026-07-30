@@ -3,12 +3,12 @@ import { Get_supabase_client } from "../../../Lib/Superbase";
 import { Get_user_facing_error, Haptic_error } from "../../../Lib/Security";
 import { Use_glass_toast } from "../../../Lib/Glass_toast_provider.jsx";
 import { Use_modal, Use_body_scroll_lock } from "../../../Hooks";
-import SheetModal from "../../UI/Modals/Sheet_modal";
-import ConfirmModal from "../../UI/Modals/Confirm_modal";
-import FormField from "../../UI/Form/Form_field.jsx";
-import EmptyState from "../../UI/Empty_state";
+import Sheet_modal from "../../UI/Modals/Sheet_modal";
+import Confirm_modal from "../../UI/Modals/Confirm_modal";
+import Form_field from "../../UI/Form/Form_field.jsx";
+import Empty_state from "../../UI/Empty_state";
 import { Format_money } from "../../../Lib/format";
-import ColorPalettePicker from "../../../Lib/Color_palette_picker.jsx";
+import Color_palette_picker from "../../../Lib/Color_palette_picker.jsx";
 import { DEFAULT_ICONS } from "./Category_manager";
 
 function Budgets({
@@ -564,7 +564,7 @@ function Budgets({
 
       {/* Empty State */}
       {budgetData.length === 0 && (
-        <EmptyState
+        <Empty_state
           className="budgets__empty-state"
           icon={
             <svg
@@ -595,14 +595,14 @@ function Budgets({
       )}
 
       {/* ── Create Modal ── */}
-      <SheetModal
+      <Sheet_modal
         open={createModal.open}
         closing={createModal.closing}
         onClose={() => createModal.close_modal()}
         title="Create budget"
       >
         <div className="budgets__form">
-          <FormField
+          <Form_field
             label="Budget name"
             error={newNameError}
             state={newNameError ? "error" : newName ? "valid" : "idle"}
@@ -620,9 +620,9 @@ function Budgets({
               maxLength={32}
               autoFocus
             />
-          </FormField>
+          </Form_field>
 
-          <FormField label="Icon">
+          <Form_field label="Icon">
             <div className="budgets__icon-picker">
               {DEFAULT_ICONS.map((icon) => (
                 <button
@@ -635,13 +635,13 @@ function Budgets({
                 </button>
               ))}
             </div>
-          </FormField>
+          </Form_field>
 
-          <FormField label="Color">
-            <ColorPalettePicker value={newColor} onChange={setNewColor} />
-          </FormField>
+          <Form_field label="Color">
+            <Color_palette_picker value={newColor} onChange={setNewColor} />
+          </Form_field>
 
-          <FormField
+          <Form_field
             label="Track categories"
             error={
               newSelectedCats.size === 0
@@ -653,9 +653,9 @@ function Budgets({
               Pick which expense categories this budget tracks.
             </p>
             {renderCategoryPicker(newSelectedCats, toggleNewCat)}
-          </FormField>
+          </Form_field>
 
-          <FormField
+          <Form_field
             label="Monthly budget (₪)"
             error={newAmountError}
             state={newAmountError ? "error" : newAmount ? "valid" : "idle"}
@@ -673,7 +673,7 @@ function Budgets({
               }}
               placeholder="500"
             />
-          </FormField>
+          </Form_field>
 
           <div className="budgets__quick-amounts">
             {[100, 200, 500, 1000, 2000].map((amt) => (
@@ -714,17 +714,17 @@ function Budgets({
             </button>
           </div>
         </div>
-      </SheetModal>
+      </Sheet_modal>
 
       {/* ── Edit Modal ── */}
-      <SheetModal
+      <Sheet_modal
         open={editModal.open}
         closing={editModal.closing}
         onClose={() => editModal.close_modal()}
         title={`Edit ${editingBudget?.name || "budget"}`}
       >
         <div className="budgets__form">
-          <FormField
+          <Form_field
             label="Budget name"
             error={editNameError}
             state={editNameError ? "error" : editName ? "valid" : "idle"}
@@ -740,9 +740,9 @@ function Budgets({
               }}
               maxLength={32}
             />
-          </FormField>
+          </Form_field>
 
-          <FormField label="Icon">
+          <Form_field label="Icon">
             <div className="budgets__icon-picker">
               {DEFAULT_ICONS.map((icon) => (
                 <button
@@ -755,20 +755,20 @@ function Budgets({
                 </button>
               ))}
             </div>
-          </FormField>
+          </Form_field>
 
-          <FormField label="Color">
-            <ColorPalettePicker value={editColor} onChange={setEditColor} />
-          </FormField>
+          <Form_field label="Color">
+            <Color_palette_picker value={editColor} onChange={setEditColor} />
+          </Form_field>
 
-          <FormField label="Track categories">
+          <Form_field label="Track categories">
             <p className="budgets__form-hint">
               Pick which expense categories this budget tracks.
             </p>
             {renderCategoryPicker(editSelectedCats, toggleEditCat)}
-          </FormField>
+          </Form_field>
 
-          <FormField
+          <Form_field
             label="Monthly budget (₪)"
             error={editAmountError}
             state={editAmountError ? "error" : editAmount ? "valid" : "idle"}
@@ -785,7 +785,7 @@ function Budgets({
                 setEditAmountError(null);
               }}
             />
-          </FormField>
+          </Form_field>
 
           <div className="budgets__quick-amounts">
             {[100, 200, 500, 1000, 2000].map((amt) => (
@@ -836,11 +836,11 @@ function Budgets({
             </button>
           </div>
         </div>
-      </SheetModal>
+      </Sheet_modal>
 
       {/* ── Delete Confirm ── */}
       {Delete_target && (
-        <ConfirmModal
+        <Confirm_modal
           open={Delete_modal.open}
           closing={Delete_modal.closing}
           onClose={() => Delete_modal.close_modal()}

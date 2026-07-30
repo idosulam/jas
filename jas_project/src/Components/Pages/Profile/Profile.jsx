@@ -12,12 +12,12 @@ import {
 
 import { Use_glass_toast } from "../../../Lib/Glass_toast_provider.jsx";
 import {
-  SheetModal,
-  ConfirmModal,
-  FormField,
-  PageHeader,
+  Sheet_modal,
+  Confirm_modal,
+  Form_field,
+  Page_header,
   FAB,
-  LoadingSkeleton,
+  Loading_skeleton,
 } from "../../../components";
 import { Use_household } from "../../../Lib/Household_context.jsx";
 import {
@@ -31,11 +31,11 @@ import { Format_date_label } from "../../../Lib/format";
 
 import { Load_unit, To_display_kg, Format_weight, Format_weight_both, Kg_to_lbs, Lbs_to_kg, Cm_to_feet_and_inches, Feet_and_inches_to_cm, Format_height, Calc_bmi, Bmi_label, Healthy_weight_range_kg } from "../../../Lib/weight";
 
-import WeightChart from "./Weight_chart";
-import { daysBetween, buildInsight } from "./Weight_utils";
-import ProfileStats from "./Profile_stats";
-import ProfileHistory from "./Profile_history";
-import WeightForm from "./Weight_form";
+import Weight_chart from "./Weight_chart";
+import { Days_between, Build_insight } from "./Weight_utils";
+import Profile_stats from "./Profile_stats";
+import Profile_history from "./Profile_history";
+import Weight_form from "./Weight_form";
 
 const KG_TO_LBS = 2.20462;
 const MODAL_EXIT_MS = 260;
@@ -715,7 +715,7 @@ function Profile({ onNavigate }) {
 
     let weeklyChangeKg = null;
     if (sorted.length >= 2 && totalChangeKg != null) {
-      const spanDays = daysBetween(first.Entry_date, latest.Entry_date);
+      const spanDays = Days_between(first.Entry_date, latest.Entry_date);
       weeklyChangeKg = (totalChangeKg / spanDays) * 7;
     }
 
@@ -736,7 +736,7 @@ function Profile({ onNavigate }) {
       remainingKg = currentKg - goalKg;
     }
 
-    const insight = buildInsight({
+    const insight = Build_insight({
       age,
       weeklyChangeKg,
       bmi,
@@ -767,7 +767,7 @@ function Profile({ onNavigate }) {
 
   return (
     <section>
-      <PageHeader
+      <Page_header
         className="profile__header"
         eyebrow={
           Household_name ? `Progress · ${Household_name}` : "Your progress"
@@ -804,7 +804,7 @@ function Profile({ onNavigate }) {
             lbs
           </button>
         </div>
-      </PageHeader>
+      </Page_header>
 
       {error && (
         <p className="profile__error profile__error--glass" role="alert">
@@ -814,14 +814,14 @@ function Profile({ onNavigate }) {
 
       {Loading ? (
         <div className="profile__summary">
-          <LoadingSkeleton count={4} variant="stat" contents />
+          <Loading_skeleton count={4} variant="stat" contents />
           <div style={{ gridColumn: "span 2", marginTop: "1rem" }}>
-            <LoadingSkeleton count={1} variant="card" height="10rem" />
+            <Loading_skeleton count={1} variant="card" height="10rem" />
           </div>
         </div>
       ) : (
         <>
-          <ProfileStats analytics={analytics} unit={unit} unitLabel={unitLabel} />
+          <Profile_stats analytics={analytics} unit={unit} unitLabel={unitLabel} />
 
           <section
             className="profile__panel"
@@ -840,7 +840,7 @@ function Profile({ onNavigate }) {
                 + Log weight
               </button>
             </div>
-            <WeightChart
+            <Weight_chart
               entries={entries}
               unit={unit}
               goalKg={analytics.goalKg}
@@ -971,7 +971,7 @@ function Profile({ onNavigate }) {
                 </button>
               )}
             </div>
-            <ProfileHistory
+            <Profile_history
               sorted={analytics.sorted}
               Removing_id={Removing_id}
               unit={unit}
@@ -984,7 +984,7 @@ function Profile({ onNavigate }) {
       )}
 
       {/* Weight Log/Edit Modal */}
-      <WeightForm
+      <Weight_form
         weightModal={weightModal}
         weightForm={weightForm}
         setWeightForm={setWeightForm}
@@ -1003,14 +1003,14 @@ function Profile({ onNavigate }) {
       />
 
       {/* Profile Edit Modal */}
-      <SheetModal
+      <Sheet_modal
         open={profileModal.open}
         closing={profileModal.closing}
         onClose={closeProfileModal}
         title="Edit profile"
       >
         <form className="profile__form" onSubmit={Save_profile}>
-          <FormField
+          <Form_field
             label="Name"
             error={profileFieldErrors.display_name}
             state={profileFieldStates.display_name}
@@ -1032,8 +1032,8 @@ function Profile({ onNavigate }) {
               }}
               onBlur={() => handleProfileFieldBlur("display_name")}
             />
-          </FormField>
-          <FormField
+          </Form_field>
+          <Form_field
             label="Age"
             error={profileFieldErrors.age}
             state={profileFieldStates.age}
@@ -1052,8 +1052,8 @@ function Profile({ onNavigate }) {
               }}
               onBlur={() => handleProfileFieldBlur("age")}
             />
-          </FormField>
-          <FormField
+          </Form_field>
+          <Form_field
             label="Height (cm)"
             error={profileFieldErrors.Height_cm}
             state={profileFieldStates.Height_cm}
@@ -1075,9 +1075,9 @@ function Profile({ onNavigate }) {
               }}
               onBlur={() => handleProfileFieldBlur("Height_cm")}
             />
-          </FormField>
+          </Form_field>
           <div className="profile__height-row">
-            <FormField label="Feet">
+            <Form_field label="Feet">
               <input
                 type="number"
                 min="0"
@@ -1088,8 +1088,8 @@ function Profile({ onNavigate }) {
                   handleHeightImperialChange("height_ft", e.target.value)
                 }
               />
-            </FormField>
-            <FormField label="Inches">
+            </Form_field>
+            <Form_field label="Inches">
               <input
                 type="number"
                 min="0"
@@ -1101,10 +1101,10 @@ function Profile({ onNavigate }) {
                   handleHeightImperialChange("height_in", e.target.value)
                 }
               />
-            </FormField>
+            </Form_field>
           </div>
           <div className="profile__weight-row">
-            <FormField
+            <Form_field
               label="Goal weight (kg)"
               error={profileFieldErrors.goal_weight_kg}
               state={profileFieldStates.goal_weight_kg}
@@ -1127,8 +1127,8 @@ function Profile({ onNavigate }) {
                 }}
                 onBlur={() => handleProfileFieldBlur("goal_weight_kg")}
               />
-            </FormField>
-            <FormField label="Goal weight (lbs)" optional>
+            </Form_field>
+            <Form_field label="Goal weight (lbs)" optional>
               <input
                 type="number"
                 step="0.1"
@@ -1137,10 +1137,10 @@ function Profile({ onNavigate }) {
                 value={profileForm.goal_weight_lbs}
                 onChange={(e) => handleGoalWeightLbsChange(e.target.value)}
               />
-            </FormField>
+            </Form_field>
           </div>
 
-          <FormField
+          <Form_field
             label="Gender"
             error={profileFieldErrors.gender}
             state={profileFieldStates.gender}
@@ -1165,8 +1165,8 @@ function Profile({ onNavigate }) {
                 </option>
               ))}
             </select>
-          </FormField>
-          <FormField
+          </Form_field>
+          <Form_field
             label="Activity Level"
             error={profileFieldErrors.activity_level}
             state={profileFieldStates.activity_level}
@@ -1197,7 +1197,7 @@ function Profile({ onNavigate }) {
                 </option>
               ))}
             </select>
-          </FormField>
+          </Form_field>
 
           <p className="profile__form-hint">
             Enter height in centimeters or feet and inches. Weight fields follow
@@ -1220,11 +1220,11 @@ function Profile({ onNavigate }) {
             </button>
           </div>
         </form>
-      </SheetModal>
+      </Sheet_modal>
 
       {/* Delete Confirmation Modal */}
       {Delete_target && (
-        <ConfirmModal
+        <Confirm_modal
           open={Delete_modal.open}
           closing={Delete_modal.closing}
           onClose={Close_delete_modal}
@@ -1239,7 +1239,7 @@ function Profile({ onNavigate }) {
 
       {/* Duplicate Date Confirmation */}
       {Duplicate_date_confirm && (
-        <SheetModal
+        <Sheet_modal
           open={!!Duplicate_date_confirm}
           closing={false}
           onClose={closeDuplicateConfirm}
@@ -1293,7 +1293,7 @@ function Profile({ onNavigate }) {
               {Saving ? "Updating…" : "Update entry"}
             </button>
           </div>
-        </SheetModal>
+        </Sheet_modal>
       )}
 
       <FAB
@@ -1304,7 +1304,7 @@ function Profile({ onNavigate }) {
       />
 
       {/* Delete Account Confirmation */}
-      <ConfirmModal
+      <Confirm_modal
         open={deleteAccountModal.open}
         closing={deleteAccountModal.closing}
         onClose={() => deleteAccountModal.close_modal()}

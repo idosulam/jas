@@ -1,6 +1,6 @@
 import { useMemo } from "react";
-import SheetModal from "../../../Components/UI/Modals/Sheet_modal";
-import FormField from "../../UI/Form/Form_field.jsx";
+import Sheet_modal from "../../../Components/UI/Modals/Sheet_modal";
+import Form_field from "../../UI/Form/Form_field.jsx";
 import {
   Parse_time_to_minutes,
   Minutes_to_time,
@@ -9,7 +9,7 @@ import { Format_money } from "../../../Lib/format";
 import { PAY_TYPES, calcPay } from "./Shift_utils";
 
 /**
- * Add / Edit shift form inside a SheetModal.
+ * Add / Edit shift form inside a Sheet_modal.
  *
  * Props:
  *   open, closing, onClose          – modal visibility
@@ -27,7 +27,7 @@ import { PAY_TYPES, calcPay } from "./Shift_utils";
  *   Deactivated_slugs                – Set of deactivated workplace slugs
  *   Is_form_valid                     – boolean
  */
-export default function ShiftForm({
+export default function Shift_form({
   open,
   closing,
   onClose,
@@ -61,14 +61,14 @@ export default function ShiftForm({
   }, [form.start_time, form.hours, form.end_time]);
 
   return (
-    <SheetModal
+    <Sheet_modal
       open={open}
       closing={closing}
       onClose={onClose}
       title={Editing_shift ? "Edit shift" : "Add shift"}
     >
       <form className="shifts__form" onSubmit={onSubmit}>
-        <FormField
+        <Form_field
           label="Place"
           error={Field_errors.place}
           state={Field_states.place}
@@ -87,7 +87,7 @@ export default function ShiftForm({
               </option>
             ))}
           </select>
-        </FormField>
+        </Form_field>
 
         <div
           className="shifts__pay-toggle"
@@ -107,7 +107,7 @@ export default function ShiftForm({
           ))}
         </div>
 
-        <FormField
+        <Form_field
           label="Date"
           error={Field_errors.shift_date}
           state={Field_states.shift_date}
@@ -123,10 +123,10 @@ export default function ShiftForm({
             onBlur={() => onFieldBlur("shift_date")}
             required
           />
-        </FormField>
+        </Form_field>
 
         <div className="form-time-row">
-          <FormField
+          <Form_field
             label="Start time"
             error={Field_errors.start_time}
             state={Field_states.start_time}
@@ -139,8 +139,8 @@ export default function ShiftForm({
               onChange={(e) => onTimeChange("start_time", e.target.value)}
               onBlur={() => onFieldBlur("start_time")}
             />
-          </FormField>
-          <FormField
+          </Form_field>
+          <Form_field
             label="End time"
             error={Field_errors.end_time}
             state={Field_states.end_time}
@@ -153,7 +153,7 @@ export default function ShiftForm({
               onChange={(e) => onTimeChange("end_time", e.target.value)}
               onBlur={() => onFieldBlur("end_time")}
             />
-          </FormField>
+          </Form_field>
         </div>
 
         {endHint && (
@@ -162,7 +162,7 @@ export default function ShiftForm({
           </p>
         )}
 
-        <FormField
+        <Form_field
           label="Hours"
           error={Field_errors.hours}
           state={Field_states.hours}
@@ -179,9 +179,9 @@ export default function ShiftForm({
             onBlur={() => onFieldBlur("hours")}
             required
           />
-        </FormField>
+        </Form_field>
 
-        <FormField
+        <Form_field
           label="Tips"
           error={Field_errors.tips}
           state={Field_states.tips}
@@ -198,9 +198,9 @@ export default function ShiftForm({
             onChange={(e) => Set_form({ ...form, tips: e.target.value })}
             onBlur={() => onFieldBlur("tips")}
           />
-        </FormField>
+        </Form_field>
 
-        <FormField
+        <Form_field
           label="Notes"
           optional
           char_count={form.notes.length}
@@ -212,7 +212,7 @@ export default function ShiftForm({
             maxLength={500}
             onChange={(e) => Set_form({ ...form, notes: e.target.value })}
           />
-        </FormField>
+        </Form_field>
 
         {form.hours && (
           <p className="shifts__preview shifts__preview--pop">
@@ -274,6 +274,6 @@ export default function ShiftForm({
           </button>
         </div>
       </form>
-    </SheetModal>
+    </Sheet_modal>
   );
 }

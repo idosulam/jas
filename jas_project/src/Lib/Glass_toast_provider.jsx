@@ -17,7 +17,7 @@ function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
 }
 
-function GlassToastCard({ toast, onPause, onResume, onDismiss }) {
+function Glass_toast_card({ toast, onPause, onResume, onDismiss }) {
   const Drag_state = useRef({ active: false, start_x: 0, Offset_x: 0 });
   const [Offset_x, Set_offset_x] = useState(0);
   const [dragging, Set_dragging] = useState(false);
@@ -105,7 +105,7 @@ function GlassToastCard({ toast, onPause, onResume, onDismiss }) {
   );
 }
 
-export function ToastProvider({ children }) {
+export function Toast_provider({ children }) {
   const [toasts, Set_toasts] = useState([]);
   const Last_tick_ref = useRef(Date.now());
 
@@ -205,7 +205,7 @@ export function ToastProvider({ children }) {
         aria-atomic="true"
       >
         {toasts.map((toast) => (
-          <GlassToastCard
+          <Glass_toast_card
             key={toast.id}
             toast={toast}
             onPause={pause}
@@ -221,7 +221,7 @@ export function ToastProvider({ children }) {
 export function Use_glass_toast() {
   const value = useContext(toast_context);
   if (!value) {
-    throw new Error("Use_glass_toast must be used inside ToastProvider.");
+    throw new Error("Use_glass_toast must be used inside Toast_provider.");
   }
   return value;
 }

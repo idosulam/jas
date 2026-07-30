@@ -8,14 +8,14 @@ import {
 } from "../../../Lib/Security";
 import { Use_glass_toast } from "../../../Lib/Glass_toast_provider.jsx";
 import { Use_modal, Use_body_scroll_lock } from "../../../Hooks";
-import SheetModal from "../../UI/Modals/Sheet_modal";
-import ConfirmModal from "../../UI/Modals/Confirm_modal";
-import FormField from "../../UI/Form/Form_field.jsx";
-import EmptyState from "../../UI/Empty_state";
+import Sheet_modal from "../../UI/Modals/Sheet_modal";
+import Confirm_modal from "../../UI/Modals/Confirm_modal";
+import Form_field from "../../UI/Form/Form_field.jsx";
+import Empty_state from "../../UI/Empty_state";
 
 import { Format_money } from "../../../Lib/format";
 
-function SavingsGoals({ householdId, user_id, members, hideTitle }) {
+function Savings_goals({ householdId, user_id, members, hideTitle }) {
   const [goals, setGoals] = useState([]);
   const [Loading, Set_loading] = useState(true);
   const [Delete_target, Set_delete_target] = useState(null);
@@ -317,7 +317,7 @@ function SavingsGoals({ householdId, user_id, members, hideTitle }) {
       </div>
 
       {goals.length === 0 ? (
-        <EmptyState
+        <Empty_state
           className="savings-goals__empty-state"
           icon={<span style={{ fontSize: "2rem" }}>🎯</span>}
           title="No savings goals yet"
@@ -445,14 +445,14 @@ function SavingsGoals({ householdId, user_id, members, hideTitle }) {
       )}
 
       {/* Create/Edit Goal Modal */}
-      <SheetModal
+      <Sheet_modal
         open={goalModal.open}
         closing={goalModal.closing}
         onClose={() => goalModal.close_modal()}
         title={editingGoal ? "Edit goal" : "New savings goal"}
       >
         <div className="savings-goals__form">
-          <FormField
+          <Form_field
             label="Goal name"
             error={goalTitleError}
             state={goalTitleState}
@@ -478,8 +478,8 @@ function SavingsGoals({ householdId, user_id, members, hideTitle }) {
               maxLength={60}
               autoFocus
             />
-          </FormField>
-          <FormField
+          </Form_field>
+          <Form_field
             label="Target amount (₪)"
             error={goalAmountError}
             state={goalAmountState}
@@ -508,7 +508,7 @@ function SavingsGoals({ householdId, user_id, members, hideTitle }) {
               }}
               placeholder="5000"
             />
-          </FormField>
+          </Form_field>
           <div className="btn-row">
             <button
               type="button"
@@ -531,10 +531,10 @@ function SavingsGoals({ householdId, user_id, members, hideTitle }) {
             </button>
           </div>
         </div>
-      </SheetModal>
+      </Sheet_modal>
 
       {/* Contribute Modal */}
-      <SheetModal
+      <Sheet_modal
         open={contributeModal.open}
         closing={contributeModal.closing}
         onClose={() => contributeModal.close_modal()}
@@ -578,7 +578,7 @@ function SavingsGoals({ householdId, user_id, members, hideTitle }) {
             );
           })()}
 
-          <FormField
+          <Form_field
             label="Amount (₪)"
             error={contribAmountError}
             state={contribAmountState}
@@ -608,8 +608,8 @@ function SavingsGoals({ householdId, user_id, members, hideTitle }) {
               placeholder="100"
               autoFocus
             />
-          </FormField>
-          <FormField label="Note" optional>
+          </Form_field>
+          <Form_field label="Note" optional>
             <input
               type="text"
               value={Contribute_form.note}
@@ -619,7 +619,7 @@ function SavingsGoals({ householdId, user_id, members, hideTitle }) {
               placeholder="e.g. From my tips this week"
               maxLength={200}
             />
-          </FormField>
+          </Form_field>
           <div className="btn-row">
             <button
               type="button"
@@ -643,10 +643,10 @@ function SavingsGoals({ householdId, user_id, members, hideTitle }) {
             </button>
           </div>
         </div>
-      </SheetModal>
+      </Sheet_modal>
 
       {/* Delete Confirmation */}
-      <ConfirmModal
+      <Confirm_modal
         open={!!Delete_target}
         closing={Delete_modal.closing}
         onClose={() => {
@@ -664,4 +664,4 @@ function SavingsGoals({ householdId, user_id, members, hideTitle }) {
   );
 }
 
-export default SavingsGoals;
+export default Savings_goals;

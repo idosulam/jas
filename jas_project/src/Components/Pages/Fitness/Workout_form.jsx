@@ -1,10 +1,10 @@
 import { useMemo } from "react";
-import SheetModal from "../../../Components/UI/Modals/Sheet_modal";
-import FormField from "../../../Components/UI/Form/Form_field.jsx";
-import ExerciseRow from "./Exercise_row";
-import { calcVolume, formatVolume } from "./Workout_utils";
+import Sheet_modal from "../../../Components/UI/Modals/Sheet_modal";
+import Form_field from "../../../Components/UI/Form/Form_field.jsx";
+import Exercise_row from "./Exercise_row";
+import { Calc_volume, Format_volume } from "./Workout_utils";
 
-export default function WorkoutForm({
+export default function Workout_form({
   open,
   closing,
   onClose,
@@ -26,7 +26,7 @@ export default function WorkoutForm({
   exerciseStates = {},
   onExerciseFieldBlur,
 }) {
-  const volume = useMemo(() => calcVolume(form.exercises), [form.exercises]);
+  const volume = useMemo(() => Calc_volume(form.exercises), [form.exercises]);
 
   const Handle_exercise_change = (index, field, value) => {
     onUpdateExercise(index, field, value);
@@ -37,14 +37,14 @@ export default function WorkoutForm({
   };
 
   return (
-    <SheetModal
+    <Sheet_modal
       open={open}
       closing={closing}
       onClose={onClose}
       title={editingWorkout ? "Edit workout" : "Log workout"}
     >
       <form className="fitness__form" onSubmit={onSubmit}>
-        <FormField
+        <Form_field
           label="Date"
           error={Field_errors.workout_date}
           state={Field_states.workout_date}
@@ -60,9 +60,9 @@ export default function WorkoutForm({
             onBlur={() => onFieldBlur("workout_date")}
             required
           />
-        </FormField>
+        </Form_field>
 
-        <FormField
+        <Form_field
           label="Workout name"
           error={Field_errors.preset_name}
           state={Field_states.preset_name}
@@ -80,7 +80,7 @@ export default function WorkoutForm({
             onBlur={() => onFieldBlur("preset_name")}
             required
           />
-        </FormField>
+        </Form_field>
 
         <div className="fitness__exercises-section">
           <div className="fitness__exercises-header">
@@ -92,7 +92,7 @@ export default function WorkoutForm({
             )}
           </div>
           {form.exercises.map((ex, i) => (
-            <ExerciseRow
+            <Exercise_row
               key={i}
               exercise={ex}
               index={i}
@@ -114,7 +114,7 @@ export default function WorkoutForm({
           </button>
         </div>
 
-        <FormField label="Duration (minutes)" optional>
+        <Form_field label="Duration (minutes)" optional>
           <input
             type="number"
             min="1"
@@ -125,9 +125,9 @@ export default function WorkoutForm({
               Set_form((f) => ({ ...f, duration_minutes: e.target.value }))
             }
           />
-        </FormField>
+        </Form_field>
 
-        <FormField
+        <Form_field
           label="Calories burned"
           error={Field_errors.Calories_burned}
           state={Field_states.Calories_burned}
@@ -146,9 +146,9 @@ export default function WorkoutForm({
             }}
             onBlur={() => onFieldBlur("Calories_burned")}
           />
-        </FormField>
+        </Form_field>
 
-        <FormField
+        <Form_field
           label="Notes"
           optional
           char_count={form.notes.length}
@@ -162,11 +162,11 @@ export default function WorkoutForm({
               Set_form((f) => ({ ...f, notes: e.target.value }))
             }
           />
-        </FormField>
+        </Form_field>
 
         {volume > 0 && (
           <p className="fitness__preview">
-            Total volume: <strong>{formatVolume(volume)} kg</strong>
+            Total volume: <strong>{Format_volume(volume)} kg</strong>
           </p>
         )}
 
@@ -197,6 +197,6 @@ export default function WorkoutForm({
           </button>
         </div>
       </form>
-    </SheetModal>
+    </Sheet_modal>
   );
 }

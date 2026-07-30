@@ -11,21 +11,21 @@ import {
 import { Use_body_scroll_lock, Use_modal } from "../../../Hooks";
 import { Use_glass_toast } from "../../../Lib/Glass_toast_provider.jsx";
 import {
-  calcBMR,
-  calcTDEE,
-  calcMacroTargets,
+  Calc_bmr,
+  Calc_tdee,
+  Calc_macro_targets,
   ACTIVITY_LEVELS,
   GENDER_OPTIONS,
 } from "./Macro_calculator";
 
-import SheetModal from "../../../Components/UI/Modals/Sheet_modal";
-import ConfirmModal from "../../../Components/UI/Modals/Confirm_modal";
-import FormField from "../../../Components/UI/Form/Form_field.jsx";
-import GlassCard from "../../../Components/UI/Glass_card";
+import Sheet_modal from "../../../Components/UI/Modals/Sheet_modal";
+import Confirm_modal from "../../../Components/UI/Modals/Confirm_modal";
+import Form_field from "../../../Components/UI/Form/Form_field.jsx";
+import Glass_card from "../../../Components/UI/Glass_card";
 
-import MacroProgressBar from "./Macro_progress_bar";
-import DietEntryForm from "./Diet_entry_form";
-import MealGroup from "./Meal_group";
+import Macro_progress_bar from "./Macro_progress_bar";
+import Diet_entry_form from "./Diet_entry_form";
+import Meal_group from "./Meal_group";
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -38,7 +38,7 @@ const MEAL_TYPES = [
   { id: "snack", label: "Snack" },
 ];
 
-function emptyEntryForm() {
+function Empty_entry_form() {
   return {
     Entry_date: new Date().toISOString().slice(0, 10),
     meal_type: "breakfast",
@@ -51,7 +51,7 @@ function emptyEntryForm() {
   };
 }
 
-function DietTracker({ profileData }) {
+function Diet_tracker({ profileData }) {
   const user_id = Use_user_id();
   const today = new Date().toISOString().slice(0, 10);
   const [Selected_date, Set_selected_date] = useState(today);
@@ -60,7 +60,7 @@ function DietTracker({ profileData }) {
   const [Calories_burned, Set_calories_burned] = useState(0);
   const [Loading, Set_loading] = useState(true);
   const [error, Set_error] = useState(null);
-  const [form, Set_form] = useState(emptyEntryForm());
+  const [form, Set_form] = useState(Empty_entry_form());
   const [editingEntry, setEditingEntry] = useState(null);
   const [Saving, Set_saving] = useState(false);
   const [Delete_target, Set_delete_target] = useState(null);
@@ -101,9 +101,9 @@ function DietTracker({ profileData }) {
     ? rawActivityLevel
     : "moderate";
 
-  const bmr = calcBMR(Weight_kg, Height_cm, age, gender);
-  const tdee = calcTDEE(bmr, activityLevel);
-  const macroTargets = calcMacroTargets(Weight_kg, tdee);
+  const bmr = Calc_bmr(Weight_kg, Height_cm, age, gender);
+  const tdee = Calc_tdee(bmr, activityLevel);
+  const macroTargets = Calc_macro_targets(Weight_kg, tdee);
 
   // ── Fetch entries for selected date ──
   const fetchEntries = useCallback(async () => {
@@ -114,14 +114,14 @@ function DietTracker({ profileData }) {
     const d = new Date(`${Selected_date}T12:00:00`);
     const range_start =
       View_mode === "week"
-        ? start_of_week(d)
+        ? Start_of_week(d)
         : new Date(d.getFullYear(), d.getMonth(), 1);
     const range_end =
       View_mode === "week"
-        ? add_days(range_start, 6)
+        ? Add_days(range_start, 6)
         : new Date(d.getFullYear(), d.getMonth() + 1, 0);
-    const startDateKey = to_date_key(range_start);
-    const endDateKey = to_date_key(range_end);
+    const startDateKey = To_date_key(range_start);
+    const endDateKey = To_date_key(range_end);
 
     try {
       const supabase = Get_supabase_client();
@@ -238,20 +238,20 @@ function DietTracker({ profileData }) {
   }, [dayEntries]);
 
   // ── Date navigation ──
-  const start_of_week = (date) => {
+  const Start_of_week = (date) => {
     const d = new Date(date);
     d.setDate(d.getDate() - d.getDay());
     d.setHours(0, 0, 0, 0);
     return d;
   };
 
-  const add_days = (date, n) => {
+  const Add_days = (date, n) => {
     const d = new Date(date);
     d.setDate(d.getDate() + n);
     return d;
   };
 
-  const to_date_key = (date) => date.toISOString().slice(0, 10);
+  const To_date_key = (date) => date.toISOString().slice(0, 10);
 
   const changeDate = (offset) => {
     const d = new Date(`${Selected_date}T12:00:00`);
@@ -277,14 +277,14 @@ function DietTracker({ profileData }) {
 
   const Week_days = useMemo(() => {
     const d = new Date(`${Selected_date}T12:00:00`);
-    const start = start_of_week(d);
-    return Array.from({ length: 7 }, (_, i) => add_days(start, i));
+    const start = Start_of_week(d);
+    return Array.from({ length: 7 }, (_, i) => Add_days(start, i));
   }, [Selected_date]);
 
   const Month_days = useMemo(() => {
     const d = new Date(`${Selected_date}T12:00:00`);
-    const start = start_of_week(new Date(d.getFullYear(), d.getMonth(), 1));
-    return Array.from({ length: 42 }, (_, i) => add_days(start, i));
+    const start = Start_of_week(new Date(d.getFullYear(), d.getMonth(), 1));
+    return Array.from({ length: 42 }, (_, i) => Add_days(start, i));
   }, [Selected_date]);
 
   const Visible_days = View_mode === "week" ? Week_days : Month_days;
@@ -293,7 +293,7 @@ function DietTracker({ profileData }) {
   const Open_add_modal = (mealType = "breakfast") => {
     setEditingEntry(null);
     Set_form({
-      ...emptyEntryForm(),
+      ...Empty_entry_form(),
       Entry_date: Selected_date,
       meal_type: mealType,
     });
@@ -323,7 +323,7 @@ function DietTracker({ profileData }) {
     Form_modal.close_modal();
     setTimeout(() => {
       setEditingEntry(null);
-      Set_form(emptyEntryForm());
+      Set_form(Empty_entry_form());
       Set_field_states({});
     }, MODAL_EXIT_MS);
   };
@@ -612,35 +612,35 @@ function DietTracker({ profileData }) {
               </span>
             </div>
             <div className="fitness__macro-bars">
-              <MacroProgressBar
+              <Macro_progress_bar
                 label="Calories"
                 current={dailyTotals.calories}
                 target={macroTargets.calories + Calories_burned}
                 unit=" kcal"
                 color="#f59e0b"
               />
-              <MacroProgressBar
+              <Macro_progress_bar
                 label="Protein"
                 current={dailyTotals.protein}
                 target={macroTargets.protein}
                 unit="g"
                 color="#34d399"
               />
-              <MacroProgressBar
+              <Macro_progress_bar
                 label="Carbs"
                 current={dailyTotals.carbs}
                 target={macroTargets.carbs}
                 unit="g"
                 color="#60a5fa"
               />
-              <MacroProgressBar
+              <Macro_progress_bar
                 label="Fats"
                 current={dailyTotals.fats}
                 target={macroTargets.fats}
                 unit="g"
                 color="#f472b6"
               />
-              <MacroProgressBar
+              <Macro_progress_bar
                 label="Fiber"
                 current={dailyTotals.fiber}
                 target={macroTargets.fiber}
@@ -701,7 +701,7 @@ function DietTracker({ profileData }) {
         aria-label={View_mode === "week" ? "Week days" : "Month days"}
       >
         {Visible_days.map((day) => {
-          const key = to_date_key(day);
+          const key = To_date_key(day);
           const isSelected = key === Selected_date;
           const isDayToday = key === today;
           const hasEntries = entries.some((e) => e.Entry_date === key);
@@ -755,27 +755,27 @@ function DietTracker({ profileData }) {
 
       {/* Daily summary */}
       <div className="fitness__summary animate-in animate-in--3" key={Selected_date}>
-        <GlassCard
+        <Glass_card
           value={Math.round(dailyTotals.calories).toString()}
           label="Calories"
           className="fitness__stat fitness__stat--diet"
         />
-        <GlassCard
+        <Glass_card
           value={`${Math.round(dailyTotals.protein)}g`}
           label="Protein"
           className="fitness__stat fitness__stat--diet"
         />
-        <GlassCard
+        <Glass_card
           value={`${Math.round(dailyTotals.carbs)}g`}
           label="Carbs"
           className="fitness__stat fitness__stat--diet"
         />
-        <GlassCard
+        <Glass_card
           value={`${Math.round(dailyTotals.fats)}g`}
           label="Fats"
           className="fitness__stat fitness__stat--diet"
         />
-        <GlassCard
+        <Glass_card
           value={Calories_burned > 0 ? Calories_burned.toString() : "—"}
           label="Burned"
           className="fitness__stat fitness__stat--workout"
@@ -824,7 +824,7 @@ function DietTracker({ profileData }) {
       {/* Food log grouped by meal */}
       <div className="fitness__meals animate-in animate-in--4">
         {MEAL_TYPES.map((meal) => (
-          <MealGroup
+          <Meal_group
             key={meal.id}
             meal={meal}
             entries={groupedEntries[meal.id]}
@@ -838,7 +838,7 @@ function DietTracker({ profileData }) {
       </div>
 
       {/* Add/Edit Entry Modal */}
-      <DietEntryForm
+      <Diet_entry_form
         open={Form_modal.open}
         closing={Form_modal.closing}
         onClose={Close_form_modal}
@@ -856,7 +856,7 @@ function DietTracker({ profileData }) {
       />
 
       {/* Preset Modal */}
-      <SheetModal
+      <Sheet_modal
         open={Preset_modal.open}
         closing={Preset_modal.closing}
         onClose={Close_preset_modal}
@@ -866,7 +866,7 @@ function DietTracker({ profileData }) {
           Save common meals for quick logging.
         </p>
         <div className="fitness__form">
-          <FormField label="Preset name">
+          <Form_field label="Preset name">
             <input
               type="text"
               value={Preset_form.name}
@@ -877,8 +877,8 @@ function DietTracker({ profileData }) {
               maxLength={60}
               autoFocus
             />
-          </FormField>
-          <FormField label="Meal type">
+          </Form_field>
+          <Form_field label="Meal type">
             <select
               value={Preset_form.meal_type}
               onChange={(e) =>
@@ -891,8 +891,8 @@ function DietTracker({ profileData }) {
                 </option>
               ))}
             </select>
-          </FormField>
-          <FormField label="Calories (kcal)">
+          </Form_field>
+          <Form_field label="Calories (kcal)">
             <input
               type="number"
               min="0"
@@ -904,9 +904,9 @@ function DietTracker({ profileData }) {
                 Set_preset_form((f) => ({ ...f, calories: e.target.value }))
               }
             />
-          </FormField>
+          </Form_field>
           <div className="fitness__macro-inputs">
-            <FormField label="Protein (g)">
+            <Form_field label="Protein (g)">
               <input
                 type="number"
                 min="0"
@@ -918,8 +918,8 @@ function DietTracker({ profileData }) {
                   Set_preset_form((f) => ({ ...f, protein_g: e.target.value }))
                 }
               />
-            </FormField>
-            <FormField label="Carbs (g)">
+            </Form_field>
+            <Form_field label="Carbs (g)">
               <input
                 type="number"
                 min="0"
@@ -931,8 +931,8 @@ function DietTracker({ profileData }) {
                   Set_preset_form((f) => ({ ...f, carbs_g: e.target.value }))
                 }
               />
-            </FormField>
-            <FormField label="Fats (g)">
+            </Form_field>
+            <Form_field label="Fats (g)">
               <input
                 type="number"
                 min="0"
@@ -944,9 +944,9 @@ function DietTracker({ profileData }) {
                   Set_preset_form((f) => ({ ...f, fats_g: e.target.value }))
                 }
               />
-            </FormField>
+            </Form_field>
           </div>
-          <FormField label="Fiber (g)" optional>
+          <Form_field label="Fiber (g)" optional>
             <input
               type="number"
               min="0"
@@ -958,7 +958,7 @@ function DietTracker({ profileData }) {
                 Set_preset_form((f) => ({ ...f, fiber_g: e.target.value }))
               }
             />
-          </FormField>
+          </Form_field>
           <div className="btn-row">
             {Editing_preset && (
               <button
@@ -989,10 +989,10 @@ function DietTracker({ profileData }) {
             </button>
           </div>
         </div>
-      </SheetModal>
+      </Sheet_modal>
 
       {/* Delete Confirmation */}
-      <ConfirmModal
+      <Confirm_modal
         open={!!Delete_target}
         closing={Delete_modal.closing}
         onClose={Close_delete_modal}
@@ -1024,4 +1024,4 @@ function DietTracker({ profileData }) {
   );
 }
 
-export default DietTracker;
+export default Diet_tracker;

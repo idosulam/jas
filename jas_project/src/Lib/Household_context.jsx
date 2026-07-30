@@ -10,7 +10,7 @@ const household_context = createContext({
   refresh: () => {},
 });
 
-export function HouseholdProvider({ children }) {
+export function Household_provider({ children }) {
   const user_id = Use_user_id();
   const [household, setHousehold] = useState(null);
   const [Loading, Set_loading] = useState(false);

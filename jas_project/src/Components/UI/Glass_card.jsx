@@ -1,8 +1,8 @@
 /**
- * GlassCard — Stat card with value and label.
+ * Glass_card — Stat card with value and label.
  * Used in summary rows across all pages.
  */
-export default function GlassCard({
+export default function Glass_card({
   value,
   label,
   className = "",

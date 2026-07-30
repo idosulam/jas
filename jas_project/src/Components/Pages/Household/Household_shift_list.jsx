@@ -1,7 +1,7 @@
-import EarningsChart from "./Earnings_chart";
+import Earnings_chart from "./Earnings_chart";
 import { Format_money } from "../../../Lib/Format.js";
 
-function HouseholdShiftList({
+function Household_shift_list({
   todayShifts,
   Workplaces,
   Chart_data,
@@ -42,7 +42,7 @@ function HouseholdShiftList({
       {/* Earnings Chart */}
       <div className="household__chart-section">
         <h3 className="household__section-title">Daily Earnings</h3>
-        <EarningsChart
+        <Earnings_chart
           data={Chart_data}
           members={members}
           month={month}
@@ -53,4 +53,4 @@ function HouseholdShiftList({
   );
 }
 
-export default HouseholdShiftList;
+export default Household_shift_list;

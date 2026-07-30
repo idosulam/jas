@@ -1,10 +1,10 @@
 import { motion } from "framer-motion";
 
 /**
- * ShakeField — Wrapper that shakes children when trigger count changes.
+ * Shake_field — Wrapper that shakes children when trigger count changes.
  * @param {{ trigger: number, children: React.ReactNode, className?: string }} props
  */
-export default function ShakeField({ trigger, children, className, ...rest }) {
+export default function Shake_field({ trigger, children, className, ...rest }) {
   return (
     <motion.div
       key={"shake-" + trigger}

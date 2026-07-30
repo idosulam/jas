@@ -1,7 +1,7 @@
-import { SheetModal, FormField } from "../../../components";
+import { Sheet_modal, Form_field } from "../../../components";
 import { Use_swipe_down_to_close } from "../../../Hooks";
 
-export default function WeightForm({
+export default function Weight_form({
   weightModal,
   weightForm,
   setWeightForm,
@@ -25,7 +25,7 @@ export default function WeightForm({
   );
 
   return (
-    <SheetModal
+    <Sheet_modal
       open={weightModal.open}
       closing={weightModal.closing}
       onClose={onClose}
@@ -35,7 +35,7 @@ export default function WeightForm({
       swipe_style={weightSwipe.style}
     >
       <form className="profile__form" onSubmit={onSubmit}>
-        <FormField
+        <Form_field
           label="Date"
           error={weightFieldErrors.Entry_date}
           state={weightFieldStates.Entry_date}
@@ -58,9 +58,9 @@ export default function WeightForm({
             onBlur={() => onFieldBlur("Entry_date")}
             required
           />
-        </FormField>
+        </Form_field>
         <div className="profile__weight-row">
-          <FormField
+          <Form_field
             label="Weight (kg)"
             error={weightFieldErrors.Weight_kg}
             state={weightFieldStates.Weight_kg}
@@ -83,8 +83,8 @@ export default function WeightForm({
               }}
               onBlur={() => onFieldBlur("Weight_kg")}
             />
-          </FormField>
-          <FormField
+          </Form_field>
+          <Form_field
             label="Weight (lbs)"
             error={weightFieldErrors.weight_lbs}
             state={weightFieldStates.weight_lbs}
@@ -107,9 +107,9 @@ export default function WeightForm({
               }}
               onBlur={() => onFieldBlur("weight_lbs")}
             />
-          </FormField>
+          </Form_field>
         </div>
-        <FormField label="Notes" optional>
+        <Form_field label="Notes" optional>
           <input
             type="text"
             placeholder="Post-leg day, morning fasted…"
@@ -118,7 +118,7 @@ export default function WeightForm({
               setWeightForm((f) => ({ ...f, notes: e.target.value }))
             }
           />
-        </FormField>
+        </Form_field>
         <div className="btn-row">
           <button
             type="button"
@@ -136,6 +136,6 @@ export default function WeightForm({
           </button>
         </div>
       </form>
-    </SheetModal>
+    </Sheet_modal>
   );
 }

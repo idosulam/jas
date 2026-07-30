@@ -12,12 +12,12 @@ import {
 import { Use_body_scroll_lock, Use_modal } from "../../../Hooks";
 import { Use_glass_toast } from "../../../Lib/Glass_toast_provider.jsx";
 
-import SheetModal from "../../../Components/UI/Modals/Sheet_modal";
-import ConfirmModal from "../../../Components/UI/Modals/Confirm_modal";
-import FormField from "../../../Components/UI/Form/Form_field.jsx";
-import EmptyState from "../../../Components/UI/Empty_state";
-import LoadingSkeleton from "../../../Components/UI/Loading_skeleton";
-import GlassCard from "../../../Components/UI/Glass_card";
+import Sheet_modal from "../../../Components/UI/Modals/Sheet_modal";
+import Confirm_modal from "../../../Components/UI/Modals/Confirm_modal";
+import Form_field from "../../../Components/UI/Form/Form_field.jsx";
+import Empty_state from "../../../Components/UI/Empty_state";
+import Loading_skeleton from "../../../Components/UI/Loading_skeleton";
+import Glass_card from "../../../Components/UI/Glass_card";
 import FAB from "../../../Components/UI/fab";
 
 import { Kg_to_lbs } from "../../../Lib/weight";
@@ -25,16 +25,16 @@ import { Kg_to_lbs } from "../../../Lib/weight";
 import {
   MODAL_EXIT_MS,
   WEEKDAYS,
-  emptyExercise,
+  Empty_exercise,
   Empty_form,
-  calcVolume,
-  formatVolume,
+  Calc_volume,
+  Format_volume,
 } from "./Workout_utils";
-import ExerciseRow from "./Exercise_row";
-import WorkoutCard from "./Workout_card";
-import WorkoutForm from "./Workout_form";
+import Exercise_row from "./Exercise_row";
+import Workout_card from "./Workout_card";
+import Workout_form from "./Workout_form";
 
-function WorkoutLogger() {
+function Workout_logger() {
   const user_id = Use_user_id();
   const now = new Date();
   const [Selected_date, Set_selected_date] = useState(now);
@@ -55,7 +55,7 @@ function WorkoutLogger() {
   const [Editing_preset, Set_editing_preset] = useState(null);
   const [Preset_form, Set_preset_form] = useState({
     name: "",
-    exercises: [emptyExercise()],
+    exercises: [Empty_exercise()],
   });
   const [presetFieldErrors, setPresetFieldErrors] = useState({});
   const [presetFieldStates, setPresetFieldStates] = useState({});
@@ -71,33 +71,33 @@ function WorkoutLogger() {
   const { success: Toast_success, error: Toast_error } = Use_glass_toast();
 
   // Week helpers
-  const start_of_week = (date) => {
+  const Start_of_week = (date) => {
     const d = new Date(date);
     d.setDate(d.getDate() - d.getDay());
     d.setHours(0, 0, 0, 0);
     return d;
   };
 
-  const add_days = (date, n) => {
+  const Add_days = (date, n) => {
     const d = new Date(date);
     d.setDate(d.getDate() + n);
     return d;
   };
 
-  const to_date_key = (date) => date.toISOString().slice(0, 10);
+  const To_date_key = (date) => date.toISOString().slice(0, 10);
 
-  const Selected_key = to_date_key(Selected_date);
-  const Is_today = Selected_key === to_date_key(now);
+  const Selected_key = To_date_key(Selected_date);
+  const Is_today = Selected_key === To_date_key(now);
 
   const Week_days = useMemo(() => {
-    const start = start_of_week(Selected_date);
-    return Array.from({ length: 7 }, (_, i) => add_days(start, i));
+    const start = Start_of_week(Selected_date);
+    return Array.from({ length: 7 }, (_, i) => Add_days(start, i));
   }, [Selected_date]);
 
   const Month_days = useMemo(() => {
     const d = new Date(Selected_date);
-    const start = start_of_week(new Date(d.getFullYear(), d.getMonth(), 1));
-    return Array.from({ length: 42 }, (_, i) => add_days(start, i));
+    const start = Start_of_week(new Date(d.getFullYear(), d.getMonth(), 1));
+    return Array.from({ length: 42 }, (_, i) => Add_days(start, i));
   }, [Selected_date]);
 
   const Visible_days = View_mode === "week" ? Week_days : Month_days;
@@ -119,14 +119,14 @@ function WorkoutLogger() {
     const d = new Date(Selected_date);
     const range_start =
       View_mode === "week"
-        ? start_of_week(d)
+        ? Start_of_week(d)
         : new Date(d.getFullYear(), d.getMonth(), 1);
     const range_end =
       View_mode === "week"
-        ? add_days(range_start, 6)
+        ? Add_days(range_start, 6)
         : new Date(d.getFullYear(), d.getMonth() + 1, 0);
-    const startDate = to_date_key(range_start);
-    const endDate = to_date_key(range_end);
+    const startDate = To_date_key(range_start);
+    const endDate = To_date_key(range_end);
 
     try {
       const supabase = Get_supabase_client();
@@ -199,7 +199,7 @@ function WorkoutLogger() {
       (acc, w) => {
         const exercises = Array.isArray(w.exercises) ? w.exercises : [];
         acc.workouts += 1;
-        acc.volume += calcVolume(exercises);
+        acc.volume += Calc_volume(exercises);
         acc.duration += parseInt(w.duration_minutes, 10) || 0;
         acc.calories += parseInt(w.Calories_burned, 10) || 0;
         return acc;
@@ -213,7 +213,7 @@ function WorkoutLogger() {
     if (form.exercises.length >= 20) return;
     Set_form((f) => ({
       ...f,
-      exercises: [...f.exercises, emptyExercise()],
+      exercises: [...f.exercises, Empty_exercise()],
     }));
   };
 
@@ -276,7 +276,7 @@ function WorkoutLogger() {
             ...ex,
             weight_lbs: ex.weight ? Kg_to_lbs(ex.weight) : "",
           }))
-        : [emptyExercise()];
+        : [Empty_exercise()];
     Set_form({
       workout_date: workout.workout_date,
       preset_name: workout.preset_name ?? "",
@@ -310,11 +310,11 @@ function WorkoutLogger() {
       const exercises =
         Array.isArray(preset.exercises) && preset.exercises.length > 0
           ? preset.exercises
-          : [emptyExercise()];
+          : [Empty_exercise()];
       Set_preset_form({ name: preset.name, exercises });
     } else {
       Set_editing_preset(null);
-      Set_preset_form({ name: "", exercises: [emptyExercise()] });
+      Set_preset_form({ name: "", exercises: [Empty_exercise()] });
     }
     setPresetFieldErrors({});
     setPresetFieldStates({});
@@ -333,7 +333,7 @@ function WorkoutLogger() {
     if (Preset_form.exercises.length >= 20) return;
     Set_preset_form((f) => ({
       ...f,
-      exercises: [...f.exercises, emptyExercise()],
+      exercises: [...f.exercises, Empty_exercise()],
     }));
   };
 
@@ -507,7 +507,7 @@ function WorkoutLogger() {
             name: Sanitize_text(ex.name, 80),
             weight_lbs: ex.weight ? Kg_to_lbs(ex.weight) : "",
           }))
-        : [emptyExercise()];
+        : [Empty_exercise()];
     setEditingWorkout(null);
     Set_form({
       workout_date: new Date().toISOString().slice(0, 10),
@@ -777,7 +777,7 @@ function WorkoutLogger() {
           <button
             type="button"
             className="fitness__date-btn"
-            onClick={() => Set_selected_date((d) => add_days(d, View_mode === "week" ? -7 : -30))}
+            onClick={() => Set_selected_date((d) => Add_days(d, View_mode === "week" ? -7 : -30))}
             aria-label="Previous day"
           >
             ‹
@@ -786,7 +786,7 @@ function WorkoutLogger() {
           <button
             type="button"
             className="fitness__date-btn"
-            onClick={() => Set_selected_date((d) => add_days(d, View_mode === "week" ? 7 : 30))}
+            onClick={() => Set_selected_date((d) => Add_days(d, View_mode === "week" ? 7 : 30))}
             aria-label="Next day"
           >
             ›
@@ -810,9 +810,9 @@ function WorkoutLogger() {
         aria-label={View_mode === "week" ? "Week days" : "Month days"}
       >
         {Visible_days.map((day) => {
-          const key = to_date_key(day);
+          const key = To_date_key(day);
           const isSelected = key === Selected_key;
-          const isDayToday = key === to_date_key(now);
+          const isDayToday = key === To_date_key(now);
           const hasWorkout = workouts.some((w) => w.workout_date === key);
           const isInCurrentMonth =
             View_mode === "month"
@@ -868,22 +868,22 @@ function WorkoutLogger() {
         className="fitness__summary animate-in animate-in--2"
         key={Selected_key}
       >
-        <GlassCard
+        <Glass_card
           value={String(totals.workouts)}
           label="Workouts"
           className="fitness__stat fitness__stat--workout"
         />
-        <GlassCard
-          value={formatVolume(totals.volume)}
+        <Glass_card
+          value={Format_volume(totals.volume)}
           label="Volume (kg)"
           className="fitness__stat fitness__stat--workout"
         />
-        <GlassCard
+        <Glass_card
           value={totals.duration > 0 ? `${totals.duration}m` : "—"}
           label="Duration"
           className="fitness__stat fitness__stat--workout"
         />
-        <GlassCard
+        <Glass_card
           value={totals.calories > 0 ? `${totals.calories}` : "—"}
           label="Cal Burned"
           className="fitness__stat fitness__stat--workout"
@@ -942,10 +942,10 @@ function WorkoutLogger() {
       {/* Workout list */}
       {Loading ? (
         <div className="fitness__list">
-          <LoadingSkeleton count={3} height="5.5rem" />
+          <Loading_skeleton count={3} height="5.5rem" />
         </div>
       ) : workouts.length === 0 ? (
-        <EmptyState
+        <Empty_state
           className="fitness__empty"
           icon={
             <svg
@@ -967,7 +967,7 @@ function WorkoutLogger() {
       ) : (
         <ul className="fitness__list" key={`list-${Selected_key}`}>
           {workouts.map((workout, index) => (
-            <WorkoutCard
+            <Workout_card
               key={workout.id}
               workout={workout}
               index={index}
@@ -984,7 +984,7 @@ function WorkoutLogger() {
       )}
 
       {/* Add/Edit Workout Modal */}
-      <WorkoutForm
+      <Workout_form
         open={Form_modal.open}
         closing={Form_modal.closing}
         onClose={Close_form_modal}
@@ -1008,7 +1008,7 @@ function WorkoutLogger() {
       />
 
       {/* Preset Modal */}
-      <SheetModal
+      <Sheet_modal
         open={Preset_modal.open}
         closing={Preset_modal.closing}
         onClose={Close_preset_modal}
@@ -1018,7 +1018,7 @@ function WorkoutLogger() {
           Presets let you quick-add common workouts with one tap.
         </p>
         <div className="fitness__form">
-          <FormField
+          <Form_field
             label="Preset name"
             error={presetFieldErrors.preset_name}
             state={presetFieldStates.preset_name}
@@ -1047,12 +1047,12 @@ function WorkoutLogger() {
               maxLength={40}
               autoFocus
             />
-          </FormField>
+          </Form_field>
 
           <div className="fitness__exercises-section">
             <span className="fitness__exercises-label">Exercises</span>
             {Preset_form.exercises.map((ex, i) => (
-              <ExerciseRow
+              <Exercise_row
                 key={i}
                 exercise={ex}
                 index={i}
@@ -1104,10 +1104,10 @@ function WorkoutLogger() {
             </button>
           </div>
         </div>
-      </SheetModal>
+      </Sheet_modal>
 
       {/* Delete Confirmation */}
-      <ConfirmModal
+      <Confirm_modal
         open={!!Delete_target}
         closing={Delete_modal.closing}
         onClose={Close_delete_modal}
@@ -1155,4 +1155,4 @@ function WorkoutLogger() {
   );
 }
 
-export default WorkoutLogger;
+export default Workout_logger;

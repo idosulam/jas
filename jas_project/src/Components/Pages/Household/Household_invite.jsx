@@ -3,11 +3,11 @@ import { Haptic_error } from "../../../Lib/Security";
 import { Get_user_facing_error } from "../../../Lib/Security";
 import { Get_supabase_client } from "../../../Lib/Superbase";
 import { Use_glass_toast } from "../../../Lib/Glass_toast_provider.jsx";
-import SheetModal from "../../UI/Modals/Sheet_modal";
-import FormField from "../../UI/Form/Form_field.jsx";
-import EmptyState from "../../UI/Empty_state";
+import Sheet_modal from "../../UI/Modals/Sheet_modal";
+import Form_field from "../../UI/Form/Form_field.jsx";
+import Empty_state from "../../UI/Empty_state";
 
-function HouseholdInvite({
+function Household_invite({
   household,
   members,
   joinModal,
@@ -203,7 +203,7 @@ function HouseholdInvite({
     <>
       {/* No household empty state */}
       {!household && (
-        <EmptyState
+        <Empty_state
           className="household__empty animate-in animate-in--1"
           icon={
             <svg
@@ -289,14 +289,14 @@ function HouseholdInvite({
       )}
 
       {/* Create Modal */}
-      <SheetModal
+      <Sheet_modal
         open={createModal.open}
         closing={createModal.closing}
         onClose={closeCreateModal}
         title="Create household"
       >
         <div className="household__form">
-          <FormField
+          <Form_field
             label="Household name"
             error={nameFieldError}
             state={nameFieldState}
@@ -312,7 +312,7 @@ function HouseholdInvite({
               maxLength={40}
               autoFocus
             />
-          </FormField>
+          </Form_field>
           <p className="household__form-hint">
             You'll get an invite code to share with your partner.
           </p>
@@ -334,17 +334,17 @@ function HouseholdInvite({
             </button>
           </div>
         </div>
-      </SheetModal>
+      </Sheet_modal>
 
       {/* Join Modal */}
-      <SheetModal
+      <Sheet_modal
         open={joinModal.open}
         closing={joinModal.closing}
         onClose={closeJoinModal}
         title="Join household"
       >
         <div className="household__form">
-          <FormField
+          <Form_field
             label="Invite code"
             error={codeFieldError}
             state={codeFieldState}
@@ -359,7 +359,7 @@ function HouseholdInvite({
               placeholder="Enter code"
               autoFocus
             />
-          </FormField>
+          </Form_field>
           <p className="household__form-hint">
             Ask your partner for the invite code from their Household page.
           </p>
@@ -381,9 +381,9 @@ function HouseholdInvite({
             </button>
           </div>
         </div>
-      </SheetModal>
+      </Sheet_modal>
     </>
   );
 }
 
-export default HouseholdInvite;
+export default Household_invite;

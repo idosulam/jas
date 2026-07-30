@@ -1,10 +1,10 @@
 import { motion, AnimatePresence } from "framer-motion";
 
 /**
- * FieldIndicator — Animated check (valid) or cross (error) circle inline.
+ * Field_indicator — Animated check (valid) or cross (error) circle inline.
  * @param {{ state: "idle" | "valid" | "error" }} props
  */
-export default function FieldIndicator({ state }) {
+export default function Field_indicator({ state }) {
   return (
     <AnimatePresence mode="wait">
       {state === "valid" && (

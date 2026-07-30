@@ -1,4 +1,4 @@
-function NavFitness({ is_active, onClick }) {
+function Nav_fitness({ is_active, onClick }) {
   return (
     <button
       type="button"
@@ -67,4 +67,4 @@ function NavFitness({ is_active, onClick }) {
   );
 }
 
-export default NavFitness;
+export default Nav_fitness;

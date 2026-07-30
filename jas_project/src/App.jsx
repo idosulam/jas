@@ -2,10 +2,10 @@ import { useRef, useState, lazy, Suspense } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import Navbar from "./Components/Navbar/Navbar.jsx";
 import Page_transition from "./Components/Page_transition.jsx";
-import { ToastProvider } from "./Lib/Glass_toast_provider.jsx";
+import { Toast_provider } from "./Lib/Glass_toast_provider.jsx";
 import { supabase } from "./Lib/Superbase.jsx";
-import { AuthProvider, Use_auth } from "./Lib/Auth_context.jsx";
-import { HouseholdProvider } from "./Lib/Household_context.jsx";
+import { Auth_provider, Use_auth } from "./Lib/Auth_context.jsx";
+import { Household_provider } from "./Lib/Household_context.jsx";
 
 // Lazy-loaded page components (route-level code splitting)
 const Shifts = lazy(() => import("./Components/Pages/Shifts/Shifts.jsx"));
@@ -21,7 +21,7 @@ const Fitness = lazy(
   () => import("./Components/Pages/Fitness/Fitness.jsx"),
 );
 const Auth = lazy(() => import("./Components/Auth/Auth.jsx"));
-const ProfileOnboarding = lazy(
+const Profile_onboarding = lazy(
   () => import("./Components/Pages/Profile/Profile_onboarding.jsx"),
 );
 
@@ -36,7 +36,7 @@ const PAGES = {
   Workplaces: Workplaces,
 };
 
-function AppContent() {
+function App_content() {
   const { session, Loading } = Use_auth();
   const [Active_nav, Set_active_nav] = useState("Shifts");
   const [direction, Set_direction] = useState("forward");
@@ -172,7 +172,7 @@ function AppContent() {
           </main>
           <Navbar active_id={Active_nav} onChange={Handle_nav_change} />
           <Suspense fallback={null}>
-            <ProfileOnboarding />
+            <Profile_onboarding />
           </Suspense>
           {supabase && (
             <button
@@ -241,13 +241,13 @@ function AppContent() {
 }
 function App() {
   return (
-    <ToastProvider>
-      <AuthProvider>
-        <HouseholdProvider>
-          <AppContent />
-        </HouseholdProvider>
-      </AuthProvider>
-    </ToastProvider>
+    <Toast_provider>
+      <Auth_provider>
+        <Household_provider>
+          <App_content />
+        </Household_provider>
+      </Auth_provider>
+    </Toast_provider>
   );
 }
 

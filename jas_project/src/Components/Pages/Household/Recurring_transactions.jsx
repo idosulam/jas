@@ -8,11 +8,11 @@ import {
 } from "../../../Lib/Security";
 import { Use_glass_toast } from "../../../Lib/Glass_toast_provider.jsx";
 import { Use_modal, Use_body_scroll_lock } from "../../../Hooks";
-import SheetModal from "../../UI/Modals/Sheet_modal";
-import ConfirmModal from "../../UI/Modals/Confirm_modal";
-import FormField from "../../UI/Form/Form_field.jsx";
-import GlassCard from "../../UI/Glass_card";
-import EmptyState from "../../UI/Empty_state";
+import Sheet_modal from "../../UI/Modals/Sheet_modal";
+import Confirm_modal from "../../UI/Modals/Confirm_modal";
+import Form_field from "../../UI/Form/Form_field.jsx";
+import Glass_card from "../../UI/Glass_card";
+import Empty_state from "../../UI/Empty_state";
 
 import { Format_money } from "../../../Lib/format";
 
@@ -34,7 +34,7 @@ const FREQUENCIES = [
   { value: "yearly", label: "Yearly" },
 ];
 
-function RecurringTransactions({ householdId, user_id, categories }) {
+function Recurring_transactions({ householdId, user_id, categories }) {
   const [recurring, setRecurring] = useState([]);
   const [Loading, Set_loading] = useState(true);
   const { success: Toast_success, error: Toast_error } = Use_glass_toast();
@@ -366,15 +366,15 @@ function RecurringTransactions({ householdId, user_id, categories }) {
     <div className="recurring">
       {/* Summary Cards */}
       <div className="recurring__summary">
-        <GlassCard
+        <Glass_card
           value={Format_money(Monthly_estimate)}
           label="Monthly Estimate"
         />
-        <GlassCard
+        <Glass_card
           value={String(recurring.filter((r) => r.is_active).length)}
           label="Active"
         />
-        <GlassCard
+        <Glass_card
           value={String(recurring.filter((r) => !r.is_active).length)}
           label="Paused"
         />
@@ -389,7 +389,7 @@ function RecurringTransactions({ householdId, user_id, categories }) {
       </div>
 
       {recurring.length === 0 ? (
-        <EmptyState
+        <Empty_state
           icon={
             <svg
               viewBox="0 0 24 24"
@@ -480,7 +480,7 @@ function RecurringTransactions({ householdId, user_id, categories }) {
       )}
 
       {/* Add/Edit Modal */}
-      <SheetModal
+      <Sheet_modal
         open={addModal.open || editModal.open}
         closing={addModal.closing || editModal.closing}
         onClose={() => {
@@ -516,7 +516,7 @@ function RecurringTransactions({ householdId, user_id, categories }) {
             ))}
           </div>
 
-          <FormField
+          <Form_field
             label="Amount"
             error={amountError}
             state={amountState}
@@ -542,9 +542,9 @@ function RecurringTransactions({ householdId, user_id, categories }) {
               }}
               placeholder="0.00"
             />
-          </FormField>
+          </Form_field>
 
-          <FormField
+          <Form_field
             label="Description"
             error={descError}
             state={descState}
@@ -569,7 +569,7 @@ function RecurringTransactions({ householdId, user_id, categories }) {
               placeholder="e.g. Netflix, Rent, Salary"
               maxLength={100}
             />
-          </FormField>
+          </Form_field>
 
           {/* Category */}
           <div className="recurring__category-grid-wrap">
@@ -609,7 +609,7 @@ function RecurringTransactions({ householdId, user_id, categories }) {
           </div>
 
           {/* Frequency */}
-          <FormField label="Frequency">
+          <Form_field label="Frequency">
             <select
               value={form.frequency}
               onChange={(e) =>
@@ -622,11 +622,11 @@ function RecurringTransactions({ householdId, user_id, categories }) {
                 </option>
               ))}
             </select>
-          </FormField>
+          </Form_field>
 
           {/* Day of Month (for monthly) */}
           {form.frequency === "monthly" && (
-            <FormField label="Day of month">
+            <Form_field label="Day of month">
               <select
                 value={form.day_of_month}
                 onChange={(e) =>
@@ -639,12 +639,12 @@ function RecurringTransactions({ householdId, user_id, categories }) {
                   </option>
                 ))}
               </select>
-            </FormField>
+            </Form_field>
           )}
 
           {/* Day of Week (for weekly/biweekly) */}
           {["weekly", "biweekly"].includes(form.frequency) && (
-            <FormField label="Day of week">
+            <Form_field label="Day of week">
               <select
                 value={form.day_of_week}
                 onChange={(e) =>
@@ -659,10 +659,10 @@ function RecurringTransactions({ householdId, user_id, categories }) {
                 <option value="5">Friday</option>
                 <option value="6">Saturday</option>
               </select>
-            </FormField>
+            </Form_field>
           )}
 
-          <FormField label="Note (optional)">
+          <Form_field label="Note (optional)">
             <input
               type="text"
               value={form.note}
@@ -670,7 +670,7 @@ function RecurringTransactions({ householdId, user_id, categories }) {
               placeholder="Add a note..."
               maxLength={500}
             />
-          </FormField>
+          </Form_field>
 
           <div className="btn-row">
             <button
@@ -705,10 +705,10 @@ function RecurringTransactions({ householdId, user_id, categories }) {
             </button>
           </div>
         </div>
-      </SheetModal>
+      </Sheet_modal>
 
       {/* Delete Confirmation */}
-      <ConfirmModal
+      <Confirm_modal
         open={Delete_modal.open}
         closing={Delete_modal.closing}
         onClose={() => Delete_modal.close_modal()}
@@ -722,4 +722,4 @@ function RecurringTransactions({ householdId, user_id, categories }) {
   );
 }
 
-export default RecurringTransactions;
+export default Recurring_transactions;

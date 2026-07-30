@@ -1,8 +1,8 @@
 /**
- * PageHeader — Eyebrow + Title + optional subtitle.
+ * Page_header — Eyebrow + Title + optional subtitle.
  * Consistent header across all pages.
  */
-export default function PageHeader({ eyebrow, title, subtitle, className = "", children }) {
+export default function Page_header({ eyebrow, title, subtitle, className = "", children }) {
   return (
     <header className={`${className}`}>
       {eyebrow && <p className="page__eyebrow">{eyebrow}</p>}

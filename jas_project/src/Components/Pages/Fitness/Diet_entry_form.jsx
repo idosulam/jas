@@ -1,5 +1,5 @@
-import SheetModal from "../../../Components/UI/Modals/Sheet_modal";
-import FormField from "../../../Components/UI/Form/Form_field.jsx";
+import Sheet_modal from "../../../Components/UI/Modals/Sheet_modal";
+import Form_field from "../../../Components/UI/Form/Form_field.jsx";
 
 const MEAL_TYPES = [
   { id: "breakfast", label: "Breakfast" },
@@ -8,7 +8,7 @@ const MEAL_TYPES = [
   { id: "snack", label: "Snack" },
 ];
 
-function DietEntryForm({
+function Diet_entry_form({
   open,
   closing,
   onClose,
@@ -25,14 +25,14 @@ function DietEntryForm({
   onFieldBlur,
 }) {
   return (
-    <SheetModal
+    <Sheet_modal
       open={open}
       closing={closing}
       onClose={onClose}
       title={editingEntry ? "Edit food" : "Log food"}
     >
       <form className="fitness__form" onSubmit={onSubmit}>
-        <FormField
+        <Form_field
           label="Date"
           error={Field_errors.Entry_date}
           state={Field_states.Entry_date}
@@ -49,9 +49,9 @@ function DietEntryForm({
             onBlur={() => onFieldBlur("Entry_date")}
             required
           />
-        </FormField>
+        </Form_field>
 
-        <FormField label="Meal type">
+        <Form_field label="Meal type">
           <select
             value={form.meal_type}
             onChange={(e) =>
@@ -64,9 +64,9 @@ function DietEntryForm({
               </option>
             ))}
           </select>
-        </FormField>
+        </Form_field>
 
-        <FormField
+        <Form_field
           label="Food name"
           error={Field_errors.food_name}
           state={Field_states.food_name}
@@ -85,9 +85,9 @@ function DietEntryForm({
             onBlur={() => onFieldBlur("food_name")}
             required
           />
-        </FormField>
+        </Form_field>
 
-        <FormField label="Calories (kcal)">
+        <Form_field label="Calories (kcal)">
           <input
             type="number"
             min="0"
@@ -99,10 +99,10 @@ function DietEntryForm({
               Set_form((f) => ({ ...f, calories: e.target.value }))
             }
           />
-        </FormField>
+        </Form_field>
 
         <div className="fitness__macro-inputs">
-          <FormField label="Protein (g)">
+          <Form_field label="Protein (g)">
             <input
               type="number"
               min="0"
@@ -114,8 +114,8 @@ function DietEntryForm({
                 Set_form((f) => ({ ...f, protein_g: e.target.value }))
               }
             />
-          </FormField>
-          <FormField label="Carbs (g)">
+          </Form_field>
+          <Form_field label="Carbs (g)">
             <input
               type="number"
               min="0"
@@ -127,8 +127,8 @@ function DietEntryForm({
                 Set_form((f) => ({ ...f, carbs_g: e.target.value }))
               }
             />
-          </FormField>
-          <FormField label="Fats (g)">
+          </Form_field>
+          <Form_field label="Fats (g)">
             <input
               type="number"
               min="0"
@@ -140,10 +140,10 @@ function DietEntryForm({
                 Set_form((f) => ({ ...f, fats_g: e.target.value }))
               }
             />
-          </FormField>
+          </Form_field>
         </div>
 
-        <FormField label="Fiber (g)" optional>
+        <Form_field label="Fiber (g)" optional>
           <input
             type="number"
             min="0"
@@ -155,7 +155,7 @@ function DietEntryForm({
               Set_form((f) => ({ ...f, fiber_g: e.target.value }))
             }
           />
-        </FormField>
+        </Form_field>
 
         <div className="btn-row">
           <button
@@ -184,8 +184,8 @@ function DietEntryForm({
           </button>
         </div>
       </form>
-    </SheetModal>
+    </Sheet_modal>
   );
 }
 
-export default DietEntryForm;
+export default Diet_entry_form;

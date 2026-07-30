@@ -18,7 +18,7 @@ import { calcPay } from "./Shift_utils";
  *   isRemoving      – card is animating out
  *   animDelay       – CSS delay string for stagger animation
  */
-export default function ShiftCard({
+export default function Shift_card({
   shift,
   places,
   Deactivated_slugs,

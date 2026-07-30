@@ -24,7 +24,7 @@ export const ACTIVITY_LEVELS = [
  * @param {string} gender - "male" or "female"
  * @returns {number|null} BMR in kcal/day, or null if inputs are missing
  */
-export function calcBMR(Weight_kg, Height_cm, age, gender) {
+export function Calc_bmr(Weight_kg, Height_cm, age, gender) {
   if (!Weight_kg || !Height_cm || !age) return null;
   const base = 10 * Weight_kg + 6.25 * Height_cm - 5 * age;
   return gender === "female" ? base - 161 : base + 5;
@@ -36,7 +36,7 @@ export function calcBMR(Weight_kg, Height_cm, age, gender) {
  * @param {string} activityLevel - Activity level id
  * @returns {number|null} TDEE in kcal/day
  */
-export function calcTDEE(bmr, activityLevel) {
+export function Calc_tdee(bmr, activityLevel) {
   if (!bmr) return null;
   const level = ACTIVITY_LEVELS.find((l) => l.id === activityLevel);
   if (!level) return Math.round(bmr * 1.55); // fallback to moderate
@@ -54,7 +54,7 @@ export function calcTDEE(bmr, activityLevel) {
  * @param {number} tdee - Total Daily Energy Expenditure
  * @returns {{ protein: number, carbs: number, fats: number, fiber: number, calories: number } | null}
  */
-export function calcMacroTargets(Weight_kg, tdee) {
+export function Calc_macro_targets(Weight_kg, tdee) {
   if (!Weight_kg || !tdee) return null;
 
   const protein = Math.round(Weight_kg * 2);

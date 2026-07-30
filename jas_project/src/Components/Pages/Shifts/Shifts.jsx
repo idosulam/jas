@@ -20,12 +20,12 @@ import {
 import { Use_body_scroll_lock, Use_modal } from "../../../Hooks";
 import { Use_glass_toast } from "../../../Lib/Glass_toast_provider.jsx";
 
-import ConfirmModal from "../../../Components/UI/Modals/Confirm_modal";
+import Confirm_modal from "../../../Components/UI/Modals/Confirm_modal";
 import Badge from "../../../Components/UI/badge";
-import EmptyState from "../../../Components/UI/Empty_state";
-import LoadingSkeleton from "../../../Components/UI/Loading_skeleton";
-import PageHeader from "../../../Components/UI/Page_header";
-import GlassCard from "../../../Components/UI/Glass_card";
+import Empty_state from "../../../Components/UI/Empty_state";
+import Loading_skeleton from "../../../Components/UI/Loading_skeleton";
+import Page_header from "../../../Components/UI/Page_header";
+import Glass_card from "../../../Components/UI/Glass_card";
 import FAB from "../../../Components/UI/fab";
 
 import {
@@ -39,11 +39,11 @@ import {
   Empty_form,
   Format_money,
 } from "./Shift_utils";
-import ShiftForm from "./Shift_form";
-import ShiftDeleteConfirm from "./Shift_delete_confirm";
-import PlacePicker from "./Place_picker";
-import ShiftPresets from "./Shift_presets";
-import ShiftCard from "./Shift_card";
+import Shift_form from "./Shift_form";
+import Shift_delete_confirm from "./Shift_delete_confirm";
+import Place_picker from "./Place_picker";
+import Shift_presets from "./Shift_presets";
+import Shift_card from "./Shift_card";
 
 function Shifts({ onNavigate }) {
   const user_id = Use_user_id();
@@ -334,33 +334,33 @@ function Shifts({ onNavigate }) {
   }, [form, PLACES, Preset_modal]);
 
   // Week helpers
-  const start_of_week = (date) => {
+  const Start_of_week = (date) => {
     const d = new Date(date);
     d.setDate(d.getDate() - d.getDay());
     d.setHours(0, 0, 0, 0);
     return d;
   };
 
-  const add_days = (date, n) => {
+  const Add_days = (date, n) => {
     const d = new Date(date);
     d.setDate(d.getDate() + n);
     return d;
   };
 
-  const to_date_key = (date) => date.toISOString().slice(0, 10);
+  const To_date_key = (date) => date.toISOString().slice(0, 10);
 
-  const Selected_key = to_date_key(Selected_date);
-  const Is_today = Selected_key === to_date_key(now);
+  const Selected_key = To_date_key(Selected_date);
+  const Is_today = Selected_key === To_date_key(now);
 
   const Week_days = useMemo(() => {
-    const start = start_of_week(Selected_date);
-    return Array.from({ length: 7 }, (_, i) => add_days(start, i));
+    const start = Start_of_week(Selected_date);
+    return Array.from({ length: 7 }, (_, i) => Add_days(start, i));
   }, [Selected_date]);
 
   const Month_days = useMemo(() => {
     const d = Selected_date; // already a Date object
-    const start = start_of_week(new Date(d.getFullYear(), d.getMonth(), 1));
-    return Array.from({ length: 42 }, (_, i) => add_days(start, i));
+    const start = Start_of_week(new Date(d.getFullYear(), d.getMonth(), 1));
+    return Array.from({ length: 42 }, (_, i) => Add_days(start, i));
   }, [Selected_date]);
 
   const Visible_days = View_mode === "week" ? Week_days : Month_days;
@@ -381,14 +381,14 @@ function Shifts({ onNavigate }) {
     const d = Selected_date; // already a Date object
     const range_start =
       View_mode === "week"
-        ? start_of_week(d)
+        ? Start_of_week(d)
         : new Date(d.getFullYear(), d.getMonth(), 1);
     const range_end =
       View_mode === "week"
-        ? add_days(range_start, 6)
+        ? Add_days(range_start, 6)
         : new Date(d.getFullYear(), d.getMonth() + 1, 0);
-    const startDate = to_date_key(range_start);
-    const endDate = to_date_key(range_end);
+    const startDate = To_date_key(range_start);
+    const endDate = To_date_key(range_end);
 
     try {
       const supabase = Get_supabase_client();
@@ -910,7 +910,7 @@ function Shifts({ onNavigate }) {
 
   return (
     <section className="shifts page">
-      <PageHeader
+      <Page_header
         eyebrow={
           Household_name ? `Earnings · ${Household_name}` : "Earnings tracker"
         }
@@ -925,7 +925,7 @@ function Shifts({ onNavigate }) {
             type="button"
             className="shifts__date-btn"
             onClick={() =>
-              Set_selected_date((d) => add_days(d, View_mode === "week" ? -7 : -30))
+              Set_selected_date((d) => Add_days(d, View_mode === "week" ? -7 : -30))
             }
             aria-label="Previous day"
           >
@@ -936,7 +936,7 @@ function Shifts({ onNavigate }) {
             type="button"
             className="shifts__date-btn"
             onClick={() =>
-              Set_selected_date((d) => add_days(d, View_mode === "week" ? 7 : 30))
+              Set_selected_date((d) => Add_days(d, View_mode === "week" ? 7 : 30))
             }
             aria-label="Next day"
           >
@@ -961,9 +961,9 @@ function Shifts({ onNavigate }) {
         aria-label={View_mode === "week" ? "Week days" : "Month days"}
       >
         {Visible_days.map((day) => {
-          const key = to_date_key(day);
+          const key = To_date_key(day);
           const isSelected = key === Selected_key;
-          const isDayToday = key === to_date_key(now);
+          const isDayToday = key === To_date_key(now);
           const hasShift = shifts.some((s) => s.shift_date === key);
           const isInCurrentMonth =
             View_mode === "month"
@@ -1045,7 +1045,7 @@ function Shifts({ onNavigate }) {
       )}
 
       {/* Place filter */}
-      <PlacePicker
+      <Place_picker
         places={PLACES}
         placeFilters={PLACE_FILTERS}
         selectedPlaceId={Place_filter}
@@ -1063,22 +1063,22 @@ function Shifts({ onNavigate }) {
         className="shifts__summary animate-in animate-in--3"
         key={`${Selected_key}-${Place_filter}`}
       >
-        <GlassCard
+        <Glass_card
           value={`${totals.hours.toFixed(1)}h`}
           label="Hours"
           className="shifts__stat"
         />
-        <GlassCard
+        <Glass_card
           value={Format_money(totals.pay)}
           label="Pay"
           className="shifts__stat"
         />
-        <GlassCard
+        <Glass_card
           value={Format_money(totals.tips)}
           label="Tips"
           className="shifts__stat"
         />
-        <GlassCard
+        <Glass_card
           value={Format_money(totals.total)}
           label="Total"
           className="shifts__stat shifts__stat--total"
@@ -1092,7 +1092,7 @@ function Shifts({ onNavigate }) {
       )}
 
       {/* Presets */}
-      <ShiftPresets
+      <Shift_presets
         Presets={Presets}
         Place_filter={Place_filter}
         onQuickAdd={Handle_quick_add_preset}
@@ -1150,10 +1150,10 @@ function Shifts({ onNavigate }) {
 
       {Loading ? (
         <div className="shifts__list">
-          <LoadingSkeleton count={3} height="5.5rem" />
+          <Loading_skeleton count={3} height="5.5rem" />
         </div>
       ) : Filtered_shifts.length === 0 ? (
-        <EmptyState
+        <Empty_state
           className="shifts__empty shifts__empty--fade shifts__empty-card"
           icon={
             <svg
@@ -1197,7 +1197,7 @@ function Shifts({ onNavigate }) {
       ) : (
         <ul className="shifts__list" key={`list-${Place_filter}`}>
           {Filtered_shifts.map((shift, index) => (
-            <ShiftCard
+            <Shift_card
               key={shift.id}
               shift={shift}
               places={PLACES}
@@ -1215,7 +1215,7 @@ function Shifts({ onNavigate }) {
       )}
 
       {/* Shift form modal */}
-      <ShiftForm
+      <Shift_form
         open={Form_modal.open}
         closing={Form_modal.closing}
         onClose={Close_form_modal}
@@ -1237,7 +1237,7 @@ function Shifts({ onNavigate }) {
       />
 
       {/* Delete confirmation */}
-      <ShiftDeleteConfirm
+      <Shift_delete_confirm
         Delete_target={Delete_target}
         closing={Delete_modal.closing}
         onClose={Close_delete_modal}

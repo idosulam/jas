@@ -1,4 +1,4 @@
-function NavCalendar({ is_active, onClick }) {
+function Nav_calendar({ is_active, onClick }) {
   return (
     <button
       type="button"
@@ -24,4 +24,4 @@ function NavCalendar({ is_active, onClick }) {
   );
 }
 
-export default NavCalendar;
+export default Nav_calendar;

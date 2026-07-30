@@ -1,10 +1,10 @@
 import { motion, AnimatePresence } from "framer-motion";
 
 /**
- * FieldError — Animated error message that slides in/out.
+ * Field_error — Animated error message that slides in/out.
  * @param {{ message: string | null }} props
  */
-export default function FieldError({ message }) {
+export default function Field_error({ message }) {
   return (
     <AnimatePresence>
       {message && (

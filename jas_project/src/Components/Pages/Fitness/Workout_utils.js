@@ -4,7 +4,7 @@ export const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 export const KG_TO_LBS = 2.20462;
 
-export function emptyExercise() {
+export function Empty_exercise() {
   return { name: "", weight: "", weight_lbs: "", sets: "", reps: "" };
 }
 
@@ -12,14 +12,14 @@ export function Empty_form() {
   return {
     workout_date: new Date().toISOString().slice(0, 10),
     preset_name: "",
-    exercises: [emptyExercise()],
+    exercises: [Empty_exercise()],
     notes: "",
     duration_minutes: "",
     Calories_burned: "",
   };
 }
 
-export function calcVolume(exercises) {
+export function Calc_volume(exercises) {
   return exercises.reduce((sum, ex) => {
     const w = parseFloat(ex.weight) || 0;
     const s = parseInt(ex.sets, 10) || 0;
@@ -28,7 +28,7 @@ export function calcVolume(exercises) {
   }, 0);
 }
 
-export function formatVolume(vol) {
+export function Format_volume(vol) {
   if (vol >= 1000) return `${(vol / 1000).toFixed(1)}k`;
   return String(Math.round(vol));
 }

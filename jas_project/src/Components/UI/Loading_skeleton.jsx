@@ -1,7 +1,7 @@
 /**
- * LoadingSkeleton — Skeleton placeholder for Loading states.
+ * Loading_skeleton — Skeleton placeholder for Loading states.
  */
-export default function LoadingSkeleton({
+export default function Loading_skeleton({
   count = 3,
   height = "5rem",
   variant = "card",

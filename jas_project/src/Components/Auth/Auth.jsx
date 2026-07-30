@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Get_supabase_client } from "../../Lib/Superbase.jsx";
 import { Use_glass_toast } from "../../Lib/Glass_toast_provider.jsx";
 import { Haptic_error } from "../../Lib/Security";
-import AuthForm, { slide_variants } from "./Auth_form";
+import Auth_form, { slide_variants } from "./Auth_form";
 import "./Auth.css";
 
 /* ── Main Auth component ── */
@@ -423,7 +423,7 @@ function Auth() {
           </motion.div>
         </AnimatePresence>
 
-        <AuthForm
+        <Auth_form
           mode={mode}
           direction={direction}
           email={email}

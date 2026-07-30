@@ -1,8 +1,8 @@
 /**
- * ConfirmModal — Confirmation dialog for delete/deactivate actions.
- * Built on top of SheetModal for consistent styling.
+ * Confirm_modal — Confirmation dialog for delete/deactivate actions.
+ * Built on top of Sheet_modal for consistent styling.
  */
-import SheetModal from "./Sheet_modal";
+import Sheet_modal from "./Sheet_modal";
 import "../../../Styles/Buttons.css";
 
 const TrashIcon = (
@@ -19,7 +19,7 @@ const TrashIcon = (
   </svg>
 );
 
-export default function ConfirmModal({
+export default function Confirm_modal({
   open,
   closing,
   onClose,
@@ -34,7 +34,7 @@ export default function ConfirmModal({
   children,
 }) {
   return (
-    <SheetModal
+    <Sheet_modal
       open={open}
       closing={closing}
       onClose={onClose}
@@ -75,7 +75,7 @@ export default function ConfirmModal({
           )}
         </button>
       </div>
-    </SheetModal>
+    </Sheet_modal>
   );
 }
 

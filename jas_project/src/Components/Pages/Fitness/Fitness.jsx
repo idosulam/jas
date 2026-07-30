@@ -4,9 +4,9 @@ import { Get_supabase_client } from "../../../Lib/Superbase";
 import { Use_user_id } from "../../../Lib/Auth_context.jsx";
 import { Use_household } from "../../../Lib/Household_context.jsx";
 
-import PageHeader from "../../../Components/UI/Page_header";
-import WorkoutLogger from "./Workout_logger";
-import DietTracker from "./Diet_tracker";
+import Page_header from "../../../Components/UI/Page_header";
+import Workout_logger from "./Workout_logger";
+import Diet_tracker from "./Diet_tracker";
 
 const SUB_TABS = [
   { id: "workouts", label: "Workouts" },
@@ -81,7 +81,7 @@ function Fitness() {
 
   return (
     <section className="fitness page">
-      <PageHeader
+      <Page_header
         eyebrow={Household_name ? `Fitness · ${Household_name}` : "Fitness tracker"}
         title="Fitness"
         className="fitness__header animate-in"
@@ -123,14 +123,14 @@ function Fitness() {
         role="tabpanel"
         hidden={activeTab !== "workouts"}
       >
-        {activeTab === "workouts" && <WorkoutLogger />}
+        {activeTab === "workouts" && <Workout_logger />}
       </div>
       <div
         id="fitness-panel-diet"
         role="tabpanel"
         hidden={activeTab !== "diet"}
       >
-        {activeTab === "diet" && <DietTracker profileData={profileData} />}
+        {activeTab === "diet" && <Diet_tracker profileData={profileData} />}
       </div>
     </section>
   );

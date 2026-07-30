@@ -1,6 +1,6 @@
-import { format_time_12 } from "./Calendar_layout";
+import { Format_time_12 } from "./Calendar_layout";
 
-export default function ReminderList({
+export default function Reminder_list({
   events,
   Is_wake_event,
   onCheck,
@@ -41,8 +41,8 @@ export default function ReminderList({
           >
             <span className="calendar__reminder-title">{event.title}</span>
             <span className="calendar__reminder-time">
-              {format_time_12(event.start_time)} –{" "}
-              {format_time_12(event.end_time)}
+              {Format_time_12(event.start_time)} –{" "}
+              {Format_time_12(event.end_time)}
             </span>
           </button>
           <button

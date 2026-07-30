@@ -1,7 +1,7 @@
 import { Format_date_label } from "../../../Lib/format";
 import { Format_weight_both } from "../../../Lib/weight";
 
-export default function ProfileHistory({
+export default function Profile_history({
   sorted,
   Removing_id,
   unit,

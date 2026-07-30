@@ -1,8 +1,8 @@
 import { Kg_to_lbs, Lbs_to_kg } from "../../../Lib/weight";
-import ShakeField from "../../../Components/UI/Form/Shake_field";
-import FieldIndicator from "../../../Components/UI/Form/Field_indicator";
+import Shake_field from "../../../Components/UI/Form/Shake_field";
+import Field_indicator from "../../../Components/UI/Form/Field_indicator";
 
-export default function ExerciseRow({
+export default function Exercise_row({
   exercise,
   index,
   onChange,
@@ -39,7 +39,7 @@ export default function ExerciseRow({
           onChange={(e) => onChange(index, "name", e.target.value)}
           onBlur={() => handle_blur("name")}
         />
-        <FieldIndicator state={state("name")} />
+        <Field_indicator state={state("name")} />
       </div>
     </>
   );
@@ -48,7 +48,7 @@ export default function ExerciseRow({
     <div className="fitness__exercise-row">
       <div className="fitness__exercise-fields">
         {err("name") ? (
-          <ShakeField trigger={Shake_key}>{nameField}</ShakeField>
+          <Shake_field trigger={Shake_key}>{nameField}</Shake_field>
         ) : (
           nameField
         )}
@@ -84,7 +84,7 @@ export default function ExerciseRow({
 
             if (err(field)) {
               return (
-                <ShakeField key={field} trigger={Shake_key}>{input}</ShakeField>
+                <Shake_field key={field} trigger={Shake_key}>{input}</Shake_field>
               );
             }
             return input;

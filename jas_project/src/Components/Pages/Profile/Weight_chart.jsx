@@ -2,7 +2,7 @@ import { useState, useMemo } from "react";
 import { To_display_kg } from "../../../Lib/weight";
 import { Format_date_label } from "../../../Lib/format";
 
-export default function WeightChart({ entries, unit, goalKg }) {
+export default function Weight_chart({ entries, unit, goalKg }) {
   const [hoverIndex, setHoverIndex] = useState(null);
 
   const sorted = useMemo(

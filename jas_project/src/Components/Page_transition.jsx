@@ -1,4 +1,4 @@
-function PageTransition({ page_key, direction, children }) {
+function Page_transition({ page_key, direction, children }) {
   return (
     <div
       key={page_key}
@@ -9,4 +9,4 @@ function PageTransition({ page_key, direction, children }) {
   );
 }
 
-export default PageTransition;
+export default Page_transition;

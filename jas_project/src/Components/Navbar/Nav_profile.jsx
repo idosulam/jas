@@ -1,4 +1,4 @@
-function NavProfile({ is_active, onClick }) {
+function Nav_profile({ is_active, onClick }) {
   return (
     <button
       type="button"
@@ -25,4 +25,4 @@ function NavProfile({ is_active, onClick }) {
   );
 }
 
-export default NavProfile;
+export default Nav_profile;

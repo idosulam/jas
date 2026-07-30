@@ -10,8 +10,8 @@ import {
 import { Use_body_scroll_lock } from "../../../Hooks";
 import { Use_glass_toast } from "../../../Lib/Glass_toast_provider.jsx";
 import { ACTIVITY_LEVELS, GENDER_OPTIONS } from "../Fitness/Macro_calculator";
-import SheetModal from "../../UI/Modals/Sheet_modal";
-import FormField from "../../UI/Form/Form_field.jsx";
+import Sheet_modal from "../../UI/Modals/Sheet_modal";
+import Form_field from "../../UI/Form/Form_field.jsx";
 
 function Cm_to_feet_and_inches(Height_cm) {
   if (Height_cm == null || Number.isNaN(Height_cm))
@@ -36,7 +36,7 @@ function Feet_and_inches_to_cm(feet, inches) {
  * their profile (missing display_name, age, or height).
  * Non-dismissable until the required fields are filled.
  */
-export default function ProfileOnboarding() {
+export default function Profile_onboarding() {
   const user_id = Use_user_id();
   const [profile, setProfile] = useState(null);
   const [Loading, Set_loading] = useState(true);
@@ -275,7 +275,7 @@ export default function ProfileOnboarding() {
   if (Loading || !open) return null;
 
   return (
-    <SheetModal
+    <Sheet_modal
       open={open}
       closing={false}
       onClose={handle_close}
@@ -293,7 +293,7 @@ export default function ProfileOnboarding() {
       )}
 
       <form className="profile-onboarding__form" onSubmit={Handle_submit}>
-        <FormField
+        <Form_field
           label="Name"
           error={Field_errors.display_name}
           state={Field_states.display_name}
@@ -312,9 +312,9 @@ export default function ProfileOnboarding() {
             autoFocus
             required
           />
-        </FormField>
+        </Form_field>
 
-        <FormField
+        <Form_field
           label="Age"
           error={Field_errors.age}
           state={Field_states.age}
@@ -334,9 +334,9 @@ export default function ProfileOnboarding() {
             onBlur={() => Handle_field_blur("age")}
             required
           />
-        </FormField>
+        </Form_field>
 
-        <FormField
+        <Form_field
           label="Height (cm)"
           error={Field_errors.Height_cm}
           state={Field_states.Height_cm}
@@ -356,10 +356,10 @@ export default function ProfileOnboarding() {
             onBlur={() => Handle_field_blur("Height_cm")}
             required
           />
-        </FormField>
+        </Form_field>
 
         <div className="profile-onboarding__height-row">
-          <FormField label="Feet">
+          <Form_field label="Feet">
             <input
               type="number"
               min="0"
@@ -370,8 +370,8 @@ export default function ProfileOnboarding() {
                 handleHeightImperialChange("height_ft", e.target.value)
               }
             />
-          </FormField>
-          <FormField label="Inches">
+          </Form_field>
+          <Form_field label="Inches">
             <input
               type="number"
               min="0"
@@ -383,10 +383,10 @@ export default function ProfileOnboarding() {
                 handleHeightImperialChange("height_in", e.target.value)
               }
             />
-          </FormField>
+          </Form_field>
         </div>
 
-        <FormField
+        <Form_field
           label="Goal weight (kg)"
           error={Field_errors.goal_weight_kg}
           state={Field_states.goal_weight_kg}
@@ -406,9 +406,9 @@ export default function ProfileOnboarding() {
             }}
             onBlur={() => Handle_field_blur("goal_weight_kg")}
           />
-        </FormField>
+        </Form_field>
 
-        <FormField label="Gender" optional>
+        <Form_field label="Gender" optional>
           <select
             value={form.gender}
             onChange={(e) => Set_form((f) => ({ ...f, gender: e.target.value }))}
@@ -422,9 +422,9 @@ export default function ProfileOnboarding() {
               </option>
             ))}
           </select>
-        </FormField>
+        </Form_field>
 
-        <FormField label="Activity level" optional>
+        <Form_field label="Activity level" optional>
           <select
             value={form.activity_level}
             onChange={(e) =>
@@ -440,7 +440,7 @@ export default function ProfileOnboarding() {
               </option>
             ))}
           </select>
-        </FormField>
+        </Form_field>
 
         <div className="btn-row">
           <button
@@ -459,6 +459,6 @@ export default function ProfileOnboarding() {
           </button>
         </div>
       </form>
-    </SheetModal>
+    </Sheet_modal>
   );
 }

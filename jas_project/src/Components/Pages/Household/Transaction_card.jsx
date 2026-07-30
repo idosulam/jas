@@ -14,7 +14,7 @@ const AVATAR_COLORS = [
   "#22d3ee",
 ];
 
-function getAvatarColor(name) {
+function Get_avatar_color(name) {
   let hash = 0;
   for (let i = 0; i < (name || "").length; i++) {
     hash = name.charCodeAt(i) + ((hash << 5) - hash);
@@ -22,7 +22,7 @@ function getAvatarColor(name) {
   return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
 }
 
-export default function TransactionCard({ transaction, onEdit }) {
+export default function Transaction_card({ transaction, onEdit }) {
   const {
     id,
     description,
@@ -38,7 +38,7 @@ export default function TransactionCard({ transaction, onEdit }) {
 
   const isContribute = type === "contribute";
   const avatarLetter = (is_me ? "Y" : (display_name || "U").charAt(0)).toUpperCase();
-  const avatarColor = getAvatarColor(is_me ? "You" : display_name);
+  const avatarColor = Get_avatar_color(is_me ? "You" : display_name);
 
   return (
     <div

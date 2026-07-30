@@ -2,13 +2,13 @@ import {
   DAY_START_HOUR,
   HOUR_HEIGHT,
   TOTAL_HOURS,
-  event_style,
-  resolve_color,
-  format_time_12,
+  Event_style,
+  Resolve_color,
+  Format_time_12,
 } from "./Calendar_layout";
 import { Parse_time_to_minutes } from "../../../Lib/Calendar_sync";
 
-export default function TimelineView({
+export default function Timeline_view({
   Hour_labels,
   Laid_out_events,
   Now_line_top,
@@ -83,10 +83,10 @@ export default function TimelineView({
             );
           }
 
-          const style = event_style(event);
+          const style = Event_style(event);
           if (!style) return null;
 
-          const colorInfo = resolve_color(event.color);
+          const colorInfo = Resolve_color(event.color);
           const isShort = parseInt(style.height, 10) < 44;
 
           return (
@@ -123,8 +123,8 @@ export default function TimelineView({
                 <span className="calendar__event-title">{event.title}</span>
                 {!isShort && (
                   <span className="calendar__event-time">
-                    {format_time_12(event.start_time)} –{" "}
-                    {format_time_12(event.end_time)}
+                    {Format_time_12(event.start_time)} –{" "}
+                    {Format_time_12(event.end_time)}
                   </span>
                 )}
               </button>

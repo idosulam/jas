@@ -1,4 +1,4 @@
-function NavHousehold({ is_active, onClick }) {
+function Nav_household({ is_active, onClick }) {
   return (
     <button
       type="button"
@@ -32,4 +32,4 @@ function NavHousehold({ is_active, onClick }) {
   );
 }
 
-export default NavHousehold;
+export default Nav_household;

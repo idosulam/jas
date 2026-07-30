@@ -1,17 +1,17 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import NavShifts from "./Nav_shifts";
-import NavCalendar from "./Nav_calendar";
-import NavFitness from "./Nav_fitness";
-import NavHousehold from "./Nav_household";
-import NavProfile from "./Nav_profile";
+import Nav_shifts from "./Nav_shifts";
+import Nav_calendar from "./Nav_calendar";
+import Nav_fitness from "./Nav_fitness";
+import Nav_household from "./Nav_household";
+import Nav_profile from "./Nav_profile";
 import "./Navbar.css";
 
 const NAV_ITEMS = [
-  { id: "Shifts", Component: NavShifts },
-  { id: "Calendar", Component: NavCalendar },
-  { id: "Fitness", Component: NavFitness },
-  { id: "Household", Component: NavHousehold },
-  { id: "Profile", Component: NavProfile },
+  { id: "Shifts", Component: Nav_shifts },
+  { id: "Calendar", Component: Nav_calendar },
+  { id: "Fitness", Component: Nav_fitness },
+  { id: "Household", Component: Nav_household },
+  { id: "Profile", Component: Nav_profile },
 ];
 
 function Navbar({ active_id, onChange }) {

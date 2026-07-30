@@ -10,12 +10,12 @@ import {
 } from "../../../Lib/Security.js";
 import { Use_glass_toast } from "../../../Lib/Glass_toast_provider.jsx";
 import {
-  SheetModal,
-  FormField,
-  PageHeader,
-  ConfirmModal,
-  EmptyState,
-  LoadingSkeleton,
+  Sheet_modal,
+  Form_field,
+  Page_header,
+  Confirm_modal,
+  Empty_state,
+  Loading_skeleton,
 } from "../../Index.js";
 import { Use_body_scroll_lock, Use_modal } from "../../../Hooks/Index.js";
 import { TrashIcon } from "../../../Components/UI/Modals/Confirm_modal";
@@ -363,7 +363,7 @@ function Workplaces({ onNavigate, return_to }) {
 
   return (
     <section className="Workplaces page">
-      <PageHeader
+      <Page_header
         eyebrow="Settings"
         title="Workplaces"
         subtitle="Manage your Workplaces, pay rates, and colors."
@@ -378,7 +378,7 @@ function Workplaces({ onNavigate, return_to }) {
             ← Back to {return_to || "Shifts"}
           </button>
         )}
-      </PageHeader>
+      </Page_header>
 
       {error && (
         <p className="workplaces__error" role="alert">
@@ -387,12 +387,12 @@ function Workplaces({ onNavigate, return_to }) {
       )}
 
       {Loading ? (
-        <LoadingSkeleton count={3} height="5rem" />
+        <Loading_skeleton count={3} height="5rem" />
       ) : (
         <>
           <div className="workplaces__list animate-in animate-in--1">
             {activeWorkplaces.length === 0 ? (
-              <EmptyState
+              <Empty_state
                 title="No Workplaces yet."
                 text="Add your first workplace to start tracking shifts."
               />
@@ -506,14 +506,14 @@ function Workplaces({ onNavigate, return_to }) {
       )}
 
       {/* Add/Edit Workplace Modal */}
-      <SheetModal
+      <Sheet_modal
         open={Form_modal.open}
         closing={Form_modal.closing}
         onClose={close_modal}
         title={editing ? "Edit workplace" : "Add workplace"}
       >
         <form className="workplaces__form" onSubmit={Handle_submit}>
-          <FormField
+          <Form_field
             label="Slug (ID)"
             error={Field_errors.slug}
             state={Field_states.slug}
@@ -536,9 +536,9 @@ function Workplaces({ onNavigate, return_to }) {
             {editing && (
               <span className="form-field__hint">Slug cannot be changed.</span>
             )}
-          </FormField>
+          </Form_field>
 
-          <FormField
+          <Form_field
             label="Display name"
             error={Field_errors.label}
             state={Field_states.label}
@@ -557,9 +557,9 @@ function Workplaces({ onNavigate, return_to }) {
               required
               autoComplete="off"
             />
-          </FormField>
+          </Form_field>
 
-          <FormField
+          <Form_field
             label="Hourly rate (₪)"
             error={Field_errors.rate}
             state={Field_states.rate}
@@ -579,9 +579,9 @@ function Workplaces({ onNavigate, return_to }) {
               placeholder="e.g. 50"
               required
             />
-          </FormField>
+          </Form_field>
 
-          <FormField
+          <Form_field
             label="Color"
             error={Field_errors.color}
             state={Field_states.color}
@@ -628,7 +628,7 @@ function Workplaces({ onNavigate, return_to }) {
                 className="workplaces__color-hex"
               />
             </div>
-          </FormField>
+          </Form_field>
 
           <div className="btn-row">
             <button
@@ -657,10 +657,10 @@ function Workplaces({ onNavigate, return_to }) {
             </button>
           </div>
         </form>
-      </SheetModal>
+      </Sheet_modal>
 
       {/* Deactivate Confirmation */}
-      <ConfirmModal
+      <Confirm_modal
         open={deactivateModal.open}
         closing={deactivateModal.closing}
         onClose={() => {
@@ -676,7 +676,7 @@ function Workplaces({ onNavigate, return_to }) {
       />
 
       {/* Delete Confirmation */}
-      <ConfirmModal
+      <Confirm_modal
         open={Delete_modal.open}
         closing={Delete_modal.closing}
         onClose={() => {

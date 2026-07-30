@@ -8,7 +8,7 @@ import {
   Delete_palette_color,
   Clear_palette,
 } from "./Color_palette";
-import FormField from "../Components/UI/Form/Form_field.jsx";
+import Form_field from "../Components/UI/Form/Form_field.jsx";
 import "./Color_palette_picker.css";
 
 const MODAL_EXIT_MS = 260;
@@ -17,7 +17,7 @@ function Is_valid_hex(value) {
   return /^#[0-9a-fA-F]{6}$/.test(value);
 }
 
-export default function ColorPalettePicker({ value, onChange }) {
+export default function Color_palette_picker({ value, onChange }) {
   const [palette, Set_palette] = useState([]);
   const [Picker_open, Set_picker_open] = useState(false);
   const [Picker_closing, Set_picker_closing] = useState(false);
@@ -225,7 +225,7 @@ export default function ColorPalettePicker({ value, onChange }) {
                 />
               </div>
 
-              <FormField
+              <Form_field
                 label="Hex color"
                 error={Hex_error}
                 state={Hex_state}
@@ -241,9 +241,9 @@ export default function ColorPalettePicker({ value, onChange }) {
                   maxLength={7}
                   className="cpp__hex-input"
                 />
-              </FormField>
+              </Form_field>
 
-              <FormField label="Name" optional>
+              <Form_field label="Name" optional>
                 <input
                   type="text"
                   value={label}
@@ -251,7 +251,7 @@ export default function ColorPalettePicker({ value, onChange }) {
                   placeholder="e.g. Brand blue"
                   maxLength={24}
                 />
-              </FormField>
+              </Form_field>
 
               <div className="cpp__form-actions">
                 {editing && (

@@ -1,4 +1,4 @@
-import SheetModal from "../../../Components/UI/Modals/Sheet_modal";
+import Sheet_modal from "../../../Components/UI/Modals/Sheet_modal";
 
 /**
  * Workplace filter: inline pills (desktop) or trigger + picker sheet (mobile).
@@ -16,7 +16,7 @@ import SheetModal from "../../../Components/UI/Modals/Sheet_modal";
  *   indicator         – { left, width } for the sliding pill indicator
  *   containerRef      – ref for the inline-pills container
  */
-export default function PlacePicker({
+export default function Place_picker({
   places,
   placeFilters,
   selectedPlaceId,
@@ -97,7 +97,7 @@ export default function PlacePicker({
         </span>
       </button>
 
-      <SheetModal
+      <Sheet_modal
         open={Picker_open}
         closing={Picker_closing}
         onClose={onClosePicker}
@@ -140,7 +140,7 @@ export default function PlacePicker({
             );
           })}
         </ul>
-      </SheetModal>
+      </Sheet_modal>
     </>
   );
 }

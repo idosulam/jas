@@ -1,8 +1,8 @@
 import { Format_date_friendly } from "../../../Lib/Security";
 import { Kg_to_lbs } from "../../../Lib/weight";
-import { calcVolume, formatVolume } from "./Workout_utils";
+import { Calc_volume, Format_volume } from "./Workout_utils";
 
-export default function WorkoutCard({
+export default function Workout_card({
   workout,
   index,
   onEdit,
@@ -12,7 +12,7 @@ export default function WorkoutCard({
   isRemoving,
 }) {
   const exercises = Array.isArray(workout.exercises) ? workout.exercises : [];
-  const vol = calcVolume(exercises);
+  const vol = Calc_volume(exercises);
 
   return (
     <li
@@ -61,7 +61,7 @@ export default function WorkoutCard({
         <div className="fitness__card-meta">
           {vol > 0 && (
             <span className="fitness__card-volume">
-              Vol: {formatVolume(vol)} kg
+              Vol: {Format_volume(vol)} kg
             </span>
           )}
           {workout.duration_minutes && (

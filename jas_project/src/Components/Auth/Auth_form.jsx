@@ -1,8 +1,8 @@
-import PasswordStrengthBar, { MODES } from "./Password_strength_bar";
+import Password_strength_bar, { MODES } from "./Password_strength_bar";
 import { motion, AnimatePresence } from "framer-motion";
 
 /* ── Inline check / cross indicator ── */
-function FieldIndicator({ state }) {
+function Field_indicator({ state }) {
   return (
     <AnimatePresence mode="wait">
       {state === "valid" && (
@@ -52,7 +52,7 @@ function FieldIndicator({ state }) {
   );
 }
 
-function FieldError({ message }) {
+function Field_error({ message }) {
   return (
     <AnimatePresence>
       {message && (
@@ -71,7 +71,7 @@ function FieldError({ message }) {
 }
 
 /* ── Shake wrapper ── */
-function ShakeField({ trigger, children, ...rest }) {
+function Shake_field({ trigger, children, ...rest }) {
   return (
     <motion.div
       key={"shake-" + trigger}
@@ -91,7 +91,7 @@ const slide_variants = {
   exit: (dir) => ({ x: dir > 0 ? -80 : 80, opacity: 0, scale: 0.96 }),
 };
 
-function AuthForm({
+function Auth_form({
   mode,
   direction,
   email,
@@ -155,7 +155,7 @@ function AuthForm({
       >
         {/* Name (register only) */}
         {mode === MODES.REGISTER && (
-          <ShakeField
+          <Shake_field
             trigger={name_state === "error" ? Shake_key : 0}
             className="auth__field"
           >
@@ -188,14 +188,14 @@ function AuthForm({
                 autoComplete="name"
                 maxLength={40}
               />
-              {name_touched && <FieldIndicator state={name_state} />}
+              {name_touched && <Field_indicator state={name_state} />}
             </div>
-            <FieldError message={name_touched ? name_error : null} />
-          </ShakeField>
+            <Field_error message={name_touched ? name_error : null} />
+          </Shake_field>
         )}
 
         {/* Email */}
-        <ShakeField
+        <Shake_field
           trigger={email_state === "error" ? Shake_key : 0}
           className="auth__field"
         >
@@ -230,13 +230,13 @@ function AuthForm({
               autoCapitalize="none"
               spellCheck="false"
             />
-            {email_touched && <FieldIndicator state={email_state} />}
+            {email_touched && <Field_indicator state={email_state} />}
           </div>
-          <FieldError message={email_touched ? email_error : null} />
-        </ShakeField>
+          <Field_error message={email_touched ? email_error : null} />
+        </Shake_field>
 
         {/* Password */}
-        <ShakeField
+        <Shake_field
           trigger={password_state === "error" ? Shake_key : 0}
           className="auth__field"
         >
@@ -300,15 +300,15 @@ function AuthForm({
                 </svg>
               )}
             </button>
-            {password_touched && <FieldIndicator state={password_state} />}
+            {password_touched && <Field_indicator state={password_state} />}
           </div>
-          <FieldError message={password_touched ? password_error : null} />
-          <PasswordStrengthBar password={password} mode={mode} />
-        </ShakeField>
+          <Field_error message={password_touched ? password_error : null} />
+          <Password_strength_bar password={password} mode={mode} />
+        </Shake_field>
 
         {/* Confirm Password */}
         {(mode === MODES.REGISTER || mode === MODES.FORGOT) && (
-          <ShakeField
+          <Shake_field
             trigger={confirm_state === "error" ? Shake_key : 0}
             className="auth__field"
           >
@@ -341,10 +341,10 @@ function AuthForm({
                 autoComplete="new-password"
                 minLength={6}
               />
-              {confirm_touched && <FieldIndicator state={confirm_state} />}
+              {confirm_touched && <Field_indicator state={confirm_state} />}
             </div>
-            <FieldError message={confirm_touched ? confirm_error : null} />
-          </ShakeField>
+            <Field_error message={confirm_touched ? confirm_error : null} />
+          </Shake_field>
         )}
 
         {/* Global Error */}
@@ -439,5 +439,5 @@ function AuthForm({
   );
 }
 
-export { FieldIndicator, FieldError, ShakeField, slide_variants };
-export default AuthForm;
+export { Field_indicator, Field_error, Shake_field, slide_variants };
+export default Auth_form;

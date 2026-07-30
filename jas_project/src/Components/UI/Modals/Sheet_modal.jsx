@@ -1,11 +1,11 @@
 /**
- * SheetModal — Bottom-sheet modal with overlay and closing animation.
+ * Sheet_modal — Bottom-sheet modal with overlay and closing animation.
  * Replaces the repeated createPortal + overlay + modal pattern.
  */
 import { createPortal } from "react-dom";
 import "../../../Styles/Sheet_modal.css";
 
-export default function SheetModal({
+export default function Sheet_modal({
   open,
   closing,
   onClose,

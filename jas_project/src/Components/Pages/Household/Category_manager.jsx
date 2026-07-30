@@ -1,5 +1,5 @@
-import FormField from "../../UI/Form/Form_field.jsx";
-import ColorPalettePicker from "../../../Lib/Color_palette_picker.jsx";
+import Form_field from "../../UI/Form/Form_field.jsx";
+import Color_palette_picker from "../../../Lib/Color_palette_picker.jsx";
 
 export const DEFAULT_ICONS = [
   "🍔",
@@ -28,7 +28,7 @@ export const DEFAULT_ICONS = [
   "🛍️",
 ];
 
-export default function CategoryManager({
+export default function Category_manager({
   categories,
   categoryForm,
   setCategoryForm,
@@ -108,7 +108,7 @@ export default function CategoryManager({
       )}
 
       {/* Create / Edit form */}
-      <FormField label="Label name">
+      <Form_field label="Label name">
         <input
           type="text"
           value={categoryForm.name}
@@ -118,7 +118,7 @@ export default function CategoryManager({
           placeholder="e.g. Coffee, Rent, Groceries"
           maxLength={40}
         />
-      </FormField>
+      </Form_field>
 
       {/* Icon picker */}
       <div className="transactions__category-grid-wrap">
@@ -148,7 +148,7 @@ export default function CategoryManager({
       {/* Color picker */}
       <div className="transactions__category-grid-wrap">
         <label className="transactions__form-label">Color</label>
-        <ColorPalettePicker
+        <Color_palette_picker
           value={categoryForm.color}
           onChange={(color) => setCategoryForm((f) => ({ ...f, color }))}
         />

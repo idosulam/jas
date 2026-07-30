@@ -25,7 +25,7 @@ function Get_password_strength(pw) {
   return { score, label: labels[score], color: colors[score], checks };
 }
 
-export default function PasswordStrengthBar({ password, mode }) {
+export default function Password_strength_bar({ password, mode }) {
   if (mode === MODES.LOGIN || !password) return null;
   const { score, label, color, checks } = Get_password_strength(password);
   const percent = (score / 5) * 100;

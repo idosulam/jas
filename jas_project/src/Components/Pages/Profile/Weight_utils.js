@@ -1,11 +1,11 @@
 import { Bmi_label } from "../../../Lib/weight";
 
-export function daysBetween(a, b) {
+export function Days_between(a, b) {
   const ms = new Date(`${b}T12:00:00`) - new Date(`${a}T12:00:00`);
   return Math.max(1, Math.round(ms / 86400000));
 }
 
-export function buildInsight({ age, weeklyChangeKg, bmi, goalProgress, isLosing }) {
+export function Build_insight({ age, weeklyChangeKg, bmi, goalProgress, isLosing }) {
   const parts = [];
 
   if (age) {

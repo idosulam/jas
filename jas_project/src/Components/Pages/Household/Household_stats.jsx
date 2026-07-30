@@ -1,7 +1,7 @@
-import GlassCard from "../../UI/Glass_card";
+import Glass_card from "../../UI/Glass_card";
 import { Format_money } from "../../../Lib/Format.js";
 
-function HouseholdStats({
+function Household_stats({
   Tx_summary,
   Budget_overview,
   Combined_stats,
@@ -12,17 +12,17 @@ function HouseholdStats({
       {/* Quick Transaction Summary */}
       {Tx_summary && (
         <div className="household__tx-summary">
-          <GlassCard
+          <Glass_card
             value={Format_money(Tx_summary.totalIncome)}
             label="Income"
             value_class_name="glass-card__value--green"
           />
-          <GlassCard
+          <Glass_card
             value={Format_money(Tx_summary.totalExpense)}
             label="Expenses"
             value_class_name="glass-card__value--orange"
           />
-          <GlassCard
+          <Glass_card
             value={Format_money(Tx_summary.balance)}
             label="Balance"
             value_class_name={
@@ -80,22 +80,22 @@ function HouseholdStats({
       {/* Combined Earnings Stats */}
       <h3 className="household__section-title">Shift Earnings</h3>
       <div className="household__stats">
-        <GlassCard
+        <Glass_card
           className="household__stat"
           value={`${Combined_stats.combined.hours.toFixed(1)}h`}
           label="Combined Hours"
         />
-        <GlassCard
+        <Glass_card
           className="household__stat"
           value={Format_money(Combined_stats.combined.pay)}
           label="Combined Pay"
         />
-        <GlassCard
+        <Glass_card
           className="household__stat"
           value={Format_money(Combined_stats.combined.tips)}
           label="Combined Tips"
         />
-        <GlassCard
+        <Glass_card
           className="household__stat household__stat--total"
           value={Format_money(Combined_stats.combined.total)}
           label="Combined Total"
@@ -173,4 +173,4 @@ function HouseholdStats({
   );
 }
 
-export default HouseholdStats;
+export default Household_stats;

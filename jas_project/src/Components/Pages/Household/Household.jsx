@@ -6,17 +6,17 @@ import { Use_user_id } from "../../../Lib/Auth_context.jsx";
 import { Get_user_facing_error } from "../../../Lib/Security";
 import { Use_glass_toast } from "../../../Lib/Glass_toast_provider.jsx";
 import { Use_body_scroll_lock, Use_modal } from "../../../Hooks";
-import ConfirmModal from "../../UI/Modals/Confirm_modal";
-import PageHeader from "../../UI/Page_header";
-import LoadingSkeleton from "../../UI/Loading_skeleton";
-import SavingsGoals from "./Savings_goals";
+import Confirm_modal from "../../UI/Modals/Confirm_modal";
+import Page_header from "../../UI/Page_header";
+import Loading_skeleton from "../../UI/Loading_skeleton";
+import Savings_goals from "./Savings_goals";
 import Transactions from "./Transactions";
-import RecurringTransactions from "./Recurring_transactions";
+import Recurring_transactions from "./Recurring_transactions";
 import Analytics from "./Analytics";
 import Budgets from "./budgets";
-import HouseholdInvite from "./Household_invite";
-import HouseholdStats from "./Household_stats";
-import HouseholdShiftList from "./Household_shift_list";
+import Household_invite from "./Household_invite";
+import Household_stats from "./Household_stats";
+import Household_shift_list from "./Household_shift_list";
 
 import "./Budgets.css";
 
@@ -542,12 +542,12 @@ function Household() {
   if (!Loading && !household) {
     return (
       <section className="household page">
-        <PageHeader
+        <Page_header
           eyebrow="Together"
           title="Household"
           className="household__header animate-in"
         />
-        <HouseholdInvite
+        <Household_invite
           household={null}
           members={[]}
           joinModal={joinModal}
@@ -564,12 +564,12 @@ function Household() {
   if (Loading) {
     return (
       <section className="household page">
-        <PageHeader
+        <Page_header
           eyebrow="Together"
           title="Household"
           className="household__header"
         />
-        <LoadingSkeleton lines={6} />
+        <Loading_skeleton lines={6} />
       </section>
     );
   }
@@ -577,14 +577,14 @@ function Household() {
   return (
     <section className="household page">
       {/* Header */}
-      <PageHeader
+      <Page_header
         eyebrow="Together"
         title={household?.name || "Household"}
         className="household__header animate-in"
       />
 
       {/* Invite + Delete */}
-      <HouseholdInvite
+      <Household_invite
         household={household}
         members={members}
         joinModal={joinModal}
@@ -659,7 +659,7 @@ function Household() {
           <>
             {/* Transaction Summary + Budget + Shift Stats */}
             {allTransactions.length > 0 && (
-              <HouseholdStats
+              <Household_stats
                 Tx_summary={Tx_summary}
                 Budget_overview={Budget_overview}
                 Combined_stats={Combined_stats}
@@ -667,7 +667,7 @@ function Household() {
               />
             )}
             {allTransactions.length === 0 && (
-              <HouseholdStats
+              <Household_stats
                 Tx_summary={null}
                 Budget_overview={Budget_overview}
                 Combined_stats={Combined_stats}
@@ -676,7 +676,7 @@ function Household() {
             )}
 
             {/* Today's Shifts + Earnings Chart */}
-            <HouseholdShiftList
+            <Household_shift_list
               todayShifts={todayShifts}
               Workplaces={Workplaces}
               Chart_data={Chart_data}
@@ -715,7 +715,7 @@ function Household() {
               </div>
 
               {savingsSubView === "goals" && (
-                <SavingsGoals
+                <Savings_goals
                   householdId={household?.id}
                   user_id={user_id}
                   members={members}
@@ -755,7 +755,7 @@ function Household() {
         )}
 
         {activeTab === "recurring" && (
-          <RecurringTransactions
+          <Recurring_transactions
             householdId={household?.id}
             user_id={user_id}
             categories={categories}
@@ -773,7 +773,7 @@ function Household() {
       </div>
 
       {/* Delete Confirmation */}
-      <ConfirmModal
+      <Confirm_modal
         open={Delete_modal.open}
         closing={Delete_modal.closing}
         onClose={() => Delete_modal.close_modal()}

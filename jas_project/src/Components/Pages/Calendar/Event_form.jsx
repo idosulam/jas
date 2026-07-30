@@ -1,7 +1,7 @@
-import ColorPalettePicker from "../../../Lib/Color_palette_picker.jsx";
-import { SheetModal, FormField } from "../../../components";
+import Color_palette_picker from "../../../Lib/Color_palette_picker.jsx";
+import { Sheet_modal, Form_field } from "../../../components";
 
-export default function EventForm({
+export default function Event_form({
   open,
   closing,
   onClose,
@@ -29,14 +29,14 @@ export default function EventForm({
   };
 
   return (
-    <SheetModal
+    <Sheet_modal
       open={open}
       closing={closing}
       onClose={onClose}
       title={Editing_event ? "Edit event" : "Add event"}
     >
       <form className="calendar__form" onSubmit={onSubmit}>
-        <FormField
+        <Form_field
           label="Title"
           error={Field_errors.title}
           state={Field_states.title}
@@ -55,9 +55,9 @@ export default function EventForm({
             required
             autoComplete="off"
           />
-        </FormField>
+        </Form_field>
 
-        <FormField
+        <Form_field
           label="Date"
           error={Field_errors.event_date}
           state={Field_states.event_date}
@@ -74,9 +74,9 @@ export default function EventForm({
             onBlur={() => onFieldBlur("event_date")}
             required
           />
-        </FormField>
+        </Form_field>
 
-        <FormField
+        <Form_field
           label="Start"
           error={Field_errors.start_time}
           state={Field_states.start_time}
@@ -93,9 +93,9 @@ export default function EventForm({
             onBlur={() => onFieldBlur("start_time")}
             required
           />
-        </FormField>
+        </Form_field>
 
-        <FormField
+        <Form_field
           label="End"
           error={Field_errors.end_time}
           state={Field_states.end_time}
@@ -112,16 +112,16 @@ export default function EventForm({
             onBlur={() => onFieldBlur("end_time")}
             required
           />
-        </FormField>
+        </Form_field>
 
-        <FormField
+        <Form_field
           label="Color"
           error={Field_errors.color}
           state={Field_states.color || (form.color ? "valid" : "idle")}
           show_indicator
           shake={Field_errors.color ? Shake_key : 0}
         >
-          <ColorPalettePicker
+          <Color_palette_picker
             value={form.color}
             onChange={(hex) => {
               handle_change("color", hex);
@@ -131,9 +131,9 @@ export default function EventForm({
               }
             }}
           />
-        </FormField>
+        </Form_field>
 
-        <FormField
+        <Form_field
           label="Notes"
           optional
           char_count={form.notes.length}
@@ -146,7 +146,7 @@ export default function EventForm({
             onChange={(e) => handle_change("notes", e.target.value)}
             placeholder="Reminder details…"
           />
-        </FormField>
+        </Form_field>
 
         <div className="btn-row">
           <button
@@ -175,6 +175,6 @@ export default function EventForm({
           </button>
         </div>
       </form>
-    </SheetModal>
+    </Sheet_modal>
   );
 }

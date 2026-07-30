@@ -1,6 +1,6 @@
 import "../../Styles/Empty_state.css";
 
-export default function EmptyState({
+export default function Empty_state({
   icon,
   title,
   text,

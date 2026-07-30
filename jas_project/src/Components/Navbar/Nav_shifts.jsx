@@ -1,4 +1,4 @@
-function NavShifts({ is_active, onClick }) {
+function Nav_shifts({ is_active, onClick }) {
   return (
     <button
       type="button"
@@ -24,4 +24,4 @@ function NavShifts({ is_active, onClick }) {
   );
 }
 
-export default NavShifts;
+export default Nav_shifts;

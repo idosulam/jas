@@ -3,17 +3,17 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Get_supabase_client } from "../../../Lib/Superbase";
 import { Use_user_id } from "../../../Lib/Auth_context.jsx";
 import {
-  add_days,
+  Add_days,
   DAY_END_HOUR,
   DAY_START_HOUR,
   EVENT_COLORS,
-  event_style,
-  resolve_color,
-  format_time_12,
+  Event_style,
+  Resolve_color,
+  Format_time_12,
   HOUR_HEIGHT,
-  layout_overlapping_events,
-  start_of_week,
-  to_date_key,
+  Layout_overlapping_events,
+  Start_of_week,
+  To_date_key,
   TOTAL_HOURS,
 } from "./Calendar_layout";
 import {
@@ -35,20 +35,20 @@ import {
   Use_floating_actions,
 } from "../../../Hooks";
 import {
-  ConfirmModal,
-  EmptyState,
-  LoadingSkeleton,
-  PageHeader,
-  GlassCard,
+  Confirm_modal,
+  Empty_state,
+  Loading_skeleton,
+  Page_header,
+  Glass_card,
   FAB,
 } from "../../../components";
 import { Use_glass_toast } from "../../../Lib/Glass_toast_provider.jsx";
 import { Fetch_palette } from "../../../Lib/Color_palette.js";
 import { Use_household } from "../../../Lib/Household_context.jsx";
-import EventForm from "./Event_form.jsx";
-import CalendarGrid from "./Calendar_grid.jsx";
-import TimelineView from "./Timeline_view.jsx";
-import ReminderList from "./Reminder_list.jsx";
+import Event_form from "./Event_form.jsx";
+import Calendar_grid from "./Calendar_grid.jsx";
+import Timeline_view from "./Timeline_view.jsx";
+import Reminder_list from "./Reminder_list.jsx";
 
 const MODAL_EXIT_MS = 260;
 
@@ -73,7 +73,7 @@ function Calendar() {
   const [error, Set_error] = useState(null);
   const [Delete_target, Set_delete_target] = useState(null);
   const [Editing_event, Set_editing_event] = useState(null);
-  const [form, Set_form] = useState(() => Empty_form(to_date_key(today)));
+  const [form, Set_form] = useState(() => Empty_form(To_date_key(today)));
   const [Saving, Set_saving] = useState(false);
   const [Deleting, Set_deleting] = useState(false);
   const [Toggling_id, Set_toggling_id] = useState(null);
@@ -89,8 +89,8 @@ function Calendar() {
   const { ref: Add_btn_ref, visible: Show_floating_actions } = Use_floating_actions();
   const { success: Toast_success, error: Toast_error } = Use_glass_toast();
 
-  const Selected_key = to_date_key(Selected_date);
-  const Is_today = Selected_key === to_date_key(today);
+  const Selected_key = To_date_key(Selected_date);
+  const Is_today = Selected_key === To_date_key(today);
 
   // Load color palette from DB
   useEffect(() => {
@@ -98,15 +98,15 @@ function Calendar() {
   }, []);
 
   const Week_days = useMemo(() => {
-    const start = start_of_week(Selected_date);
-    return Array.from({ length: 7 }, (_, i) => add_days(start, i));
+    const start = Start_of_week(Selected_date);
+    return Array.from({ length: 7 }, (_, i) => Add_days(start, i));
   }, [Selected_date]);
 
   const Month_days = useMemo(() => {
-    const start = start_of_week(
+    const start = Start_of_week(
       new Date(Selected_date.getFullYear(), Selected_date.getMonth(), 1),
     );
-    return Array.from({ length: 42 }, (_, i) => add_days(start, i));
+    return Array.from({ length: 42 }, (_, i) => Add_days(start, i));
   }, [Selected_date]);
 
   const Visible_days = View_mode === "week" ? Week_days : Month_days;
@@ -123,7 +123,7 @@ function Calendar() {
   );
 
   const Laid_out_events = useMemo(
-    () => layout_overlapping_events(events),
+    () => Layout_overlapping_events(events),
     [events],
   );
 
@@ -160,15 +160,15 @@ function Calendar() {
 
     const range_start =
       View_mode === "week"
-        ? start_of_week(Selected_date)
+        ? Start_of_week(Selected_date)
         : new Date(Selected_date.getFullYear(), Selected_date.getMonth(), 1);
     const range_end =
       View_mode === "week"
-        ? add_days(range_start, 6)
+        ? Add_days(range_start, 6)
         : new Date(Selected_date.getFullYear(), Selected_date.getMonth() + 1, 0);
 
-    const start_key = to_date_key(range_start);
-    const end_key = to_date_key(range_end);
+    const start_key = To_date_key(range_start);
+    const end_key = To_date_key(range_end);
 
     try {
       const supabase = Get_supabase_client();
@@ -351,7 +351,7 @@ function Calendar() {
       return;
     }
 
-    Set_selected_date((date) => add_days(date, delta * 7));
+    Set_selected_date((date) => Add_days(date, delta * 7));
   };
 
   const Open_add_modal = (start_time = "09:00") => {
@@ -676,7 +676,7 @@ function Calendar() {
 
   return (
     <section className="calendar page">
-      <PageHeader
+      <Page_header
         className="calendar__header animate-in"
         eyebrow={Household_name ? `Calendar · ${Household_name}` : "Daily planner"}
         title="Calendar"
@@ -743,7 +743,7 @@ function Calendar() {
         </button>
       </div>
 
-      <CalendarGrid
+      <Calendar_grid
         Visible_days={Visible_days}
         Selected_date={Selected_date}
         today={today}
@@ -753,12 +753,12 @@ function Calendar() {
       />
 
       <div className="calendar__summary animate-in animate-in--3">
-        <GlassCard
+        <Glass_card
           className="calendar__stat"
           value={events.length}
           label="Events"
         />
-        <GlassCard
+        <Glass_card
           className="calendar__stat"
           value={pending_count}
           label="Pending"
@@ -784,10 +784,10 @@ function Calendar() {
       </div>
 
       {Loading ? (
-        <LoadingSkeleton count={3} height="4rem" />
+        <Loading_skeleton count={3} height="4rem" />
       ) : (
         <div className="calendar__day animate-in animate-in--4">
-          <TimelineView
+          <Timeline_view
             Hour_labels={Hour_labels}
             Laid_out_events={Laid_out_events}
             Now_line_top={Now_line_top}
@@ -807,14 +807,14 @@ function Calendar() {
 
       {events.length === 0 && !Loading && (
         <div style={{ marginTop: "1rem" }}>
-          <EmptyState
+          <Empty_state
             text="No events today. Tap the timeline or + Add event."
             className="animate-in"
           />
         </div>
       )}
 
-      <ReminderList
+      <Reminder_list
         events={events}
         Is_wake_event={Is_wake_event}
         onCheck={Toggle_complete}
@@ -827,7 +827,7 @@ function Calendar() {
         Removing_id={Removing_id}
       />
 
-      <EventForm
+      <Event_form
         open={Form_modal.open}
         closing={Form_modal.closing}
         onClose={Close_form_modal}
@@ -849,7 +849,7 @@ function Calendar() {
         isValid={Is_calendar_form_valid}
       />
 
-      <ConfirmModal
+      <Confirm_modal
         open={!!Delete_target && Delete_modal.open}
         closing={Delete_modal.closing}
         onClose={Close_delete_modal}
@@ -860,8 +860,8 @@ function Calendar() {
           Delete_target && (
             <strong>
               {Delete_target.title} on {Delete_target.event_date} (
-              {format_time_12(Delete_target.start_time)} –{" "}
-              {format_time_12(Delete_target.end_time)})
+              {Format_time_12(Delete_target.start_time)} –{" "}
+              {Format_time_12(Delete_target.end_time)})
             </strong>
           )
         }

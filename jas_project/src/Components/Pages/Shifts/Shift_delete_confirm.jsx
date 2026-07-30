@@ -1,4 +1,4 @@
-import ConfirmModal from "../../../Components/UI/Modals/Confirm_modal";
+import Confirm_modal from "../../../Components/UI/Modals/Confirm_modal";
 import Badge from "../../../Components/UI/badge";
 import { Format_date_friendly } from "../../../Lib/Security";
 import { Format_money } from "../../../Lib/format";
@@ -15,7 +15,7 @@ import { calcPay } from "./Shift_utils";
  *   Deleting      – delete-in-progress flag
  *   places        – PLACES map
  */
-export default function ShiftDeleteConfirm({
+export default function Shift_delete_confirm({
   Delete_target,
   closing,
   onClose,
@@ -35,7 +35,7 @@ export default function ShiftDeleteConfirm({
   const tips = parseFloat(Delete_target.tips) || 0;
 
   return (
-    <ConfirmModal
+    <Confirm_modal
       open={!!Delete_target}
       closing={closing}
       onClose={onClose}

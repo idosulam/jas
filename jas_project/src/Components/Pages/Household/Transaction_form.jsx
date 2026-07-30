@@ -2,11 +2,11 @@ import { useEffect, useRef, useState } from "react";
 import {
   Haptic_error,
 } from "../../../Lib/Security";
-import FormField from "../../UI/Form/Form_field.jsx";
+import Form_field from "../../UI/Form/Form_field.jsx";
 
 const TYPE_OPTIONS = ["expense", "income", "contribute"];
 
-export default function TransactionForm({
+export default function Transaction_form({
   form,
   Set_form,
   editingTx,
@@ -161,7 +161,7 @@ export default function TransactionForm({
         ))}
       </div>
 
-      <FormField
+      <Form_field
         label="Amount"
         error={amountError}
         state={amountState}
@@ -187,9 +187,9 @@ export default function TransactionForm({
           }}
           placeholder="0.00"
         />
-      </FormField>
+      </Form_field>
 
-      <FormField
+      <Form_field
         label="Description"
         error={descError}
         state={descState}
@@ -218,7 +218,7 @@ export default function TransactionForm({
           }
           maxLength={100}
         />
-      </FormField>
+      </Form_field>
 
       {/* Goal Picker (contribute type) */}
       {form.type === "contribute" && (
@@ -314,7 +314,7 @@ export default function TransactionForm({
         </div>
       )}
 
-      <FormField label="Date">
+      <Form_field label="Date">
         <input
           type="date"
           value={form.transaction_date}
@@ -322,9 +322,9 @@ export default function TransactionForm({
             Set_form((f) => ({ ...f, transaction_date: e.target.value }))
           }
         />
-      </FormField>
+      </Form_field>
 
-      <FormField label="Note (optional)">
+      <Form_field label="Note (optional)">
         <input
           type="text"
           value={form.note}
@@ -332,7 +332,7 @@ export default function TransactionForm({
           placeholder="Add a note..."
           maxLength={500}
         />
-      </FormField>
+      </Form_field>
 
       <div className="btn-row">
         <button type="button" className="btn btn--ghost" onClick={onCancel}>

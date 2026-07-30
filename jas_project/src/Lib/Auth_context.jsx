@@ -8,7 +8,7 @@ const auth_context = createContext({
   Loading: true,
 });
 
-export function AuthProvider({ children }) {
+export function Auth_provider({ children }) {
   const [session, setSession] = useState(null);
   const [Loading, Set_loading] = useState(true);
 

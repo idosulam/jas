@@ -1,5 +1,5 @@
-import SheetModal from "../../../Components/UI/Modals/Sheet_modal";
-import FormField from "../../UI/Form/Form_field.jsx";
+import Sheet_modal from "../../../Components/UI/Modals/Sheet_modal";
+import Form_field from "../../UI/Form/Form_field.jsx";
 import { PAY_TYPES } from "./Shift_utils";
 
 /**
@@ -23,7 +23,7 @@ import { PAY_TYPES } from "./Shift_utils";
  *   onSavePreset()        – save preset handler
  *   onDeletePreset(id)    – delete preset handler
  */
-export default function ShiftPresets({
+export default function Shift_presets({
   Presets,
   Place_filter,
   onQuickAdd,
@@ -76,7 +76,7 @@ export default function ShiftPresets({
         </button>
       </div>
 
-      <SheetModal
+      <Sheet_modal
         open={presetModalOpen}
         closing={presetModalClosing}
         onClose={onClosePresetModal}
@@ -86,7 +86,7 @@ export default function ShiftPresets({
           Presets let you quick-add common shifts with one tap.
         </p>
         <div className="shifts__form">
-          <FormField label="Preset name">
+          <Form_field label="Preset name">
             <input
               type="text"
               value={Preset_form.label}
@@ -97,8 +97,8 @@ export default function ShiftPresets({
               maxLength={40}
               autoFocus
             />
-          </FormField>
-          <FormField label="Place">
+          </Form_field>
+          <Form_field label="Place">
             <select
               value={Preset_form.place}
               onChange={(e) =>
@@ -112,7 +112,7 @@ export default function ShiftPresets({
                 </option>
               ))}
             </select>
-          </FormField>
+          </Form_field>
           <div
             className="shifts__pay-toggle"
             role="group"
@@ -133,7 +133,7 @@ export default function ShiftPresets({
             ))}
           </div>
           <div className="form-time-row">
-            <FormField label="Start time">
+            <Form_field label="Start time">
               <input
                 type="time"
                 value={Preset_form.start_time}
@@ -144,8 +144,8 @@ export default function ShiftPresets({
                   }))
                 }
               />
-            </FormField>
-            <FormField label="End time">
+            </Form_field>
+            <Form_field label="End time">
               <input
                 type="time"
                 value={Preset_form.end_time}
@@ -156,9 +156,9 @@ export default function ShiftPresets({
                   }))
                 }
               />
-            </FormField>
+            </Form_field>
           </div>
-          <FormField label="Hours">
+          <Form_field label="Hours">
             <input
               type="number"
               min="0.01"
@@ -169,7 +169,7 @@ export default function ShiftPresets({
               }
               placeholder="8"
             />
-          </FormField>
+          </Form_field>
           <div className="btn-row">
             {Editing_preset && (
               <button
@@ -200,7 +200,7 @@ export default function ShiftPresets({
             </button>
           </div>
         </div>
-      </SheetModal>
+      </Sheet_modal>
     </>
   );
 }

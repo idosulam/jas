@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 
 const MEMBER_COLORS = ["#818cf8", "#f472b6", "#34d399", "#fbbf24"];
 
-function EarningsChart({ data, members, month, year }) {
+function Earnings_chart({ data, members, month, year }) {
   const [hoverIndex, setHoverIndex] = useState(null);
 
   const chart = useMemo(() => {
@@ -209,4 +209,4 @@ function EarningsChart({ data, members, month, year }) {
   );
 }
 
-export default EarningsChart;
+export default Earnings_chart;

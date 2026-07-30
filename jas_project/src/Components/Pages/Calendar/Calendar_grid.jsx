@@ -1,8 +1,8 @@
-import { to_date_key } from "./Calendar_layout";
+import { To_date_key } from "./Calendar_layout";
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-export default function CalendarGrid({
+export default function Calendar_grid({
   Visible_days,
   Selected_date,
   today,
@@ -10,7 +10,7 @@ export default function CalendarGrid({
   busy_dates,
   onDaySelect,
 }) {
-  const Selected_key = to_date_key(Selected_date);
+  const Selected_key = To_date_key(Selected_date);
 
   return (
     <div
@@ -19,9 +19,9 @@ export default function CalendarGrid({
       aria-label={View_mode === "week" ? "Week days" : "Month days"}
     >
       {Visible_days.map((day) => {
-        const key = to_date_key(day);
+        const key = To_date_key(day);
         const isSelected = key === Selected_key;
-        const isDayToday = key === to_date_key(today);
+        const isDayToday = key === To_date_key(today);
         const hasEvents = busy_dates.has(key);
         const isInCurrentMonth =
           View_mode === "month"

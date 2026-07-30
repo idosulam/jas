@@ -6,16 +6,16 @@ import {
 } from "../../../Lib/Security";
 import { Use_glass_toast } from "../../../Lib/Glass_toast_provider.jsx";
 import { Use_modal, Use_body_scroll_lock } from "../../../Hooks";
-import SheetModal from "../../UI/Modals/Sheet_modal";
-import ConfirmModal from "../../UI/Modals/Confirm_modal";
-import EmptyState from "../../UI/Empty_state";
-import FormField from "../../UI/Form/form_field";
-import ColorPalettePicker from "../../../Lib/Color_palette_picker.jsx";
+import Sheet_modal from "../../UI/Modals/Sheet_modal";
+import Confirm_modal from "../../UI/Modals/Confirm_modal";
+import Empty_state from "../../UI/Empty_state";
+import Form_field from "../../UI/Form/form_field";
+import Color_palette_picker from "../../../Lib/Color_palette_picker.jsx";
 
 import { Format_money, Format_date_group } from "../../../Lib/format";
-import TransactionForm from "./Transaction_form";
-import TransactionCard from "./Transaction_card";
-import CategoryManager, { DEFAULT_ICONS } from "./Category_manager";
+import Transaction_form from "./Transaction_form";
+import Transaction_card from "./Transaction_card";
+import Category_manager, { DEFAULT_ICONS } from "./Category_manager";
 
 function Transactions({ householdId, user_id, members, goals = [] }) {
   const [transactions, setTransactions] = useState([]);
@@ -584,7 +584,7 @@ function Transactions({ householdId, user_id, members, goals = [] }) {
       </div>
 
       {grouped.length === 0 ? (
-        <EmptyState
+        <Empty_state
           className="transactions__empty-state"
           icon={<span style={{ fontSize: "2rem" }}>💳</span>}
           title="No transactions this month"
@@ -624,7 +624,7 @@ function Transactions({ householdId, user_id, members, goals = [] }) {
                 </div>
                 <div className="transactions__group-items">
                   {items.map((tx) => (
-                    <TransactionCard
+                    <Transaction_card
                       key={tx.id}
                       transaction={tx}
                       onEdit={Open_edit}
@@ -638,7 +638,7 @@ function Transactions({ householdId, user_id, members, goals = [] }) {
       )}
 
       {/* ── Add/Edit Modal ─────────────────────────────────── */}
-      <SheetModal
+      <Sheet_modal
         open={addModal.open || editModal.open}
         closing={addModal.closing || editModal.closing}
         onClose={() => {
@@ -647,7 +647,7 @@ function Transactions({ householdId, user_id, members, goals = [] }) {
         }}
         title={editingTx ? "Edit transaction" : `Add ${typeLabel}`}
       >
-        <TransactionForm
+        <Transaction_form
           form={form}
           Set_form={Set_form}
           editingTx={editingTx}
@@ -666,10 +666,10 @@ function Transactions({ householdId, user_id, members, goals = [] }) {
           onOpenNewCategory={openNewCategory}
           onError={Toast_error}
         />
-      </SheetModal>
+      </Sheet_modal>
 
       {/* ── Delete Confirmation ────────────────────────────── */}
-      <ConfirmModal
+      <Confirm_modal
         open={Delete_modal.open}
         closing={Delete_modal.closing}
         onClose={() => Delete_modal.close_modal()}
@@ -681,7 +681,7 @@ function Transactions({ householdId, user_id, members, goals = [] }) {
       />
 
       {/* ── Category Management Modal ──────────────────────── */}
-      <SheetModal
+      <Sheet_modal
         open={categoryModal.open}
         closing={categoryModal.closing}
         onClose={() => categoryModal.close_modal()}
@@ -757,7 +757,7 @@ function Transactions({ householdId, user_id, members, goals = [] }) {
           )}
 
           {/* Create / Edit form */}
-          <FormField label="Label name">
+          <Form_field label="Label name">
             <input
               type="text"
               value={categoryForm.name}
@@ -767,7 +767,7 @@ function Transactions({ householdId, user_id, members, goals = [] }) {
               placeholder="e.g. Coffee, Rent, Groceries"
               maxLength={40}
             />
-          </FormField>
+          </Form_field>
 
           {/* Icon picker */}
           <div className="transactions__category-grid-wrap">
@@ -797,7 +797,7 @@ function Transactions({ householdId, user_id, members, goals = [] }) {
           {/* Color picker */}
           <div className="transactions__category-grid-wrap">
             <label className="transactions__form-label">Color</label>
-            <ColorPalettePicker
+            <Color_palette_picker
               value={categoryForm.color}
               onChange={(color) => setCategoryForm((f) => ({ ...f, color }))}
             />
@@ -853,10 +853,10 @@ function Transactions({ householdId, user_id, members, goals = [] }) {
             </button>
           </div>
         </div>
-      </SheetModal>
+      </Sheet_modal>
 
       {/* ── Delete Category Confirmation ───────────────────── */}
-      <ConfirmModal
+      <Confirm_modal
         open={deleteCategoryModal.open}
         closing={deleteCategoryModal.closing}
         onClose={() => deleteCategoryModal.close_modal()}
