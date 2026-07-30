@@ -60,7 +60,7 @@ function Workplaces({ onNavigate, return_to }) {
     try {
       const supabase = Get_supabase_client();
       const { data, error: fetch_error } = await supabase
-        .from("Workplaces")
+        .from("workplaces")
         .select("*")
         .eq("user_id", user_id)
         .order("created_at", { ascending: true });
@@ -214,11 +214,11 @@ function Workplaces({ onNavigate, return_to }) {
 
       if (editing) {
         ({ error: dbError } = await supabase
-          .from("Workplaces")
+          .from("workplaces")
           .update({ label, rate, color })
           .eq("id", editing.id));
       } else {
-        ({ error: dbError } = await supabase.from("Workplaces").insert({
+        ({ error: dbError } = await supabase.from("workplaces").insert({
           slug,
           label,
           rate,
@@ -265,7 +265,7 @@ function Workplaces({ onNavigate, return_to }) {
     try {
       const supabase = Get_supabase_client();
       const { error: dbError } = await supabase
-        .from("Workplaces")
+        .from("workplaces")
         .update({ active: false })
         .eq("id", deactivateTarget.id);
 
@@ -293,7 +293,7 @@ function Workplaces({ onNavigate, return_to }) {
     try {
       const supabase = Get_supabase_client();
       const { error: dbError } = await supabase
-        .from("Workplaces")
+        .from("workplaces")
         .update({ active: true })
         .eq("id", wp.id);
 
@@ -333,7 +333,7 @@ function Workplaces({ onNavigate, return_to }) {
       }
 
       const { error: dbError } = await supabase
-        .from("Workplaces")
+        .from("workplaces")
         .delete()
         .eq("id", Delete_target.id);
 

@@ -162,9 +162,9 @@ function Household_invite({
   };
 
   const copyInviteCode = () => {
-    if (household?.Invite_code) {
+    if (household?.invite_code) {
       navigator.clipboard
-        .writeText(household.Invite_code)
+        .writeText(household.invite_code)
         .then(() => Toast_success("Invite code copied!"));
     }
   };
@@ -260,7 +260,7 @@ function Household_invite({
           >
             <span className="household__invite-icon">🔗</span>
             <span className="household__invite-code">
-              {household.Invite_code}
+              {household.invite_code}
             </span>
           </button>
           <button

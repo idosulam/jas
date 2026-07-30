@@ -25,7 +25,7 @@ export function Household_provider({ children }) {
       const supabase = Get_supabase_client();
       const { data: membership, error } = await supabase
         .from("household_members")
-        .select("household_id, households(id, name, Invite_code)")
+        .select("household_id, households(id, name, invite_code)")
         .eq("user_id", user_id)
         .maybeSingle();
 

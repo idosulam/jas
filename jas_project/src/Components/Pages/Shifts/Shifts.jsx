@@ -145,7 +145,7 @@ function Shifts({ onNavigate }) {
     try {
       const supabase = Get_supabase_client();
       const { data, error: fetch_error } = await supabase
-        .from("Workplaces")
+        .from("workplaces")
         .select("*")
         .eq("user_id", user_id)
         .order("created_at", { ascending: true });

@@ -167,7 +167,7 @@ function Household() {
       const { data: membership, error: memError } = await supabase
         .from("household_members")
         .select(
-          "household_id, role, households(id, name, Invite_code, created_by)",
+          "household_id, role, households(id, name, invite_code, created_by)",
         )
         .eq("user_id", user_id)
         .maybeSingle();
@@ -261,7 +261,7 @@ function Household() {
       if (memberIds.length === 0) return;
 
       const { data } = await supabase
-        .from("Workplaces")
+        .from("workplaces")
         .select("slug, label, rate, color, user_id")
         .in("user_id", memberIds);
 
