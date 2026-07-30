@@ -1,4 +1,4 @@
-import { Sheet_modal, Form_field } from "../../../components";
+import { Sheet_modal, Form_field } from "../../../Components";
 import { Use_swipe_down_to_close } from "../../../Hooks";
 
 export default function Weight_form({

@@ -1,4 +1,4 @@
-import { Bmi_label } from "../../../Lib/weight";
+import { Bmi_label } from "../../../Lib/Weight";
 
 export function Days_between(a, b) {
   const ms = new Date(`${b}T12:00:00`) - new Date(`${a}T12:00:00`);

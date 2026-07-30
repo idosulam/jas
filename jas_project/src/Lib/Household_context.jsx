@@ -55,7 +55,7 @@ export function Household_provider({ children }) {
   return (
     <household_context.Provider value={value}>
       {children}
-    </Household_context.Provider>
+    </household_context.Provider>
   );
 }
 

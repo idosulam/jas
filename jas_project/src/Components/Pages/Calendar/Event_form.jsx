@@ -1,5 +1,5 @@
 import Color_palette_picker from "../../../Lib/Color_palette_picker.jsx";
-import { Sheet_modal, Form_field } from "../../../components";
+import { Sheet_modal, Form_field } from "../../../Components";
 
 export default function Event_form({
   open,

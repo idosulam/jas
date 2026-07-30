@@ -21,21 +21,21 @@ import { Use_body_scroll_lock, Use_modal } from "../../../Hooks";
 import { Use_glass_toast } from "../../../Lib/Glass_toast_provider.jsx";
 
 import Confirm_modal from "../../../Components/UI/Modals/Confirm_modal";
-import Badge from "../../../Components/UI/badge";
+import Badge from "../../../Components/UI/Badge";
 import Empty_state from "../../../Components/UI/Empty_state";
 import Loading_skeleton from "../../../Components/UI/Loading_skeleton";
 import Page_header from "../../../Components/UI/Page_header";
 import Glass_card from "../../../Components/UI/Glass_card";
-import FAB from "../../../Components/UI/fab";
+import FAB from "../../../Components/UI/Fab";
 
 import {
   PAY_TYPES,
   FILTER_PICKER_BREAKPOINT,
   WEEKDAYS,
   MODAL_EXIT_MS,
-  getCurrentLocalTime,
-  calculateHoursFromTimes,
-  calcPay,
+  get_current_local_time,
+  calculate_hours_from_times,
+  calc_pay,
   Empty_form,
   Format_money,
 } from "./Shift_utils";
@@ -461,7 +461,7 @@ function Shifts({ onNavigate }) {
   const totals = useMemo(() => {
     return Filtered_shifts.reduce(
       (acc, shift) => {
-        const pay = calcPay(PLACES, shift.place, shift.hours, shift.pay_type);
+        const pay = calc_pay(PLACES, shift.place, shift.hours, shift.pay_type);
         const tips = parseFloat(shift.tips) || 0;
         acc.hours += parseFloat(shift.hours) || 0;
         acc.pay += pay;
@@ -513,7 +513,7 @@ function Shifts({ onNavigate }) {
 
   const Handle_time_change = (field, value) => {
     const nextForm = { ...form, [field]: value };
-    const computedHours = calculateHoursFromTimes(
+    const computedHours = calculate_hours_from_times(
       nextForm.start_time,
       nextForm.end_time,
     );

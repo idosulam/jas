@@ -18,9 +18,9 @@ import Form_field from "../../../Components/UI/Form/Form_field.jsx";
 import Empty_state from "../../../Components/UI/Empty_state";
 import Loading_skeleton from "../../../Components/UI/Loading_skeleton";
 import Glass_card from "../../../Components/UI/Glass_card";
-import FAB from "../../../Components/UI/fab";
+import FAB from "../../../Components/UI/Fab";
 
-import { Kg_to_lbs } from "../../../Lib/weight";
+import { Kg_to_lbs } from "../../../Lib/Weight";
 
 import {
   MODAL_EXIT_MS,

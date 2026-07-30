@@ -51,7 +51,7 @@ export function Auth_provider({ children }) {
   return (
     <auth_context.Provider value={{ session, user, user_id, Loading }}>
       {children}
-    </Auth_context.Provider>
+    </auth_context.Provider>
   );
 }
 

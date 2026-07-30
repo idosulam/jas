@@ -41,7 +41,7 @@ import {
   Page_header,
   Glass_card,
   FAB,
-} from "../../../components";
+} from "../../../Components";
 import { Use_glass_toast } from "../../../Lib/Glass_toast_provider.jsx";
 import { Fetch_palette } from "../../../Lib/Color_palette.js";
 import { Use_household } from "../../../Lib/Household_context.jsx";

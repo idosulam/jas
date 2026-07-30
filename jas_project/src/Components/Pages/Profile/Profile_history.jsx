@@ -1,5 +1,5 @@
-import { Format_date_label } from "../../../Lib/format";
-import { Format_weight_both } from "../../../Lib/weight";
+import { Format_date_label } from "../../../Lib/Format";
+import { Format_weight_both } from "../../../Lib/Weight";
 
 export default function Profile_history({
   sorted,

@@ -1,5 +1,5 @@
 import { Format_date_friendly } from "../../../Lib/Security";
-import { Kg_to_lbs } from "../../../Lib/weight";
+import { Kg_to_lbs } from "../../../Lib/Weight";
 import { Calc_volume, Format_volume } from "./Workout_utils";
 
 export default function Workout_card({

@@ -14,7 +14,7 @@ import Form_field from "../../UI/Form/Form_field.jsx";
 import Glass_card from "../../UI/Glass_card";
 import Empty_state from "../../UI/Empty_state";
 
-import { Format_money } from "../../../Lib/format";
+import { Format_money } from "../../../Lib/Format";
 
 function Format_date(dateStr) {
   if (!dateStr) return "—";

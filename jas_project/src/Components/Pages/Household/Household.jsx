@@ -13,7 +13,7 @@ import Savings_goals from "./Savings_goals";
 import Transactions from "./Transactions";
 import Recurring_transactions from "./Recurring_transactions";
 import Analytics from "./Analytics";
-import Budgets from "./budgets";
+import Budgets from "./Budgets";
 import Household_invite from "./Household_invite";
 import Household_stats from "./Household_stats";
 import Household_shift_list from "./Household_shift_list";

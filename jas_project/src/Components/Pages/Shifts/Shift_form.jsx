@@ -5,8 +5,8 @@ import {
   Parse_time_to_minutes,
   Minutes_to_time,
 } from "../../../Lib/Calendar_sync";
-import { Format_money } from "../../../Lib/format";
-import { PAY_TYPES, calcPay } from "./Shift_utils";
+import { Format_money } from "../../../Lib/Format";
+import { PAY_TYPES, calc_pay } from "./Shift_utils";
 
 /**
  * Add / Edit shift form inside a Sheet_modal.
@@ -47,7 +47,7 @@ export default function Shift_form({
   Deactivated_slugs,
   Is_form_valid,
 }) {
-  const preview_pay = calcPay(places, form.place, form.hours, form.pay_type);
+  const preview_pay = calc_pay(places, form.place, form.hours, form.pay_type);
 
   const endHint = useMemo(() => {
     if (!form.start_time || !form.hours || form.end_time) return null;

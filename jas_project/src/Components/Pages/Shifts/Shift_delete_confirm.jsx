@@ -1,8 +1,8 @@
 import Confirm_modal from "../../../Components/UI/Modals/Confirm_modal";
-import Badge from "../../../Components/UI/badge";
+import Badge from "../../../Components/UI/Badge";
 import { Format_date_friendly } from "../../../Lib/Security";
-import { Format_money } from "../../../Lib/format";
-import { calcPay } from "./Shift_utils";
+import { Format_money } from "../../../Lib/Format";
+import { calc_pay } from "./Shift_utils";
 
 /**
  * Delete-confirmation modal for a single shift.
@@ -26,7 +26,7 @@ export default function Shift_delete_confirm({
   if (!Delete_target) return null;
 
   const placeInfo = places[Delete_target.place];
-  const pay = calcPay(
+  const pay = calc_pay(
     places,
     Delete_target.place,
     Delete_target.hours,

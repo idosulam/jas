@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
-import { To_display_kg } from "../../../Lib/weight";
-import { Format_date_label } from "../../../Lib/format";
+import { To_display_kg } from "../../../Lib/Weight";
+import { Format_date_label } from "../../../Lib/Format";
 
 export default function Weight_chart({ entries, unit, goalKg }) {
   const [hoverIndex, setHoverIndex] = useState(null);

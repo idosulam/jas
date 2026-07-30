@@ -1,4 +1,4 @@
-import { Kg_to_lbs, Lbs_to_kg } from "../../../Lib/weight";
+import { Kg_to_lbs, Lbs_to_kg } from "../../../Lib/Weight";
 import Shake_field from "../../../Components/UI/Form/Shake_field";
 import Field_indicator from "../../../Components/UI/Form/Field_indicator";
 

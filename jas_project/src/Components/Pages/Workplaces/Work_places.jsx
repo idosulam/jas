@@ -16,11 +16,11 @@ import {
   Confirm_modal,
   Empty_state,
   Loading_skeleton,
-} from "../../Index.js";
-import { Use_body_scroll_lock, Use_modal } from "../../../Hooks/Index.js";
+} from "../..";
+import { Use_body_scroll_lock, Use_modal } from "../../../Hooks";
 import { TrashIcon } from "../../../Components/UI/Modals/Confirm_modal";
 
-import { Format_money } from "../../../Lib/format";
+import { Format_money } from "../../../Lib/Format";
 
 const Empty_form = () => ({
   slug: "",

@@ -1,9 +1,9 @@
-import { Glass_card } from "../../../components";
+import { Glass_card } from "../../../Components";
 import {
   To_display_kg,
   Format_weight_both,
   Format_signed_delta,
-} from "../../../Lib/weight";
+} from "../../../Lib/Weight";
 
 export default function Profile_stats({ analytics, unit, unitLabel }) {
   return (

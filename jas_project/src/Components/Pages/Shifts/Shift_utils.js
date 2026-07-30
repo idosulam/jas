@@ -1,5 +1,5 @@
 import { Parse_time_to_minutes } from "../../../Lib/Calendar_sync";
-import { Format_money } from "../../../Lib/format";
+import { Format_money } from "../../../Lib/Format";
 
 // ── Constants ──────────────────────────────────────────────────────
 

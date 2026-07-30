@@ -9,10 +9,10 @@ import { Use_modal, Use_body_scroll_lock } from "../../../Hooks";
 import Sheet_modal from "../../UI/Modals/Sheet_modal";
 import Confirm_modal from "../../UI/Modals/Confirm_modal";
 import Empty_state from "../../UI/Empty_state";
-import Form_field from "../../UI/Form/form_field";
+import Form_field from "../../UI/Form/Form_field";
 import Color_palette_picker from "../../../Lib/Color_palette_picker.jsx";
 
-import { Format_money, Format_date_group } from "../../../Lib/format";
+import { Format_money, Format_date_group } from "../../../Lib/Format";
 import Transaction_form from "./Transaction_form";
 import Transaction_card from "./Transaction_card";
 import Category_manager, { DEFAULT_ICONS } from "./Category_manager";

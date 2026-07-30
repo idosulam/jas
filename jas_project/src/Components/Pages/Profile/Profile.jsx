@@ -18,7 +18,7 @@ import {
   Page_header,
   FAB,
   Loading_skeleton,
-} from "../../../components";
+} from "../../../Components";
 import { Use_household } from "../../../Lib/Household_context.jsx";
 import {
   Use_body_scroll_lock,
@@ -27,9 +27,9 @@ import {
 } from "../../../Hooks";
 import { ACTIVITY_LEVELS, GENDER_OPTIONS } from "../Fitness/Macro_calculator";
 
-import { Format_date_label } from "../../../Lib/format";
+import { Format_date_label } from "../../../Lib/Format";
 
-import { Load_unit, To_display_kg, Format_weight, Format_weight_both, Kg_to_lbs, Lbs_to_kg, Cm_to_feet_and_inches, Feet_and_inches_to_cm, Format_height, Calc_bmi, Bmi_label, Healthy_weight_range_kg } from "../../../Lib/weight";
+import { Load_unit, To_display_kg, Format_weight, Format_weight_both, Kg_to_lbs, Lbs_to_kg, Cm_to_feet_and_inches, Feet_and_inches_to_cm, Format_height, Calc_bmi, Bmi_label, Healthy_weight_range_kg } from "../../../Lib/Weight";
 
 import Weight_chart from "./Weight_chart";
 import { Days_between, Build_insight } from "./Weight_utils";

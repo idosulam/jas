@@ -1,7 +1,7 @@
-import Badge from "../../../Components/UI/badge";
+import Badge from "../../../Components/UI/Badge";
 import { Format_date_friendly } from "../../../Lib/Security";
-import { Format_money } from "../../../Lib/format";
-import { calcPay } from "./Shift_utils";
+import { Format_money } from "../../../Lib/Format";
+import { calc_pay } from "./Shift_utils";
 
 /**
  * A single shift list item card.
@@ -30,7 +30,7 @@ export default function Shift_card({
   isRemoving,
   animDelay,
 }) {
-  const pay = calcPay(places, shift.place, shift.hours, shift.pay_type);
+  const pay = calc_pay(places, shift.place, shift.hours, shift.pay_type);
   const tips = parseFloat(shift.tips) || 0;
   const placeInfo = places[shift.place];
   const isTipsOnly = shift.pay_type === "tips_only";

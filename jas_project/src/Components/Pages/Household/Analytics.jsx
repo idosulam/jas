@@ -1,6 +1,6 @@
 import { useMemo, useRef, useState, useEffect } from "react";
 
-import { Format_money } from "../../../Lib/format";
+import { Format_money } from "../../../Lib/Format";
 
 function Analytics({ transactions, members, month, year }) {
   const [activeTab, setActiveTab] = useState("expense"); // expense | income

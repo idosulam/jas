@@ -7,7 +7,7 @@ import Sheet_modal from "../../UI/Modals/Sheet_modal";
 import Confirm_modal from "../../UI/Modals/Confirm_modal";
 import Form_field from "../../UI/Form/Form_field.jsx";
 import Empty_state from "../../UI/Empty_state";
-import { Format_money } from "../../../Lib/format";
+import { Format_money } from "../../../Lib/Format";
 import Color_palette_picker from "../../../Lib/Color_palette_picker.jsx";
 import { DEFAULT_ICONS } from "./Category_manager";
 

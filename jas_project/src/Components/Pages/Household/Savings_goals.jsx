@@ -13,7 +13,7 @@ import Confirm_modal from "../../UI/Modals/Confirm_modal";
 import Form_field from "../../UI/Form/Form_field.jsx";
 import Empty_state from "../../UI/Empty_state";
 
-import { Format_money } from "../../../Lib/format";
+import { Format_money } from "../../../Lib/Format";
 
 function Savings_goals({ householdId, user_id, members, hideTitle }) {
   const [goals, setGoals] = useState([]);

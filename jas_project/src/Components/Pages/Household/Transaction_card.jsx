@@ -1,4 +1,4 @@
-import { Format_money } from "../../../Lib/format";
+import { Format_money } from "../../../Lib/Format";
 
 /**
  * Avatar color palette — rotates based on name hash.
