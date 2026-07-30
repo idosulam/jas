@@ -8,14 +8,14 @@ export function emptyExercise() {
   return { name: "", weight: "", weight_lbs: "", sets: "", reps: "" };
 }
 
-export function empty_form() {
+export function Empty_form() {
   return {
     workout_date: new Date().toISOString().slice(0, 10),
     preset_name: "",
     exercises: [emptyExercise()],
     notes: "",
     duration_minutes: "",
-    calories_burned: "",
+    Calories_burned: "",
   };
 }
 

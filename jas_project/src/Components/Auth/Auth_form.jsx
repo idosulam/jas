@@ -99,7 +99,7 @@ function AuthForm({
   confirm_password,
   display_name,
   show_password,
-  loading,
+  Loading,
   error,
   success_msg,
   email_state,
@@ -114,9 +114,9 @@ function AuthForm({
   password_touched,
   confirm_touched,
   name_touched,
-  shake_key,
-  email_ref,
-  is_form_valid,
+  Shake_key,
+  Email_ref,
+  Is_form_valid,
   on_email_change,
   on_password_change,
   onConfirmChange,
@@ -128,7 +128,7 @@ function AuthForm({
   onToggleShowPassword,
   onSubmit,
 }) {
-  const input_class = (touched, state) =>
+  const Input_class = (touched, state) =>
     [
       "auth__input",
       touched && state === "valid" ? "auth__input--valid" : "",
@@ -137,7 +137,7 @@ function AuthForm({
       .filter(Boolean)
       .join(" ");
 
-  const wrap_class = (touched, state) =>
+  const Wrap_class = (touched, state) =>
     `${touched && state === "valid" ? "auth__input-wrap--valid" : ""} ${touched && state === "error" ? "auth__input-wrap--error" : ""}`.trim();
 
   return (
@@ -156,14 +156,14 @@ function AuthForm({
         {/* Name (register only) */}
         {mode === MODES.REGISTER && (
           <ShakeField
-            trigger={name_state === "error" ? shake_key : 0}
+            trigger={name_state === "error" ? Shake_key : 0}
             className="auth__field"
           >
             <label className="auth__label" htmlFor="auth-name">
               Name
             </label>
             <div
-              className={`auth__input-wrap ${wrap_class(name_touched, name_state)}`}
+              className={`auth__input-wrap ${Wrap_class(name_touched, name_state)}`}
             >
               <svg
                 className="auth__input-icon"
@@ -179,7 +179,7 @@ function AuthForm({
               <input
                 id="auth-name"
                 type="text"
-                className={input_class(name_touched, name_state)}
+                className={Input_class(name_touched, name_state)}
                 placeholder="Your name"
                 value={display_name}
                 onChange={on_name_change}
@@ -196,14 +196,14 @@ function AuthForm({
 
         {/* Email */}
         <ShakeField
-          trigger={email_state === "error" ? shake_key : 0}
+          trigger={email_state === "error" ? Shake_key : 0}
           className="auth__field"
         >
           <label className="auth__label" htmlFor="auth-email">
             Email
           </label>
           <div
-            className={`auth__input-wrap ${wrap_class(email_touched, email_state)}`}
+            className={`auth__input-wrap ${Wrap_class(email_touched, email_state)}`}
           >
             <svg
               className="auth__input-icon"
@@ -217,10 +217,10 @@ function AuthForm({
               <path d="m2 7 10 6 10-6" />
             </svg>
             <input
-              ref={email_ref}
+              ref={Email_ref}
               id="auth-email"
               type="email"
-              className={input_class(email_touched, email_state)}
+              className={Input_class(email_touched, email_state)}
               placeholder="you@example.com"
               value={email}
               onChange={on_email_change}
@@ -237,14 +237,14 @@ function AuthForm({
 
         {/* Password */}
         <ShakeField
-          trigger={password_state === "error" ? shake_key : 0}
+          trigger={password_state === "error" ? Shake_key : 0}
           className="auth__field"
         >
           <label className="auth__label" htmlFor="auth-password">
             Password
           </label>
           <div
-            className={`auth__input-wrap ${wrap_class(password_touched, password_state)}`}
+            className={`auth__input-wrap ${Wrap_class(password_touched, password_state)}`}
           >
             <svg
               className="auth__input-icon"
@@ -260,7 +260,7 @@ function AuthForm({
             <input
               id="auth-password"
               type={show_password ? "text" : "password"}
-              className={input_class(password_touched, password_state)}
+              className={Input_class(password_touched, password_state)}
               placeholder="••••••••"
               value={password}
               onChange={on_password_change}
@@ -309,14 +309,14 @@ function AuthForm({
         {/* Confirm Password */}
         {(mode === MODES.REGISTER || mode === MODES.FORGOT) && (
           <ShakeField
-            trigger={confirm_state === "error" ? shake_key : 0}
+            trigger={confirm_state === "error" ? Shake_key : 0}
             className="auth__field"
           >
             <label className="auth__label" htmlFor="auth-confirm">
               Confirm password
             </label>
             <div
-              className={`auth__input-wrap ${wrap_class(confirm_touched, confirm_state)}`}
+              className={`auth__input-wrap ${Wrap_class(confirm_touched, confirm_state)}`}
             >
               <svg
                 className="auth__input-icon"
@@ -332,7 +332,7 @@ function AuthForm({
               <input
                 id="auth-confirm"
                 type={show_password ? "text" : "password"}
-                className={input_class(confirm_touched, confirm_state)}
+                className={Input_class(confirm_touched, confirm_state)}
                 placeholder="••••••••"
                 value={confirm_password}
                 onChange={onConfirmChange}
@@ -403,13 +403,13 @@ function AuthForm({
         {/* Submit */}
         <motion.button
           type="submit"
-          className={`auth__submit ${loading ? "auth__submit--loading" : ""}`}
-          disabled={loading || !is_form_valid}
+          className={`auth__submit ${Loading ? "auth__submit--Loading" : ""}`}
+          disabled={Loading || !Is_form_valid}
           whileTap={{ scale: 0.97 }}
           whileHover={{ scale: 1.01 }}
         >
           <AnimatePresence mode="wait">
-            {loading ? (
+            {Loading ? (
               <motion.span
                 key="spinner"
                 className="auth__spinner"

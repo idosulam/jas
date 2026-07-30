@@ -1,8 +1,8 @@
 import { GlassCard } from "../../../components";
 import {
-  to_display_kg,
-  format_weight_both,
-  format_signed_delta,
+  To_display_kg,
+  Format_weight_both,
+  Format_signed_delta,
 } from "../../../Lib/weight";
 
 export default function ProfileStats({ analytics, unit, unitLabel }) {
@@ -10,7 +10,7 @@ export default function ProfileStats({ analytics, unit, unitLabel }) {
     <div className="profile__summary">
       <GlassCard
         className="profile__stat"
-        value={format_weight_both(analytics.currentKg)}
+        value={Format_weight_both(analytics.currentKg)}
         label="Current weight"
       />
       <GlassCard
@@ -22,8 +22,8 @@ export default function ProfileStats({ analytics, unit, unitLabel }) {
         }
         value={
           analytics.totalChangeKg != null
-            ? format_signed_delta(
-                to_display_kg(analytics.totalChangeKg, unit),
+            ? Format_signed_delta(
+                To_display_kg(analytics.totalChangeKg, unit),
                 unitLabel,
               )
             : "—"
@@ -34,8 +34,8 @@ export default function ProfileStats({ analytics, unit, unitLabel }) {
         className="profile__stat"
         value={
           analytics.weeklyChangeKg != null
-            ? format_signed_delta(
-                to_display_kg(analytics.weeklyChangeKg, unit),
+            ? Format_signed_delta(
+                To_display_kg(analytics.weeklyChangeKg, unit),
                 `${unitLabel}/wk`,
               )
             : "—"

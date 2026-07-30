@@ -18,33 +18,33 @@ function clamp(value, min, max) {
 }
 
 function GlassToastCard({ toast, onPause, onResume, onDismiss }) {
-  const drag_state = useRef({ active: false, start_x: 0, offset_x: 0 });
-  const [offset_x, set_offset_x] = useState(0);
-  const [dragging, set_dragging] = useState(false);
+  const Drag_state = useRef({ active: false, start_x: 0, Offset_x: 0 });
+  const [Offset_x, Set_offset_x] = useState(0);
+  const [dragging, Set_dragging] = useState(false);
 
   const reset = useCallback(() => {
-    set_dragging(false);
-    set_offset_x(0);
-    drag_state.current = { active: false, start_x: 0, offset_x: 0 };
+    Set_dragging(false);
+    Set_offset_x(0);
+    Drag_state.current = { active: false, start_x: 0, Offset_x: 0 };
   }, []);
 
-  const handle_pointer_down = useCallback((event) => {
-    drag_state.current.active = true;
-    drag_state.current.start_x = event.clientX;
-    drag_state.current.offset_x = 0;
-    set_dragging(true);
+  const Handle_pointer_down = useCallback((event) => {
+    Drag_state.current.active = true;
+    Drag_state.current.start_x = event.clientX;
+    Drag_state.current.Offset_x = 0;
+    Set_dragging(true);
   }, []);
 
-  const handle_pointer_move = useCallback((event) => {
-    if (!drag_state.current.active) return;
-    const delta_x = event.clientX - drag_state.current.start_x;
-    drag_state.current.offset_x = delta_x;
-    set_offset_x(delta_x);
+  const Handle_pointer_move = useCallback((event) => {
+    if (!Drag_state.current.active) return;
+    const delta_x = event.clientX - Drag_state.current.start_x;
+    Drag_state.current.Offset_x = delta_x;
+    Set_offset_x(delta_x);
   }, []);
 
-  const handle_pointer_up = useCallback(() => {
-    if (!drag_state.current.active) return;
-    const should_dismiss = Math.abs(drag_state.current.offset_x) > 110;
+  const Handle_pointer_up = useCallback(() => {
+    if (!Drag_state.current.active) return;
+    const should_dismiss = Math.abs(Drag_state.current.Offset_x) > 110;
     if (should_dismiss) {
       onDismiss(toast.id);
       reset();
@@ -54,19 +54,19 @@ function GlassToastCard({ toast, onPause, onResume, onDismiss }) {
   }, [onDismiss, reset, toast.id]);
 
   const progress = clamp((toast.remaining / toast.duration) * 100, 0, 100);
-  const opacity = dragging ? clamp(1 - Math.abs(offset_x) / 180, 0.35, 1) : 1;
-  const bar_label = toast.type === "success" ? "Success timer" : "Error timer";
+  const opacity = dragging ? clamp(1 - Math.abs(Offset_x) / 180, 0.35, 1) : 1;
+  const Bar_label = toast.type === "success" ? "Success timer" : "Error timer";
 
   return (
     <div
       className={`glass-toast glass-toast--${toast.type}${dragging ? " glass-toast--dragging" : ""}`}
-      style={{ transform: `translate3d(${offset_x}px, 0, 0)`, opacity }}
+      style={{ transform: `translate3d(${Offset_x}px, 0, 0)`, opacity }}
       onMouseEnter={() => onPause(toast.id)}
       onMouseLeave={() => onResume(toast.id)}
-      onPointerDown={handle_pointer_down}
-      onPointerMove={handle_pointer_move}
-      onPointerUp={handle_pointer_up}
-      onPointerCancel={handle_pointer_up}
+      onPointerDown={Handle_pointer_down}
+      onPointerMove={Handle_pointer_move}
+      onPointerUp={Handle_pointer_up}
+      onPointerCancel={Handle_pointer_up}
       role="status"
       aria-live="polite"
     >
@@ -94,7 +94,7 @@ function GlassToastCard({ toast, onPause, onResume, onDismiss }) {
             ×
           </button>
         </div>
-        <div className="glass-toast__timer" aria-label={bar_label}>
+        <div className="glass-toast__timer" aria-label={Bar_label}>
           <div
             className="glass-toast__timer-fill"
             style={{ width: `${progress}%` }}
@@ -106,15 +106,15 @@ function GlassToastCard({ toast, onPause, onResume, onDismiss }) {
 }
 
 export function ToastProvider({ children }) {
-  const [toasts, set_toasts] = useState([]);
-  const last_tick_ref = useRef(Date.now());
+  const [toasts, Set_toasts] = useState([]);
+  const Last_tick_ref = useRef(Date.now());
 
   useEffect(() => {
     const id = window.setInterval(() => {
       const now = Date.now();
-      const delta = now - last_tick_ref.current;
-      last_tick_ref.current = now;
-      set_toasts((current) =>
+      const delta = now - Last_tick_ref.current;
+      Last_tick_ref.current = now;
+      Set_toasts((current) =>
         current
           .map((toast) => {
             if (toast.paused) return toast;
@@ -128,11 +128,11 @@ export function ToastProvider({ children }) {
   }, []);
 
   const dismiss = useCallback((id) => {
-    set_toasts((current) => current.filter((toast) => toast.id !== id));
+    Set_toasts((current) => current.filter((toast) => toast.id !== id));
   }, []);
 
   const pause = useCallback((id) => {
-    set_toasts((current) =>
+    Set_toasts((current) =>
       current.map((toast) =>
         toast.id === id ? { ...toast, paused: true } : toast,
       ),
@@ -140,7 +140,7 @@ export function ToastProvider({ children }) {
   }, []);
 
   const resume = useCallback((id) => {
-    set_toasts((current) =>
+    Set_toasts((current) =>
       current.map((toast) =>
         toast.id === id ? { ...toast, paused: false } : toast,
       ),
@@ -150,7 +150,7 @@ export function ToastProvider({ children }) {
   const push = useCallback(
     ({ type = "success", title, message, duration = DEFAULT_DURATION }) => {
       const id = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-      set_toasts((current) => {
+      Set_toasts((current) => {
         const next = [
           ...current,
           {
@@ -218,10 +218,10 @@ export function ToastProvider({ children }) {
   );
 }
 
-export function use_glass_toast() {
+export function Use_glass_toast() {
   const value = useContext(toast_context);
   if (!value) {
-    throw new Error("use_glass_toast must be used inside ToastProvider.");
+    throw new Error("Use_glass_toast must be used inside ToastProvider.");
   }
   return value;
 }

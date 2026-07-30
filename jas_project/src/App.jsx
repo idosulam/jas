@@ -4,7 +4,7 @@ import Navbar from "./Components/Navbar/Navbar.jsx";
 import Page_transition from "./Components/Page_transition.jsx";
 import { ToastProvider } from "./Lib/Glass_toast_provider.jsx";
 import { supabase } from "./Lib/Superbase.jsx";
-import { AuthProvider, use_auth } from "./Lib/Auth_context.jsx";
+import { AuthProvider, Use_auth } from "./Lib/Auth_context.jsx";
 import { HouseholdProvider } from "./Lib/Household_context.jsx";
 
 // Lazy-loaded page components (route-level code splitting)
@@ -37,34 +37,34 @@ const PAGES = {
 };
 
 function AppContent() {
-  const { session, loading } = use_auth();
-  const [active_nav, set_active_nav] = useState("Shifts");
-  const [direction, set_direction] = useState("forward");
-  const [return_to, set_return_to] = useState("Shifts");
-  const prev_nav_ref = useRef("Shifts");
+  const { session, Loading } = Use_auth();
+  const [Active_nav, Set_active_nav] = useState("Shifts");
+  const [direction, Set_direction] = useState("forward");
+  const [return_to, Set_return_to] = useState("Shifts");
+  const Prev_nav_ref = useRef("Shifts");
 
-  const handle_nav_change = (id) => {
-    if (id === active_nav) return;
+  const Handle_nav_change = (id) => {
+    if (id === Active_nav) return;
 
     if (id === "Workplaces") {
-      set_return_to(active_nav);
+      Set_return_to(Active_nav);
     }
 
-    const prev_index = TAB_ORDER.indexOf(prev_nav_ref.current);
-    const next_index = TAB_ORDER.indexOf(id);
-    set_direction(next_index > prev_index ? "forward" : "backward");
-    prev_nav_ref.current = id;
-    set_active_nav(id);
+    const Prev_index = TAB_ORDER.indexOf(Prev_nav_ref.current);
+    const Next_index = TAB_ORDER.indexOf(id);
+    Set_direction(Next_index > Prev_index ? "forward" : "backward");
+    Prev_nav_ref.current = id;
+    Set_active_nav(id);
   };
 
-  const handle_sign_out = async () => {
+  const Handle_sign_out = async () => {
     if (supabase) {
       await supabase.auth.signOut();
     }
   };
 
   // Loading screen
-  if (loading) {
+  if (Loading) {
     return (
       <div
         className="app app--glassy"
@@ -117,7 +117,7 @@ function AppContent() {
   // Show auth page — require a real session when Supabase is configured
   const is_authenticated = !!supabase && !!session;
 
-  const ActivePage = PAGES[active_nav];
+  const ActivePage = PAGES[Active_nav];
 
   return (
     <AnimatePresence mode="wait">
@@ -142,7 +142,7 @@ function AppContent() {
           transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
         >
           <main className="app__content">
-            <Page_transition page_key={active_nav} direction={direction}>
+            <Page_transition page_key={Active_nav} direction={direction}>
               <Suspense
                 fallback={
                   <div
@@ -166,18 +166,18 @@ function AppContent() {
                   </div>
                 }
               >
-                <ActivePage onNavigate={handle_nav_change} return_to={return_to} />
+                <ActivePage onNavigate={Handle_nav_change} return_to={return_to} />
               </Suspense>
             </Page_transition>
           </main>
-          <Navbar active_id={active_nav} onChange={handle_nav_change} />
+          <Navbar active_id={Active_nav} onChange={Handle_nav_change} />
           <Suspense fallback={null}>
             <ProfileOnboarding />
           </Suspense>
           {supabase && (
             <button
               type="button"
-              onClick={handle_sign_out}
+              onClick={Handle_sign_out}
               className="sign-out-btn"
               style={{
                 position: "absolute",

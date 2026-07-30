@@ -1,4 +1,4 @@
-import { kg_to_lbs, lbs_to_kg } from "../../../Lib/weight";
+import { Kg_to_lbs, Lbs_to_kg } from "../../../Lib/weight";
 import ShakeField from "../../../Components/UI/Form/Shake_field";
 import FieldIndicator from "../../../Components/UI/Form/Field_indicator";
 
@@ -10,7 +10,7 @@ export default function ExerciseRow({
   showRemove,
   errors = {},
   states = {},
-  shake_key = 0,
+  Shake_key = 0,
   onFieldBlur,
 }) {
   const err = (field) => errors[`${index}_${field}`] || null;
@@ -48,7 +48,7 @@ export default function ExerciseRow({
     <div className="fitness__exercise-row">
       <div className="fitness__exercise-fields">
         {err("name") ? (
-          <ShakeField trigger={shake_key}>{nameField}</ShakeField>
+          <ShakeField trigger={Shake_key}>{nameField}</ShakeField>
         ) : (
           nameField
         )}
@@ -74,8 +74,8 @@ export default function ExerciseRow({
                   value={exercise[field]}
                   onChange={(e) => {
                     onChange(index, field, e.target.value);
-                    if (isWeight) onChange(index, "weight_lbs", kg_to_lbs(e.target.value));
-                    if (isLbs) onChange(index, "weight", lbs_to_kg(e.target.value));
+                    if (isWeight) onChange(index, "weight_lbs", Kg_to_lbs(e.target.value));
+                    if (isLbs) onChange(index, "weight", Lbs_to_kg(e.target.value));
                   }}
                   onBlur={() => handle_blur(field)}
                 />
@@ -84,7 +84,7 @@ export default function ExerciseRow({
 
             if (err(field)) {
               return (
-                <ShakeField key={field} trigger={shake_key}>{input}</ShakeField>
+                <ShakeField key={field} trigger={Shake_key}>{input}</ShakeField>
               );
             }
             return input;

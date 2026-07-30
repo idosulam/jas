@@ -8,9 +8,9 @@ import { useEffect, useRef, useState } from "react";
  * @param {boolean} options.require_scrolled_past - Only show when element scrolled above viewport (default true)
  * @returns {{ ref, visible }}
  */
-export function use_floating_actions({ require_scrolled_past = true } = {}) {
+export function Use_floating_actions({ require_scrolled_past = true } = {}) {
   const ref = useRef(null);
-  const [visible, set_visible] = useState(false);
+  const [visible, Set_visible] = useState(false);
 
   useEffect(() => {
     const target = ref.current;
@@ -21,9 +21,9 @@ export function use_floating_actions({ require_scrolled_past = true } = {}) {
         if (require_scrolled_past) {
           const scrolled_past =
             !entry.isIntersecting && entry.boundingClientRect.top < 0;
-          set_visible(scrolled_past);
+          Set_visible(scrolled_past);
         } else {
-          set_visible(!entry.isIntersecting);
+          Set_visible(!entry.isIntersecting);
         }
       },
       { threshold: 0 },

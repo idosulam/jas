@@ -5,16 +5,16 @@ const auth_context = createContext({
   session: null,
   user: null,
   user_id: null,
-  loading: true,
+  Loading: true,
 });
 
 export function AuthProvider({ children }) {
   const [session, setSession] = useState(null);
-  const [loading, set_loading] = useState(true);
+  const [Loading, Set_loading] = useState(true);
 
   useEffect(() => {
     if (!supabase) {
-      set_loading(false);
+      Set_loading(false);
       return;
     }
 
@@ -32,7 +32,7 @@ export function AuthProvider({ children }) {
       } else {
         setSession(null);
       }
-      set_loading(false);
+      Set_loading(false);
     });
 
     // Listen for auth changes
@@ -49,17 +49,17 @@ export function AuthProvider({ children }) {
   const user_id = user?.id ?? null;
 
   return (
-    <auth_context.Provider value={{ session, user, user_id, loading }}>
+    <auth_context.Provider value={{ session, user, user_id, Loading }}>
       {children}
     </Auth_context.Provider>
   );
 }
 
-export function use_auth() {
+export function Use_auth() {
   return useContext(auth_context);
 }
 
-export function use_user_id() {
-  const { user_id } = use_auth();
+export function Use_user_id() {
+  const { user_id } = Use_auth();
   return user_id;
 }

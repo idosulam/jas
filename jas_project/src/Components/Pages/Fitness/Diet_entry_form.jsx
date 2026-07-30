@@ -14,13 +14,13 @@ function DietEntryForm({
   onClose,
   editingEntry,
   form,
-  set_form,
-  saving,
-  is_form_valid,
-  field_errors,
-  set_field_errors,
-  field_states,
-  shake_key,
+  Set_form,
+  Saving,
+  Is_form_valid,
+  Field_errors,
+  Set_field_errors,
+  Field_states,
+  Shake_key,
   onSubmit,
   onFieldBlur,
 }) {
@@ -34,19 +34,19 @@ function DietEntryForm({
       <form className="fitness__form" onSubmit={onSubmit}>
         <FormField
           label="Date"
-          error={field_errors.entry_date}
-          state={field_states.entry_date}
+          error={Field_errors.Entry_date}
+          state={Field_states.Entry_date}
           show_indicator
-          shake={field_errors.entry_date ? shake_key : 0}
+          shake={Field_errors.Entry_date ? Shake_key : 0}
         >
           <input
             type="date"
-            value={form.entry_date}
+            value={form.Entry_date}
             onChange={(e) => {
-              set_form((f) => ({ ...f, entry_date: e.target.value }));
-              set_field_errors((prev) => ({ ...prev, entry_date: null }));
+              Set_form((f) => ({ ...f, Entry_date: e.target.value }));
+              Set_field_errors((prev) => ({ ...prev, Entry_date: null }));
             }}
-            onBlur={() => onFieldBlur("entry_date")}
+            onBlur={() => onFieldBlur("Entry_date")}
             required
           />
         </FormField>
@@ -55,7 +55,7 @@ function DietEntryForm({
           <select
             value={form.meal_type}
             onChange={(e) =>
-              set_form((f) => ({ ...f, meal_type: e.target.value }))
+              Set_form((f) => ({ ...f, meal_type: e.target.value }))
             }
           >
             {MEAL_TYPES.map((m) => (
@@ -68,10 +68,10 @@ function DietEntryForm({
 
         <FormField
           label="Food name"
-          error={field_errors.food_name}
-          state={field_states.food_name}
+          error={Field_errors.food_name}
+          state={Field_states.food_name}
           show_indicator
-          shake={field_errors.food_name ? shake_key : 0}
+          shake={Field_errors.food_name ? Shake_key : 0}
         >
           <input
             type="text"
@@ -79,8 +79,8 @@ function DietEntryForm({
             value={form.food_name}
             maxLength={120}
             onChange={(e) => {
-              set_form((f) => ({ ...f, food_name: e.target.value }));
-              set_field_errors((prev) => ({ ...prev, food_name: null }));
+              Set_form((f) => ({ ...f, food_name: e.target.value }));
+              Set_field_errors((prev) => ({ ...prev, food_name: null }));
             }}
             onBlur={() => onFieldBlur("food_name")}
             required
@@ -96,7 +96,7 @@ function DietEntryForm({
             placeholder="0"
             value={form.calories}
             onChange={(e) =>
-              set_form((f) => ({ ...f, calories: e.target.value }))
+              Set_form((f) => ({ ...f, calories: e.target.value }))
             }
           />
         </FormField>
@@ -111,7 +111,7 @@ function DietEntryForm({
               placeholder="0"
               value={form.protein_g}
               onChange={(e) =>
-                set_form((f) => ({ ...f, protein_g: e.target.value }))
+                Set_form((f) => ({ ...f, protein_g: e.target.value }))
               }
             />
           </FormField>
@@ -124,7 +124,7 @@ function DietEntryForm({
               placeholder="0"
               value={form.carbs_g}
               onChange={(e) =>
-                set_form((f) => ({ ...f, carbs_g: e.target.value }))
+                Set_form((f) => ({ ...f, carbs_g: e.target.value }))
               }
             />
           </FormField>
@@ -137,7 +137,7 @@ function DietEntryForm({
               placeholder="0"
               value={form.fats_g}
               onChange={(e) =>
-                set_form((f) => ({ ...f, fats_g: e.target.value }))
+                Set_form((f) => ({ ...f, fats_g: e.target.value }))
               }
             />
           </FormField>
@@ -152,7 +152,7 @@ function DietEntryForm({
             placeholder="0"
             value={form.fiber_g}
             onChange={(e) =>
-              set_form((f) => ({ ...f, fiber_g: e.target.value }))
+              Set_form((f) => ({ ...f, fiber_g: e.target.value }))
             }
           />
         </FormField>
@@ -162,16 +162,16 @@ function DietEntryForm({
             type="button"
             className="btn btn--ghost"
             onClick={onClose}
-            disabled={saving}
+            disabled={Saving}
           >
             Cancel
           </button>
           <button
             type="submit"
             className="btn btn--primary"
-            disabled={saving || !is_form_valid}
+            disabled={Saving || !Is_form_valid}
           >
-            {saving ? (
+            {Saving ? (
               <>
                 <span className="btn__spinner" aria-hidden="true" />
                 Saving…

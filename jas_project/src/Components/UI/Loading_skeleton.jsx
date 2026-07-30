@@ -1,5 +1,5 @@
 /**
- * LoadingSkeleton — Skeleton placeholder for loading states.
+ * LoadingSkeleton — Skeleton placeholder for Loading states.
  */
 export default function LoadingSkeleton({
   count = 3,

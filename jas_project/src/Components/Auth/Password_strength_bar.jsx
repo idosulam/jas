@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 
 export const MODES = { LOGIN: "login", REGISTER: "register", FORGOT: "forgot" };
 
-function get_password_strength(pw) {
+function Get_password_strength(pw) {
   let score = 0;
   const checks = {
     length: pw.length >= 8,
@@ -27,7 +27,7 @@ function get_password_strength(pw) {
 
 export default function PasswordStrengthBar({ password, mode }) {
   if (mode === MODES.LOGIN || !password) return null;
-  const { score, label, color, checks } = get_password_strength(password);
+  const { score, label, color, checks } = Get_password_strength(password);
   const percent = (score / 5) * 100;
   return (
     <motion.div

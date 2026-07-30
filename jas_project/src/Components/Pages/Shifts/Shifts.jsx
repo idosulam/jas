@@ -1,24 +1,24 @@
 import "./Shifts.css";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { get_supabase_client } from "../../../Lib/Superbase";
-import { use_household } from "../../../Lib/Household_context.jsx";
-import { use_user_id } from "../../../Lib/Auth_context.jsx";
+import { Get_supabase_client } from "../../../Lib/Superbase";
+import { Use_household } from "../../../Lib/Household_context.jsx";
+import { Use_user_id } from "../../../Lib/Auth_context.jsx";
 import {
-  get_user_facing_error,
-  sanitize_date,
-  sanitize_number,
-  sanitize_text,
-  format_date_friendly,
-  haptic_error,
+  Get_user_facing_error,
+  Sanitize_date,
+  Sanitize_number,
+  Sanitize_text,
+  Format_date_friendly,
+  Haptic_error,
 } from "../../../Lib/Security";
 import {
-  parse_time_to_minutes,
-  minutes_to_time,
-  remove_generated_calendar_events,
-  sync_shift_to_calendar as sync_shift_to_calendarUtil,
+  Parse_time_to_minutes,
+  Minutes_to_time,
+  Remove_generated_calendar_events,
+  Sync_shift_to_calendar as sync_shift_to_calendarUtil,
 } from "../../../Lib/Calendar_sync";
-import { use_body_scroll_lock, use_modal } from "../../../Hooks";
-import { use_glass_toast } from "../../../Lib/Glass_toast_provider.jsx";
+import { Use_body_scroll_lock, Use_modal } from "../../../Hooks";
+import { Use_glass_toast } from "../../../Lib/Glass_toast_provider.jsx";
 
 import ConfirmModal from "../../../Components/UI/Modals/Confirm_modal";
 import Badge from "../../../Components/UI/badge";
@@ -36,8 +36,8 @@ import {
   getCurrentLocalTime,
   calculateHoursFromTimes,
   calcPay,
-  empty_form,
-  format_money,
+  Empty_form,
+  Format_money,
 } from "./Shift_utils";
 import ShiftForm from "./Shift_form";
 import ShiftDeleteConfirm from "./Shift_delete_confirm";
@@ -46,31 +46,31 @@ import ShiftPresets from "./Shift_presets";
 import ShiftCard from "./Shift_card";
 
 function Shifts({ onNavigate }) {
-  const user_id = use_user_id();
+  const user_id = Use_user_id();
   const now = new Date();
-  const [selected_date, set_selected_date] = useState(now);
-  const [view_mode, set_view_mode] = useState("week");
-  const [place_filter, set_place_filter] = useState("all");
-  const [shifts, set_shifts] = useState([]);
-  const [loading, set_loading] = useState(true);
-  const [error, set_error] = useState(null);
-  const [delete_target, set_delete_target] = useState(null);
-  const [removing_id, set_removing_id] = useState(null);
-  const [editing_shift, set_editing_shift] = useState(null);
-  const [form, set_form] = useState(empty_form);
-  const [saving, set_saving] = useState(false);
-  const [deleting, set_deleting] = useState(false);
-  const [expanded_note_id, set_expanded_note_id] = useState(null);
-  const [show_floating_actions, set_show_floating_actions] = useState(false);
-  const [field_errors, set_field_errors] = useState({});
-  const [field_states, set_field_states] = useState({});
-  const { household_name } = use_household();
-  const [shake_key, set_shake_key] = useState(0);
-  const [workplaces, set_workplaces] = useState([]);
+  const [Selected_date, Set_selected_date] = useState(now);
+  const [View_mode, Set_view_mode] = useState("week");
+  const [Place_filter, Set_place_filter] = useState("all");
+  const [shifts, Set_shifts] = useState([]);
+  const [Loading, Set_loading] = useState(true);
+  const [error, Set_error] = useState(null);
+  const [Delete_target, Set_delete_target] = useState(null);
+  const [Removing_id, Set_removing_id] = useState(null);
+  const [Editing_shift, Set_editing_shift] = useState(null);
+  const [form, Set_form] = useState(Empty_form);
+  const [Saving, Set_saving] = useState(false);
+  const [Deleting, Set_deleting] = useState(false);
+  const [Expanded_note_id, Set_expanded_note_id] = useState(null);
+  const [Show_floating_actions, Set_show_floating_actions] = useState(false);
+  const [Field_errors, Set_field_errors] = useState({});
+  const [Field_states, Set_field_states] = useState({});
+  const { Household_name } = Use_household();
+  const [Shake_key, Set_shake_key] = useState(0);
+  const [Workplaces, Set_workplaces] = useState([]);
 
-  const [presets, set_presets] = useState([]);
-  const [editing_preset, set_editing_preset] = useState(null);
-  const [preset_form, set_preset_form] = useState({
+  const [Presets, Set_presets] = useState([]);
+  const [Editing_preset, Set_editing_preset] = useState(null);
+  const [Preset_form, Set_preset_form] = useState({
     label: "",
     place: "",
     start_time: "09:00",
@@ -78,19 +78,19 @@ function Shifts({ onNavigate }) {
     hours: "8",
     pay_type: "hourly",
   });
-  const add_btn_ref = useRef(null);
-  const place_filter_ref = useRef(null);
-  const [place_indicator, set_place_indicator] = useState({ left: 0, width: 0 });
-  const [is_mobile, set_is_mobile] = useState(
+  const Add_btn_ref = useRef(null);
+  const Place_filter_ref = useRef(null);
+  const [Place_indicator, set_place_indicator] = useState({ left: 0, width: 0 });
+  const [Is_mobile, set_is_mobile] = useState(
     () => window.innerWidth < FILTER_PICKER_BREAKPOINT,
   );
-  const { success: toast_success, error: toast_error } = use_glass_toast();
+  const { success: Toast_success, error: Toast_error } = Use_glass_toast();
 
   // Modal hooks for each modal
-  const form_modal = use_modal(MODAL_EXIT_MS);
-  const delete_modal = use_modal(MODAL_EXIT_MS);
-  const preset_modal = use_modal(MODAL_EXIT_MS);
-  const place_picker = use_modal(MODAL_EXIT_MS);
+  const Form_modal = Use_modal(MODAL_EXIT_MS);
+  const Delete_modal = Use_modal(MODAL_EXIT_MS);
+  const Preset_modal = Use_modal(MODAL_EXIT_MS);
+  const Place_picker = Use_modal(MODAL_EXIT_MS);
 
   // Track viewport width for responsive filter layout
   useEffect(() => {
@@ -103,22 +103,22 @@ function Shifts({ onNavigate }) {
     return () => mql.removeEventListener("change", handler);
   }, []);
 
-  // All workplaces come from the DB — no hardcoded fallback
-  const effective_workplaces = workplaces;
+  // All Workplaces come from the DB — no hardcoded fallback
+  const Effective_workplaces = Workplaces;
 
   // Track which workplace slugs are deactivated for faded display
-  const deactivated_slugs = useMemo(() => {
+  const Deactivated_slugs = useMemo(() => {
     const set = new Set();
-    workplaces.forEach((wp) => {
+    Workplaces.forEach((wp) => {
       if (!wp.active) set.add(wp.slug);
     });
     return set;
-  }, [workplaces]);
+  }, [Workplaces]);
 
-  // Build PLACES map from workplaces for backward compatibility
+  // Build PLACES map from Workplaces for backward compatibility
   const PLACES = useMemo(() => {
     const map = {};
-    effective_workplaces.forEach((wp) => {
+    Effective_workplaces.forEach((wp) => {
       map[wp.slug] = {
         label: wp.label,
         rate: Number(wp.rate),
@@ -126,45 +126,45 @@ function Shifts({ onNavigate }) {
       };
     });
     return map;
-  }, [effective_workplaces]);
+  }, [Effective_workplaces]);
 
   const PLACE_FILTERS = useMemo(
     () => [
       { id: "all", label: "All" },
-      ...effective_workplaces.map((wp) => ({
+      ...Effective_workplaces.map((wp) => ({
         id: wp.slug,
         label: wp.label,
         active: wp.active,
       })),
     ],
-    [effective_workplaces],
+    [Effective_workplaces],
   );
 
-  const fetch_workplaces = useCallback(async () => {
+  const Fetch_workplaces = useCallback(async () => {
     if (!user_id) return;
     try {
-      const supabase = get_supabase_client();
+      const supabase = Get_supabase_client();
       const { data, error: fetch_error } = await supabase
-        .from("workplaces")
+        .from("Workplaces")
         .select("*")
         .eq("user_id", user_id)
         .order("created_at", { ascending: true });
-      if (!fetch_error && data && data.length > 0) set_workplaces(data);
+      if (!fetch_error && data && data.length > 0) Set_workplaces(data);
     } catch {
       // silent — will use defaults
     }
   }, [user_id]);
 
   useEffect(() => {
-    fetch_workplaces();
-  }, [fetch_workplaces]);
+    Fetch_workplaces();
+  }, [Fetch_workplaces]);
 
-  const use_inline_filters = !is_mobile;
+  const Use_inline_filters = !Is_mobile;
 
   // Sliding indicator for place filter (only when inline pills are shown)
-  const update_place_indicator = useCallback(() => {
-    if (!use_inline_filters) return;
-    const container = place_filter_ref.current;
+  const Update_place_indicator = useCallback(() => {
+    if (!Use_inline_filters) return;
+    const container = Place_filter_ref.current;
     if (!container) return;
     const active = container.querySelector(".shifts__place-btn--active");
     if (!active) return;
@@ -174,116 +174,116 @@ function Shifts({ onNavigate }) {
       left: aRect.left - cRect.left - container.scrollLeft,
       width: aRect.width,
     });
-  }, [place_filter, use_inline_filters]);
+  }, [Place_filter, Use_inline_filters]);
   useEffect(() => {
     // Wait a tick so the DOM has the up-to-date set of pills
-    // (e.g. after effective_workplaces loads asynchronously) before measuring.
-    const id = requestAnimationFrame(update_place_indicator);
-    window.addEventListener("resize", update_place_indicator);
+    // (e.g. after Effective_workplaces loads asynchronously) before measuring.
+    const id = requestAnimationFrame(Update_place_indicator);
+    window.addEventListener("resize", Update_place_indicator);
     return () => {
       cancelAnimationFrame(id);
-      window.removeEventListener("resize", update_place_indicator);
+      window.removeEventListener("resize", Update_place_indicator);
     };
-  }, [update_place_indicator, effective_workplaces]);
+  }, [Update_place_indicator, Effective_workplaces]);
 
-  const open_place_picker = useCallback(() => {
-    place_picker.open_modal();
-  }, [place_picker]);
+  const Open_place_picker = useCallback(() => {
+    Place_picker.open_modal();
+  }, [Place_picker]);
 
-  const close_place_picker = useCallback(() => {
-    place_picker.close_modal();
-  }, [place_picker]);
+  const Close_place_picker = useCallback(() => {
+    Place_picker.close_modal();
+  }, [Place_picker]);
 
-  const select_place_filter = useCallback(
+  const Select_place_filter = useCallback(
     (id) => {
-      set_place_filter(id);
-      close_place_picker();
+      Set_place_filter(id);
+      Close_place_picker();
     },
-    [close_place_picker],
+    [Close_place_picker],
   );
 
-  const fetch_presets = useCallback(async () => {
+  const Fetch_presets = useCallback(async () => {
     if (!user_id) return;
     try {
-      const supabase = get_supabase_client();
+      const supabase = Get_supabase_client();
       const { data, error: fetch_error } = await supabase
         .from("shift_presets")
         .select("*")
         .eq("user_id", user_id)
         .order("created_at", { ascending: true });
-      if (!fetch_error) set_presets(data ?? []);
+      if (!fetch_error) Set_presets(data ?? []);
     } catch {
-      // silent — presets are non-critical
+      // silent — Presets are non-critical
     }
   }, [user_id]);
 
   useEffect(() => {
-    fetch_presets();
-  }, [fetch_presets]);
+    Fetch_presets();
+  }, [Fetch_presets]);
 
-  const save_preset = useCallback(async () => {
-    const label = preset_form.label.trim();
+  const Save_preset = useCallback(async () => {
+    const label = Preset_form.label.trim();
     if (!label) return;
     const payload = {
       label,
-      place: preset_form.place,
-      start_time: preset_form.start_time,
-      end_time: preset_form.end_time,
-      hours: Number(Number(preset_form.hours).toFixed(2)),
-      pay_type: preset_form.pay_type,
+      place: Preset_form.place,
+      start_time: Preset_form.start_time,
+      end_time: Preset_form.end_time,
+      hours: Number(Number(Preset_form.hours).toFixed(2)),
+      pay_type: Preset_form.pay_type,
       ...(user_id && { user_id: user_id }),
     };
     try {
-      const supabase = get_supabase_client();
+      const supabase = Get_supabase_client();
       let dbError;
-      if (editing_preset) {
+      if (Editing_preset) {
         ({ error: dbError } = await supabase
           .from("shift_presets")
           .update(payload)
-          .eq("id", editing_preset.id));
+          .eq("id", Editing_preset.id));
       } else {
         ({ error: dbError } = await supabase
           .from("shift_presets")
           .insert(payload));
       }
       if (dbError) {
-        toast_error(get_user_facing_error(dbError.message));
+        Toast_error(Get_user_facing_error(dbError.message));
         return;
       }
-      close_preset_modal();
-      toast_success(editing_preset ? "Preset updated." : "Preset created.");
-      fetch_presets();
+      Close_preset_modal();
+      Toast_success(Editing_preset ? "Preset updated." : "Preset created.");
+      Fetch_presets();
     } catch (err) {
-      toast_error(get_user_facing_error(err.message));
+      Toast_error(Get_user_facing_error(err.message));
     }
-  }, [preset_form, editing_preset, fetch_presets, toast_success, toast_error]);
+  }, [Preset_form, Editing_preset, Fetch_presets, Toast_success, Toast_error]);
 
-  const delete_preset = useCallback(
+  const Delete_preset = useCallback(
     async (id) => {
       try {
-        const supabase = get_supabase_client();
+        const supabase = Get_supabase_client();
         const { error: dbError } = await supabase
           .from("shift_presets")
           .delete()
           .eq("id", id);
         if (dbError) {
-          toast_error(get_user_facing_error(dbError.message));
+          Toast_error(Get_user_facing_error(dbError.message));
           return;
         }
-        toast_success("Preset removed.");
-        fetch_presets();
+        Toast_success("Preset removed.");
+        Fetch_presets();
       } catch (err) {
-        toast_error(get_user_facing_error(err.message));
+        Toast_error(Get_user_facing_error(err.message));
       }
     },
-    [fetch_presets, toast_success, toast_error],
+    [Fetch_presets, Toast_success, Toast_error],
   );
 
-  const open_preset_modal = useCallback(
+  const Open_preset_modal = useCallback(
     (preset = null) => {
       if (preset) {
-        set_editing_preset(preset);
-        set_preset_form({
+        Set_editing_preset(preset);
+        Set_preset_form({
           label: preset.label,
           place: preset.place,
           start_time: preset.start_time,
@@ -292,37 +292,37 @@ function Shifts({ onNavigate }) {
           pay_type: preset.pay_type,
         });
       } else {
-        set_editing_preset(null);
-        set_preset_form({
+        Set_editing_preset(null);
+        Set_preset_form({
           label: "",
-          place: form.place || effective_workplaces[0]?.slug || "pasta",
+          place: form.place || Effective_workplaces[0]?.slug || "pasta",
           start_time: "09:00",
           end_time: "17:00",
           hours: "8",
           pay_type: "hourly",
         });
       }
-      preset_modal.open_modal();
+      Preset_modal.open_modal();
     },
-    [form.place, effective_workplaces, preset_modal],
+    [form.place, Effective_workplaces, Preset_modal],
   );
 
-  const close_preset_modal = useCallback(() => {
-    preset_modal.close_modal();
+  const Close_preset_modal = useCallback(() => {
+    Preset_modal.close_modal();
     // Clear editing preset after animation completes
     setTimeout(() => {
-      set_editing_preset(null);
+      Set_editing_preset(null);
     }, MODAL_EXIT_MS);
-  }, [preset_modal]);
+  }, [Preset_modal]);
 
-  const save_current_as_preset = useCallback(() => {
+  const Save_current_as_preset = useCallback(() => {
     const placeLabel = PLACES[form.place]?.label ?? form.place;
     const timeLabel =
       form.start_time && form.end_time
         ? ` ${form.start_time}–${form.end_time}`
         : "";
-    set_editing_preset(null);
-    set_preset_form({
+    Set_editing_preset(null);
+    Set_preset_form({
       label: `${placeLabel}${timeLabel}`,
       place: form.place,
       start_time: form.start_time || "09:00",
@@ -330,8 +330,8 @@ function Shifts({ onNavigate }) {
       hours: form.hours || "8",
       pay_type: form.pay_type,
     });
-    preset_modal.open_modal();
-  }, [form, PLACES, preset_modal]);
+    Preset_modal.open_modal();
+  }, [form, PLACES, Preset_modal]);
 
   // Week helpers
   const start_of_week = (date) => {
@@ -349,49 +349,49 @@ function Shifts({ onNavigate }) {
 
   const to_date_key = (date) => date.toISOString().slice(0, 10);
 
-  const selected_key = to_date_key(selected_date);
-  const is_today = selected_key === to_date_key(now);
+  const Selected_key = to_date_key(Selected_date);
+  const Is_today = Selected_key === to_date_key(now);
 
-  const week_days = useMemo(() => {
-    const start = start_of_week(selected_date);
+  const Week_days = useMemo(() => {
+    const start = start_of_week(Selected_date);
     return Array.from({ length: 7 }, (_, i) => add_days(start, i));
-  }, [selected_date]);
+  }, [Selected_date]);
 
-  const month_days = useMemo(() => {
-    const d = selected_date; // already a Date object
+  const Month_days = useMemo(() => {
+    const d = Selected_date; // already a Date object
     const start = start_of_week(new Date(d.getFullYear(), d.getMonth(), 1));
     return Array.from({ length: 42 }, (_, i) => add_days(start, i));
-  }, [selected_date]);
+  }, [Selected_date]);
 
-  const visible_days = view_mode === "week" ? week_days : month_days;
+  const Visible_days = View_mode === "week" ? Week_days : Month_days;
 
-  const day_title = useMemo(() => {
-    return selected_date.toLocaleDateString(undefined, {
+  const Day_title = useMemo(() => {
+    return Selected_date.toLocaleDateString(undefined, {
       weekday: "long",
       month: "long",
       day: "numeric",
     });
-  }, [selected_date]);
+  }, [Selected_date]);
 
-  const fetch_shifts = useCallback(async () => {
+  const Fetch_shifts = useCallback(async () => {
     if (!user_id) return;
-    set_loading(true);
-    set_error(null);
+    Set_loading(true);
+    Set_error(null);
 
-    const d = selected_date; // already a Date object
+    const d = Selected_date; // already a Date object
     const range_start =
-      view_mode === "week"
+      View_mode === "week"
         ? start_of_week(d)
         : new Date(d.getFullYear(), d.getMonth(), 1);
     const range_end =
-      view_mode === "week"
+      View_mode === "week"
         ? add_days(range_start, 6)
         : new Date(d.getFullYear(), d.getMonth() + 1, 0);
     const startDate = to_date_key(range_start);
     const endDate = to_date_key(range_end);
 
     try {
-      const supabase = get_supabase_client();
+      const supabase = Get_supabase_client();
       const { data, error: fetch_error } = await supabase
         .from("shifts")
         .select("*")
@@ -401,42 +401,42 @@ function Shifts({ onNavigate }) {
         .order("shift_date", { ascending: true });
 
       if (fetch_error) {
-        set_error(get_user_facing_error(fetch_error.message));
-        set_shifts([]);
+        Set_error(Get_user_facing_error(fetch_error.message));
+        Set_shifts([]);
       } else {
-        set_shifts(data ?? []);
+        Set_shifts(data ?? []);
       }
     } catch (err) {
-      set_error(get_user_facing_error(err.message));
-      set_shifts([]);
+      Set_error(Get_user_facing_error(err.message));
+      Set_shifts([]);
     }
-    set_loading(false);
-  }, [selected_date, view_mode, user_id]);
+    Set_loading(false);
+  }, [Selected_date, View_mode, user_id]);
 
   useEffect(() => {
-    fetch_shifts();
-  }, [fetch_shifts]);
+    Fetch_shifts();
+  }, [Fetch_shifts]);
 
   useEffect(() => {
     const handleShiftsRefresh = () => {
-      fetch_shifts();
+      Fetch_shifts();
     };
 
     window.addEventListener("shifts:refresh", handleShiftsRefresh);
     return () => {
       window.removeEventListener("shifts:refresh", handleShiftsRefresh);
     };
-  }, [fetch_shifts]);
+  }, [Fetch_shifts]);
 
-  use_body_scroll_lock(
-    form_modal.open,
-    delete_modal.open,
-    preset_modal.open,
-    place_picker.open,
+  Use_body_scroll_lock(
+    Form_modal.open,
+    Delete_modal.open,
+    Preset_modal.open,
+    Place_picker.open,
   );
 
   useEffect(() => {
-    const target = add_btn_ref.current;
+    const target = Add_btn_ref.current;
     if (!target) return;
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -445,7 +445,7 @@ function Shifts({ onNavigate }) {
         // simply below the viewport because we haven't reached it yet.
         const scrolledPastIt =
           !entry.isIntersecting && entry.boundingClientRect.top < 0;
-        set_show_floating_actions(scrolledPastIt);
+        Set_show_floating_actions(scrolledPastIt);
       },
       { threshold: 0 },
     );
@@ -453,13 +453,13 @@ function Shifts({ onNavigate }) {
     return () => observer.disconnect();
   }, []);
 
-  const filtered_shifts = useMemo(() => {
-    if (place_filter === "all") return shifts;
-    return shifts.filter((shift) => shift.place === place_filter);
-  }, [shifts, place_filter]);
+  const Filtered_shifts = useMemo(() => {
+    if (Place_filter === "all") return shifts;
+    return shifts.filter((shift) => shift.place === Place_filter);
+  }, [shifts, Place_filter]);
 
   const totals = useMemo(() => {
-    return filtered_shifts.reduce(
+    return Filtered_shifts.reduce(
       (acc, shift) => {
         const pay = calcPay(PLACES, shift.place, shift.hours, shift.pay_type);
         const tips = parseFloat(shift.tips) || 0;
@@ -471,21 +471,21 @@ function Shifts({ onNavigate }) {
       },
       { hours: 0, pay: 0, tips: 0, total: 0 },
     );
-  }, [filtered_shifts]);
+  }, [Filtered_shifts]);
 
-  const open_add_modal = () => {
-    set_editing_shift(null);
-    const f = empty_form(effective_workplaces[0]?.slug);
-    f.shift_date = selected_key;
-    set_form(f);
-    set_field_errors({});
-    set_field_states({});
-    form_modal.open_modal();
+  const Open_add_modal = () => {
+    Set_editing_shift(null);
+    const f = Empty_form(Effective_workplaces[0]?.slug);
+    f.shift_date = Selected_key;
+    Set_form(f);
+    Set_field_errors({});
+    Set_field_states({});
+    Form_modal.open_modal();
   };
 
-  const open_edit_modal = (shift) => {
-    set_editing_shift(shift);
-    set_form({
+  const Open_edit_modal = (shift) => {
+    Set_editing_shift(shift);
+    Set_form({
       place: shift.place,
       pay_type: shift.pay_type === "tips_only" ? "tips_only" : "hourly",
       shift_date: shift.shift_date,
@@ -496,22 +496,22 @@ function Shifts({ onNavigate }) {
       notes: shift.notes ?? "",
       color: shift.color || PLACES[shift.place]?.color || "",
     });
-    set_field_errors({});
-    set_field_states({});
-    form_modal.open_modal();
+    Set_field_errors({});
+    Set_field_states({});
+    Form_modal.open_modal();
   };
 
-  const close_form_modal = () => {
-    form_modal.close_modal();
+  const Close_form_modal = () => {
+    Form_modal.close_modal();
     // Clear editing state after animation completes
     setTimeout(() => {
-      set_editing_shift(null);
-      set_form(empty_form(effective_workplaces[0]?.slug));
-      set_field_states({});
+      Set_editing_shift(null);
+      Set_form(Empty_form(Effective_workplaces[0]?.slug));
+      Set_field_states({});
     }, MODAL_EXIT_MS);
   };
 
-  const handle_time_change = (field, value) => {
+  const Handle_time_change = (field, value) => {
     const nextForm = { ...form, [field]: value };
     const computedHours = calculateHoursFromTimes(
       nextForm.start_time,
@@ -520,15 +520,15 @@ function Shifts({ onNavigate }) {
     if (computedHours != null) {
       nextForm.hours = String(computedHours);
     }
-    set_form(nextForm);
-    set_field_errors((prev) => ({ ...prev, [field]: null, hours: null }));
+    Set_form(nextForm);
+    Set_field_errors((prev) => ({ ...prev, [field]: null, hours: null }));
   };
 
-  const handle_hours_change = (value) => {
+  const Handle_hours_change = (value) => {
     const nextForm = { ...form, hours: value };
     // Reverse-calculate end_time from start_time + hours
     if (nextForm.start_time && value) {
-      const startMin = parse_time_to_minutes(nextForm.start_time);
+      const startMin = Parse_time_to_minutes(nextForm.start_time);
       const hoursNum = parseFloat(value);
       if (
         startMin != null &&
@@ -537,14 +537,14 @@ function Shifts({ onNavigate }) {
         hoursNum <= 24
       ) {
         const endMin = startMin + Math.round(hoursNum * 60);
-        nextForm.end_time = minutes_to_time(endMin);
+        nextForm.end_time = Minutes_to_time(endMin);
       }
     }
-    set_form(nextForm);
-    set_field_errors((prev) => ({ ...prev, hours: null, end_time: null }));
+    Set_form(nextForm);
+    Set_field_errors((prev) => ({ ...prev, hours: null, end_time: null }));
   };
 
-  const validate_field = (field_name, value) => {
+  const Validate_field = (field_name, value) => {
     const errors = {};
     switch (field_name) {
       case "shift_date": {
@@ -557,8 +557,8 @@ function Shifts({ onNavigate }) {
         if (!value) {
           errors[field_name] = "Required";
         } else if (form.end_time) {
-          const start = parse_time_to_minutes(value);
-          const end = parse_time_to_minutes(form.end_time);
+          const start = Parse_time_to_minutes(value);
+          const end = Parse_time_to_minutes(form.end_time);
           if (start != null && end != null && start >= end) {
             errors[field_name] = "Must be before end time";
           }
@@ -569,8 +569,8 @@ function Shifts({ onNavigate }) {
         if (!value) {
           errors[field_name] = "Required";
         } else if (form.start_time) {
-          const start = parse_time_to_minutes(form.start_time);
-          const end = parse_time_to_minutes(value);
+          const start = Parse_time_to_minutes(form.start_time);
+          const end = Parse_time_to_minutes(value);
           if (start != null && end != null && end <= start) {
             errors[field_name] = "Must be after start time";
           }
@@ -599,31 +599,31 @@ function Shifts({ onNavigate }) {
     return Object.keys(errors).length > 0 ? errors : null;
   };
 
-  const handle_field_blur = (field_name) => {
-    const error = validate_field(field_name, form[field_name]);
+  const Handle_field_blur = (field_name) => {
+    const error = Validate_field(field_name, form[field_name]);
     const fieldError = error ? error[field_name] : null;
-    set_field_errors((prev) => ({
+    Set_field_errors((prev) => ({
       ...prev,
       [field_name]: fieldError,
     }));
-    set_field_states((prev) => ({
+    Set_field_states((prev) => ({
       ...prev,
       [field_name]: fieldError ? "error" : form[field_name] ? "valid" : "idle",
     }));
     if (fieldError) {
-      set_shake_key((k) => k + 1);
-      haptic_error();
+      Set_shake_key((k) => k + 1);
+      Haptic_error();
     }
   };
 
-  const is_form_valid = useMemo(() => {
+  const Is_form_valid = useMemo(() => {
     if (!form.shift_date) return false;
     if (form.pay_type !== "tips_only" && !form.hours) return false;
     const hours = parseFloat(form.hours);
     if (form.hours && (isNaN(hours) || hours <= 0 || hours > 24)) return false;
     if (form.start_time && form.end_time) {
-      const start = parse_time_to_minutes(form.start_time);
-      const end = parse_time_to_minutes(form.end_time);
+      const start = Parse_time_to_minutes(form.start_time);
+      const end = Parse_time_to_minutes(form.end_time);
       if (start != null && end != null && end <= start) return false;
     }
     const tips = parseFloat(form.tips);
@@ -632,15 +632,15 @@ function Shifts({ onNavigate }) {
   }, [form]);
 
   const openDeleteModal = (shift) => {
-    set_delete_target(shift);
-    delete_modal.open_modal();
+    Set_delete_target(shift);
+    Delete_modal.open_modal();
   };
 
-  const close_delete_modal = () => {
-    delete_modal.close_modal();
+  const Close_delete_modal = () => {
+    Delete_modal.close_modal();
     // Clear delete target after animation completes
     setTimeout(() => {
-      set_delete_target(null);
+      Set_delete_target(null);
     }, MODAL_EXIT_MS);
   };
 
@@ -650,7 +650,7 @@ function Shifts({ onNavigate }) {
     date_key,
     linked_shift_id = null,
   ) {
-    return remove_generated_calendar_events(
+    return Remove_generated_calendar_events(
       supabase,
       date_key,
       user_id,
@@ -658,36 +658,36 @@ function Shifts({ onNavigate }) {
     );
   }
 
-  const notify_calendar_refresh = () => {
+  const Notify_calendar_refresh = () => {
     if (typeof window !== "undefined") {
       window.dispatchEvent(new CustomEvent("calendar:refresh"));
     }
   };
 
-  async function sync_shift_to_calendar(shiftRecord) {
+  async function Sync_shift_to_calendar(shiftRecord) {
     if (!shiftRecord) return;
     try {
-      const supabase = get_supabase_client();
+      const supabase = Get_supabase_client();
       await sync_shift_to_calendarUtil(supabase, shiftRecord, user_id, PLACES);
     } catch {
       try {
-        toast_error?.("Failed to sync shift to calendar.");
+        Toast_error?.("Failed to sync shift to calendar.");
       } catch {
         // ignore
       }
     }
   }
 
-  const handle_submit = async (e) => {
+  const Handle_submit = async (e) => {
     e.preventDefault();
 
-    const shift_date = sanitize_date(
+    const shift_date = Sanitize_date(
       form.shift_date,
       new Date().toISOString().slice(0, 10),
     );
-    const hours = sanitize_number(form.hours, 0.01, 24);
-    const tips = sanitize_number(form.tips, 0, 10000) ?? 0;
-    const notes = form.notes.trim() ? sanitize_text(form.notes, 500) : null;
+    const hours = Sanitize_number(form.hours, 0.01, 24);
+    const tips = Sanitize_number(form.tips, 0, 10000) ?? 0;
+    const notes = form.notes.trim() ? Sanitize_text(form.notes, 500) : null;
 
     // Validate all fields
     const errors = {};
@@ -697,30 +697,30 @@ function Shifts({ onNavigate }) {
       errors.hours = "Max 24 hours";
 
     if (form.start_time && form.end_time) {
-      const start = parse_time_to_minutes(form.start_time);
-      const end = parse_time_to_minutes(form.end_time);
+      const start = Parse_time_to_minutes(form.start_time);
+      const end = Parse_time_to_minutes(form.end_time);
       if (start != null && end != null && end <= start) {
         errors.end_time = "Must be after start time";
       }
     }
 
     if (Object.keys(errors).length > 0) {
-      set_field_errors(errors);
+      Set_field_errors(errors);
       // Set error states for all errored fields
       const newStates = {};
       Object.keys(errors).forEach((k) => {
         newStates[k] = "error";
       });
-      set_field_states((prev) => ({ ...prev, ...newStates }));
-      set_shake_key((k) => k + 1);
+      Set_field_states((prev) => ({ ...prev, ...newStates }));
+      Set_shake_key((k) => k + 1);
       return;
     }
 
-    set_field_errors({});
-    set_field_states({});
+    Set_field_errors({});
+    Set_field_states({});
 
-    set_saving(true);
-    set_error(null);
+    Set_saving(true);
+    Set_error(null);
 
     const payload = {
       place: form.place,
@@ -736,14 +736,14 @@ function Shifts({ onNavigate }) {
     };
 
     try {
-      const supabase = get_supabase_client();
+      const supabase = Get_supabase_client();
       let dbError;
       let savedShift = null;
-      if (editing_shift) {
+      if (Editing_shift) {
         const res = await supabase
           .from("shifts")
           .update(payload)
-          .eq("id", editing_shift.id)
+          .eq("id", Editing_shift.id)
           .select()
           .single();
         dbError = res.error;
@@ -758,21 +758,21 @@ function Shifts({ onNavigate }) {
         savedShift = res.data;
       }
 
-      set_saving(false);
+      Set_saving(false);
 
       if (dbError) {
-        const message = get_user_facing_error(dbError.message);
-        set_error(message);
-        toast_error(
-          editing_shift ? "Couldn't edit shift." : "Couldn't save shift.",
+        const message = Get_user_facing_error(dbError.message);
+        Set_error(message);
+        Toast_error(
+          Editing_shift ? "Couldn't edit shift." : "Couldn't save shift.",
         );
         return;
       }
 
       // Sync to calendar (best-effort)
       try {
-        await sync_shift_to_calendar(savedShift);
-        notify_calendar_refresh();
+        await Sync_shift_to_calendar(savedShift);
+        Notify_calendar_refresh();
         if (typeof window !== "undefined") {
           window.dispatchEvent(
             new CustomEvent("calendar:refresh", {
@@ -784,41 +784,41 @@ function Shifts({ onNavigate }) {
         // ignore sync errors
       }
 
-      close_form_modal();
-      toast_success(editing_shift ? "Shift updated." : "Shift saved.");
-      fetch_shifts();
+      Close_form_modal();
+      Toast_success(Editing_shift ? "Shift updated." : "Shift saved.");
+      Fetch_shifts();
     } catch (err) {
-      set_saving(false);
-      set_error(get_user_facing_error(err.message));
-      toast_error(
-        editing_shift ? "Couldn't edit shift." : "Couldn't save shift.",
+      Set_saving(false);
+      Set_error(Get_user_facing_error(err.message));
+      Toast_error(
+        Editing_shift ? "Couldn't edit shift." : "Couldn't save shift.",
       );
     }
   };
 
-  const confirm_delete = async () => {
-    if (!delete_target) return;
+  const Confirm_delete = async () => {
+    if (!Delete_target) return;
 
-    set_deleting(true);
-    set_error(null);
+    Set_deleting(true);
+    Set_error(null);
 
     try {
-      const supabase = get_supabase_client();
+      const supabase = Get_supabase_client();
       const { error: dbError } = await supabase
         .from("shifts")
         .delete()
-        .eq("id", delete_target.id);
+        .eq("id", Delete_target.id);
 
-      set_deleting(false);
+      Set_deleting(false);
 
       if (dbError) {
-        set_error(get_user_facing_error(dbError.message));
-        toast_error("Failed to delete shift.");
+        Set_error(Get_user_facing_error(dbError.message));
+        Toast_error("Failed to delete shift.");
         return;
       }
 
-      const removedId = delete_target.id;
-      const shift_date = delete_target.shift_date;
+      const removedId = Delete_target.id;
+      const shift_date = Delete_target.shift_date;
 
       try {
         const { data: remainingShifts = [] } = await supabase
@@ -834,7 +834,7 @@ function Shifts({ onNavigate }) {
             removedId,
           );
           await Promise.all(
-            remainingShifts.map((shift) => sync_shift_to_calendar(shift)),
+            remainingShifts.map((shift) => Sync_shift_to_calendar(shift)),
           );
         } else {
           await _removeShiftGeneratedCalendarEvents(supabase, shift_date);
@@ -843,10 +843,10 @@ function Shifts({ onNavigate }) {
         // ignore cleanup errors
       }
 
-      close_delete_modal();
-      notify_calendar_refresh();
-      toast_success("Shift deleted successfully.");
-      set_removing_id(removedId);
+      Close_delete_modal();
+      Notify_calendar_refresh();
+      Toast_success("Shift deleted successfully.");
+      Set_removing_id(removedId);
 
       if (typeof window !== "undefined") {
         window.dispatchEvent(
@@ -855,20 +855,20 @@ function Shifts({ onNavigate }) {
       }
 
       setTimeout(() => {
-        set_shifts((prev) => prev.filter((s) => s.id !== removedId));
-        set_removing_id(null);
+        Set_shifts((prev) => prev.filter((s) => s.id !== removedId));
+        Set_removing_id(null);
       }, 380);
     } catch (err) {
-      set_deleting(false);
-      set_error(get_user_facing_error(err.message));
-      toast_error("Failed to delete shift.");
+      Set_deleting(false);
+      Set_error(Get_user_facing_error(err.message));
+      Toast_error("Failed to delete shift.");
     }
   };
 
-  const handle_quick_add_preset = useCallback(
+  const Handle_quick_add_preset = useCallback(
     (preset) => {
-      set_editing_shift(null);
-      set_form({
+      Set_editing_shift(null);
+      Set_form({
         place: preset.place,
         pay_type: preset.pay_type,
         shift_date: new Date().toISOString().slice(0, 10),
@@ -878,15 +878,15 @@ function Shifts({ onNavigate }) {
         tips: "",
         notes: "",
       });
-      form_modal.open_modal();
+      Form_modal.open_modal();
     },
-    [form_modal],
+    [Form_modal],
   );
 
-  const handle_copy_shift = useCallback(
+  const Handle_copy_shift = useCallback(
     (shift) => {
-      set_editing_shift(null);
-      set_form({
+      Set_editing_shift(null);
+      Set_form({
         place: shift.place,
         pay_type: shift.pay_type === "tips_only" ? "tips_only" : "hourly",
         shift_date: new Date().toISOString().slice(0, 10),
@@ -896,23 +896,23 @@ function Shifts({ onNavigate }) {
         tips: "",
         notes: shift.notes ?? "",
       });
-      form_modal.open_modal();
+      Form_modal.open_modal();
     },
-    [form_modal],
+    [Form_modal],
   );
 
-  const handle_toggle_note = useCallback(
+  const Handle_toggle_note = useCallback(
     (id) => {
-      set_expanded_note_id(expanded_note_id === id ? null : id);
+      Set_expanded_note_id(Expanded_note_id === id ? null : id);
     },
-    [expanded_note_id],
+    [Expanded_note_id],
   );
 
   return (
     <section className="shifts page">
       <PageHeader
         eyebrow={
-          household_name ? `Earnings · ${household_name}` : "Earnings tracker"
+          Household_name ? `Earnings · ${Household_name}` : "Earnings tracker"
         }
         title="Shifts"
         className="shifts__header animate-in"
@@ -925,29 +925,29 @@ function Shifts({ onNavigate }) {
             type="button"
             className="shifts__date-btn"
             onClick={() =>
-              set_selected_date((d) => add_days(d, view_mode === "week" ? -7 : -30))
+              Set_selected_date((d) => add_days(d, View_mode === "week" ? -7 : -30))
             }
             aria-label="Previous day"
           >
             ‹
           </button>
-          <span className="shifts__date-label">{day_title}</span>
+          <span className="shifts__date-label">{Day_title}</span>
           <button
             type="button"
             className="shifts__date-btn"
             onClick={() =>
-              set_selected_date((d) => add_days(d, view_mode === "week" ? 7 : 30))
+              Set_selected_date((d) => add_days(d, View_mode === "week" ? 7 : 30))
             }
             aria-label="Next day"
           >
             ›
           </button>
         </div>
-        {!is_today && (
+        {!Is_today && (
           <button
             type="button"
             className="shifts__date-today"
-            onClick={() => set_selected_date(new Date())}
+            onClick={() => Set_selected_date(new Date())}
           >
             Today
           </button>
@@ -956,18 +956,18 @@ function Shifts({ onNavigate }) {
 
       {/* Week day selector */}
       <div
-        className={`shifts__week-days animate-in animate-in--1${view_mode === "month" ? " shifts__week-days--month" : ""}`}
+        className={`shifts__week-days animate-in animate-in--1${View_mode === "month" ? " shifts__week-days--month" : ""}`}
         role="group"
-        aria-label={view_mode === "week" ? "Week days" : "Month days"}
+        aria-label={View_mode === "week" ? "Week days" : "Month days"}
       >
-        {visible_days.map((day) => {
+        {Visible_days.map((day) => {
           const key = to_date_key(day);
-          const isSelected = key === selected_key;
+          const isSelected = key === Selected_key;
           const isDayToday = key === to_date_key(now);
           const hasShift = shifts.some((s) => s.shift_date === key);
           const isInCurrentMonth =
-            view_mode === "month"
-              ? day.getMonth() === selected_date.getMonth()
+            View_mode === "month"
+              ? day.getMonth() === Selected_date.getMonth()
               : true;
 
           return (
@@ -975,7 +975,7 @@ function Shifts({ onNavigate }) {
               key={key}
               type="button"
               className={`shifts__week-day${isSelected ? " shifts__week-day--active" : ""}${isDayToday ? " shifts__week-day--today" : ""}${hasShift ? " shifts__week-day--busy" : ""}${!isInCurrentMonth ? " shifts__week-day--muted" : ""}`}
-              onClick={() => set_selected_date(day)}
+              onClick={() => Set_selected_date(day)}
               aria-pressed={isSelected}
             >
               <span className="shifts__week-day-label">
@@ -998,26 +998,26 @@ function Shifts({ onNavigate }) {
       >
         <button
           type="button"
-          className={`shifts__view-btn${view_mode === "week" ? " shifts__view-btn--active" : ""}`}
-          onClick={() => set_view_mode("week")}
-          aria-pressed={view_mode === "week"}
+          className={`shifts__view-btn${View_mode === "week" ? " shifts__view-btn--active" : ""}`}
+          onClick={() => Set_view_mode("week")}
+          aria-pressed={View_mode === "week"}
         >
           1 week
         </button>
         <button
           type="button"
-          className={`shifts__view-btn${view_mode === "month" ? " shifts__view-btn--active" : ""}`}
-          onClick={() => set_view_mode("month")}
-          aria-pressed={view_mode === "month"}
+          className={`shifts__view-btn${View_mode === "month" ? " shifts__view-btn--active" : ""}`}
+          onClick={() => Set_view_mode("month")}
+          aria-pressed={View_mode === "month"}
         >
           1 month
         </button>
       </div>
 
-      {/* No workplaces CTA */}
-      {!loading && effective_workplaces.length === 0 && onNavigate && (
-        <div className="shifts__no-workplaces animate-in animate-in--1">
-          <div className="shifts__no-workplaces-icon" aria-hidden="true">
+      {/* No Workplaces CTA */}
+      {!Loading && Effective_workplaces.length === 0 && onNavigate && (
+        <div className="shifts__no-Workplaces animate-in animate-in--1">
+          <div className="shifts__no-Workplaces-icon" aria-hidden="true">
             <svg
               viewBox="0 0 24 24"
               fill="none"
@@ -1030,13 +1030,13 @@ function Shifts({ onNavigate }) {
               <path d="M9 22V12h6v10" />
             </svg>
           </div>
-          <p className="shifts__no-workplaces-title">No workplaces yet</p>
-          <p className="shifts__no-workplaces-text">
+          <p className="shifts__no-Workplaces-title">No Workplaces yet</p>
+          <p className="shifts__no-Workplaces-text">
             Add a workplace first to start tracking your shifts.
           </p>
           <button
             type="button"
-            className="shifts__no-workplaces-btn"
+            className="shifts__no-Workplaces-btn"
             onClick={() => onNavigate("Workplaces")}
           >
             + Add workplace
@@ -1048,20 +1048,20 @@ function Shifts({ onNavigate }) {
       <PlacePicker
         places={PLACES}
         placeFilters={PLACE_FILTERS}
-        selectedPlaceId={place_filter}
-        onSelect={select_place_filter}
-        is_mobile={is_mobile}
-        picker_open={place_picker.open}
-        picker_closing={place_picker.closing}
-        onOpenPicker={open_place_picker}
-        onClosePicker={close_place_picker}
-        indicator={place_indicator}
-        containerRef={place_filter_ref}
+        selectedPlaceId={Place_filter}
+        onSelect={Select_place_filter}
+        Is_mobile={Is_mobile}
+        Picker_open={Place_picker.open}
+        Picker_closing={Place_picker.closing}
+        onOpenPicker={Open_place_picker}
+        onClosePicker={Close_place_picker}
+        indicator={Place_indicator}
+        containerRef={Place_filter_ref}
       />
 
       <div
         className="shifts__summary animate-in animate-in--3"
-        key={`${selected_key}-${place_filter}`}
+        key={`${Selected_key}-${Place_filter}`}
       >
         <GlassCard
           value={`${totals.hours.toFixed(1)}h`}
@@ -1069,17 +1069,17 @@ function Shifts({ onNavigate }) {
           className="shifts__stat"
         />
         <GlassCard
-          value={format_money(totals.pay)}
+          value={Format_money(totals.pay)}
           label="Pay"
           className="shifts__stat"
         />
         <GlassCard
-          value={format_money(totals.tips)}
+          value={Format_money(totals.tips)}
           label="Tips"
           className="shifts__stat"
         />
         <GlassCard
-          value={format_money(totals.total)}
+          value={Format_money(totals.total)}
           label="Total"
           className="shifts__stat shifts__stat--total"
         />
@@ -1093,30 +1093,30 @@ function Shifts({ onNavigate }) {
 
       {/* Presets */}
       <ShiftPresets
-        presets={presets}
-        place_filter={place_filter}
-        onQuickAdd={handle_quick_add_preset}
-        onEditPreset={open_preset_modal}
-        on_add_preset={() => open_preset_modal()}
-        presetModalOpen={preset_modal.open}
-        presetModalClosing={preset_modal.closing}
-        onClosePresetModal={close_preset_modal}
-        editing_preset={editing_preset}
-        preset_form={preset_form}
-        set_preset_form={set_preset_form}
+        Presets={Presets}
+        Place_filter={Place_filter}
+        onQuickAdd={Handle_quick_add_preset}
+        onEditPreset={Open_preset_modal}
+        on_add_preset={() => Open_preset_modal()}
+        presetModalOpen={Preset_modal.open}
+        presetModalClosing={Preset_modal.closing}
+        onClosePresetModal={Close_preset_modal}
+        Editing_preset={Editing_preset}
+        Preset_form={Preset_form}
+        Set_preset_form={Set_preset_form}
         places={PLACES}
-        deactivated_slugs={deactivated_slugs}
-        onSavePreset={save_preset}
-        onDeletePreset={delete_preset}
+        Deactivated_slugs={Deactivated_slugs}
+        onSavePreset={Save_preset}
+        onDeletePreset={Delete_preset}
       />
 
       <div className="shifts__list-header animate-in animate-in--4">
         <h2 className="shifts__list-title">
-          {day_title}
-          {place_filter !== "all" && (
+          {Day_title}
+          {Place_filter !== "all" && (
             <span className="shifts__list-subtitle">
               {" "}
-              · {PLACES[place_filter]?.label}
+              · {PLACES[Place_filter]?.label}
             </span>
           )}
         </h2>
@@ -1126,7 +1126,7 @@ function Shifts({ onNavigate }) {
               type="button"
               className="shifts__manage-link"
               onClick={() => onNavigate("Workplaces")}
-              title="Manage workplaces"
+              title="Manage Workplaces"
             >
               ⚙ Workplaces
             </button>
@@ -1134,11 +1134,11 @@ function Shifts({ onNavigate }) {
           <button
             type="button"
             className="shifts__add-btn"
-            onClick={open_add_modal}
-            ref={add_btn_ref}
-            disabled={effective_workplaces.length === 0}
+            onClick={Open_add_modal}
+            ref={Add_btn_ref}
+            disabled={Effective_workplaces.length === 0}
             title={
-              effective_workplaces.length === 0
+              Effective_workplaces.length === 0
                 ? "Add a workplace first"
                 : "Add a new shift"
             }
@@ -1148,11 +1148,11 @@ function Shifts({ onNavigate }) {
         </div>
       </div>
 
-      {loading ? (
+      {Loading ? (
         <div className="shifts__list">
           <LoadingSkeleton count={3} height="5.5rem" />
         </div>
-      ) : filtered_shifts.length === 0 ? (
+      ) : Filtered_shifts.length === 0 ? (
         <EmptyState
           className="shifts__empty shifts__empty--fade shifts__empty-card"
           icon={
@@ -1169,24 +1169,24 @@ function Shifts({ onNavigate }) {
             </svg>
           }
           title={
-            effective_workplaces.length === 0
-              ? "No workplaces yet"
-              : place_filter === "all"
+            Effective_workplaces.length === 0
+              ? "No Workplaces yet"
+              : Place_filter === "all"
                 ? "No shifts this week"
-                : `No ${PLACES[place_filter]?.label} shifts`
+                : `No ${PLACES[Place_filter]?.label} shifts`
           }
           text={
-            effective_workplaces.length === 0
+            Effective_workplaces.length === 0
               ? "Add a workplace to start tracking shifts."
-              : place_filter === "all"
+              : Place_filter === "all"
                 ? 'Tap "+ Add shift" to log your first one.'
-                : `No shifts logged for ${PLACES[place_filter]?.label} this week.`
+                : `No shifts logged for ${PLACES[Place_filter]?.label} this week.`
           }
           action={
-            effective_workplaces.length === 0 && onNavigate ? (
+            Effective_workplaces.length === 0 && onNavigate ? (
               <button
                 type="button"
-                className="shifts__no-workplaces-btn"
+                className="shifts__no-Workplaces-btn"
                 onClick={() => onNavigate("Workplaces")}
               >
                 + Add workplace
@@ -1195,19 +1195,19 @@ function Shifts({ onNavigate }) {
           }
         />
       ) : (
-        <ul className="shifts__list" key={`list-${place_filter}`}>
-          {filtered_shifts.map((shift, index) => (
+        <ul className="shifts__list" key={`list-${Place_filter}`}>
+          {Filtered_shifts.map((shift, index) => (
             <ShiftCard
               key={shift.id}
               shift={shift}
               places={PLACES}
-              deactivated_slugs={deactivated_slugs}
-              onEdit={open_edit_modal}
-              onCopy={handle_copy_shift}
+              Deactivated_slugs={Deactivated_slugs}
+              onEdit={Open_edit_modal}
+              onCopy={Handle_copy_shift}
               onDelete={openDeleteModal}
-              onToggleNote={handle_toggle_note}
-              expanded_note_id={expanded_note_id}
-              isRemoving={removing_id === shift.id}
+              onToggleNote={Handle_toggle_note}
+              Expanded_note_id={Expanded_note_id}
+              isRemoving={Removing_id === shift.id}
               animDelay={`${index * 0.06}s`}
             />
           ))}
@@ -1216,40 +1216,40 @@ function Shifts({ onNavigate }) {
 
       {/* Shift form modal */}
       <ShiftForm
-        open={form_modal.open}
-        closing={form_modal.closing}
-        onClose={close_form_modal}
+        open={Form_modal.open}
+        closing={Form_modal.closing}
+        onClose={Close_form_modal}
         form={form}
-        set_form={set_form}
-        editing_shift={editing_shift}
-        saving={saving}
-        field_errors={field_errors}
-        field_states={field_states}
-        shake_key={shake_key}
-        onFieldBlur={handle_field_blur}
-        onTimeChange={handle_time_change}
-        onHoursChange={handle_hours_change}
-        onSubmit={handle_submit}
-        onSaveAsPreset={save_current_as_preset}
+        Set_form={Set_form}
+        Editing_shift={Editing_shift}
+        Saving={Saving}
+        Field_errors={Field_errors}
+        Field_states={Field_states}
+        Shake_key={Shake_key}
+        onFieldBlur={Handle_field_blur}
+        onTimeChange={Handle_time_change}
+        onHoursChange={Handle_hours_change}
+        onSubmit={Handle_submit}
+        onSaveAsPreset={Save_current_as_preset}
         places={PLACES}
-        deactivated_slugs={deactivated_slugs}
-        is_form_valid={is_form_valid}
+        Deactivated_slugs={Deactivated_slugs}
+        Is_form_valid={Is_form_valid}
       />
 
       {/* Delete confirmation */}
       <ShiftDeleteConfirm
-        delete_target={delete_target}
-        closing={delete_modal.closing}
-        onClose={close_delete_modal}
-        onConfirm={confirm_delete}
-        deleting={deleting}
+        Delete_target={Delete_target}
+        closing={Delete_modal.closing}
+        onClose={Close_delete_modal}
+        onConfirm={Confirm_delete}
+        Deleting={Deleting}
         places={PLACES}
       />
 
       <FAB
-        visible={show_floating_actions}
+        visible={Show_floating_actions}
         on_scroll_top={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-        on_add={open_add_modal}
+        on_add={Open_add_modal}
         add_label="Add shift"
       />
     </section>

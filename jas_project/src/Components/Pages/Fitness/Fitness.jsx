@@ -1,8 +1,8 @@
 import "./Fitness.css";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { get_supabase_client } from "../../../Lib/Superbase";
-import { use_user_id } from "../../../Lib/Auth_context.jsx";
-import { use_household } from "../../../Lib/Household_context.jsx";
+import { Get_supabase_client } from "../../../Lib/Superbase";
+import { Use_user_id } from "../../../Lib/Auth_context.jsx";
+import { Use_household } from "../../../Lib/Household_context.jsx";
 
 import PageHeader from "../../../Components/UI/Page_header";
 import WorkoutLogger from "./Workout_logger";
@@ -14,18 +14,18 @@ const SUB_TABS = [
 ];
 
 function Fitness() {
-  const user_id = use_user_id();
-  const { household_name } = use_household();
+  const user_id = Use_user_id();
+  const { Household_name } = Use_household();
   const [activeTab, setActiveTab] = useState("workouts");
   const [profileData, setProfileData] = useState(null);
   const tabRef = useRef(null);
   const [tabIndicator, setTabIndicator] = useState({ left: 0, width: 0 });
 
   // Fetch profile data for BMR/macro calculations
-  const fetch_profile = useCallback(async () => {
+  const Fetch_profile = useCallback(async () => {
     if (!user_id) return;
     try {
-      const supabase = get_supabase_client();
+      const supabase = Get_supabase_client();
       const { data, error: fetch_error } = await supabase
         .from("profile")
         .select("*")
@@ -36,15 +36,15 @@ function Fitness() {
         // Fetch latest weight
         const { data: weightData } = await supabase
           .from("weight_entries")
-          .select("weight_kg")
+          .select("Weight_kg")
           .eq("user_id", user_id)
-          .order("entry_date", { ascending: false })
+          .order("Entry_date", { ascending: false })
           .limit(1)
           .maybeSingle();
 
         setProfileData({
           ...data,
-          weight_kg: weightData?.weight_kg ?? data?.goal_weight_kg ?? null,
+          Weight_kg: weightData?.Weight_kg ?? data?.goal_weight_kg ?? null,
         });
       }
     } catch {
@@ -53,8 +53,8 @@ function Fitness() {
   }, [user_id]);
 
   useEffect(() => {
-    fetch_profile();
-  }, [fetch_profile]);
+    Fetch_profile();
+  }, [Fetch_profile]);
 
   // Sliding indicator for sub-tabs
   const updateTabIndicator = useCallback(() => {
@@ -82,7 +82,7 @@ function Fitness() {
   return (
     <section className="fitness page">
       <PageHeader
-        eyebrow={household_name ? `Fitness · ${household_name}` : "Fitness tracker"}
+        eyebrow={Household_name ? `Fitness · ${Household_name}` : "Fitness tracker"}
         title="Fitness"
         className="fitness__header animate-in"
       />

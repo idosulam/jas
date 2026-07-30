@@ -1,4 +1,4 @@
-import { bmi_label } from "../../../Lib/weight";
+import { Bmi_label } from "../../../Lib/weight";
 
 export function daysBetween(a, b) {
   const ms = new Date(`${b}T12:00:00`) - new Date(`${a}T12:00:00`);
@@ -36,7 +36,7 @@ export function buildInsight({ age, weeklyChangeKg, bmi, goalProgress, isLosing 
   }
 
   if (bmi != null) {
-    const label = bmi_label(bmi);
+    const label = Bmi_label(bmi);
     if (label === "Healthy") {
       parts.push(
         "Your BMI sits in the healthy range — focus on body composition and strength, not just the scale.",

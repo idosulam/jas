@@ -24,7 +24,7 @@ export default function ConfirmModal({
   closing,
   onClose,
   onConfirm,
-  loading = false,
+  Loading = false,
   title,
   description,
   preview,
@@ -55,7 +55,7 @@ export default function ConfirmModal({
           type="button"
           className="btn btn--ghost"
           onClick={onClose}
-          disabled={loading}
+          disabled={Loading}
         >
           Cancel
         </button>
@@ -63,9 +63,9 @@ export default function ConfirmModal({
           type="button"
           className={`btn btn--${variant}`}
           onClick={onConfirm}
-          disabled={loading}
+          disabled={Loading}
         >
-          {loading ? (
+          {Loading ? (
             <>
               <span className="btn__spinner" aria-hidden="true" />
               {confirm_label}…

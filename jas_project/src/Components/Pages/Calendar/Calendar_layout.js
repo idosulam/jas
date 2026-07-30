@@ -34,7 +34,7 @@ export function resolve_color(color_key) {
   };
 }
 
-export function parse_time_to_minutes(time_str) {
+export function Parse_time_to_minutes(time_str) {
   const [h, m] = time_str.slice(0, 5).split(":").map(Number);
   return h * 60 + m;
 }
@@ -116,8 +116,8 @@ function layout_cluster(cluster) {
 export function layout_overlapping_events(events) {
   const parsed = events.map((event) => ({
     ...event,
-    start: parse_time_to_minutes(event.start_time),
-    end: parse_time_to_minutes(event.end_time),
+    start: Parse_time_to_minutes(event.start_time),
+    end: Parse_time_to_minutes(event.end_time),
   }));
 
   const sorted = [...parsed].sort((a, b) => a.start - b.start);

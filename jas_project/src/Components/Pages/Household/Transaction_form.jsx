@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import {
-  haptic_error,
+  Haptic_error,
 } from "../../../Lib/Security";
 import FormField from "../../UI/Form/Form_field.jsx";
 
@@ -8,7 +8,7 @@ const TYPE_OPTIONS = ["expense", "income", "contribute"];
 
 export default function TransactionForm({
   form,
-  set_form,
+  Set_form,
   editingTx,
   categories = [],
   goals = [],
@@ -26,7 +26,7 @@ export default function TransactionForm({
   const [descState, setDescState] = useState("idle");
   const [descError, setDescError] = useState(null);
   const [descTouched, setDescTouched] = useState(false);
-  const [shake_key, set_shake_key] = useState(0);
+  const [Shake_key, Set_shake_key] = useState(0);
 
   // Sliding indicator state
   const typeToggleRef = useRef(null);
@@ -105,15 +105,15 @@ export default function TransactionForm({
     setDescError(null);
   };
 
-  const handle_submit = () => {
+  const Handle_submit = () => {
     setAmountTouched(true);
     setDescTouched(true);
     validateAmount(form.amount, true);
     validateDesc(form.description, true);
 
     if (!form.amount || Number(form.amount) <= 0 || !form.description.trim()) {
-      set_shake_key((k) => k + 1);
-      haptic_error();
+      Set_shake_key((k) => k + 1);
+      Haptic_error();
       return;
     }
 
@@ -144,7 +144,7 @@ export default function TransactionForm({
             }}
             className={`transactions__type-btn ${form.type === t ? `transactions__type-btn--active ${t}` : ""}`}
             onClick={() =>
-              set_form((f) => ({
+              Set_form((f) => ({
                 ...f,
                 type: t,
                 category_id: "",
@@ -166,7 +166,7 @@ export default function TransactionForm({
         error={amountError}
         state={amountState}
         show_indicator
-        shake={amountError ? shake_key : 0}
+        shake={amountError ? Shake_key : 0}
       >
         <input
           type="number"
@@ -174,15 +174,15 @@ export default function TransactionForm({
           step="0.01"
           value={form.amount}
           onChange={(e) => {
-            set_form((f) => ({ ...f, amount: e.target.value }));
+            Set_form((f) => ({ ...f, amount: e.target.value }));
             if (amountTouched) validateAmount(e.target.value);
           }}
           onBlur={() => {
             setAmountTouched(true);
             validateAmount(form.amount, true);
             if (!form.amount || Number(form.amount) <= 0) {
-              set_shake_key((k) => k + 1);
-              haptic_error();
+              Set_shake_key((k) => k + 1);
+              Haptic_error();
             }
           }}
           placeholder="0.00"
@@ -194,21 +194,21 @@ export default function TransactionForm({
         error={descError}
         state={descState}
         show_indicator
-        shake={descError ? shake_key : 0}
+        shake={descError ? Shake_key : 0}
       >
         <input
           type="text"
           value={form.description}
           onChange={(e) => {
-            set_form((f) => ({ ...f, description: e.target.value }));
+            Set_form((f) => ({ ...f, description: e.target.value }));
             if (descTouched) validateDesc(e.target.value);
           }}
           onBlur={() => {
             setDescTouched(true);
             validateDesc(form.description, true);
             if (!form.description.trim()) {
-              set_shake_key((k) => k + 1);
-              haptic_error();
+              Set_shake_key((k) => k + 1);
+              Haptic_error();
             }
           }}
           placeholder={
@@ -246,7 +246,7 @@ export default function TransactionForm({
                         : {}
                     }
                     onClick={() =>
-                      set_form((f) => ({ ...f, goal_id: goal.id }))
+                      Set_form((f) => ({ ...f, goal_id: goal.id }))
                     }
                   >
                     <span>{goal.icon || "🎯"}</span>
@@ -301,7 +301,7 @@ export default function TransactionForm({
                         : {}
                     }
                     onClick={() =>
-                      set_form((f) => ({ ...f, category_id: cat.id }))
+                      Set_form((f) => ({ ...f, category_id: cat.id }))
                     }
                   >
                     <span>{cat.icon}</span>
@@ -319,7 +319,7 @@ export default function TransactionForm({
           type="date"
           value={form.transaction_date}
           onChange={(e) =>
-            set_form((f) => ({ ...f, transaction_date: e.target.value }))
+            Set_form((f) => ({ ...f, transaction_date: e.target.value }))
           }
         />
       </FormField>
@@ -328,7 +328,7 @@ export default function TransactionForm({
         <input
           type="text"
           value={form.note}
-          onChange={(e) => set_form((f) => ({ ...f, note: e.target.value }))}
+          onChange={(e) => Set_form((f) => ({ ...f, note: e.target.value }))}
           placeholder="Add a note..."
           maxLength={500}
         />
@@ -350,7 +350,7 @@ export default function TransactionForm({
         <button
           type="button"
           className="btn btn--primary"
-          onClick={handle_submit}
+          onClick={Handle_submit}
           disabled={submitting}
         >
           {submitting ? "Saving…" : editingTx ? "Update" : "Add"}

@@ -8,9 +8,9 @@ import SheetModal from "../../../Components/UI/Modals/Sheet_modal";
  *   placeFilters      – array of { id, label, active? }
  *   selectedPlaceId   – current filter id ("all" or a slug)
  *   onSelect(id)      – select a filter
- *   is_mobile          – boolean
- *   picker_open        – mobile picker modal open flag
- *   picker_closing     – mobile picker modal closing flag
+ *   Is_mobile          – boolean
+ *   Picker_open        – mobile picker modal open flag
+ *   Picker_closing     – mobile picker modal closing flag
  *   onOpenPicker()    – open mobile picker
  *   onClosePicker()   – close mobile picker
  *   indicator         – { left, width } for the sliding pill indicator
@@ -21,15 +21,15 @@ export default function PlacePicker({
   placeFilters,
   selectedPlaceId,
   onSelect,
-  is_mobile,
-  picker_open,
-  picker_closing,
+  Is_mobile,
+  Picker_open,
+  Picker_closing,
   onOpenPicker,
   onClosePicker,
   indicator,
   containerRef,
 }) {
-  const useInline = !is_mobile && placeFilters.length > 1;
+  const useInline = !Is_mobile && placeFilters.length > 1;
 
   if (placeFilters.length <= 1) return null;
 
@@ -79,7 +79,7 @@ export default function PlacePicker({
         className="shifts__place-trigger animate-in animate-in--2"
         onClick={onOpenPicker}
         aria-haspopup="listbox"
-        aria-expanded={picker_open}
+        aria-expanded={Picker_open}
       >
         <span
           className="shifts__place-trigger-dot"
@@ -98,8 +98,8 @@ export default function PlacePicker({
       </button>
 
       <SheetModal
-        open={picker_open}
-        closing={picker_closing}
+        open={Picker_open}
+        closing={Picker_closing}
         onClose={onClosePicker}
         title="Filter by workplace"
         compact

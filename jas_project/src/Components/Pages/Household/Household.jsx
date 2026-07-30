@@ -1,11 +1,11 @@
 import "./Household.css";
 import "./Household_spendee.css";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { get_supabase_client } from "../../../Lib/Superbase";
-import { use_user_id } from "../../../Lib/Auth_context.jsx";
-import { get_user_facing_error } from "../../../Lib/Security";
-import { use_glass_toast } from "../../../Lib/Glass_toast_provider.jsx";
-import { use_body_scroll_lock, use_modal } from "../../../Hooks";
+import { Get_supabase_client } from "../../../Lib/Superbase";
+import { Use_user_id } from "../../../Lib/Auth_context.jsx";
+import { Get_user_facing_error } from "../../../Lib/Security";
+import { Use_glass_toast } from "../../../Lib/Glass_toast_provider.jsx";
+import { Use_body_scroll_lock, Use_modal } from "../../../Hooks";
 import ConfirmModal from "../../UI/Modals/Confirm_modal";
 import PageHeader from "../../UI/Page_header";
 import LoadingSkeleton from "../../UI/Loading_skeleton";
@@ -44,18 +44,18 @@ const TABS = [
 ];
 
 function Household() {
-  const user_id = use_user_id();
+  const user_id = Use_user_id();
   const now = new Date();
   const [month, setMonth] = useState(now.getMonth());
   const [year, setYear] = useState(now.getFullYear());
   const [household, setHousehold] = useState(null);
   const [members, setMembers] = useState([]);
   const [memberShifts, setMemberShifts] = useState([]);
-  const [loading, set_loading] = useState(true);
-  const [error, set_error] = useState(null);
+  const [Loading, Set_loading] = useState(true);
+  const [error, Set_error] = useState(null);
   const [todayShifts, setTodayShifts] = useState([]);
 
-  const [workplaces, set_workplaces] = useState({});
+  const [Workplaces, Set_workplaces] = useState({});
   const [activeTab, setActiveTab] = useState("overview");
 
   // Sliding tab indicator — uses callback refs for instant positioning
@@ -150,24 +150,24 @@ function Household() {
   const [allTransactions, setAllTransactions] = useState([]);
   const [categories, setCategories] = useState([]);
   const [goals, setGoals] = useState([]);
-  const { success: toast_success, error: toast_error } = use_glass_toast();
+  const { success: Toast_success, error: Toast_error } = Use_glass_toast();
 
-  const joinModal = use_modal(260);
-  const createModal = use_modal(260);
-  const delete_modal = use_modal(260);
-  const [deleting, set_deleting] = useState(false);
+  const joinModal = Use_modal(260);
+  const createModal = Use_modal(260);
+  const Delete_modal = Use_modal(260);
+  const [Deleting, Set_deleting] = useState(false);
 
-  use_body_scroll_lock(joinModal.open, createModal.open, delete_modal.open);
+  Use_body_scroll_lock(joinModal.open, createModal.open, Delete_modal.open);
 
   // Fetch household membership
-  const fetch_household = useCallback(async () => {
+  const Fetch_household = useCallback(async () => {
     if (!user_id) return;
     try {
-      const supabase = get_supabase_client();
+      const supabase = Get_supabase_client();
       const { data: membership, error: memError } = await supabase
         .from("household_members")
         .select(
-          "household_id, role, households(id, name, invite_code, created_by)",
+          "household_id, role, households(id, name, Invite_code, created_by)",
         )
         .eq("user_id", user_id)
         .maybeSingle();
@@ -177,7 +177,7 @@ function Household() {
       if (!membership) {
         setHousehold(null);
         setMembers([]);
-        set_loading(false);
+        Set_loading(false);
         return;
       }
 
@@ -210,7 +210,7 @@ function Household() {
 
       setMembers(enrichedMembers);
     } catch (err) {
-      set_error(get_user_facing_error(err.message));
+      Set_error(Get_user_facing_error(err.message));
     }
   }, [user_id]);
 
@@ -222,7 +222,7 @@ function Household() {
     const today = now.toISOString().slice(0, 10);
 
     try {
-      const supabase = get_supabase_client();
+      const supabase = Get_supabase_client();
       const memberIds = members.map((m) => m.user_id);
       if (memberIds.length === 0) return;
 
@@ -248,20 +248,20 @@ function Household() {
       setMemberShifts(enriched);
       setTodayShifts(enriched.filter((s) => s.shift_date === today));
     } catch (err) {
-      set_error(get_user_facing_error(err.message));
+      Set_error(Get_user_facing_error(err.message));
     }
   }, [user_id, household, members, month, year]);
 
-  // Fetch workplaces
-  const fetch_workplaces = useCallback(async () => {
+  // Fetch Workplaces
+  const Fetch_workplaces = useCallback(async () => {
     if (!user_id) return;
     try {
-      const supabase = get_supabase_client();
+      const supabase = Get_supabase_client();
       const memberIds = members.map((m) => m.user_id);
       if (memberIds.length === 0) return;
 
       const { data } = await supabase
-        .from("workplaces")
+        .from("Workplaces")
         .select("slug, label, rate, color, user_id")
         .in("user_id", memberIds);
 
@@ -274,7 +274,7 @@ function Household() {
           color: wp.color,
         };
       });
-      set_workplaces(wpMap);
+      Set_workplaces(wpMap);
     } catch {
       /* silent */
     }
@@ -287,7 +287,7 @@ function Household() {
     const endDate = new Date(year, month + 1, 0).toISOString().slice(0, 10);
 
     try {
-      const supabase = get_supabase_client();
+      const supabase = Get_supabase_client();
       const { data, error } = await supabase
         .from("transactions")
         .select("*, transaction_categories(name, icon, color)")
@@ -320,7 +320,7 @@ function Household() {
   const fetchCategories = useCallback(async () => {
     if (!household) return;
     try {
-      const supabase = get_supabase_client();
+      const supabase = Get_supabase_client();
       const { data, error } = await supabase
         .from("transaction_categories")
         .select("*")
@@ -334,12 +334,12 @@ function Household() {
   }, [household]);
 
   // Fetch savings goals
-  const fetch_goals = useCallback(async () => {
+  const Fetch_goals = useCallback(async () => {
     if (!household) return;
     try {
-      const supabase = get_supabase_client();
+      const supabase = Get_supabase_client();
       const { data, error } = await supabase
-        .from("savings_goals")
+        .from("Savings_goals")
         .select("*")
         .eq("household_id", household.id)
         .order("created_at", { ascending: true });
@@ -351,30 +351,30 @@ function Household() {
   }, [household]);
 
   useEffect(() => {
-    fetch_household();
-  }, [fetch_household]);
+    Fetch_household();
+  }, [Fetch_household]);
 
   useEffect(() => {
     if (household && members.length > 0) {
       fetchMemberShifts();
-      fetch_workplaces();
+      Fetch_workplaces();
       fetchAllTransactions();
       fetchCategories();
-      fetch_goals();
-      set_loading(false);
+      Fetch_goals();
+      Set_loading(false);
     }
   }, [
     household,
     members,
     fetchMemberShifts,
-    fetch_workplaces,
+    Fetch_workplaces,
     fetchAllTransactions,
     fetchCategories,
-    fetch_goals,
+    Fetch_goals,
   ]);
 
   // Calculate combined stats
-  const combined_stats = useMemo(() => {
+  const Combined_stats = useMemo(() => {
     const stats = {};
     let totalHours = 0,
       totalPay = 0,
@@ -384,7 +384,7 @@ function Household() {
       const memberShiftsFiltered = memberShifts.filter(
         (s) => s.user_id === member.user_id,
       );
-      const wp = workplaces[member.user_id] || {};
+      const wp = Workplaces[member.user_id] || {};
       let mHours = 0,
         mPay = 0,
         mTips = 0;
@@ -424,10 +424,10 @@ function Household() {
         shiftCount: memberShifts.length,
       },
     };
-  }, [memberShifts, members, workplaces]);
+  }, [memberShifts, members, Workplaces]);
 
   // Transaction summary for overview
-  const tx_summary = useMemo(() => {
+  const Tx_summary = useMemo(() => {
     let totalExpense = 0,
       totalIncome = 0;
     allTransactions.forEach((t) => {
@@ -438,7 +438,7 @@ function Household() {
   }, [allTransactions]);
 
   // Budget overview for summary cards
-  const budget_overview = useMemo(() => {
+  const Budget_overview = useMemo(() => {
     const expenseCats = categories.filter(
       (c) => c.type === "expense" && c.budget_amount != null,
     );
@@ -481,7 +481,7 @@ function Household() {
   }, [categories, allTransactions]);
 
   // Chart data
-  const chart_data = useMemo(() => {
+  const Chart_data = useMemo(() => {
     const daysInMonth = new Date(year, month + 1, 0).getDate();
     const data = [];
     for (let d = 1; d <= daysInMonth; d++) {
@@ -490,7 +490,7 @@ function Household() {
       const entry = { date: dateStr, day: d };
       let dayTotal = 0;
       members.forEach((member) => {
-        const wp = workplaces[member.user_id] || {};
+        const wp = Workplaces[member.user_id] || {};
         const mShifts = dayShifts.filter((s) => s.user_id === member.user_id);
         let earnings = 0;
         mShifts.forEach((shift) => {
@@ -507,30 +507,30 @@ function Household() {
       data.push(entry);
     }
     return data;
-  }, [memberShifts, members, workplaces, month, year]);
+  }, [memberShifts, members, Workplaces, month, year]);
 
 
 
   const navigateToTransactions = () => setActiveTab("transactions");
 
-  const handle_delete = async () => {
+  const Handle_delete = async () => {
     if (!household) return;
-    set_deleting(true);
+    Set_deleting(true);
     try {
-      const supabase = get_supabase_client();
+      const supabase = Get_supabase_client();
       const { error } = await supabase.rpc("delete_household", {
         household_id_param: household.id,
       });
       if (error) throw error;
-      delete_modal.close_modal();
-      toast_success("Household deleted.");
+      Delete_modal.close_modal();
+      Toast_success("Household deleted.");
       setHousehold(null);
       setMembers([]);
       setMemberShifts([]);
     } catch (err) {
-      toast_error(get_user_facing_error(err.message));
+      Toast_error(Get_user_facing_error(err.message));
     }
-    set_deleting(false);
+    Set_deleting(false);
   };
 
   const yearOptions = useMemo(() => {
@@ -539,7 +539,7 @@ function Household() {
   }, []);
 
   // No household state
-  if (!loading && !household) {
+  if (!Loading && !household) {
     return (
       <section className="household page">
         <PageHeader
@@ -552,16 +552,16 @@ function Household() {
           members={[]}
           joinModal={joinModal}
           createModal={createModal}
-          delete_modal={delete_modal}
-          fetch_household={fetch_household}
-          deleting={deleting}
-          handle_delete={handle_delete}
+          Delete_modal={Delete_modal}
+          Fetch_household={Fetch_household}
+          Deleting={Deleting}
+          Handle_delete={Handle_delete}
         />
       </section>
     );
   }
 
-  if (loading) {
+  if (Loading) {
     return (
       <section className="household page">
         <PageHeader
@@ -589,10 +589,10 @@ function Household() {
         members={members}
         joinModal={joinModal}
         createModal={createModal}
-        delete_modal={delete_modal}
-        fetch_household={fetch_household}
-        deleting={deleting}
-        handle_delete={handle_delete}
+        Delete_modal={Delete_modal}
+        Fetch_household={Fetch_household}
+        Deleting={Deleting}
+        Handle_delete={Handle_delete}
       />
 
       {/* Error */}
@@ -660,17 +660,17 @@ function Household() {
             {/* Transaction Summary + Budget + Shift Stats */}
             {allTransactions.length > 0 && (
               <HouseholdStats
-                tx_summary={tx_summary}
-                budget_overview={budget_overview}
-                combined_stats={combined_stats}
+                Tx_summary={Tx_summary}
+                Budget_overview={Budget_overview}
+                Combined_stats={Combined_stats}
                 members={members}
               />
             )}
             {allTransactions.length === 0 && (
               <HouseholdStats
-                tx_summary={null}
-                budget_overview={budget_overview}
-                combined_stats={combined_stats}
+                Tx_summary={null}
+                Budget_overview={Budget_overview}
+                Combined_stats={Combined_stats}
                 members={members}
               />
             )}
@@ -678,8 +678,8 @@ function Household() {
             {/* Today's Shifts + Earnings Chart */}
             <HouseholdShiftList
               todayShifts={todayShifts}
-              workplaces={workplaces}
-              chart_data={chart_data}
+              Workplaces={Workplaces}
+              Chart_data={Chart_data}
               members={members}
               month={month}
               year={year}
@@ -774,13 +774,13 @@ function Household() {
 
       {/* Delete Confirmation */}
       <ConfirmModal
-        open={delete_modal.open}
-        closing={delete_modal.closing}
-        onClose={() => delete_modal.close_modal()}
+        open={Delete_modal.open}
+        closing={Delete_modal.closing}
+        onClose={() => Delete_modal.close_modal()}
         title="Delete household"
         message="This will permanently delete the household, all savings goals, and shared data. Members' shifts won't be affected."
-        confirmText={deleting ? "Deleting…" : "Delete"}
-        onConfirm={handle_delete}
+        confirmText={Deleting ? "Deleting…" : "Delete"}
+        onConfirm={Handle_delete}
         danger
       />
     </section>

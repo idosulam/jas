@@ -2,10 +2,10 @@ import { useMemo } from "react";
 import SheetModal from "../../../Components/UI/Modals/Sheet_modal";
 import FormField from "../../UI/Form/Form_field.jsx";
 import {
-  parse_time_to_minutes,
-  minutes_to_time,
+  Parse_time_to_minutes,
+  Minutes_to_time,
 } from "../../../Lib/Calendar_sync";
-import { format_money } from "../../../Lib/format";
+import { Format_money } from "../../../Lib/format";
 import { PAY_TYPES, calcPay } from "./Shift_utils";
 
 /**
@@ -13,49 +13,49 @@ import { PAY_TYPES, calcPay } from "./Shift_utils";
  *
  * Props:
  *   open, closing, onClose          – modal visibility
- *   form, set_form                   – form state
- *   editing_shift                    – shift being edited (null = add)
- *   saving                          – submit-in-progress flag
- *   field_errors, field_states        – validation state maps
- *   shake_key                        – counter that triggers shake animation
+ *   form, Set_form                   – form state
+ *   Editing_shift                    – shift being edited (null = add)
+ *   Saving                          – submit-in-progress flag
+ *   Field_errors, Field_states        – validation state maps
+ *   Shake_key                        – counter that triggers shake animation
  *   onFieldBlur(field_name)          – blur validation handler
  *   onTimeChange(field, value)      – start/end time change handler
  *   onHoursChange(value)            – hours input change (reverse-calculates end)
  *   onSubmit(e)                     – form submit handler
  *   onSaveAsPreset                  – "save current as preset" handler
  *   places                          – PLACES map { slug: { label, rate, color } }
- *   deactivated_slugs                – Set of deactivated workplace slugs
- *   is_form_valid                     – boolean
+ *   Deactivated_slugs                – Set of deactivated workplace slugs
+ *   Is_form_valid                     – boolean
  */
 export default function ShiftForm({
   open,
   closing,
   onClose,
   form,
-  set_form,
-  editing_shift,
-  saving,
-  field_errors,
-  field_states,
-  shake_key,
+  Set_form,
+  Editing_shift,
+  Saving,
+  Field_errors,
+  Field_states,
+  Shake_key,
   onFieldBlur,
   onTimeChange,
   onHoursChange,
   onSubmit,
   onSaveAsPreset,
   places,
-  deactivated_slugs,
-  is_form_valid,
+  Deactivated_slugs,
+  Is_form_valid,
 }) {
   const preview_pay = calcPay(places, form.place, form.hours, form.pay_type);
 
   const endHint = useMemo(() => {
     if (!form.start_time || !form.hours || form.end_time) return null;
-    const startMin = parse_time_to_minutes(form.start_time);
+    const startMin = Parse_time_to_minutes(form.start_time);
     const h = parseFloat(form.hours);
     if (startMin != null && !isNaN(h) && h > 0) {
       const endMin = startMin + Math.round(h * 60);
-      return minutes_to_time(endMin);
+      return Minutes_to_time(endMin);
     }
     return null;
   }, [form.start_time, form.hours, form.end_time]);
@@ -65,25 +65,25 @@ export default function ShiftForm({
       open={open}
       closing={closing}
       onClose={onClose}
-      title={editing_shift ? "Edit shift" : "Add shift"}
+      title={Editing_shift ? "Edit shift" : "Add shift"}
     >
       <form className="shifts__form" onSubmit={onSubmit}>
         <FormField
           label="Place"
-          error={field_errors.place}
-          state={field_states.place}
+          error={Field_errors.place}
+          state={Field_states.place}
           show_indicator
         >
           <select
             value={form.place}
             onChange={(e) => {
-              set_form({ ...form, place: e.target.value });
+              Set_form({ ...form, place: e.target.value });
             }}
           >
             {Object.entries(places).map(([key, { label, rate }]) => (
               <option key={key} value={key}>
                 {label} — ₪{rate}/hr
-                {deactivated_slugs.has(key) ? " (inactive)" : ""}
+                {Deactivated_slugs.has(key) ? " (inactive)" : ""}
               </option>
             ))}
           </select>
@@ -99,7 +99,7 @@ export default function ShiftForm({
               key={id}
               type="button"
               className={`shifts__pay-toggle-btn${form.pay_type === id ? " shifts__pay-toggle-btn--active" : ""}`}
-              onClick={() => set_form({ ...form, pay_type: id })}
+              onClick={() => Set_form({ ...form, pay_type: id })}
               aria-pressed={form.pay_type === id}
             >
               {label}
@@ -109,16 +109,16 @@ export default function ShiftForm({
 
         <FormField
           label="Date"
-          error={field_errors.shift_date}
-          state={field_states.shift_date}
+          error={Field_errors.shift_date}
+          state={Field_states.shift_date}
           show_indicator
-          shake={field_errors.shift_date ? shake_key : 0}
+          shake={Field_errors.shift_date ? Shake_key : 0}
         >
           <input
             type="date"
             value={form.shift_date}
             onChange={(e) => {
-              set_form({ ...form, shift_date: e.target.value });
+              Set_form({ ...form, shift_date: e.target.value });
             }}
             onBlur={() => onFieldBlur("shift_date")}
             required
@@ -128,10 +128,10 @@ export default function ShiftForm({
         <div className="form-time-row">
           <FormField
             label="Start time"
-            error={field_errors.start_time}
-            state={field_states.start_time}
+            error={Field_errors.start_time}
+            state={Field_states.start_time}
             show_indicator
-            shake={field_errors.start_time ? shake_key : 0}
+            shake={Field_errors.start_time ? Shake_key : 0}
           >
             <input
               type="time"
@@ -142,10 +142,10 @@ export default function ShiftForm({
           </FormField>
           <FormField
             label="End time"
-            error={field_errors.end_time}
-            state={field_states.end_time}
+            error={Field_errors.end_time}
+            state={Field_states.end_time}
             show_indicator
-            shake={field_errors.end_time ? shake_key : 0}
+            shake={Field_errors.end_time ? Shake_key : 0}
           >
             <input
               type="time"
@@ -164,10 +164,10 @@ export default function ShiftForm({
 
         <FormField
           label="Hours"
-          error={field_errors.hours}
-          state={field_states.hours}
+          error={Field_errors.hours}
+          state={Field_states.hours}
           show_indicator
-          shake={field_errors.hours ? shake_key : 0}
+          shake={Field_errors.hours ? Shake_key : 0}
         >
           <input
             type="number"
@@ -183,10 +183,10 @@ export default function ShiftForm({
 
         <FormField
           label="Tips"
-          error={field_errors.tips}
-          state={field_states.tips}
+          error={Field_errors.tips}
+          state={Field_states.tips}
           show_indicator
-          shake={field_errors.tips ? shake_key : 0}
+          shake={Field_errors.tips ? Shake_key : 0}
           optional={form.pay_type !== "tips_only"}
         >
           <input
@@ -195,7 +195,7 @@ export default function ShiftForm({
             step="0.01"
             placeholder="0"
             value={form.tips}
-            onChange={(e) => set_form({ ...form, tips: e.target.value })}
+            onChange={(e) => Set_form({ ...form, tips: e.target.value })}
             onBlur={() => onFieldBlur("tips")}
           />
         </FormField>
@@ -210,7 +210,7 @@ export default function ShiftForm({
             placeholder="e.g. Covered for Dana, closed the register"
             value={form.notes}
             maxLength={500}
-            onChange={(e) => set_form({ ...form, notes: e.target.value })}
+            onChange={(e) => Set_form({ ...form, notes: e.target.value })}
           />
         </FormField>
 
@@ -219,17 +219,17 @@ export default function ShiftForm({
             {form.pay_type === "tips_only" ? (
               <>
                 Tips only shift — total{" "}
-                <strong>{format_money(parseFloat(form.tips) || 0)}</strong>
+                <strong>{Format_money(parseFloat(form.tips) || 0)}</strong>
               </>
             ) : (
               <>
-                Estimated pay: <strong>{format_money(preview_pay)}</strong>
+                Estimated pay: <strong>{Format_money(preview_pay)}</strong>
                 {form.tips && (
                   <>
                     {" "}
-                    + tips {format_money(parseFloat(form.tips) || 0)} ={" "}
+                    + tips {Format_money(parseFloat(form.tips) || 0)} ={" "}
                     <strong>
-                      {format_money(preview_pay + (parseFloat(form.tips) || 0))}
+                      {Format_money(preview_pay + (parseFloat(form.tips) || 0))}
                     </strong>
                   </>
                 )}
@@ -243,7 +243,7 @@ export default function ShiftForm({
             type="button"
             className="btn btn--ghost"
             onClick={onClose}
-            disabled={saving}
+            disabled={Saving}
           >
             Cancel
           </button>
@@ -251,7 +251,7 @@ export default function ShiftForm({
             type="button"
             className="btn btn--outline"
             onClick={onSaveAsPreset}
-            disabled={!is_form_valid}
+            disabled={!Is_form_valid}
             title="Save current form as a reusable preset"
           >
             Save as preset
@@ -259,14 +259,14 @@ export default function ShiftForm({
           <button
             type="submit"
             className="btn btn--primary"
-            disabled={saving || !is_form_valid}
+            disabled={Saving || !Is_form_valid}
           >
-            {saving ? (
+            {Saving ? (
               <>
                 <span className="btn__spinner" aria-hidden="true" />
                 Saving…
               </>
-            ) : editing_shift ? (
+            ) : Editing_shift ? (
               "Save changes"
             ) : (
               "Add shift"

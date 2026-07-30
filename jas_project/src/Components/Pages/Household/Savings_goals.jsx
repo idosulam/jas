@@ -1,30 +1,30 @@
 import { useCallback, useEffect, useState } from "react";
-import { get_supabase_client } from "../../../Lib/Superbase";
+import { Get_supabase_client } from "../../../Lib/Superbase";
 import {
-  get_user_facing_error,
-  sanitize_number,
-  sanitize_text,
-  haptic_error,
+  Get_user_facing_error,
+  Sanitize_number,
+  Sanitize_text,
+  Haptic_error,
 } from "../../../Lib/Security";
-import { use_glass_toast } from "../../../Lib/Glass_toast_provider.jsx";
-import { use_modal, use_body_scroll_lock } from "../../../Hooks";
+import { Use_glass_toast } from "../../../Lib/Glass_toast_provider.jsx";
+import { Use_modal, Use_body_scroll_lock } from "../../../Hooks";
 import SheetModal from "../../UI/Modals/Sheet_modal";
 import ConfirmModal from "../../UI/Modals/Confirm_modal";
 import FormField from "../../UI/Form/Form_field.jsx";
 import EmptyState from "../../UI/Empty_state";
 
-import { format_money } from "../../../Lib/format";
+import { Format_money } from "../../../Lib/format";
 
 function SavingsGoals({ householdId, user_id, members, hideTitle }) {
   const [goals, setGoals] = useState([]);
-  const [loading, set_loading] = useState(true);
-  const [delete_target, set_delete_target] = useState(null);
-  const [deleting, set_deleting] = useState(false);
-  const { success: toast_success, error: toast_error } = use_glass_toast();
+  const [Loading, Set_loading] = useState(true);
+  const [Delete_target, Set_delete_target] = useState(null);
+  const [Deleting, Set_deleting] = useState(false);
+  const { success: Toast_success, error: Toast_error } = Use_glass_toast();
 
-  const goalModal = use_modal(260);
-  const contributeModal = use_modal(260);
-  const delete_modal = use_modal(260);
+  const goalModal = Use_modal(260);
+  const contributeModal = Use_modal(260);
+  const Delete_modal = Use_modal(260);
 
   // Field validation states for goal form
   const [goalShakeKey, setGoalShakeKey] = useState(0);
@@ -48,23 +48,23 @@ function SavingsGoals({ householdId, user_id, members, hideTitle }) {
   });
   const [editingGoal, setEditingGoal] = useState(null);
 
-  const [contribute_form, set_contribute_form] = useState({
+  const [Contribute_form, Set_contribute_form] = useState({
     amount: "",
     note: "",
   });
-  const [active_goal, set_active_goal] = useState(null);
+  const [Active_goal, Set_active_goal] = useState(null);
 
-  use_body_scroll_lock(goalModal.open, contributeModal.open, delete_modal.open);
+  Use_body_scroll_lock(goalModal.open, contributeModal.open, Delete_modal.open);
 
-  const fetch_goals = useCallback(async () => {
+  const Fetch_goals = useCallback(async () => {
     if (!householdId) {
-      set_loading(false);
+      Set_loading(false);
       return;
     }
     try {
-      const supabase = get_supabase_client();
+      const supabase = Get_supabase_client();
       const { data, error: fetch_error } = await supabase
-        .from("savings_goals")
+        .from("Savings_goals")
         .select("*")
         .eq("household_id", householdId)
         .order("created_at", { ascending: true });
@@ -73,7 +73,7 @@ function SavingsGoals({ householdId, user_id, members, hideTitle }) {
 
       // Also fetch orphaned goals (created before householdId was available)
       const { data: orphanData } = await supabase
-        .from("savings_goals")
+        .from("Savings_goals")
         .select("*")
         .is("household_id", null)
         .eq("created_by", user_id);
@@ -81,13 +81,13 @@ function SavingsGoals({ householdId, user_id, members, hideTitle }) {
       // Backfill orphaned goals with correct household_id
       if (orphanData && orphanData.length > 0) {
         await supabase
-          .from("savings_goals")
+          .from("Savings_goals")
           .update({ household_id: householdId })
           .is("household_id", null)
           .eq("created_by", user_id);
         // Re-fetch after fixing
         const { data: fixed } = await supabase
-          .from("savings_goals")
+          .from("Savings_goals")
           .select("*")
           .eq("household_id", householdId)
           .order("created_at", { ascending: true });
@@ -98,20 +98,20 @@ function SavingsGoals({ householdId, user_id, members, hideTitle }) {
     } catch (err) {
       // silent
     }
-    set_loading(false);
+    Set_loading(false);
   }, [householdId, user_id]);
 
   useEffect(() => {
-    fetch_goals();
-  }, [fetch_goals]);
+    Fetch_goals();
+  }, [Fetch_goals]);
 
   const saveGoal = async () => {
-    const title = sanitize_text(goalForm.title, 60);
-    const target = sanitize_number(goalForm.target_amount, 1, 999999);
+    const title = Sanitize_text(goalForm.title, 60);
+    const target = Sanitize_number(goalForm.target_amount, 1, 999999);
     if (!title || !target) return;
 
     try {
-      const supabase = get_supabase_client();
+      const supabase = Get_supabase_client();
       const payload = {
         title,
         target_amount: Number(target.toFixed(2)),
@@ -123,21 +123,21 @@ function SavingsGoals({ householdId, user_id, members, hideTitle }) {
 
       if (editingGoal) {
         const { error } = await supabase
-          .from("savings_goals")
+          .from("Savings_goals")
           .update(payload)
           .eq("id", editingGoal.id);
         if (error) throw error;
-        toast_success("Goal updated.");
+        Toast_success("Goal updated.");
       } else {
-        const { error } = await supabase.from("savings_goals").insert(payload);
+        const { error } = await supabase.from("Savings_goals").insert(payload);
         if (error) throw error;
-        toast_success("Goal created!");
+        Toast_success("Goal created!");
       }
 
       goalModal.close_modal();
-      fetch_goals();
+      Fetch_goals();
     } catch (err) {
-      toast_error(get_user_facing_error(err.message));
+      Toast_error(Get_user_facing_error(err.message));
     }
   };
 
@@ -235,70 +235,70 @@ function SavingsGoals({ householdId, user_id, members, hideTitle }) {
   };
 
   const confirmDeleteGoal = async () => {
-    if (!delete_target) return;
-    set_deleting(true);
+    if (!Delete_target) return;
+    Set_deleting(true);
     try {
-      const supabase = get_supabase_client();
+      const supabase = Get_supabase_client();
       const { error } = await supabase
-        .from("savings_goals")
+        .from("Savings_goals")
         .delete()
-        .eq("id", delete_target.id);
+        .eq("id", Delete_target.id);
       if (error) throw error;
-      delete_modal.close_modal();
-      toast_success("Goal deleted.");
-      setGoals((prev) => prev.filter((g) => g.id !== delete_target.id));
-      set_delete_target(null);
-      fetch_goals();
+      Delete_modal.close_modal();
+      Toast_success("Goal deleted.");
+      setGoals((prev) => prev.filter((g) => g.id !== Delete_target.id));
+      Set_delete_target(null);
+      Fetch_goals();
     } catch (err) {
-      toast_error(get_user_facing_error(err.message));
+      Toast_error(Get_user_facing_error(err.message));
     }
-    set_deleting(false);
+    Set_deleting(false);
   };
 
   const openContribute = (goal) => {
-    set_active_goal(goal);
-    set_contribute_form({ amount: "", note: "" });
+    Set_active_goal(goal);
+    Set_contribute_form({ amount: "", note: "" });
     resetContribFieldStates();
     contributeModal.open_modal();
   };
 
   const submitContribution = async () => {
-    const amount = sanitize_number(contribute_form.amount, 0.01, 999999);
-    if (!amount || !active_goal) return;
+    const amount = Sanitize_number(Contribute_form.amount, 0.01, 999999);
+    if (!amount || !Active_goal) return;
 
     try {
-      const supabase = get_supabase_client();
+      const supabase = Get_supabase_client();
 
       // Insert contribution record
       const { error: contribError } = await supabase
         .from("savings_contributions")
         .insert({
-          goal_id: active_goal.id,
+          goal_id: Active_goal.id,
           user_id: user_id,
           amount: Number(amount.toFixed(2)),
-          note: sanitize_text(contribute_form.note, 200) || null,
+          note: Sanitize_text(Contribute_form.note, 200) || null,
         });
 
       if (contribError) throw contribError;
 
       // Update goal's current_amount
-      const newAmount = Number(active_goal.current_amount) + amount;
+      const newAmount = Number(Active_goal.current_amount) + amount;
       const { error: updateError } = await supabase
-        .from("savings_goals")
+        .from("Savings_goals")
         .update({ current_amount: Number(newAmount.toFixed(2)) })
-        .eq("id", active_goal.id);
+        .eq("id", Active_goal.id);
 
       if (updateError) throw updateError;
 
       contributeModal.close_modal();
-      toast_success(`Added ${format_money(amount)}!`);
-      fetch_goals();
+      Toast_success(`Added ${Format_money(amount)}!`);
+      Fetch_goals();
     } catch (err) {
-      toast_error(get_user_facing_error(err.message));
+      Toast_error(Get_user_facing_error(err.message));
     }
   };
 
-  if (loading) return null;
+  if (Loading) return null;
 
   return (
     <div className="savings-goals">
@@ -359,8 +359,8 @@ function SavingsGoals({ householdId, user_id, members, hideTitle }) {
                   <div className="savings-goals__card-info">
                     <span className="savings-goals__title">{goal.title}</span>
                     <span className="savings-goals__amounts">
-                      {format_money(goal.current_amount)} /{" "}
-                      {format_money(goal.target_amount)}
+                      {Format_money(goal.current_amount)} /{" "}
+                      {Format_money(goal.target_amount)}
                     </span>
                   </div>
                   <div className="savings-goals__card-actions">
@@ -386,8 +386,8 @@ function SavingsGoals({ householdId, user_id, members, hideTitle }) {
                       type="button"
                       className="savings-goals__delete-btn"
                       onClick={() => {
-                        set_delete_target(goal);
-                        delete_modal.open_modal();
+                        Set_delete_target(goal);
+                        Delete_modal.open_modal();
                       }}
                       title="Delete goal"
                     >
@@ -415,7 +415,7 @@ function SavingsGoals({ householdId, user_id, members, hideTitle }) {
                   <div className="savings-goals__progress-meta">
                     <span>{Math.round(progress)}%</span>
                     {remaining > 0 ? (
-                      <span>{format_money(remaining)} to go</span>
+                      <span>{Format_money(remaining)} to go</span>
                     ) : (
                       <span className="savings-goals__reached">
                         🎉 Reached!
@@ -471,7 +471,7 @@ function SavingsGoals({ householdId, user_id, members, hideTitle }) {
                 validateGoalTitle(goalForm.title, true);
                 if (!goalForm.title.trim()) {
                   setGoalShakeKey((k) => k + 1);
-                  haptic_error();
+                  Haptic_error();
                 }
               }}
               placeholder="e.g. Vacation fund"
@@ -503,7 +503,7 @@ function SavingsGoals({ householdId, user_id, members, hideTitle }) {
                   Number(goalForm.target_amount) <= 0
                 ) {
                   setGoalShakeKey((k) => k + 1);
-                  haptic_error();
+                  Haptic_error();
                 }
               }}
               placeholder="5000"
@@ -538,23 +538,23 @@ function SavingsGoals({ householdId, user_id, members, hideTitle }) {
         open={contributeModal.open}
         closing={contributeModal.closing}
         onClose={() => contributeModal.close_modal()}
-        title={`Add to "${active_goal?.title || ""}"`}
+        title={`Add to "${Active_goal?.title || ""}"`}
       >
         <div className="savings-goals__form">
           {/* Goal progress preview */}
-          {active_goal && (() => {
-            const progress = active_goal.target_amount > 0
-              ? Math.min(100, (active_goal.current_amount / active_goal.target_amount) * 100)
+          {Active_goal && (() => {
+            const progress = Active_goal.target_amount > 0
+              ? Math.min(100, (Active_goal.current_amount / Active_goal.target_amount) * 100)
               : 0;
-            const remaining = Math.max(0, active_goal.target_amount - active_goal.current_amount);
+            const remaining = Math.max(0, Active_goal.target_amount - Active_goal.current_amount);
             return (
               <div className="savings-goals__contrib-preview">
                 <div className="savings-goals__contrib-header">
-                  <span className="savings-goals__contrib-icon">{active_goal.icon || "🎯"}</span>
+                  <span className="savings-goals__contrib-icon">{Active_goal.icon || "🎯"}</span>
                   <div className="savings-goals__contrib-info">
-                    <span className="savings-goals__contrib-title">{active_goal.title}</span>
+                    <span className="savings-goals__contrib-title">{Active_goal.title}</span>
                     <span className="savings-goals__contrib-amounts">
-                      {format_money(active_goal.current_amount)} / {format_money(active_goal.target_amount)}
+                      {Format_money(Active_goal.current_amount)} / {Format_money(Active_goal.target_amount)}
                     </span>
                   </div>
                 </div>
@@ -562,13 +562,13 @@ function SavingsGoals({ householdId, user_id, members, hideTitle }) {
                   <div className="savings-goals__progress-bar">
                     <div
                       className="savings-goals__progress-fill"
-                      style={{ width: `${progress}%`, background: active_goal.color || "#818cf8" }}
+                      style={{ width: `${progress}%`, background: Active_goal.color || "#818cf8" }}
                     />
                   </div>
                   <div className="savings-goals__progress-meta">
                     <span>{Math.round(progress)}%</span>
                     {remaining > 0 ? (
-                      <span>{format_money(remaining)} to go</span>
+                      <span>{Format_money(remaining)} to go</span>
                     ) : (
                       <span className="savings-goals__reached">🎉 Reached!</span>
                     )}
@@ -589,20 +589,20 @@ function SavingsGoals({ householdId, user_id, members, hideTitle }) {
               type="number"
               min="0.01"
               step="0.01"
-              value={contribute_form.amount}
+              value={Contribute_form.amount}
               onChange={(e) => {
-                set_contribute_form((f) => ({ ...f, amount: e.target.value }));
+                Set_contribute_form((f) => ({ ...f, amount: e.target.value }));
                 if (contribAmountTouched) validateContribAmount(e.target.value);
               }}
               onBlur={() => {
                 setContribAmountTouched(true);
-                validateContribAmount(contribute_form.amount, true);
+                validateContribAmount(Contribute_form.amount, true);
                 if (
-                  !contribute_form.amount ||
-                  Number(contribute_form.amount) <= 0
+                  !Contribute_form.amount ||
+                  Number(Contribute_form.amount) <= 0
                 ) {
                   setGoalShakeKey((k) => k + 1);
-                  haptic_error();
+                  Haptic_error();
                 }
               }}
               placeholder="100"
@@ -612,9 +612,9 @@ function SavingsGoals({ householdId, user_id, members, hideTitle }) {
           <FormField label="Note" optional>
             <input
               type="text"
-              value={contribute_form.note}
+              value={Contribute_form.note}
               onChange={(e) =>
-                set_contribute_form((f) => ({ ...f, note: e.target.value }))
+                Set_contribute_form((f) => ({ ...f, note: e.target.value }))
               }
               placeholder="e.g. From my tips this week"
               maxLength={200}
@@ -633,12 +633,12 @@ function SavingsGoals({ householdId, user_id, members, hideTitle }) {
               className="btn btn--primary"
               onClick={submitContribution}
               disabled={
-                !contribute_form.amount || Number(contribute_form.amount) <= 0
+                !Contribute_form.amount || Number(Contribute_form.amount) <= 0
               }
             >
               Add{" "}
-              {contribute_form.amount
-                ? format_money(Number(contribute_form.amount))
+              {Contribute_form.amount
+                ? Format_money(Number(Contribute_form.amount))
                 : ""}
             </button>
           </div>
@@ -647,16 +647,16 @@ function SavingsGoals({ householdId, user_id, members, hideTitle }) {
 
       {/* Delete Confirmation */}
       <ConfirmModal
-        open={!!delete_target}
-        closing={delete_modal.closing}
+        open={!!Delete_target}
+        closing={Delete_modal.closing}
         onClose={() => {
-          delete_modal.close_modal();
-          setTimeout(() => set_delete_target(null), 260);
+          Delete_modal.close_modal();
+          setTimeout(() => Set_delete_target(null), 260);
         }}
         onConfirm={confirmDeleteGoal}
-        loading={deleting}
+        Loading={Deleting}
         title="Delete this goal?"
-        description={`"${delete_target?.title}" and all its contributions will be removed.`}
+        description={`"${Delete_target?.title}" and all its contributions will be removed.`}
         confirm_label="Delete"
         variant="danger"
       />

@@ -6,15 +6,15 @@ import { useEffect } from "react";
  *
  * @param  {...boolean} conditions - Any truthy condition locks scroll
  */
-export function use_body_scroll_lock(...conditions) {
-  const should_lock = conditions.some(Boolean);
+export function Use_body_scroll_lock(...conditions) {
+  const Should_lock = conditions.some(Boolean);
 
   useEffect(() => {
-    if (!should_lock) return;
+    if (!Should_lock) return;
     const previous = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     return () => {
       document.body.style.overflow = previous;
     };
-  }, [should_lock]);
+  }, [Should_lock]);
 }

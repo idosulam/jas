@@ -1,5 +1,5 @@
-import { format_date_friendly } from "../../../Lib/Security";
-import { kg_to_lbs } from "../../../Lib/weight";
+import { Format_date_friendly } from "../../../Lib/Security";
+import { Kg_to_lbs } from "../../../Lib/weight";
 import { calcVolume, formatVolume } from "./Workout_utils";
 
 export default function WorkoutCard({
@@ -8,7 +8,7 @@ export default function WorkoutCard({
   onEdit,
   onDelete,
   onToggleNote,
-  expanded_note_id,
+  Expanded_note_id,
   isRemoving,
 }) {
   const exercises = Array.isArray(workout.exercises) ? workout.exercises : [];
@@ -22,7 +22,7 @@ export default function WorkoutCard({
       <div className="fitness__card-main">
         <div className="fitness__card-top">
           <span className="fitness__card-date">
-            {format_date_friendly(workout.workout_date)}
+            {Format_date_friendly(workout.workout_date)}
           </span>
           {workout.preset_name && (
             <span className="fitness__card-preset">
@@ -32,9 +32,9 @@ export default function WorkoutCard({
           {workout.notes && (
             <button
               type="button"
-              className={`fitness__note-toggle${expanded_note_id === workout.id ? " fitness__note-toggle--active" : ""}`}
+              className={`fitness__note-toggle${Expanded_note_id === workout.id ? " fitness__note-toggle--active" : ""}`}
               onClick={() => onToggleNote(workout.id)}
-              aria-expanded={expanded_note_id === workout.id}
+              aria-expanded={Expanded_note_id === workout.id}
             >
               <svg
                 viewBox="0 0 24 24"
@@ -53,7 +53,7 @@ export default function WorkoutCard({
           {exercises.map((ex, i) => (
             <span key={i} className="fitness__card-exercise">
               {ex.name}
-              {ex.weight ? ` ${ex.weight}kg (${kg_to_lbs(ex.weight)}lbs)` : ""}
+              {ex.weight ? ` ${ex.weight}kg (${Kg_to_lbs(ex.weight)}lbs)` : ""}
               {ex.sets && ex.reps ? ` ${ex.sets}×${ex.reps}` : ""}
             </span>
           ))}
@@ -69,13 +69,13 @@ export default function WorkoutCard({
               {workout.duration_minutes}m
             </span>
           )}
-          {workout.calories_burned > 0 && (
+          {workout.Calories_burned > 0 && (
             <span className="fitness__card-calories">
-              {workout.calories_burned} kcal
+              {workout.Calories_burned} kcal
             </span>
           )}
         </div>
-        {workout.notes && expanded_note_id === workout.id && (
+        {workout.notes && Expanded_note_id === workout.id && (
           <p className="fitness__note-panel">{workout.notes}</p>
         )}
       </div>

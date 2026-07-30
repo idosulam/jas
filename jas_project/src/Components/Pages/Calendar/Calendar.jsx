@@ -1,7 +1,7 @@
 import "./Calendar.css";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { get_supabase_client } from "../../../Lib/Superbase";
-import { use_user_id } from "../../../Lib/Auth_context.jsx";
+import { Get_supabase_client } from "../../../Lib/Superbase";
+import { Use_user_id } from "../../../Lib/Auth_context.jsx";
 import {
   add_days,
   DAY_END_HOUR,
@@ -17,22 +17,22 @@ import {
   TOTAL_HOURS,
 } from "./Calendar_layout";
 import {
-  get_user_facing_error,
-  sanitize_date,
-  sanitize_text,
-  sanitize_time,
-  haptic_error,
+  Get_user_facing_error,
+  Sanitize_date,
+  Sanitize_text,
+  Sanitize_time,
+  Haptic_error,
 } from "../../../Lib/Security";
 import {
-  parse_time_to_minutes,
-  is_shift_link_note,
-  get_visible_event_notes,
-  recalc_wake_walk_for_date,
+  Parse_time_to_minutes,
+  Is_shift_link_note,
+  Get_visible_event_notes,
+  Recalc_wake_walk_for_date,
 } from "../../../Lib/Calendar_sync";
 import {
-  use_body_scroll_lock,
-  use_modal,
-  use_floating_actions,
+  Use_body_scroll_lock,
+  Use_modal,
+  Use_floating_actions,
 } from "../../../Hooks";
 import {
   ConfirmModal,
@@ -42,9 +42,9 @@ import {
   GlassCard,
   FAB,
 } from "../../../components";
-import { use_glass_toast } from "../../../Lib/Glass_toast_provider.jsx";
-import { fetch_palette } from "../../../Lib/Color_palette.js";
-import { use_household } from "../../../Lib/Household_context.jsx";
+import { Use_glass_toast } from "../../../Lib/Glass_toast_provider.jsx";
+import { Fetch_palette } from "../../../Lib/Color_palette.js";
+import { Use_household } from "../../../Lib/Household_context.jsx";
 import EventForm from "./Event_form.jsx";
 import CalendarGrid from "./Calendar_grid.jsx";
 import TimelineView from "./Timeline_view.jsx";
@@ -52,7 +52,7 @@ import ReminderList from "./Reminder_list.jsx";
 
 const MODAL_EXIT_MS = 260;
 
-const empty_form = (date_key) => ({
+const Empty_form = (date_key) => ({
   title: "",
   notes: "",
   event_date: date_key,
@@ -62,56 +62,56 @@ const empty_form = (date_key) => ({
 });
 
 function Calendar() {
-  const { household_name } = use_household();
-  const user_id = use_user_id();
+  const { Household_name } = Use_household();
+  const user_id = Use_user_id();
   const today = useMemo(() => new Date(), []);
-  const [selected_date, set_selected_date] = useState(today);
-  const [view_mode, set_view_mode] = useState("week");
-  const [events, set_events] = useState([]);
-  const [all_events, set_all_events] = useState([]);
-  const [loading, set_loading] = useState(true);
-  const [error, set_error] = useState(null);
-  const [delete_target, set_delete_target] = useState(null);
-  const [editing_event, set_editing_event] = useState(null);
-  const [form, set_form] = useState(() => empty_form(to_date_key(today)));
-  const [saving, set_saving] = useState(false);
-  const [deleting, set_deleting] = useState(false);
-  const [toggling_id, set_toggling_id] = useState(null);
-  const [removing_id, set_removing_id] = useState(null);
-  const [now_tick, set_now_tick] = useState(() => Date.now());
-  const [field_errors, set_field_errors] = useState({});
-  const [field_states, set_field_states] = useState({});
-  const [shake_key, set_shake_key] = useState(0);
-  const [palette, set_palette] = useState([]);
+  const [Selected_date, Set_selected_date] = useState(today);
+  const [View_mode, Set_view_mode] = useState("week");
+  const [events, Set_events] = useState([]);
+  const [all_events, Set_all_events] = useState([]);
+  const [Loading, Set_loading] = useState(true);
+  const [error, Set_error] = useState(null);
+  const [Delete_target, Set_delete_target] = useState(null);
+  const [Editing_event, Set_editing_event] = useState(null);
+  const [form, Set_form] = useState(() => Empty_form(to_date_key(today)));
+  const [Saving, Set_saving] = useState(false);
+  const [Deleting, Set_deleting] = useState(false);
+  const [Toggling_id, Set_toggling_id] = useState(null);
+  const [Removing_id, Set_removing_id] = useState(null);
+  const [Now_tick, Set_now_tick] = useState(() => Date.now());
+  const [Field_errors, Set_field_errors] = useState({});
+  const [Field_states, Set_field_states] = useState({});
+  const [Shake_key, Set_shake_key] = useState(0);
+  const [palette, Set_palette] = useState([]);
 
-  const form_modal = use_modal(MODAL_EXIT_MS);
-  const delete_modal = use_modal(MODAL_EXIT_MS);
-  const { ref: add_btn_ref, visible: show_floating_actions } = use_floating_actions();
-  const { success: toast_success, error: toast_error } = use_glass_toast();
+  const Form_modal = Use_modal(MODAL_EXIT_MS);
+  const Delete_modal = Use_modal(MODAL_EXIT_MS);
+  const { ref: Add_btn_ref, visible: Show_floating_actions } = Use_floating_actions();
+  const { success: Toast_success, error: Toast_error } = Use_glass_toast();
 
-  const selected_key = to_date_key(selected_date);
-  const is_today = selected_key === to_date_key(today);
+  const Selected_key = to_date_key(Selected_date);
+  const Is_today = Selected_key === to_date_key(today);
 
   // Load color palette from DB
   useEffect(() => {
-    fetch_palette().then(set_palette);
+    Fetch_palette().then(Set_palette);
   }, []);
 
-  const week_days = useMemo(() => {
-    const start = start_of_week(selected_date);
+  const Week_days = useMemo(() => {
+    const start = start_of_week(Selected_date);
     return Array.from({ length: 7 }, (_, i) => add_days(start, i));
-  }, [selected_date]);
+  }, [Selected_date]);
 
-  const month_days = useMemo(() => {
+  const Month_days = useMemo(() => {
     const start = start_of_week(
-      new Date(selected_date.getFullYear(), selected_date.getMonth(), 1),
+      new Date(Selected_date.getFullYear(), Selected_date.getMonth(), 1),
     );
     return Array.from({ length: 42 }, (_, i) => add_days(start, i));
-  }, [selected_date]);
+  }, [Selected_date]);
 
-  const visible_days = view_mode === "week" ? week_days : month_days;
+  const Visible_days = View_mode === "week" ? Week_days : Month_days;
 
-  const hour_labels = useMemo(
+  const Hour_labels = useMemo(
     () =>
       Array.from({ length: TOTAL_HOURS }, (_, i) => {
         const hour = DAY_START_HOUR + i;
@@ -122,15 +122,15 @@ function Calendar() {
     [],
   );
 
-  const laid_out_events = useMemo(
+  const Laid_out_events = useMemo(
     () => layout_overlapping_events(events),
     [events],
   );
 
-  const is_wake_event = (e) =>
+  const Is_wake_event = (e) =>
     typeof e.title === "string" && e.title.toLowerCase().includes("wake");
 
-  const is_generated_wake_event = (event) =>
+  const Is_generated_wake_event = (event) =>
     event?.title === "Wake up" || event?.title === "Go for a walk";
 
   const pending_count = useMemo(
@@ -143,35 +143,35 @@ function Calendar() {
     [all_events],
   );
 
-  const now_line_top = useMemo(() => {
-    if (!is_today) return null;
-    const now = new Date(now_tick);
+  const Now_line_top = useMemo(() => {
+    if (!Is_today) return null;
+    const now = new Date(Now_tick);
     const minutes = now.getHours() * 60 + now.getMinutes();
     const day_start = DAY_START_HOUR * 60;
     const day_end = (DAY_END_HOUR + 1) * 60;
     if (minutes < day_start || minutes > day_end) return null;
     return ((minutes - day_start) / 60) * HOUR_HEIGHT;
-  }, [is_today, now_tick]);
+  }, [Is_today, Now_tick]);
 
-  const fetch_events = useCallback(async () => {
+  const Fetch_events = useCallback(async () => {
     if (!user_id) return;
-    set_loading(true);
-    set_error(null);
+    Set_loading(true);
+    Set_error(null);
 
     const range_start =
-      view_mode === "week"
-        ? start_of_week(selected_date)
-        : new Date(selected_date.getFullYear(), selected_date.getMonth(), 1);
+      View_mode === "week"
+        ? start_of_week(Selected_date)
+        : new Date(Selected_date.getFullYear(), Selected_date.getMonth(), 1);
     const range_end =
-      view_mode === "week"
+      View_mode === "week"
         ? add_days(range_start, 6)
-        : new Date(selected_date.getFullYear(), selected_date.getMonth() + 1, 0);
+        : new Date(Selected_date.getFullYear(), Selected_date.getMonth() + 1, 0);
 
     const start_key = to_date_key(range_start);
     const end_key = to_date_key(range_end);
 
     try {
-      const supabase = get_supabase_client();
+      const supabase = Get_supabase_client();
 
       // Sync any shifts that don't have calendar events yet
       try {
@@ -234,48 +234,48 @@ function Calendar() {
         .order("start_time", { ascending: true });
 
       if (fetch_error) {
-        set_error(get_user_facing_error(fetch_error.message));
-        set_all_events([]);
-        set_events([]);
+        Set_error(Get_user_facing_error(fetch_error.message));
+        Set_all_events([]);
+        Set_events([]);
       } else {
         const items = data ?? [];
-        set_all_events(items);
-        set_events(items.filter((event) => event.event_date === selected_key));
+        Set_all_events(items);
+        Set_events(items.filter((event) => event.event_date === Selected_key));
       }
     } catch (err) {
-      set_error(get_user_facing_error(err.message));
-      set_all_events([]);
-      set_events([]);
+      Set_error(Get_user_facing_error(err.message));
+      Set_all_events([]);
+      Set_events([]);
     }
-    set_loading(false);
-  }, [selected_date, selected_key, view_mode, user_id]);
+    Set_loading(false);
+  }, [Selected_date, Selected_key, View_mode, user_id]);
 
   useEffect(() => {
-    fetch_events();
-  }, [fetch_events]);
+    Fetch_events();
+  }, [Fetch_events]);
 
   useEffect(() => {
-    const handle_calendar_refresh = (event) => {
+    const Handle_calendar_refresh = (event) => {
       const refreshed_date = event?.detail?.date;
-      if (refreshed_date && refreshed_date === selected_key) {
-        fetch_events();
+      if (refreshed_date && refreshed_date === Selected_key) {
+        Fetch_events();
       }
     };
 
-    window.addEventListener("calendar:refresh", handle_calendar_refresh);
+    window.addEventListener("calendar:refresh", Handle_calendar_refresh);
     return () => {
-      window.removeEventListener("calendar:refresh", handle_calendar_refresh);
+      window.removeEventListener("calendar:refresh", Handle_calendar_refresh);
     };
-  }, [fetch_events, selected_key]);
+  }, [Fetch_events, Selected_key]);
 
   useEffect(() => {
-    const timer = setInterval(() => set_now_tick(Date.now()), 60_000);
+    const timer = setInterval(() => Set_now_tick(Date.now()), 60_000);
     return () => clearInterval(timer);
   }, []);
 
-  use_body_scroll_lock(form_modal.open, delete_target);
+  Use_body_scroll_lock(Form_modal.open, Delete_target);
 
-  const validate_calendar_field = (field_name) => {
+  const Validate_calendar_field = (field_name) => {
     const errors = {};
     switch (field_name) {
       case "title": {
@@ -316,24 +316,24 @@ function Calendar() {
     return errors;
   };
 
-  const handle_calendar_field_blur = (field_name) => {
-    const errors = validate_calendar_field(field_name);
+  const Handle_calendar_field_blur = (field_name) => {
+    const errors = Validate_calendar_field(field_name);
     const fieldError = errors[field_name] || null;
-    set_field_errors((prev) => ({
+    Set_field_errors((prev) => ({
       ...prev,
       [field_name]: fieldError,
     }));
-    set_field_states((prev) => ({
+    Set_field_states((prev) => ({
       ...prev,
       [field_name]: fieldError ? "error" : form[field_name] ? "valid" : "idle",
     }));
     if (fieldError) {
-      set_shake_key((k) => k + 1);
-      haptic_error();
+      Set_shake_key((k) => k + 1);
+      Haptic_error();
     }
   };
 
-  const is_calendar_form_valid = useMemo(() => {
+  const Is_calendar_form_valid = useMemo(() => {
     if (!form.title || !form.title.trim()) return false;
     if (!form.event_date) return false;
     if (!form.start_time || !form.end_time) return false;
@@ -342,72 +342,72 @@ function Calendar() {
     return true;
   }, [form]);
 
-  const shift_selected_date = (direction) => {
+  const Shift_selected_date = (direction) => {
     const delta = direction === "next" ? 1 : -1;
-    if (view_mode === "month") {
-      const next = new Date(selected_date);
+    if (View_mode === "month") {
+      const next = new Date(Selected_date);
       next.setMonth(next.getMonth() + delta);
-      set_selected_date(next);
+      Set_selected_date(next);
       return;
     }
 
-    set_selected_date((date) => add_days(date, delta * 7));
+    Set_selected_date((date) => add_days(date, delta * 7));
   };
 
-  const open_add_modal = (start_time = "09:00") => {
+  const Open_add_modal = (start_time = "09:00") => {
     const [h] = start_time.split(":").map(Number);
     const endHour = Math.min(h + 1, DAY_END_HOUR);
-    set_editing_event(null);
-    set_form({
-      ...empty_form(selected_key),
+    Set_editing_event(null);
+    Set_form({
+      ...Empty_form(Selected_key),
       color: "",
       start_time: start_time,
       end_time: `${String(endHour).padStart(2, "0")}:00`,
     });
-    set_field_errors({});
-    set_field_states({});
-    form_modal.open_modal();
+    Set_field_errors({});
+    Set_field_states({});
+    Form_modal.open_modal();
   };
 
-  const open_edit_modal = (event) => {
-    set_editing_event(event);
-    set_form({
+  const Open_edit_modal = (event) => {
+    Set_editing_event(event);
+    Set_form({
       title: event.title,
-      notes: get_visible_event_notes(event.notes),
+      notes: Get_visible_event_notes(event.notes),
       event_date: event.event_date,
       start_time: event.start_time.slice(0, 5),
       end_time: event.end_time.slice(0, 5),
       color: event.color ?? "green",
     });
-    set_field_errors({});
-    set_field_states({});
-    form_modal.open_modal();
+    Set_field_errors({});
+    Set_field_states({});
+    Form_modal.open_modal();
   };
 
-  const close_form_modal = () => {
-    form_modal.close_modal();
+  const Close_form_modal = () => {
+    Form_modal.close_modal();
     setTimeout(() => {
-      set_editing_event(null);
-      set_form(empty_form(selected_key));
-      set_field_errors({});
-      set_field_states({});
+      Set_editing_event(null);
+      Set_form(Empty_form(Selected_key));
+      Set_field_errors({});
+      Set_field_states({});
     }, MODAL_EXIT_MS);
   };
 
-  const close_delete_modal = () => {
-    delete_modal.close_modal();
+  const Close_delete_modal = () => {
+    Delete_modal.close_modal();
     setTimeout(() => {
-      set_delete_target(null);
+      Set_delete_target(null);
     }, MODAL_EXIT_MS);
   };
 
-  const handle_submit = async (e) => {
+  const Handle_submit = async (e) => {
     e.preventDefault();
 
-    const title = sanitize_text(form.title, 80);
-    const event_date = sanitize_date(form.event_date, selected_key);
-    const start_time = sanitize_time(form.start_time, "09:00");
-    const end_time = sanitize_time(form.end_time, "10:00");
+    const title = Sanitize_text(form.title, 80);
+    const event_date = Sanitize_date(form.event_date, Selected_key);
+    const start_time = Sanitize_time(form.start_time, "09:00");
+    const end_time = Sanitize_time(form.end_time, "10:00");
 
     const errors = {};
     if (!title) errors.title = "Give it a name";
@@ -419,25 +419,25 @@ function Calendar() {
     if (!form.color) errors.color = "Pick a color";
 
     if (Object.keys(errors).length > 0) {
-      set_field_errors(errors);
+      Set_field_errors(errors);
       const newStates = {};
       Object.keys(errors).forEach((k) => {
         newStates[k] = "error";
       });
-      set_field_states((prev) => ({ ...prev, ...newStates }));
-      set_shake_key((k) => k + 1);
+      Set_field_states((prev) => ({ ...prev, ...newStates }));
+      Set_shake_key((k) => k + 1);
       return;
     }
 
-    set_saving(true);
-    set_error(null);
+    Set_saving(true);
+    Set_error(null);
 
-    const nextNotes = sanitize_text(form.notes, 240) || null;
+    const nextNotes = Sanitize_text(form.notes, 240) || null;
     const payload = {
       title,
       notes:
-        editing_event && is_shift_link_note(editing_event.notes)
-          ? editing_event.notes
+        Editing_event && Is_shift_link_note(Editing_event.notes)
+          ? Editing_event.notes
           : nextNotes,
       event_date: event_date,
       start_time: start_time,
@@ -452,24 +452,24 @@ function Calendar() {
     };
 
     try {
-      const supabase = get_supabase_client();
+      const supabase = Get_supabase_client();
       let dbError;
-      if (editing_event) {
+      if (Editing_event) {
         ({ error: dbError } = await supabase
           .from("events")
           .update(payload)
-          .eq("id", editing_event.id));
+          .eq("id", Editing_event.id));
       } else {
         ({ error: dbError } = await supabase.from("events").insert(payload));
       }
 
-      set_saving(false);
+      Set_saving(false);
 
       if (dbError) {
-        const message = get_user_facing_error(dbError.message);
-        set_error(message);
-        toast_error(
-          editing_event ? "Couldn't edit event." : "Couldn't save event.",
+        const message = Get_user_facing_error(dbError.message);
+        Set_error(message);
+        Toast_error(
+          Editing_event ? "Couldn't edit event." : "Couldn't save event.",
         );
         return;
       }
@@ -477,15 +477,15 @@ function Calendar() {
       // If this event is linked to a shift, mirror the new time back onto
       // the shift record and recompute Wake up / Go for a walk for the day
       // so editing from the Calendar page stays in sync with the Shifts page.
-      if (editing_event && is_shift_link_note(editing_event.notes)) {
-        const linked_shift_id = editing_event.notes.match(
+      if (Editing_event && Is_shift_link_note(Editing_event.notes)) {
+        const linked_shift_id = Editing_event.notes.match(
           /Linked shift id:\s*([a-zA-Z0-9-]+)/,
         )?.[1];
 
         if (linked_shift_id) {
           try {
-            const startMin = parse_time_to_minutes(start_time);
-            const endMin = parse_time_to_minutes(end_time);
+            const startMin = Parse_time_to_minutes(start_time);
+            const endMin = Parse_time_to_minutes(end_time);
             const hours =
               startMin != null && endMin != null
                 ? Number(((endMin - startMin) / 60).toFixed(2))
@@ -500,54 +500,54 @@ function Calendar() {
               })
               .eq("id", linked_shift_id);
 
-            await recalc_wake_walk_for_date(supabase, event_date, user_id);
+            await Recalc_wake_walk_for_date(supabase, event_date, user_id);
             window.dispatchEvent(new CustomEvent("shifts:refresh"));
           } catch {
-            toast_error(
+            Toast_error(
               "Event saved, but syncing the linked shift and wake/walk times failed.",
             );
           }
         }
       }
 
-      close_form_modal();
-      toast_success(
-        editing_event ? "Event edited successfully." : "Event saved.",
+      Close_form_modal();
+      Toast_success(
+        Editing_event ? "Event edited successfully." : "Event saved.",
       );
-      fetch_events();
+      Fetch_events();
     } catch (err) {
-      set_saving(false);
-      set_error(get_user_facing_error(err.message));
-      toast_error(
-        editing_event ? "Couldn't edit event." : "Couldn't save event.",
+      Set_saving(false);
+      Set_error(Get_user_facing_error(err.message));
+      Toast_error(
+        Editing_event ? "Couldn't edit event." : "Couldn't save event.",
       );
     }
   };
 
-  const confirm_delete = async () => {
-    if (!delete_target) return;
+  const Confirm_delete = async () => {
+    if (!Delete_target) return;
 
-    set_deleting(true);
-    set_error(null);
+    Set_deleting(true);
+    Set_error(null);
 
     try {
-      const supabase = get_supabase_client();
-      const event_date = delete_target.event_date;
+      const supabase = Get_supabase_client();
+      const event_date = Delete_target.event_date;
       const linked_shift_id =
-        typeof delete_target.notes === "string"
-          ? delete_target.notes.match(/Linked shift id:\s*([a-zA-Z0-9-]+)/)?.[1]
+        typeof Delete_target.notes === "string"
+          ? Delete_target.notes.match(/Linked shift id:\s*([a-zA-Z0-9-]+)/)?.[1]
           : null;
 
       const { error: dbError } = await supabase
         .from("events")
         .delete()
-        .eq("id", delete_target.id);
+        .eq("id", Delete_target.id);
 
-      set_deleting(false);
+      Set_deleting(false);
 
       if (dbError) {
-        set_error(get_user_facing_error(dbError.message));
-        toast_error("Failed to delete event.");
+        Set_error(Get_user_facing_error(dbError.message));
+        Toast_error("Failed to delete event.");
         return;
       }
 
@@ -558,7 +558,7 @@ function Calendar() {
           .eq("id", linked_shift_id);
 
         if (shiftDeleteError) {
-          toast_error(
+          Toast_error(
             "Deleted calendar event, but the linked shift could not be removed.",
           );
         } else {
@@ -566,10 +566,10 @@ function Calendar() {
         }
       }
 
-      const removedId = delete_target.id;
-      close_delete_modal();
-      toast_success("Event deleted.");
-      set_removing_id(removedId);
+      const removedId = Delete_target.id;
+      Close_delete_modal();
+      Toast_success("Event deleted.");
+      Set_removing_id(removedId);
 
       setTimeout(async () => {
         const { data: remainingEvents = [] } = await supabase
@@ -579,12 +579,12 @@ function Calendar() {
 
         let generatedIds = [];
         const shouldRemoveGenerated = remainingEvents.every(
-          (event) => is_generated_wake_event(event) || event.id === removedId,
+          (event) => Is_generated_wake_event(event) || event.id === removedId,
         );
 
         if (shouldRemoveGenerated) {
           generatedIds = (remainingEvents || [])
-            .filter((event) => is_generated_wake_event(event))
+            .filter((event) => Is_generated_wake_event(event))
             .map((event) => event.id);
 
           if (generatedIds.length > 0) {
@@ -593,32 +593,32 @@ function Calendar() {
         }
 
         const idsToRemove = [removedId, ...generatedIds];
-        set_events((prev) =>
+        Set_events((prev) =>
           prev.filter((item) => !idsToRemove.includes(item.id)),
         );
-        set_all_events((prev) =>
+        Set_all_events((prev) =>
           prev.filter((item) => !idsToRemove.includes(item.id)),
         );
-        set_removing_id(null);
+        Set_removing_id(null);
         window.dispatchEvent(
           new CustomEvent("calendar:refresh", { detail: { date: event_date } }),
         );
       }, 380);
     } catch (err) {
-      set_deleting(false);
-      set_error(get_user_facing_error(err.message));
-      toast_error("Failed to delete event.");
+      Set_deleting(false);
+      Set_error(Get_user_facing_error(err.message));
+      Toast_error("Failed to delete event.");
     }
   };
 
-  const toggle_complete = async (event) => {
-    set_toggling_id(event.id);
-    set_error(null);
+  const Toggle_complete = async (event) => {
+    Set_toggling_id(event.id);
+    Set_error(null);
 
     const nextCompleted = !event.is_completed;
 
     try {
-      const supabase = get_supabase_client();
+      const supabase = Get_supabase_client();
       const { error: dbError } = await supabase
         .from("events")
         .update({
@@ -627,14 +627,14 @@ function Calendar() {
         })
         .eq("id", event.id);
 
-      set_toggling_id(null);
+      Set_toggling_id(null);
 
       if (dbError) {
-        set_error(get_user_facing_error(dbError.message));
+        Set_error(Get_user_facing_error(dbError.message));
         return;
       }
 
-      set_events((prev) =>
+      Set_events((prev) =>
         prev.map((item) =>
           item.id === event.id
             ? {
@@ -646,12 +646,12 @@ function Calendar() {
         ),
       );
     } catch (err) {
-      set_toggling_id(null);
-      set_error(get_user_facing_error(err.message));
+      Set_toggling_id(null);
+      Set_error(Get_user_facing_error(err.message));
     }
   };
 
-  const handle_grid_click = (e) => {
+  const Handle_grid_click = (e) => {
     const grid = e.currentTarget;
     const rect = grid.getBoundingClientRect();
     const y = e.clientY - rect.top;
@@ -663,12 +663,12 @@ function Calendar() {
       DAY_END_HOUR,
     );
     const minute = snappedMinutes % 60;
-    open_add_modal(
+    Open_add_modal(
       `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`,
     );
   };
 
-  const day_title = selected_date.toLocaleDateString(undefined, {
+  const Day_title = Selected_date.toLocaleDateString(undefined, {
     weekday: "long",
     month: "long",
     day: "numeric",
@@ -678,7 +678,7 @@ function Calendar() {
     <section className="calendar page">
       <PageHeader
         className="calendar__header animate-in"
-        eyebrow={household_name ? `Calendar · ${household_name}` : "Daily planner"}
+        eyebrow={Household_name ? `Calendar · ${Household_name}` : "Daily planner"}
         title="Calendar"
       />
 
@@ -686,25 +686,25 @@ function Calendar() {
         <button
           type="button"
           className="calendar__nav-btn"
-          onClick={() => shift_selected_date("prev")}
-          aria-label={view_mode === "month" ? "Previous month" : "Previous week"}
+          onClick={() => Shift_selected_date("prev")}
+          aria-label={View_mode === "month" ? "Previous month" : "Previous week"}
         >
           ‹
         </button>
         <div className="calendar__nav-center">
           <p className="calendar__date-label">
-            {view_mode === "month"
-              ? selected_date.toLocaleDateString(undefined, {
+            {View_mode === "month"
+              ? Selected_date.toLocaleDateString(undefined, {
                   month: "long",
                   year: "numeric",
                 })
-              : day_title}
+              : Day_title}
           </p>
-          {!is_today && (
+          {!Is_today && (
             <button
               type="button"
               className="calendar__today-btn"
-              onClick={() => set_selected_date(new Date())}
+              onClick={() => Set_selected_date(new Date())}
             >
               Today
             </button>
@@ -713,8 +713,8 @@ function Calendar() {
         <button
           type="button"
           className="calendar__nav-btn"
-          onClick={() => shift_selected_date("next")}
-          aria-label={view_mode === "month" ? "Next month" : "Next week"}
+          onClick={() => Shift_selected_date("next")}
+          aria-label={View_mode === "month" ? "Next month" : "Next week"}
         >
           ›
         </button>
@@ -727,29 +727,29 @@ function Calendar() {
       >
         <button
           type="button"
-          className={`calendar__view-btn${view_mode === "week" ? " calendar__view-btn--active" : ""}`}
-          onClick={() => set_view_mode("week")}
-          aria-pressed={view_mode === "week"}
+          className={`calendar__view-btn${View_mode === "week" ? " calendar__view-btn--active" : ""}`}
+          onClick={() => Set_view_mode("week")}
+          aria-pressed={View_mode === "week"}
         >
           1 week
         </button>
         <button
           type="button"
-          className={`calendar__view-btn${view_mode === "month" ? " calendar__view-btn--active" : ""}`}
-          onClick={() => set_view_mode("month")}
-          aria-pressed={view_mode === "month"}
+          className={`calendar__view-btn${View_mode === "month" ? " calendar__view-btn--active" : ""}`}
+          onClick={() => Set_view_mode("month")}
+          aria-pressed={View_mode === "month"}
         >
           1 month
         </button>
       </div>
 
       <CalendarGrid
-        visible_days={visible_days}
-        selected_date={selected_date}
+        Visible_days={Visible_days}
+        Selected_date={Selected_date}
         today={today}
-        view_mode={view_mode}
+        View_mode={View_mode}
         busy_dates={busy_dates}
-        onDaySelect={set_selected_date}
+        onDaySelect={Set_selected_date}
       />
 
       <div className="calendar__summary animate-in animate-in--3">
@@ -776,36 +776,36 @@ function Calendar() {
         <button
           type="button"
           className="calendar__add-btn"
-          onClick={() => open_add_modal()}
-          ref={add_btn_ref}
+          onClick={() => Open_add_modal()}
+          ref={Add_btn_ref}
         >
           + Add event
         </button>
       </div>
 
-      {loading ? (
+      {Loading ? (
         <LoadingSkeleton count={3} height="4rem" />
       ) : (
         <div className="calendar__day animate-in animate-in--4">
           <TimelineView
-            hour_labels={hour_labels}
-            laid_out_events={laid_out_events}
-            now_line_top={now_line_top}
-            onGridClick={handle_grid_click}
-            onEventClick={open_edit_modal}
-            onCheck={toggle_complete}
+            Hour_labels={Hour_labels}
+            Laid_out_events={Laid_out_events}
+            Now_line_top={Now_line_top}
+            onGridClick={Handle_grid_click}
+            onEventClick={Open_edit_modal}
+            onCheck={Toggle_complete}
             onDelete={(event) => {
-              set_delete_target(event);
-              delete_modal.open_modal();
+              Set_delete_target(event);
+              Delete_modal.open_modal();
             }}
-            toggling_id={toggling_id}
-            removing_id={removing_id}
-            is_wake_event={is_wake_event}
+            Toggling_id={Toggling_id}
+            Removing_id={Removing_id}
+            Is_wake_event={Is_wake_event}
           />
         </div>
       )}
 
-      {events.length === 0 && !loading && (
+      {events.length === 0 && !Loading && (
         <div style={{ marginTop: "1rem" }}>
           <EmptyState
             text="No events today. Tap the timeline or + Add event."
@@ -816,52 +816,52 @@ function Calendar() {
 
       <ReminderList
         events={events}
-        is_wake_event={is_wake_event}
-        onCheck={toggle_complete}
-        onEdit={open_edit_modal}
+        Is_wake_event={Is_wake_event}
+        onCheck={Toggle_complete}
+        onEdit={Open_edit_modal}
         onDelete={(event) => {
-          set_delete_target(event);
-          delete_modal.open_modal();
+          Set_delete_target(event);
+          Delete_modal.open_modal();
         }}
-        toggling_id={toggling_id}
-        removing_id={removing_id}
+        Toggling_id={Toggling_id}
+        Removing_id={Removing_id}
       />
 
       <EventForm
-        open={form_modal.open}
-        closing={form_modal.closing}
-        onClose={close_form_modal}
-        editing_event={editing_event}
+        open={Form_modal.open}
+        closing={Form_modal.closing}
+        onClose={Close_form_modal}
+        Editing_event={Editing_event}
         form={form}
-        on_form_change={set_form}
-        saving={saving}
-        field_errors={field_errors}
-        field_states={field_states}
-        shake_key={shake_key}
-        onFieldBlur={handle_calendar_field_blur}
-        onSubmit={handle_submit}
+        on_form_change={Set_form}
+        Saving={Saving}
+        Field_errors={Field_errors}
+        Field_states={Field_states}
+        Shake_key={Shake_key}
+        onFieldBlur={Handle_calendar_field_blur}
+        onSubmit={Handle_submit}
         onClearFieldError={(field) =>
-          set_field_errors((prev) => ({ ...prev, [field]: null }))
+          Set_field_errors((prev) => ({ ...prev, [field]: null }))
         }
         onSetFieldState={(field, state) =>
-          set_field_states((prev) => ({ ...prev, [field]: state }))
+          Set_field_states((prev) => ({ ...prev, [field]: state }))
         }
-        isValid={is_calendar_form_valid}
+        isValid={Is_calendar_form_valid}
       />
 
       <ConfirmModal
-        open={!!delete_target && delete_modal.open}
-        closing={delete_modal.closing}
-        onClose={close_delete_modal}
-        onConfirm={confirm_delete}
-        loading={deleting}
+        open={!!Delete_target && Delete_modal.open}
+        closing={Delete_modal.closing}
+        onClose={Close_delete_modal}
+        onConfirm={Confirm_delete}
+        Loading={Deleting}
         title="Delete this event?"
         preview={
-          delete_target && (
+          Delete_target && (
             <strong>
-              {delete_target.title} on {delete_target.event_date} (
-              {format_time_12(delete_target.start_time)} –{" "}
-              {format_time_12(delete_target.end_time)})
+              {Delete_target.title} on {Delete_target.event_date} (
+              {format_time_12(Delete_target.start_time)} –{" "}
+              {format_time_12(Delete_target.end_time)})
             </strong>
           )
         }
@@ -869,9 +869,9 @@ function Calendar() {
       />
 
       <FAB
-        visible={show_floating_actions}
+        visible={Show_floating_actions}
         on_scroll_top={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-        on_add={() => open_add_modal()}
+        on_add={() => Open_add_modal()}
         add_label="Add event"
       />
     </section>

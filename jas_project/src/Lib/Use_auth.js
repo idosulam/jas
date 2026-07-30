@@ -3,22 +3,22 @@ import { supabase } from "./Superbase.jsx";
 
 /**
  * Returns the current Supabase auth session and user.
- * { session, user, loading }
+ * { session, user, Loading }
  * user is null when not logged in or when Supabase is not configured.
  */
-export function use_auth() {
+export function Use_auth() {
   const [session, set_session] = useState(null);
-  const [loading, set_loading] = useState(true);
+  const [Loading, Set_loading] = useState(true);
 
   useEffect(() => {
     if (!supabase) {
-      set_loading(false);
+      Set_loading(false);
       return;
     }
 
     supabase.auth.getSession().then(({ data: { session: s } }) => {
       set_session(s);
-      set_loading(false);
+      Set_loading(false);
     });
 
     const {
@@ -33,17 +33,17 @@ export function use_auth() {
   return {
     session,
     user: session?.user ?? null,
-    loading,
+    Loading,
   };
 }
 
 /**
  * Returns the current user_id or null.
  * Convenience for queries — use in components like:
- *   const user_id = use_user_id();
+ *   const user_id = Use_user_id();
  *   if (!user_id) return;
  */
-export function use_user_id() {
-  const { user } = use_auth();
+export function Use_user_id() {
+  const { user } = Use_auth();
   return user?.id ?? null;
 }

@@ -4,12 +4,12 @@
  * Only shows colors the user explicitly saved.
  */
 
-import { get_supabase_client, get_current_user_id } from "./Superbase";
+import { Get_supabase_client, Get_current_user_id } from "./Superbase";
 
-export async function fetch_palette() {
+export async function Fetch_palette() {
   try {
-    const supabase = get_supabase_client();
-    const user_id = await get_current_user_id();
+    const supabase = Get_supabase_client();
+    const user_id = await Get_current_user_id();
     let query = supabase.from("color_palettes").select("*");
     if (user_id) query = query.eq("user_id", user_id);
     const { data, error } = await query.order("sort_order", {
@@ -22,10 +22,10 @@ export async function fetch_palette() {
   }
 }
 
-export async function add_palette_color(hex, label) {
+export async function Add_palette_color(hex, label) {
   try {
-    const supabase = get_supabase_client();
-    const user_id = await get_current_user_id();
+    const supabase = Get_supabase_client();
+    const user_id = await Get_current_user_id();
     let query = supabase.from("color_palettes").select("sort_order");
     if (user_id) query = query.eq("user_id", user_id);
     const { data: existing } = await query
@@ -50,9 +50,9 @@ export async function add_palette_color(hex, label) {
   return null;
 }
 
-export async function update_palette_color(id, hex, label) {
+export async function Update_palette_color(id, hex, label) {
   try {
-    const supabase = get_supabase_client();
+    const supabase = Get_supabase_client();
     const updates = {};
     if (hex) updates.hex = hex;
     if (label !== undefined) updates.label = label;
@@ -71,9 +71,9 @@ export async function update_palette_color(id, hex, label) {
   return null;
 }
 
-export async function delete_palette_color(id) {
+export async function Delete_palette_color(id) {
   try {
-    const supabase = get_supabase_client();
+    const supabase = Get_supabase_client();
     const { error } = await supabase
       .from("color_palettes")
       .delete()
@@ -85,10 +85,10 @@ export async function delete_palette_color(id) {
   }
 }
 
-export async function clear_palette() {
+export async function Clear_palette() {
   try {
-    const supabase = get_supabase_client();
-    const user_id = await get_current_user_id();
+    const supabase = Get_supabase_client();
+    const user_id = await Get_current_user_id();
     let query = supabase.from("color_palettes").delete();
     if (user_id) query = query.eq("user_id", user_id);
     const { error } = await query;

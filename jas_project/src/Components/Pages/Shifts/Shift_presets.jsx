@@ -6,8 +6,8 @@ import { PAY_TYPES } from "./Shift_utils";
  * Quick-add preset chips + the preset edit/create form modal.
  *
  * Props:
- *   presets               – array of preset objects
- *   place_filter           – current place filter id
+ *   Presets               – array of preset objects
+ *   Place_filter           – current place filter id
  *   onQuickAdd(preset)    – populate form from preset and open add modal
  *   onEditPreset(preset)  – open preset editor for existing preset
  *   on_add_preset()         – open preset editor for new preset
@@ -15,36 +15,36 @@ import { PAY_TYPES } from "./Shift_utils";
  *   presetModalOpen       – boolean
  *   presetModalClosing    – boolean
  *   onClosePresetModal()  – close preset modal
- *   editing_preset         – preset being edited (null = new)
- *   preset_form            – preset form state
- *   set_preset_form         – setter (updater function)
+ *   Editing_preset         – preset being edited (null = new)
+ *   Preset_form            – preset form state
+ *   Set_preset_form         – setter (updater function)
  *   places                – PLACES map
- *   deactivated_slugs      – Set of deactivated slugs
+ *   Deactivated_slugs      – Set of deactivated slugs
  *   onSavePreset()        – save preset handler
  *   onDeletePreset(id)    – delete preset handler
  */
 export default function ShiftPresets({
-  presets,
-  place_filter,
+  Presets,
+  Place_filter,
   onQuickAdd,
   onEditPreset,
   on_add_preset,
   presetModalOpen,
   presetModalClosing,
   onClosePresetModal,
-  editing_preset,
-  preset_form,
-  set_preset_form,
+  Editing_preset,
+  Preset_form,
+  Set_preset_form,
   places,
-  deactivated_slugs,
+  Deactivated_slugs,
   onSavePreset,
   onDeletePreset,
 }) {
   return (
     <>
       <div className="shifts__templates animate-in animate-in--3">
-        {presets
-          .filter((p) => place_filter === "all" || p.place === place_filter)
+        {Presets
+          .filter((p) => Place_filter === "all" || p.place === Place_filter)
           .map((preset) => (
             <div key={preset.id} className="shifts__preset">
               <button
@@ -80,7 +80,7 @@ export default function ShiftPresets({
         open={presetModalOpen}
         closing={presetModalClosing}
         onClose={onClosePresetModal}
-        title={editing_preset ? "Edit preset" : "Create preset"}
+        title={Editing_preset ? "Edit preset" : "Create preset"}
       >
         <p className="shifts__preset-hint">
           Presets let you quick-add common shifts with one tap.
@@ -89,9 +89,9 @@ export default function ShiftPresets({
           <FormField label="Preset name">
             <input
               type="text"
-              value={preset_form.label}
+              value={Preset_form.label}
               onChange={(e) =>
-                set_preset_form((f) => ({ ...f, label: e.target.value }))
+                Set_preset_form((f) => ({ ...f, label: e.target.value }))
               }
               placeholder="e.g. Morning shift"
               maxLength={40}
@@ -100,15 +100,15 @@ export default function ShiftPresets({
           </FormField>
           <FormField label="Place">
             <select
-              value={preset_form.place}
+              value={Preset_form.place}
               onChange={(e) =>
-                set_preset_form((f) => ({ ...f, place: e.target.value }))
+                Set_preset_form((f) => ({ ...f, place: e.target.value }))
               }
             >
               {Object.entries(places).map(([key, { label, rate }]) => (
                 <option key={key} value={key}>
                   {label} — ₪{rate}/hr
-                  {deactivated_slugs.has(key) ? " (inactive)" : ""}
+                  {Deactivated_slugs.has(key) ? " (inactive)" : ""}
                 </option>
               ))}
             </select>
@@ -122,11 +122,11 @@ export default function ShiftPresets({
               <button
                 key={id}
                 type="button"
-                className={`shifts__pay-toggle-btn${preset_form.pay_type === id ? " shifts__pay-toggle-btn--active" : ""}`}
+                className={`shifts__pay-toggle-btn${Preset_form.pay_type === id ? " shifts__pay-toggle-btn--active" : ""}`}
                 onClick={() =>
-                  set_preset_form((f) => ({ ...f, pay_type: id }))
+                  Set_preset_form((f) => ({ ...f, pay_type: id }))
                 }
-                aria-pressed={preset_form.pay_type === id}
+                aria-pressed={Preset_form.pay_type === id}
               >
                 {label}
               </button>
@@ -136,9 +136,9 @@ export default function ShiftPresets({
             <FormField label="Start time">
               <input
                 type="time"
-                value={preset_form.start_time}
+                value={Preset_form.start_time}
                 onChange={(e) =>
-                  set_preset_form((f) => ({
+                  Set_preset_form((f) => ({
                     ...f,
                     start_time: e.target.value,
                   }))
@@ -148,9 +148,9 @@ export default function ShiftPresets({
             <FormField label="End time">
               <input
                 type="time"
-                value={preset_form.end_time}
+                value={Preset_form.end_time}
                 onChange={(e) =>
-                  set_preset_form((f) => ({
+                  Set_preset_form((f) => ({
                     ...f,
                     end_time: e.target.value,
                   }))
@@ -163,20 +163,20 @@ export default function ShiftPresets({
               type="number"
               min="0.01"
               step="any"
-              value={preset_form.hours}
+              value={Preset_form.hours}
               onChange={(e) =>
-                set_preset_form((f) => ({ ...f, hours: e.target.value }))
+                Set_preset_form((f) => ({ ...f, hours: e.target.value }))
               }
               placeholder="8"
             />
           </FormField>
           <div className="btn-row">
-            {editing_preset && (
+            {Editing_preset && (
               <button
                 type="button"
                 className="btn btn--danger-outline"
                 onClick={() => {
-                  onDeletePreset(editing_preset.id);
+                  onDeletePreset(Editing_preset.id);
                   onClosePresetModal();
                 }}
               >
@@ -194,9 +194,9 @@ export default function ShiftPresets({
               type="button"
               className="btn btn--primary"
               onClick={onSavePreset}
-              disabled={!preset_form.label.trim()}
+              disabled={!Preset_form.label.trim()}
             >
-              {editing_preset ? "Update" : "Create"}
+              {Editing_preset ? "Update" : "Create"}
             </button>
           </div>
         </div>

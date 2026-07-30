@@ -15,50 +15,50 @@ const NAV_ITEMS = [
 ];
 
 function Navbar({ active_id, onChange }) {
-  const nav_ref = useRef(null);
-  const prev_active_ref = useRef(active_id);
-  const [indicator, set_indicator] = useState({ left: 0, width: 0 });
-  const [is_pulsing, set_is_pulsing] = useState(false);
+  const Nav_ref = useRef(null);
+  const Prev_active_ref = useRef(active_id);
+  const [indicator, Set_indicator] = useState({ left: 0, width: 0 });
+  const [Is_pulsing, Set_is_pulsing] = useState(false);
 
-  const update_indicator = useCallback(() => {
-    const nav = nav_ref.current;
+  const Update_indicator = useCallback(() => {
+    const nav = Nav_ref.current;
     if (!nav) return;
 
-    const active_button = nav.querySelector(`[data-nav-id="${active_id}"]`);
-    if (!active_button) return;
+    const Active_button = nav.querySelector(`[data-nav-id="${active_id}"]`);
+    if (!Active_button) return;
 
-    const nav_rect = nav.getBoundingClientRect();
-    const button_rect = active_button.getBoundingClientRect();
+    const Nav_rect = nav.getBoundingClientRect();
+    const Button_rect = Active_button.getBoundingClientRect();
 
-    set_indicator({
-      left: button_rect.left - nav_rect.left,
-      width: button_rect.width,
+    Set_indicator({
+      left: Button_rect.left - Nav_rect.left,
+      width: Button_rect.width,
     });
   }, [active_id]);
 
   useEffect(() => {
-    update_indicator();
-    window.addEventListener("resize", update_indicator);
-    return () => window.removeEventListener("resize", update_indicator);
-  }, [update_indicator]);
+    Update_indicator();
+    window.addEventListener("resize", Update_indicator);
+    return () => window.removeEventListener("resize", Update_indicator);
+  }, [Update_indicator]);
 
   useEffect(() => {
-    if (prev_active_ref.current === active_id) return;
+    if (Prev_active_ref.current === active_id) return;
 
-    prev_active_ref.current = active_id;
-    set_is_pulsing(true);
+    Prev_active_ref.current = active_id;
+    Set_is_pulsing(true);
 
-    const timer = setTimeout(() => set_is_pulsing(false), 450);
+    const timer = setTimeout(() => Set_is_pulsing(false), 450);
     return () => clearTimeout(timer);
   }, [active_id]);
 
   return (
     <nav className="navbar" aria-label="Main navigation">
       <div
-        className={`navbar__glass ${is_pulsing ? "navbar__glass--pulse" : ""}`}
+        className={`navbar__glass ${Is_pulsing ? "navbar__glass--pulse" : ""}`}
       >
         <div className="navbar__shine" aria-hidden="true" />
-        <div className="navbar__inner" ref={nav_ref}>
+        <div className="navbar__inner" ref={Nav_ref}>
           <div
             className="navbar__indicator"
             style={{

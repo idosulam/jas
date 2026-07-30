@@ -1,12 +1,12 @@
 const SAFE_TEXT_MAX_LENGTH = 160;
 
-export function sanitize_text(value, max_length = SAFE_TEXT_MAX_LENGTH) {
+export function Sanitize_text(value, max_length = SAFE_TEXT_MAX_LENGTH) {
   if (typeof value !== "string") return "";
   const normalized = value.replace(/<[^>]*>/g, "").trim();
   return normalized.slice(0, max_length);
 }
 
-export function sanitize_number(
+export function Sanitize_number(
   value,
   min = Number.NEGATIVE_INFINITY,
   max = Number.POSITIVE_INFINITY,
@@ -26,7 +26,7 @@ export function sanitize_number(
   return null;
 }
 
-export function sanitize_date(value, fallback = "") {
+export function Sanitize_date(value, fallback = "") {
   if (typeof value !== "string") return fallback;
   const trimmed = value.trim();
   if (!/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) return fallback;
@@ -42,7 +42,7 @@ export function sanitize_date(value, fallback = "") {
   return trimmed;
 }
 
-export function sanitize_time(value, fallback = "09:00") {
+export function Sanitize_time(value, fallback = "09:00") {
   if (typeof value !== "string") return fallback;
   const trimmed = value.trim();
   if (!/^\d{2}:\d{2}$/.test(trimmed)) return fallback;
@@ -55,7 +55,7 @@ export function sanitize_time(value, fallback = "09:00") {
  * Maps Supabase/JS errors to specific, actionable user-facing messages.
  * Each pattern match returns a distinct message so the user knows what happened.
  */
-export function get_user_facing_error(error) {
+export function Get_user_facing_error(error) {
   if (typeof error !== "string" || !error.trim()) {
     return "Something went wrong. Please try again.";
   }
@@ -126,7 +126,7 @@ export function get_user_facing_error(error) {
  * @param {object} opts - Intl.DateTimeFormat options
  * @returns {string} Formatted date like "Mon, Jan 15"
  */
-export function format_date_friendly(date_str, opts = {}) {
+export function Format_date_friendly(date_str, opts = {}) {
   if (!date_str || typeof date_str !== "string") return "";
   const d = new Date(`${date_str}T12:00:00`);
   if (isNaN(d.getTime())) return date_str;
@@ -145,7 +145,7 @@ export function format_date_friendly(date_str, opts = {}) {
  * Haptic feedback — vibrate the device briefly.
  * Safe no-op on desktop / unsupported browsers.
  */
-export function haptic_error() {
+export function Haptic_error() {
   try {
     navigator.vibrate?.(30);
   } catch {

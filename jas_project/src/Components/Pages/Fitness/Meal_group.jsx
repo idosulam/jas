@@ -1,11 +1,11 @@
 function MealGroup({
   meal,
   entries,
-  removing_id,
+  Removing_id,
   onEdit,
   onDelete,
   on_add_for_meal,
-  add_btn_ref,
+  Add_btn_ref,
 }) {
   const mealCals = entries.reduce(
     (s, e) => s + (Number(e.calories) || 0),
@@ -24,7 +24,7 @@ function MealGroup({
             type="button"
             className="fitness__meal-add"
             onClick={() => on_add_for_meal(meal.id)}
-            ref={meal.id === "breakfast" ? add_btn_ref : undefined}
+            ref={meal.id === "breakfast" ? Add_btn_ref : undefined}
             aria-label={`Add ${meal.label} entry`}
           >
             +
@@ -36,7 +36,7 @@ function MealGroup({
       ) : (
         <ul className="fitness__meal-list">
           {entries.map((entry) => {
-            const isRemoving = removing_id === entry.id;
+            const isRemoving = Removing_id === entry.id;
             return (
               <li
                 key={entry.id}

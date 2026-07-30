@@ -1,10 +1,10 @@
 import EarningsChart from "./Earnings_chart";
-import { format_money } from "../../../Lib/Format.js";
+import { Format_money } from "../../../Lib/Format.js";
 
 function HouseholdShiftList({
   todayShifts,
-  workplaces,
-  chart_data,
+  Workplaces,
+  Chart_data,
   members,
   month,
   year,
@@ -17,7 +17,7 @@ function HouseholdShiftList({
           <h3 className="household__section-title">Today</h3>
           <div className="household__today-cards">
             {todayShifts.map((shift) => {
-              const wp = workplaces[shift.user_id]?.[shift.place];
+              const wp = Workplaces[shift.user_id]?.[shift.place];
               return (
                 <div key={shift.id} className="household__today-card">
                   <span
@@ -29,7 +29,7 @@ function HouseholdShiftList({
                       {shift.display_name} — {wp?.label || shift.place}
                     </span>
                     <span className="household__today-detail">
-                      {shift.hours}h · {format_money(shift.tips)} tips
+                      {shift.hours}h · {Format_money(shift.tips)} tips
                     </span>
                   </div>
                 </div>
@@ -43,7 +43,7 @@ function HouseholdShiftList({
       <div className="household__chart-section">
         <h3 className="household__section-title">Daily Earnings</h3>
         <EarningsChart
-          data={chart_data}
+          data={Chart_data}
           members={members}
           month={month}
           year={year}

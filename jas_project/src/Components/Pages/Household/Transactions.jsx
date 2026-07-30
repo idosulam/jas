@@ -1,18 +1,18 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { get_supabase_client } from "../../../Lib/Superbase";
+import { Get_supabase_client } from "../../../Lib/Superbase";
 import {
-  get_user_facing_error,
-  sanitize_text,
+  Get_user_facing_error,
+  Sanitize_text,
 } from "../../../Lib/Security";
-import { use_glass_toast } from "../../../Lib/Glass_toast_provider.jsx";
-import { use_modal, use_body_scroll_lock } from "../../../Hooks";
+import { Use_glass_toast } from "../../../Lib/Glass_toast_provider.jsx";
+import { Use_modal, Use_body_scroll_lock } from "../../../Hooks";
 import SheetModal from "../../UI/Modals/Sheet_modal";
 import ConfirmModal from "../../UI/Modals/Confirm_modal";
 import EmptyState from "../../UI/Empty_state";
 import FormField from "../../UI/Form/form_field";
 import ColorPalettePicker from "../../../Lib/Color_palette_picker.jsx";
 
-import { format_money, format_date_group } from "../../../Lib/format";
+import { Format_money, Format_date_group } from "../../../Lib/format";
 import TransactionForm from "./Transaction_form";
 import TransactionCard from "./Transaction_card";
 import CategoryManager, { DEFAULT_ICONS } from "./Category_manager";
@@ -20,19 +20,19 @@ import CategoryManager, { DEFAULT_ICONS } from "./Category_manager";
 function Transactions({ householdId, user_id, members, goals = [] }) {
   const [transactions, setTransactions] = useState([]);
   const [categories, setCategories] = useState([]);
-  const [loading, set_loading] = useState(true);
+  const [Loading, Set_loading] = useState(true);
   const [month, setMonth] = useState(new Date().getMonth());
   const [year, setYear] = useState(new Date().getFullYear());
   const [typeFilter, setTypeFilter] = useState("all");
 
-  const { success: toast_success, error: toast_error } = use_glass_toast();
-  const addModal = use_modal(260);
-  const editModal = use_modal(260);
-  const delete_modal = use_modal(260);
-  const categoryModal = use_modal(260);
-  const deleteCategoryModal = use_modal(260);
+  const { success: Toast_success, error: Toast_error } = Use_glass_toast();
+  const addModal = Use_modal(260);
+  const editModal = Use_modal(260);
+  const Delete_modal = Use_modal(260);
+  const categoryModal = Use_modal(260);
+  const deleteCategoryModal = Use_modal(260);
 
-  const [form, set_form] = useState({
+  const [form, Set_form] = useState({
     type: "expense",
     amount: "",
     description: "",
@@ -42,8 +42,8 @@ function Transactions({ householdId, user_id, members, goals = [] }) {
     transaction_date: new Date().toISOString().slice(0, 10),
   });
   const [editingTx, setEditingTx] = useState(null);
-  const [delete_target, set_delete_target] = useState(null);
-  const [deleting, set_deleting] = useState(false);
+  const [Delete_target, Set_delete_target] = useState(null);
+  const [Deleting, Set_deleting] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   // Category form
@@ -78,10 +78,10 @@ function Transactions({ householdId, user_id, members, goals = [] }) {
     }
   }, [typeFilter]);
 
-  use_body_scroll_lock(
+  Use_body_scroll_lock(
     addModal.open,
     editModal.open,
-    delete_modal.open,
+    Delete_modal.open,
     categoryModal.open,
     deleteCategoryModal.open,
   );
@@ -90,7 +90,7 @@ function Transactions({ householdId, user_id, members, goals = [] }) {
   const fetchCategories = useCallback(async () => {
     if (!householdId) return;
     try {
-      const supabase = get_supabase_client();
+      const supabase = Get_supabase_client();
       const { data, error } = await supabase
         .from("transaction_categories")
         .select("*")
@@ -105,17 +105,17 @@ function Transactions({ householdId, user_id, members, goals = [] }) {
   }, [householdId]);
 
   // Fetch transactions
-  const fetch_transactions = useCallback(async () => {
+  const Fetch_transactions = useCallback(async () => {
     if (!householdId) return;
     const startDate = new Date(year, month, 1).toISOString().slice(0, 10);
     const endDate = new Date(year, month + 1, 0).toISOString().slice(0, 10);
 
     try {
-      const supabase = get_supabase_client();
+      const supabase = Get_supabase_client();
       const { data, error } = await supabase
         .from("transactions")
         .select(
-          "*, transaction_categories(name, icon, color), savings_goals(title, icon, color)",
+          "*, transaction_categories(name, icon, color), Savings_goals(title, icon, color)",
         )
         .eq("household_id", householdId)
         .gte("transaction_date", startDate)
@@ -132,9 +132,9 @@ function Transactions({ householdId, user_id, members, goals = [] }) {
             ...t,
             display_name: member?.display_name || "User",
             is_me: t.user_id === user_id,
-            category_name: t.savings_goals?.title || "Savings",
-            category_icon: t.savings_goals?.icon || "🎯",
-            category_color: t.savings_goals?.color || "#818cf8",
+            category_name: t.Savings_goals?.title || "Savings",
+            category_icon: t.Savings_goals?.icon || "🎯",
+            category_color: t.Savings_goals?.color || "#818cf8",
           };
         }
         return {
@@ -149,17 +149,17 @@ function Transactions({ householdId, user_id, members, goals = [] }) {
 
       setTransactions(enriched);
     } catch (err) {
-      toast_error(get_user_facing_error(err.message));
+      Toast_error(Get_user_facing_error(err.message));
     }
-    set_loading(false);
+    Set_loading(false);
   }, [householdId, members, user_id, month, year]);
 
   useEffect(() => {
     fetchCategories();
   }, [fetchCategories]);
   useEffect(() => {
-    if (householdId) fetch_transactions();
-  }, [householdId, fetch_transactions]);
+    if (householdId) Fetch_transactions();
+  }, [householdId, Fetch_transactions]);
 
   // Filtered transactions
   const filtered = useMemo(() => {
@@ -235,9 +235,9 @@ function Transactions({ householdId, user_id, members, goals = [] }) {
     return goals.filter((g) => !g.is_completed);
   }, [goals]);
 
-  const open_add = (type = "expense") => {
+  const Open_add = (type = "expense") => {
     setEditingTx(null);
-    set_form({
+    Set_form({
       type,
       amount: "",
       description: "",
@@ -249,9 +249,9 @@ function Transactions({ householdId, user_id, members, goals = [] }) {
     addModal.open_modal();
   };
 
-  const open_edit = (tx) => {
+  const Open_edit = (tx) => {
     setEditingTx(tx);
-    set_form({
+    Set_form({
       type: tx.type,
       amount: String(tx.amount),
       description: tx.description || "",
@@ -263,10 +263,10 @@ function Transactions({ householdId, user_id, members, goals = [] }) {
     editModal.open_modal();
   };
 
-  const handle_submit = async () => {
+  const Handle_submit = async () => {
     setSubmitting(true);
     try {
-      const supabase = get_supabase_client();
+      const supabase = Get_supabase_client();
       const amount = Number(Number(form.amount).toFixed(2));
       const isUUID =
         /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -281,8 +281,8 @@ function Transactions({ householdId, user_id, members, goals = [] }) {
             : null,
         type: form.type,
         amount,
-        description: sanitize_text(form.description, 100),
-        note: sanitize_text(form.note, 500) || null,
+        description: Sanitize_text(form.description, 100),
+        note: Sanitize_text(form.note, 500) || null,
         transaction_date: form.transaction_date,
       };
 
@@ -292,7 +292,7 @@ function Transactions({ householdId, user_id, members, goals = [] }) {
           .update(payload)
           .eq("id", editingTx.id);
         if (error) throw error;
-        toast_success("Transaction updated.");
+        Toast_success("Transaction updated.");
       } else {
         const { error } = await supabase.from("transactions").insert(payload);
         if (error) throw error;
@@ -303,7 +303,7 @@ function Transactions({ householdId, user_id, members, goals = [] }) {
           if (goal) {
             const newAmount = Number(goal.current_amount) + amount;
             await supabase
-              .from("savings_goals")
+              .from("Savings_goals")
               .update({ current_amount: Number(newAmount.toFixed(2)) })
               .eq("id", form.goal_id);
 
@@ -311,7 +311,7 @@ function Transactions({ householdId, user_id, members, goals = [] }) {
               goal_id: form.goal_id,
               user_id: user_id,
               amount,
-              note: sanitize_text(form.note, 200) || null,
+              note: Sanitize_text(form.note, 200) || null,
             });
           }
         }
@@ -321,37 +321,37 @@ function Transactions({ householdId, user_id, members, goals = [] }) {
           income: "Income",
           contribute: "Contribution",
         };
-        toast_success(`${labels[form.type] || "Transaction"} added!`);
+        Toast_success(`${labels[form.type] || "Transaction"} added!`);
       }
 
       addModal.close_modal();
       editModal.close_modal();
-      fetch_transactions();
+      Fetch_transactions();
     } catch (err) {
-      toast_error(get_user_facing_error(err.message));
+      Toast_error(Get_user_facing_error(err.message));
     }
     setSubmitting(false);
   };
 
-  const confirm_delete = async () => {
-    if (!delete_target) return;
-    set_deleting(true);
+  const Confirm_delete = async () => {
+    if (!Delete_target) return;
+    Set_deleting(true);
     try {
-      const supabase = get_supabase_client();
+      const supabase = Get_supabase_client();
       const { error } = await supabase
         .from("transactions")
         .delete()
-        .eq("id", delete_target.id);
+        .eq("id", Delete_target.id);
       if (error) throw error;
-      delete_modal.close_modal();
+      Delete_modal.close_modal();
       editModal.close_modal();
       setEditingTx(null);
-      toast_success("Transaction deleted.");
-      fetch_transactions();
+      Toast_success("Transaction deleted.");
+      Fetch_transactions();
     } catch (err) {
-      toast_error(get_user_facing_error(err.message));
+      Toast_error(Get_user_facing_error(err.message));
     }
-    set_deleting(false);
+    Set_deleting(false);
   };
 
   // ── Category Management ──────────────────────────────────
@@ -374,11 +374,11 @@ function Transactions({ householdId, user_id, members, goals = [] }) {
   };
 
   const saveCategory = async () => {
-    const name = sanitize_text(categoryForm.name, 40);
+    const name = Sanitize_text(categoryForm.name, 40);
     if (!name) return;
 
     try {
-      const supabase = get_supabase_client();
+      const supabase = Get_supabase_client();
       const payload = {
         name,
         icon: categoryForm.icon,
@@ -393,19 +393,19 @@ function Transactions({ householdId, user_id, members, goals = [] }) {
           .update(payload)
           .eq("id", editingCategory.id);
         if (error) throw error;
-        toast_success("Label updated.");
+        Toast_success("Label updated.");
       } else {
         const { error } = await supabase
           .from("transaction_categories")
           .insert(payload);
         if (error) throw error;
-        toast_success("Label created!");
+        Toast_success("Label created!");
       }
 
       categoryModal.close_modal();
       fetchCategories();
     } catch (err) {
-      toast_error(get_user_facing_error(err.message));
+      Toast_error(Get_user_facing_error(err.message));
     }
   };
 
@@ -413,7 +413,7 @@ function Transactions({ householdId, user_id, members, goals = [] }) {
     if (!deleteCategoryTarget) return;
     setDeletingCategory(true);
     try {
-      const supabase = get_supabase_client();
+      const supabase = Get_supabase_client();
       const { error } = await supabase
         .from("transaction_categories")
         .delete()
@@ -422,10 +422,10 @@ function Transactions({ householdId, user_id, members, goals = [] }) {
       deleteCategoryModal.close_modal();
       categoryModal.close_modal();
       setEditingCategory(null);
-      toast_success("Label deleted.");
+      Toast_success("Label deleted.");
       fetchCategories();
     } catch (err) {
-      toast_error(get_user_facing_error(err.message));
+      Toast_error(Get_user_facing_error(err.message));
     }
     setDeletingCategory(false);
   };
@@ -444,7 +444,7 @@ function Transactions({ householdId, user_id, members, goals = [] }) {
             <div>
               <span className="transactions__balance-label">Income</span>
               <span className="transactions__balance-value transactions__balance-value--income">
-                {format_money(stats.totalIncome)}
+                {Format_money(stats.totalIncome)}
               </span>
             </div>
           </div>
@@ -454,7 +454,7 @@ function Transactions({ householdId, user_id, members, goals = [] }) {
             <div>
               <span className="transactions__balance-label">Expenses</span>
               <span className="transactions__balance-value transactions__balance-value--expense">
-                {format_money(stats.totalExpense)}
+                {Format_money(stats.totalExpense)}
               </span>
             </div>
           </div>
@@ -471,7 +471,7 @@ function Transactions({ householdId, user_id, members, goals = [] }) {
                   className="transactions__balance-value"
                   style={{ color: "#818cf8" }}
                 >
-                  {format_money(stats.totalContribute)}
+                  {Format_money(stats.totalContribute)}
                 </span>
               </div>
             </div>
@@ -483,7 +483,7 @@ function Transactions({ householdId, user_id, members, goals = [] }) {
             className={`transactions__balance-net-value ${stats.balance >= 0 ? "positive" : "negative"}`}
           >
             {stats.balance >= 0 ? "+" : ""}
-            {format_money(stats.balance)}
+            {Format_money(stats.balance)}
           </span>
         </div>
       </div>
@@ -545,7 +545,7 @@ function Transactions({ householdId, user_id, members, goals = [] }) {
                       />
                     </div>
                     <span className="transactions__category-amount">
-                      {format_money(cat.total)}
+                      {Format_money(cat.total)}
                     </span>
                   </div>
                 </div>
@@ -560,13 +560,13 @@ function Transactions({ householdId, user_id, members, goals = [] }) {
         <div className="transactions__add-btns">
           <button
             className="btn btn--ghost btn--sm"
-            onClick={() => open_add("expense")}
+            onClick={() => Open_add("expense")}
           >
             + Expense
           </button>
           <button
             className="btn btn--ghost btn--sm"
-            onClick={() => open_add("income")}
+            onClick={() => Open_add("income")}
             style={{ marginLeft: 6 }}
           >
             + Income
@@ -574,7 +574,7 @@ function Transactions({ householdId, user_id, members, goals = [] }) {
           {activeGoals.length > 0 && (
             <button
               className="btn btn--primary btn--sm"
-              onClick={() => open_add("contribute")}
+              onClick={() => Open_add("contribute")}
               style={{ marginLeft: 6 }}
             >
               + Contribute
@@ -593,7 +593,7 @@ function Transactions({ householdId, user_id, members, goals = [] }) {
             <button
               type="button"
               className="btn btn--primary btn--sm"
-              onClick={() => open_add("expense")}
+              onClick={() => Open_add("expense")}
             >
               + Add transaction
             </button>
@@ -613,13 +613,13 @@ function Transactions({ householdId, user_id, members, goals = [] }) {
               <div key={date} className="transactions__group">
                 <div className="transactions__group-header">
                   <span className="transactions__group-date">
-                    {format_date_group(date)}
+                    {Format_date_group(date)}
                   </span>
                   <span
                     className={`transactions__group-total ${dayTotal >= 0 ? "positive" : "negative"}`}
                   >
                     {dayTotal >= 0 ? "+" : ""}
-                    {format_money(Math.abs(dayTotal))}
+                    {Format_money(Math.abs(dayTotal))}
                   </span>
                 </div>
                 <div className="transactions__group-items">
@@ -627,7 +627,7 @@ function Transactions({ householdId, user_id, members, goals = [] }) {
                     <TransactionCard
                       key={tx.id}
                       transaction={tx}
-                      onEdit={open_edit}
+                      onEdit={Open_edit}
                     />
                   ))}
                 </div>
@@ -649,34 +649,34 @@ function Transactions({ householdId, user_id, members, goals = [] }) {
       >
         <TransactionForm
           form={form}
-          set_form={set_form}
+          Set_form={Set_form}
           editingTx={editingTx}
           categories={categories}
           goals={goals}
           submitting={submitting}
-          onSubmit={handle_submit}
+          onSubmit={Handle_submit}
           onCancel={() => {
             addModal.close_modal();
             editModal.close_modal();
           }}
           onDelete={() => {
-            set_delete_target(editingTx);
-            delete_modal.open_modal();
+            Set_delete_target(editingTx);
+            Delete_modal.open_modal();
           }}
           onOpenNewCategory={openNewCategory}
-          onError={toast_error}
+          onError={Toast_error}
         />
       </SheetModal>
 
       {/* ── Delete Confirmation ────────────────────────────── */}
       <ConfirmModal
-        open={delete_modal.open}
-        closing={delete_modal.closing}
-        onClose={() => delete_modal.close_modal()}
+        open={Delete_modal.open}
+        closing={Delete_modal.closing}
+        onClose={() => Delete_modal.close_modal()}
         title="Delete transaction"
-        message={`Delete "${delete_target?.description}"? This can't be undone.`}
-        confirmText={deleting ? "Deleting…" : "Delete"}
-        onConfirm={confirm_delete}
+        message={`Delete "${Delete_target?.description}"? This can't be undone.`}
+        confirmText={Deleting ? "Deleting…" : "Delete"}
+        onConfirm={Confirm_delete}
         danger
       />
 

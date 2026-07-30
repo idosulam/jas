@@ -1,12 +1,12 @@
 import { useState, useMemo } from "react";
-import { to_display_kg } from "../../../Lib/weight";
-import { format_date_label } from "../../../Lib/format";
+import { To_display_kg } from "../../../Lib/weight";
+import { Format_date_label } from "../../../Lib/format";
 
 export default function WeightChart({ entries, unit, goalKg }) {
   const [hoverIndex, setHoverIndex] = useState(null);
 
   const sorted = useMemo(
-    () => [...entries].sort((a, b) => a.entry_date.localeCompare(b.entry_date)),
+    () => [...entries].sort((a, b) => a.Entry_date.localeCompare(b.Entry_date)),
     [entries],
   );
 
@@ -19,8 +19,8 @@ export default function WeightChart({ entries, unit, goalKg }) {
     const innerW = width - pad.left - pad.right;
     const innerH = height - pad.top - pad.bottom;
 
-    const values = sorted.map((e) => to_display_kg(Number(e.weight_kg), unit));
-    const goalDisplay = goalKg != null ? to_display_kg(goalKg, unit) : null;
+    const values = sorted.map((e) => To_display_kg(Number(e.Weight_kg), unit));
+    const goalDisplay = goalKg != null ? To_display_kg(goalKg, unit) : null;
 
     let minY = Math.min(...values);
     let maxY = Math.max(...values);
@@ -40,9 +40,9 @@ export default function WeightChart({ entries, unit, goalKg }) {
 
     const points = sorted.map((entry, i) => ({
       x: xScale(i),
-      y: yScale(to_display_kg(Number(entry.weight_kg), unit)),
-      date: entry.entry_date,
-      value: to_display_kg(Number(entry.weight_kg), unit),
+      y: yScale(To_display_kg(Number(entry.Weight_kg), unit)),
+      date: entry.Entry_date,
+      value: To_display_kg(Number(entry.Weight_kg), unit),
     }));
 
     const linePath = points
@@ -57,11 +57,11 @@ export default function WeightChart({ entries, unit, goalKg }) {
       sorted.length <= 4
         ? sorted.map((e, i) => ({
             x: xScale(i),
-            label: format_date_label(e.entry_date),
+            label: Format_date_label(e.Entry_date),
           }))
         : [0, Math.floor(sorted.length / 2), sorted.length - 1].map((i) => ({
             x: xScale(i),
-            label: format_date_label(sorted[i].entry_date),
+            label: Format_date_label(sorted[i].Entry_date),
           }));
 
     const goalY = goalDisplay != null ? yScale(goalDisplay) : null;
@@ -219,7 +219,7 @@ export default function WeightChart({ entries, unit, goalKg }) {
             {hovered.value.toFixed(1)} {unit}
           </span>
           <span className="profile__chart-tooltip-date">
-            {format_date_label(hovered.date)}
+            {Format_date_label(hovered.date)}
           </span>
         </div>
       )}

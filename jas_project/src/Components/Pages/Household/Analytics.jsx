@@ -1,6 +1,6 @@
 import { useMemo, useRef, useState, useEffect } from "react";
 
-import { format_money } from "../../../Lib/format";
+import { Format_money } from "../../../Lib/format";
 
 function Analytics({ transactions, members, month, year }) {
   const [activeTab, setActiveTab] = useState("expense"); // expense | income
@@ -55,11 +55,11 @@ function Analytics({ transactions, members, month, year }) {
     return Object.values(map).sort((a, b) => b.total - a.total);
   }, [filtered]);
 
-  const grand_total = categories.reduce((sum, c) => sum + c.total, 0);
+  const Grand_total = categories.reduce((sum, c) => sum + c.total, 0);
 
   // Donut chart data
   const donutData = useMemo(() => {
-    if (grand_total === 0) return [];
+    if (Grand_total === 0) return [];
     const size = 160;
     const cx = size / 2;
     const cy = size / 2;
@@ -71,7 +71,7 @@ function Analytics({ transactions, members, month, year }) {
     const segments = [];
 
     categories.forEach((cat) => {
-      const fraction = cat.total / grand_total;
+      const fraction = cat.total / Grand_total;
       const sweepAngle = fraction * 2 * Math.PI - gap;
       if (sweepAngle <= 0) return;
 
@@ -108,7 +108,7 @@ function Analytics({ transactions, members, month, year }) {
     });
 
     return segments;
-  }, [categories, grand_total]);
+  }, [categories, Grand_total]);
 
   // Per-member breakdown
   const memberBreakdown = useMemo(() => {
@@ -180,7 +180,7 @@ function Analytics({ transactions, members, month, year }) {
 
       {/* Donut Chart + Total */}
       <div className="analytics__donut-section">
-        {grand_total > 0 ? (
+        {Grand_total > 0 ? (
           <div className="analytics__donut-wrap">
             <svg viewBox="0 0 160 160" className="analytics__donut">
               {donutData.map((seg, i) => (
@@ -199,7 +199,7 @@ function Analytics({ transactions, members, month, year }) {
             </svg>
             <div className="analytics__donut-center">
               <span className="analytics__donut-total">
-                {format_money(grand_total)}
+                {Format_money(Grand_total)}
               </span>
               <span className="analytics__donut-label">
                 {activeTab === "expense" ? "Total Spent" : "Total Earned"}
@@ -220,7 +220,7 @@ function Analytics({ transactions, members, month, year }) {
           <h3 className="analytics__section-title">Categories</h3>
           <div className="analytics__category-list">
             {categories.map((cat) => {
-              const pct = grand_total > 0 ? (cat.total / grand_total) * 100 : 0;
+              const pct = Grand_total > 0 ? (cat.total / Grand_total) * 100 : 0;
               return (
                 <div
                   key={cat.id}
@@ -245,7 +245,7 @@ function Analytics({ transactions, members, month, year }) {
                   </div>
                   <div className="analytics__category-right">
                     <span className="analytics__category-amount">
-                      {format_money(cat.total)}
+                      {Format_money(cat.total)}
                     </span>
                     <span className="analytics__category-pct">
                       {pct.toFixed(1)}%
@@ -265,7 +265,7 @@ function Analytics({ transactions, members, month, year }) {
           <div className="analytics__member-list">
             {memberBreakdown.map((member) => {
               const pct =
-                grand_total > 0 ? (member.total / grand_total) * 100 : 0;
+                Grand_total > 0 ? (member.total / Grand_total) * 100 : 0;
               return (
                 <div key={member.user_id} className="analytics__member-item">
                   <div className="analytics__member-left">
@@ -286,7 +286,7 @@ function Analytics({ transactions, members, month, year }) {
                       />
                     </div>
                     <span className="analytics__member-amount">
-                      {format_money(member.total)}
+                      {Format_money(member.total)}
                     </span>
                     <span className="analytics__member-pct">
                       {pct.toFixed(1)}%
@@ -310,7 +310,7 @@ function Analytics({ transactions, members, month, year }) {
                 <div
                   key={d.day}
                   className="analytics__trend-bar-wrap"
-                  title={`${d.date}: ${format_money(d.total)}`}
+                  title={`${d.date}: ${Format_money(d.total)}`}
                 >
                   <div
                     className="analytics__trend-bar"

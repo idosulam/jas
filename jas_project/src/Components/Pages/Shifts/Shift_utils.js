@@ -1,5 +1,5 @@
-import { parse_time_to_minutes } from "../../../Lib/Calendar_sync";
-import { format_money } from "../../../Lib/format";
+import { Parse_time_to_minutes } from "../../../Lib/Calendar_sync";
+import { Format_money } from "../../../Lib/format";
 
 // ── Constants ──────────────────────────────────────────────────────
 
@@ -31,8 +31,8 @@ export function get_current_local_time() {
  * Returns a number (decimal hours) or null when inputs are missing.
  */
 export function calculate_hours_from_times(start_time, end_time) {
-  const start = parse_time_to_minutes(start_time);
-  const end = parse_time_to_minutes(end_time);
+  const start = Parse_time_to_minutes(start_time);
+  const end = Parse_time_to_minutes(end_time);
   if (start == null || end == null) return null;
   const diffMinutes = end >= start ? end - start : 24 * 60 - start + end;
   return Number((diffMinutes / 60).toFixed(2));
@@ -49,7 +49,7 @@ export function calc_pay(places, place, hours, pay_type = "hourly") {
 /**
  * Default empty form factory.
  */
-export const empty_form = (firstPlace) => ({
+export const Empty_form = (firstPlace) => ({
   place: firstPlace || "",
   pay_type: "hourly",
   shift_date: new Date().toISOString().slice(0, 10),
@@ -60,5 +60,5 @@ export const empty_form = (firstPlace) => ({
   notes: "",
 });
 
-// Re-export format_money so consumers can get everything from one module.
-export { format_money };
+// Re-export Format_money so consumers can get everything from one module.
+export { Format_money };

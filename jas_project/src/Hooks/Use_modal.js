@@ -2,30 +2,30 @@ import { useCallback, useRef, useState } from "react";
 
 /**
  * Reusable modal open/close state with animated exit.
- * Returns { open, closing, open_modal, close_modal, set_closing }
+ * Returns { open, closing, open_modal, close_modal, Set_closing }
  *
  * @param {number} exit_ms - Duration of the closing animation in ms (default 260)
  */
-export function use_modal(exit_ms = 260) {
-  const [open, set_open] = useState(false);
-  const [closing, set_closing] = useState(false);
-  const timer_ref = useRef(null);
+export function Use_modal(exit_ms = 260) {
+  const [open, Set_open] = useState(false);
+  const [closing, Set_closing] = useState(false);
+  const Timer_ref = useRef(null);
 
   const open_modal = useCallback(() => {
-    if (timer_ref.current) {
-      clearTimeout(timer_ref.current);
-      timer_ref.current = null;
+    if (Timer_ref.current) {
+      clearTimeout(Timer_ref.current);
+      Timer_ref.current = null;
     }
-    set_closing(false);
-    set_open(true);
+    Set_closing(false);
+    Set_open(true);
   }, []);
 
   const close_modal = useCallback(() => {
-    set_closing(true);
-    timer_ref.current = setTimeout(() => {
-      set_open(false);
-      set_closing(false);
-      timer_ref.current = null;
+    Set_closing(true);
+    Timer_ref.current = setTimeout(() => {
+      Set_open(false);
+      Set_closing(false);
+      Timer_ref.current = null;
     }, exit_ms);
   }, [exit_ms]);
 

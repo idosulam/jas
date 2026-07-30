@@ -1,12 +1,12 @@
 import { SheetModal, FormField } from "../../../components";
-import { use_swipe_down_to_close } from "../../../Hooks";
+import { Use_swipe_down_to_close } from "../../../Hooks";
 
 export default function WeightForm({
   weightModal,
   weightForm,
   setWeightForm,
   editingEntry,
-  saving,
+  Saving,
   weightFieldErrors,
   setWeightFieldErrors,
   weightFieldStates,
@@ -18,7 +18,7 @@ export default function WeightForm({
   onFieldBlur,
   isValid,
 }) {
-  const weightSwipe = use_swipe_down_to_close(
+  const weightSwipe = Use_swipe_down_to_close(
     weightModal.open,
     weightModal.closing,
     onClose,
@@ -37,51 +37,51 @@ export default function WeightForm({
       <form className="profile__form" onSubmit={onSubmit}>
         <FormField
           label="Date"
-          error={weightFieldErrors.entry_date}
-          state={weightFieldStates.entry_date}
+          error={weightFieldErrors.Entry_date}
+          state={weightFieldStates.Entry_date}
           show_indicator
-          shake={weightFieldErrors.entry_date ? weightShakeKey : 0}
+          shake={weightFieldErrors.Entry_date ? weightShakeKey : 0}
         >
           <input
             type="date"
-            value={weightForm.entry_date}
+            value={weightForm.Entry_date}
             onChange={(e) => {
               setWeightForm((f) => ({
                 ...f,
-                entry_date: e.target.value,
+                Entry_date: e.target.value,
               }));
               setWeightFieldErrors((prev) => ({
                 ...prev,
-                entry_date: null,
+                Entry_date: null,
               }));
             }}
-            onBlur={() => onFieldBlur("entry_date")}
+            onBlur={() => onFieldBlur("Entry_date")}
             required
           />
         </FormField>
         <div className="profile__weight-row">
           <FormField
             label="Weight (kg)"
-            error={weightFieldErrors.weight_kg}
-            state={weightFieldStates.weight_kg}
+            error={weightFieldErrors.Weight_kg}
+            state={weightFieldStates.Weight_kg}
             show_indicator
-            shake={weightFieldErrors.weight_kg ? weightShakeKey : 0}
+            shake={weightFieldErrors.Weight_kg ? weightShakeKey : 0}
           >
             <input
               type="number"
               step="0.1"
               min="1"
               placeholder="62.5"
-              value={weightForm.weight_kg}
+              value={weightForm.Weight_kg}
               onChange={(e) => {
                 onKgChange(e.target.value);
                 setWeightFieldErrors((prev) => ({
                   ...prev,
-                  weight_kg: null,
+                  Weight_kg: null,
                   weight_lbs: null,
                 }));
               }}
-              onBlur={() => onFieldBlur("weight_kg")}
+              onBlur={() => onFieldBlur("Weight_kg")}
             />
           </FormField>
           <FormField
@@ -102,7 +102,7 @@ export default function WeightForm({
                 setWeightFieldErrors((prev) => ({
                   ...prev,
                   weight_lbs: null,
-                  weight_kg: null,
+                  Weight_kg: null,
                 }));
               }}
               onBlur={() => onFieldBlur("weight_lbs")}
@@ -130,9 +130,9 @@ export default function WeightForm({
           <button
             type="submit"
             className="btn btn--primary"
-            disabled={saving || !isValid}
+            disabled={Saving || !isValid}
           >
-            {saving ? "Saving…" : "Save"}
+            {Saving ? "Saving…" : "Save"}
           </button>
         </div>
       </form>

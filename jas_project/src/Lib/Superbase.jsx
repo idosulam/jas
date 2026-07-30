@@ -17,7 +17,7 @@ export const supabase = has_supabase_config
     })
   : null;
 
-export function get_supabase_client() {
+export function Get_supabase_client() {
   if (!supabase) {
     throw new Error("Supabase is not configured.");
   }
@@ -28,7 +28,7 @@ export function get_supabase_client() {
  * Get the current authenticated user's ID.
  * Returns null if not logged in or Supabase not configured.
  */
-export async function get_current_user_id() {
+export async function Get_current_user_id() {
   if (!supabase) return null;
   const {
     data: { session },

@@ -6,24 +6,24 @@ import {
   resolve_color,
   format_time_12,
 } from "./Calendar_layout";
-import { parse_time_to_minutes } from "../../../Lib/Calendar_sync";
+import { Parse_time_to_minutes } from "../../../Lib/Calendar_sync";
 
 export default function TimelineView({
-  hour_labels,
-  laid_out_events,
-  now_line_top,
+  Hour_labels,
+  Laid_out_events,
+  Now_line_top,
   onGridClick,
   onEventClick,
   onCheck,
   onDelete,
-  toggling_id,
-  removing_id,
-  is_wake_event,
+  Toggling_id,
+  Removing_id,
+  Is_wake_event,
 }) {
   return (
     <div className="calendar__timeline">
       <div className="calendar__hours" aria-hidden="true">
-        {hour_labels.map((label) => (
+        {Hour_labels.map((label) => (
           <div
             key={label}
             className="calendar__hour-label"
@@ -48,7 +48,7 @@ export default function TimelineView({
         role="button"
         aria-label="Click to add event at that time"
       >
-        {hour_labels.map((_, i) => (
+        {Hour_labels.map((_, i) => (
           <div
             key={i}
             className="calendar__grid-line"
@@ -56,19 +56,19 @@ export default function TimelineView({
           />
         ))}
 
-        {now_line_top !== null && (
+        {Now_line_top !== null && (
           <div
             className="calendar__now-line"
-            style={{ top: `${now_line_top}px` }}
+            style={{ top: `${Now_line_top}px` }}
             aria-hidden="true"
           >
             <span className="calendar__now-dot" />
           </div>
         )}
 
-        {laid_out_events.map((event) => {
-          if (is_wake_event(event)) {
-            const minutes = parse_time_to_minutes(event.start_time);
+        {Laid_out_events.map((event) => {
+          if (Is_wake_event(event)) {
+            const minutes = Parse_time_to_minutes(event.start_time);
             const dayStartMin = DAY_START_HOUR * 60;
             const top = ((minutes - dayStartMin) / 60) * HOUR_HEIGHT;
             return (
@@ -92,7 +92,7 @@ export default function TimelineView({
           return (
             <article
               key={event.id}
-              className={`calendar__event calendar__event--${event.color}${event.is_completed ? " calendar__event--done" : ""}${removing_id === event.id ? " calendar__event--removing" : ""}`}
+              className={`calendar__event calendar__event--${event.color}${event.is_completed ? " calendar__event--done" : ""}${Removing_id === event.id ? " calendar__event--removing" : ""}`}
               style={{
                 ...style,
                 "--event-accent": colorInfo.accent,
@@ -104,7 +104,7 @@ export default function TimelineView({
                 type="button"
                 className="calendar__check"
                 onClick={() => onCheck(event)}
-                disabled={toggling_id === event.id}
+                disabled={Toggling_id === event.id}
                 aria-label={
                   event.is_completed
                     ? `Mark ${event.title} as pending`

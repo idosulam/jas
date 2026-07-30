@@ -5,13 +5,13 @@ export default function EventForm({
   open,
   closing,
   onClose,
-  editing_event,
+  Editing_event,
   form,
   on_form_change,
-  saving,
-  field_errors,
-  field_states,
-  shake_key,
+  Saving,
+  Field_errors,
+  Field_states,
+  Shake_key,
   onFieldBlur,
   onSubmit,
   onClearFieldError,
@@ -33,15 +33,15 @@ export default function EventForm({
       open={open}
       closing={closing}
       onClose={onClose}
-      title={editing_event ? "Edit event" : "Add event"}
+      title={Editing_event ? "Edit event" : "Add event"}
     >
       <form className="calendar__form" onSubmit={onSubmit}>
         <FormField
           label="Title"
-          error={field_errors.title}
-          state={field_states.title}
+          error={Field_errors.title}
+          state={Field_states.title}
           show_indicator
-          shake={field_errors.title ? shake_key : 0}
+          shake={Field_errors.title ? Shake_key : 0}
         >
           <input
             type="text"
@@ -59,10 +59,10 @@ export default function EventForm({
 
         <FormField
           label="Date"
-          error={field_errors.event_date}
-          state={field_states.event_date}
+          error={Field_errors.event_date}
+          state={Field_states.event_date}
           show_indicator
-          shake={field_errors.event_date ? shake_key : 0}
+          shake={Field_errors.event_date ? Shake_key : 0}
         >
           <input
             type="date"
@@ -78,10 +78,10 @@ export default function EventForm({
 
         <FormField
           label="Start"
-          error={field_errors.start_time}
-          state={field_states.start_time}
+          error={Field_errors.start_time}
+          state={Field_states.start_time}
           show_indicator
-          shake={field_errors.start_time ? shake_key : 0}
+          shake={Field_errors.start_time ? Shake_key : 0}
         >
           <input
             type="time"
@@ -97,10 +97,10 @@ export default function EventForm({
 
         <FormField
           label="End"
-          error={field_errors.end_time}
-          state={field_states.end_time}
+          error={Field_errors.end_time}
+          state={Field_states.end_time}
           show_indicator
-          shake={field_errors.end_time ? shake_key : 0}
+          shake={Field_errors.end_time ? Shake_key : 0}
         >
           <input
             type="time"
@@ -116,10 +116,10 @@ export default function EventForm({
 
         <FormField
           label="Color"
-          error={field_errors.color}
-          state={field_states.color || (form.color ? "valid" : "idle")}
+          error={Field_errors.color}
+          state={Field_states.color || (form.color ? "valid" : "idle")}
           show_indicator
-          shake={field_errors.color ? shake_key : 0}
+          shake={Field_errors.color ? Shake_key : 0}
         >
           <ColorPalettePicker
             value={form.color}
@@ -153,21 +153,21 @@ export default function EventForm({
             type="button"
             className="btn btn--ghost"
             onClick={onClose}
-            disabled={saving}
+            disabled={Saving}
           >
             Cancel
           </button>
           <button
             type="submit"
             className="btn btn--primary"
-            disabled={saving || !isValid}
+            disabled={Saving || !isValid}
           >
-            {saving ? (
+            {Saving ? (
               <>
                 <span className="btn__spinner" aria-hidden="true" />
                 Saving…
               </>
-            ) : editing_event ? (
+            ) : Editing_event ? (
               "Save changes"
             ) : (
               "Add event"
