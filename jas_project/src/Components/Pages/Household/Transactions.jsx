@@ -1,9 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Get_supabase_client } from "../../../Lib/Superbase";
-import {
-  Get_user_facing_error,
-  Sanitize_text,
-} from "../../../Lib/Security";
+import { Get_user_facing_error, Sanitize_text } from "../../../Lib/Security";
 import { Use_glass_toast } from "../../../Lib/Glass_toast_provider.jsx";
 import { Use_modal, Use_body_scroll_lock } from "../../../Hooks";
 import Sheet_modal from "../../UI/Modals/Sheet_modal";
@@ -115,7 +112,7 @@ function Transactions({ householdId, user_id, members, goals = [] }) {
       const { data, error } = await supabase
         .from("transactions")
         .select(
-          "*, transaction_categories(name, icon, color), Savings_goals(title, icon, color)",
+          "*, transaction_categories(name, icon, color), savings_goals(title, icon, color)",
         )
         .eq("household_id", householdId)
         .gte("transaction_date", startDate)

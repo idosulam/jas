@@ -123,13 +123,13 @@ function Savings_goals({ householdId, user_id, members, hideTitle }) {
 
       if (editingGoal) {
         const { error } = await supabase
-          .from("Savings_goals")
+          .from("savings_goals")
           .update(payload)
           .eq("id", editingGoal.id);
         if (error) throw error;
         Toast_success("Goal updated.");
       } else {
-        const { error } = await supabase.from("Savings_goals").insert(payload);
+        const { error } = await supabase.from("savings_goals").insert(payload);
         if (error) throw error;
         Toast_success("Goal created!");
       }
@@ -542,41 +542,60 @@ function Savings_goals({ householdId, user_id, members, hideTitle }) {
       >
         <div className="savings-goals__form">
           {/* Goal progress preview */}
-          {Active_goal && (() => {
-            const progress = Active_goal.target_amount > 0
-              ? Math.min(100, (Active_goal.current_amount / Active_goal.target_amount) * 100)
-              : 0;
-            const remaining = Math.max(0, Active_goal.target_amount - Active_goal.current_amount);
-            return (
-              <div className="savings-goals__contrib-preview">
-                <div className="savings-goals__contrib-header">
-                  <span className="savings-goals__contrib-icon">{Active_goal.icon || "🎯"}</span>
-                  <div className="savings-goals__contrib-info">
-                    <span className="savings-goals__contrib-title">{Active_goal.title}</span>
-                    <span className="savings-goals__contrib-amounts">
-                      {Format_money(Active_goal.current_amount)} / {Format_money(Active_goal.target_amount)}
+          {Active_goal &&
+            (() => {
+              const progress =
+                Active_goal.target_amount > 0
+                  ? Math.min(
+                      100,
+                      (Active_goal.current_amount / Active_goal.target_amount) *
+                        100,
+                    )
+                  : 0;
+              const remaining = Math.max(
+                0,
+                Active_goal.target_amount - Active_goal.current_amount,
+              );
+              return (
+                <div className="savings-goals__contrib-preview">
+                  <div className="savings-goals__contrib-header">
+                    <span className="savings-goals__contrib-icon">
+                      {Active_goal.icon || "🎯"}
                     </span>
+                    <div className="savings-goals__contrib-info">
+                      <span className="savings-goals__contrib-title">
+                        {Active_goal.title}
+                      </span>
+                      <span className="savings-goals__contrib-amounts">
+                        {Format_money(Active_goal.current_amount)} /{" "}
+                        {Format_money(Active_goal.target_amount)}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="savings-goals__progress-wrap">
+                    <div className="savings-goals__progress-bar">
+                      <div
+                        className="savings-goals__progress-fill"
+                        style={{
+                          width: `${progress}%`,
+                          background: Active_goal.color || "#818cf8",
+                        }}
+                      />
+                    </div>
+                    <div className="savings-goals__progress-meta">
+                      <span>{Math.round(progress)}%</span>
+                      {remaining > 0 ? (
+                        <span>{Format_money(remaining)} to go</span>
+                      ) : (
+                        <span className="savings-goals__reached">
+                          🎉 Reached!
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
-                <div className="savings-goals__progress-wrap">
-                  <div className="savings-goals__progress-bar">
-                    <div
-                      className="savings-goals__progress-fill"
-                      style={{ width: `${progress}%`, background: Active_goal.color || "#818cf8" }}
-                    />
-                  </div>
-                  <div className="savings-goals__progress-meta">
-                    <span>{Math.round(progress)}%</span>
-                    {remaining > 0 ? (
-                      <span>{Format_money(remaining)} to go</span>
-                    ) : (
-                      <span className="savings-goals__reached">🎉 Reached!</span>
-                    )}
-                  </div>
-                </div>
-              </div>
-            );
-          })()}
+              );
+            })()}
 
           <Form_field
             label="Amount (₪)"
