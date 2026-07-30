@@ -63,7 +63,7 @@ function App_content() {
     }
   };
 
-  // Loading screen
+  // Loading screen — early return AFTER all hooks are declared
   if (Loading) {
     return (
       <div
