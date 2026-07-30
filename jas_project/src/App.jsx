@@ -1,28 +1,28 @@
 import { useRef, useState, lazy, Suspense } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import Navbar from "./components/Navbar/navbar.jsx";
-import Page_transition from "./components/page_transition.jsx";
-import { ToastProvider } from "./lib/glass_toast_provider.jsx";
-import { supabase } from "./lib/superbase.jsx";
-import { AuthProvider, use_auth } from "./lib/auth_context.jsx";
-import { HouseholdProvider } from "./lib/household_context.jsx";
+import Navbar from "./Components/Navbar/Navbar.jsx";
+import Page_transition from "./Components/Page_transition.jsx";
+import { ToastProvider } from "./Lib/Glass_toast_provider.jsx";
+import { supabase } from "./Lib/Superbase.jsx";
+import { AuthProvider, use_auth } from "./Lib/Auth_context.jsx";
+import { HouseholdProvider } from "./Lib/Household_context.jsx";
 
 // Lazy-loaded page components (route-level code splitting)
-const Shifts = lazy(() => import("./components/Pages/Shifts/shifts.jsx"));
-const Calendar = lazy(() => import("./components/Pages/Calendar/calendar.jsx"));
+const Shifts = lazy(() => import("./Components/Pages/Shifts/Shifts.jsx"));
+const Calendar = lazy(() => import("./Components/Pages/Calendar/Calendar.jsx"));
 const Household = lazy(
-  () => import("./components/Pages/Household/household.jsx"),
+  () => import("./Components/Pages/Household/Household.jsx"),
 );
-const Profile = lazy(() => import("./components/Pages/profile/profile.jsx"));
+const Profile = lazy(() => import("./Components/Pages/Profile/Profile.jsx"));
 const Workplaces = lazy(
-  () => import("./components/Pages/Workplaces/Work_places.jsx"),
+  () => import("./Components/Pages/Workplaces/Work_places.jsx"),
 );
 const Fitness = lazy(
-  () => import("./components/Pages/Fitness/fitness.jsx"),
+  () => import("./Components/Pages/Fitness/Fitness.jsx"),
 );
-const Auth = lazy(() => import("./components/Auth/Auth.jsx"));
+const Auth = lazy(() => import("./Components/Auth/Auth.jsx"));
 const ProfileOnboarding = lazy(
-  () => import("./components/Pages/profile/profile_onboarding.jsx"),
+  () => import("./Components/Pages/Profile/Profile_onboarding.jsx"),
 );
 
 const TAB_ORDER = ["Shifts", "Calendar", "Fitness", "Household", "Profile"];
