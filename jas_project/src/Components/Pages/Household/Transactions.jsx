@@ -129,9 +129,9 @@ function Transactions({ householdId, user_id, members, goals = [] }) {
             ...t,
             display_name: member?.display_name || "User",
             is_me: t.user_id === user_id,
-            category_name: t.Savings_goals?.title || "Savings",
-            category_icon: t.Savings_goals?.icon || "🎯",
-            category_color: t.Savings_goals?.color || "#818cf8",
+            category_name: t.savings_goals?.title || "Savings",
+            category_icon: t.savings_goals?.icon || "🎯",
+            category_color: t.savings_goals?.color || "#818cf8",
           };
         }
         return {
@@ -300,7 +300,7 @@ function Transactions({ householdId, user_id, members, goals = [] }) {
           if (goal) {
             const newAmount = Number(goal.current_amount) + amount;
             await supabase
-              .from("Savings_goals")
+              .from("savings_goals")
               .update({ current_amount: Number(newAmount.toFixed(2)) })
               .eq("id", form.goal_id);
 

@@ -15,7 +15,7 @@ import Empty_state from "../../UI/Empty_state";
 
 import { Format_money } from "../../../Lib/Format";
 
-function Savings_goals({ householdId, user_id, members, hideTitle }) {
+function savings_goals({ householdId, user_id, members, hideTitle }) {
   const [goals, setGoals] = useState([]);
   const [Loading, Set_loading] = useState(true);
   const [Delete_target, Set_delete_target] = useState(null);
@@ -64,7 +64,7 @@ function Savings_goals({ householdId, user_id, members, hideTitle }) {
     try {
       const supabase = Get_supabase_client();
       const { data, error: fetch_error } = await supabase
-        .from("Savings_goals")
+        .from("savings_goals")
         .select("*")
         .eq("household_id", householdId)
         .order("created_at", { ascending: true });
@@ -73,7 +73,7 @@ function Savings_goals({ householdId, user_id, members, hideTitle }) {
 
       // Also fetch orphaned goals (created before householdId was available)
       const { data: orphanData } = await supabase
-        .from("Savings_goals")
+        .from("savings_goals")
         .select("*")
         .is("household_id", null)
         .eq("created_by", user_id);
@@ -81,13 +81,13 @@ function Savings_goals({ householdId, user_id, members, hideTitle }) {
       // Backfill orphaned goals with correct household_id
       if (orphanData && orphanData.length > 0) {
         await supabase
-          .from("Savings_goals")
+          .from("savings_goals")
           .update({ household_id: householdId })
           .is("household_id", null)
           .eq("created_by", user_id);
         // Re-fetch after fixing
         const { data: fixed } = await supabase
-          .from("Savings_goals")
+          .from("savings_goals")
           .select("*")
           .eq("household_id", householdId)
           .order("created_at", { ascending: true });
@@ -240,7 +240,7 @@ function Savings_goals({ householdId, user_id, members, hideTitle }) {
     try {
       const supabase = Get_supabase_client();
       const { error } = await supabase
-        .from("Savings_goals")
+        .from("savings_goals")
         .delete()
         .eq("id", Delete_target.id);
       if (error) throw error;
@@ -284,7 +284,7 @@ function Savings_goals({ householdId, user_id, members, hideTitle }) {
       // Update goal's current_amount
       const newAmount = Number(Active_goal.current_amount) + amount;
       const { error: updateError } = await supabase
-        .from("Savings_goals")
+        .from("savings_goals")
         .update({ current_amount: Number(newAmount.toFixed(2)) })
         .eq("id", Active_goal.id);
 
@@ -683,4 +683,4 @@ function Savings_goals({ householdId, user_id, members, hideTitle }) {
   );
 }
 
-export default Savings_goals;
+export default savings_goals;

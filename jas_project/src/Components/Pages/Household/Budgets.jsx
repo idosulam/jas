@@ -12,7 +12,7 @@ import Color_palette_picker from "../../../Lib/Color_palette_picker.jsx";
 import { DEFAULT_ICONS } from "./Category_manager";
 
 function Budgets({
-  householdId,
+  household_id,
   transactions,
   month,
   year,
@@ -57,13 +57,13 @@ function Budgets({
   // ── Fetch ──
 
   const fetchCategories = useCallback(async () => {
-    if (!householdId) return;
+    if (!household_id) return;
     try {
       const supabase = Get_supabase_client();
       const { data, error } = await supabase
         .from("transaction_categories")
         .select("*")
-        .eq("household_id", householdId)
+        .eq("household_id", household_id)
         .eq("type", "expense")
         .order("name");
       if (error) throw error;
@@ -71,10 +71,10 @@ function Budgets({
     } catch {
       // silent
     }
-  }, [householdId]);
+  }, [household_id]);
 
   const Fetch_budgets = useCallback(async () => {
-    if (!householdId) {
+    if (!household_id) {
       Set_loading(false);
       return;
     }
@@ -83,7 +83,7 @@ function Budgets({
       const { data: budgetData, error: budgetErr } = await supabase
         .from("budgets")
         .select("*")
-        .eq("household_id", householdId)
+        .eq("household_id", household_id)
         .order("created_at");
 
       if (budgetErr) throw budgetErr;
@@ -105,7 +105,7 @@ function Budgets({
       // silent
     }
     Set_loading(false);
-  }, [householdId]);
+  }, [household_id]);
 
   useEffect(() => {
     fetchCategories();
@@ -134,8 +134,7 @@ function Budgets({
 
       const amount = Number(budget.amount);
       const remaining = amount - spent;
-      const progress =
-        amount > 0 ? Math.min(100, (spent / amount) * 100) : 0;
+      const progress = amount > 0 ? Math.min(100, (spent / amount) * 100) : 0;
 
       const linkedCats = catIds.map((id) => catMap[id]).filter(Boolean);
 
@@ -216,7 +215,7 @@ function Budgets({
       const { data: budgetRow, error: budgetErr } = await supabase
         .from("budgets")
         .insert({
-          household_id: householdId,
+          household_id: household_id,
           name: newName.trim(),
           icon: newIcon,
           color: newColor,
@@ -363,8 +362,18 @@ function Budgets({
   // ── Render helpers ──
 
   const monthNames = [
-    "January", "February", "March", "April", "May", "June",
-    "July", "August", "September", "October", "November", "December",
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
   ];
 
   const renderCategoryPicker = (selectedSet, toggleFn) => (
@@ -474,8 +483,7 @@ function Budgets({
                 budget.progress,
                 budget.remaining,
               );
-              const isOver =
-                budget.remaining != null && budget.remaining < 0;
+              const isOver = budget.remaining != null && budget.remaining < 0;
 
               return (
                 <div
@@ -487,9 +495,7 @@ function Budgets({
                       {budget.icon || "📊"}
                     </span>
                     <div className="budgets__card-info">
-                      <span className="budgets__card-name">
-                        {budget.name}
-                      </span>
+                      <span className="budgets__card-name">{budget.name}</span>
                       <span className="budgets__card-amounts">
                         {Format_money(budget.spent)} /{" "}
                         {Format_money(budget.amount)}
@@ -521,7 +527,10 @@ function Budgets({
                       <span
                         key={cat.id}
                         className="budgets__card-cat-tag"
-                        style={{ color: cat.color, background: `${cat.color}15` }}
+                        style={{
+                          color: cat.color,
+                          background: `${cat.color}15`,
+                        }}
                       >
                         {cat.icon} {cat.name}
                       </span>
@@ -643,11 +652,7 @@ function Budgets({
 
           <Form_field
             label="Track categories"
-            error={
-              newSelectedCats.size === 0
-                ? undefined
-                : undefined
-            }
+            error={newSelectedCats.size === 0 ? undefined : undefined}
           >
             <p className="budgets__form-hint">
               Pick which expense categories this budget tracks.

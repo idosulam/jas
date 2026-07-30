@@ -339,7 +339,7 @@ function Household() {
     try {
       const supabase = Get_supabase_client();
       const { data, error } = await supabase
-        .from("Savings_goals")
+        .from("savings_goals")
         .select("*")
         .eq("household_id", household.id)
         .order("created_at", { ascending: true });
@@ -508,8 +508,6 @@ function Household() {
     }
     return data;
   }, [memberShifts, members, Workplaces, month, year]);
-
-
 
   const navigateToTransactions = () => setActiveTab("transactions");
 
