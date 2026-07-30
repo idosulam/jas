@@ -1,28 +1,28 @@
 import { useRef, useState, lazy, Suspense } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import Navbar from "./components/navbar/navbar.jsx";
-import Page_transition from "./components/page_transition.jsx";
-import { ToastProvider } from "./lib/glass_toast_provider.jsx";
-import { supabase } from "./lib/superbase.jsx";
-import { AuthProvider, useAuth } from "./lib/auth_context.jsx";
-import { HouseholdProvider } from "./lib/household_context.jsx";
+import Navbar from "./Components/Navbar/Navbar.jsx";
+import Page_transition from "./Components/Page_transition.jsx";
+import { Toast_provider } from "./Lib/Glass_toast_provider.jsx";
+import { supabase } from "./Lib/Superbase.jsx";
+import { Auth_provider, Use_auth } from "./Lib/Auth_context.jsx";
+import { Household_provider } from "./Lib/Household_context.jsx";
 
 // Lazy-loaded page components (route-level code splitting)
-const Shifts = lazy(() => import("./components/Pages/Shifts/shifts.jsx"));
-const Calendar = lazy(() => import("./components/Pages/Calendar/calendar.jsx"));
+const Shifts = lazy(() => import("./Components/Pages/Shifts/Shifts.jsx"));
+const Calendar = lazy(() => import("./Components/Pages/Calendar/Calendar.jsx"));
 const Household = lazy(
-  () => import("./components/Pages/Household/household.jsx"),
+  () => import("./Components/Pages/Household/Household.jsx"),
 );
-const Profile = lazy(() => import("./components/Pages/profile/profile.jsx"));
+const Profile = lazy(() => import("./Components/Pages/Profile/Profile.jsx"));
 const Workplaces = lazy(
-  () => import("./components/Pages/Workplaces/Work_places.jsx"),
+  () => import("./Components/Pages/Workplaces/Work_places.jsx"),
 );
 const Fitness = lazy(
-  () => import("./components/Pages/Fitness/fitness.jsx"),
+  () => import("./Components/Pages/Fitness/Fitness.jsx"),
 );
-const Auth = lazy(() => import("./components/Auth/Auth.jsx"));
-const ProfileOnboarding = lazy(
-  () => import("./components/Pages/profile/profile_onboarding.jsx"),
+const Auth = lazy(() => import("./Components/Auth/Auth.jsx"));
+const Profile_onboarding = lazy(
+  () => import("./Components/Pages/Profile/Profile_onboarding.jsx"),
 );
 
 const TAB_ORDER = ["Shifts", "Calendar", "Fitness", "Household", "Profile"];
@@ -36,35 +36,35 @@ const PAGES = {
   Workplaces: Workplaces,
 };
 
-function AppContent() {
-  const { session, loading } = useAuth();
-  const [activeNav, setActiveNav] = useState("Shifts");
-  const [direction, setDirection] = useState("forward");
-  const [returnTo, setReturnTo] = useState("Shifts");
-  const prevNavRef = useRef("Shifts");
+function App_content() {
+  const { session, Loading } = Use_auth();
+  const [Active_nav, Set_active_nav] = useState("Shifts");
+  const [direction, Set_direction] = useState("forward");
+  const [return_to, Set_return_to] = useState("Shifts");
+  const Prev_nav_ref = useRef("Shifts");
 
-  const handleNavChange = (id) => {
-    if (id === activeNav) return;
+  const Handle_nav_change = (id) => {
+    if (id === Active_nav) return;
 
     if (id === "Workplaces") {
-      setReturnTo(activeNav);
+      Set_return_to(Active_nav);
     }
 
-    const prevIndex = TAB_ORDER.indexOf(prevNavRef.current);
-    const nextIndex = TAB_ORDER.indexOf(id);
-    setDirection(nextIndex > prevIndex ? "forward" : "backward");
-    prevNavRef.current = id;
-    setActiveNav(id);
+    const Prev_index = TAB_ORDER.indexOf(Prev_nav_ref.current);
+    const Next_index = TAB_ORDER.indexOf(id);
+    Set_direction(Next_index > Prev_index ? "forward" : "backward");
+    Prev_nav_ref.current = id;
+    Set_active_nav(id);
   };
 
-  const handleSignOut = async () => {
+  const Handle_sign_out = async () => {
     if (supabase) {
       await supabase.auth.signOut();
     }
   };
 
-  // Loading screen
-  if (loading) {
+  // Loading screen — early return AFTER all hooks are declared
+  if (Loading) {
     return (
       <div
         className="app app--glassy"
@@ -115,13 +115,13 @@ function AppContent() {
   }
 
   // Show auth page — require a real session when Supabase is configured
-  const isAuthenticated = !!supabase && !!session;
+  const is_authenticated = !!supabase && !!session;
 
-  const ActivePage = PAGES[activeNav];
+  const ActivePage = PAGES[Active_nav];
 
   return (
     <AnimatePresence mode="wait">
-      {!isAuthenticated ? (
+      {!is_authenticated ? (
         <motion.div
           key="auth"
           initial={{ opacity: 0 }}
@@ -142,7 +142,7 @@ function AppContent() {
           transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
         >
           <main className="app__content">
-            <Page_transition pageKey={activeNav} direction={direction}>
+            <Page_transition page_key={Active_nav} direction={direction}>
               <Suspense
                 fallback={
                   <div
@@ -166,18 +166,18 @@ function AppContent() {
                   </div>
                 }
               >
-                <ActivePage onNavigate={handleNavChange} returnTo={returnTo} />
+                <ActivePage onNavigate={Handle_nav_change} return_to={return_to} />
               </Suspense>
             </Page_transition>
           </main>
-          <Navbar activeId={activeNav} onChange={handleNavChange} />
+          <Navbar active_id={Active_nav} onChange={Handle_nav_change} />
           <Suspense fallback={null}>
-            <ProfileOnboarding />
+            <Profile_onboarding />
           </Suspense>
           {supabase && (
             <button
               type="button"
-              onClick={handleSignOut}
+              onClick={Handle_sign_out}
               className="sign-out-btn"
               style={{
                 position: "absolute",
@@ -241,13 +241,13 @@ function AppContent() {
 }
 function App() {
   return (
-    <ToastProvider>
-      <AuthProvider>
-        <HouseholdProvider>
-          <AppContent />
-        </HouseholdProvider>
-      </AuthProvider>
-    </ToastProvider>
+    <Toast_provider>
+      <Auth_provider>
+        <Household_provider>
+          <App_content />
+        </Household_provider>
+      </Auth_provider>
+    </Toast_provider>
   );
 }
 
