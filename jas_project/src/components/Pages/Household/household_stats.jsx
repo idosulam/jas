@@ -1,32 +1,32 @@
-import GlassCard from "../../ui/glass_card";
-import { formatMoney } from "../../../lib/format.js";
+import GlassCard from "../../UI/glass_card";
+import { format_money } from "../../../lib/format.js";
 
 function HouseholdStats({
-  txSummary,
-  budgetOverview,
-  combinedStats,
+  tx_summary,
+  budget_overview,
+  combined_stats,
   members,
 }) {
   return (
     <>
       {/* Quick Transaction Summary */}
-      {txSummary && (
+      {tx_summary && (
         <div className="household__tx-summary">
           <GlassCard
-            value={formatMoney(txSummary.totalIncome)}
+            value={format_money(tx_summary.totalIncome)}
             label="Income"
-            valueClassName="glass-card__value--green"
+            value_class_name="glass-card__value--green"
           />
           <GlassCard
-            value={formatMoney(txSummary.totalExpense)}
+            value={format_money(tx_summary.totalExpense)}
             label="Expenses"
-            valueClassName="glass-card__value--orange"
+            value_class_name="glass-card__value--orange"
           />
           <GlassCard
-            value={formatMoney(txSummary.balance)}
+            value={format_money(tx_summary.balance)}
             label="Balance"
-            valueClassName={
-              txSummary.balance >= 0
+            value_class_name={
+              tx_summary.balance >= 0
                 ? "glass-card__value--green"
                 : "glass-card__value--orange"
             }
@@ -35,36 +35,36 @@ function HouseholdStats({
       )}
 
       {/* Budget Quick Status */}
-      {budgetOverview && (
+      {budget_overview && (
         <div className="household__budget-overview">
           <div
             className="household__budget-bar"
             style={{
               background:
-                budgetOverview.progress >= 100
+                budget_overview.progress >= 100
                   ? "var(--color-danger, #f87171)"
-                  : budgetOverview.progress >= 85
+                  : budget_overview.progress >= 85
                     ? "var(--color-warning, #fbbf24)"
                     : "var(--color-success, #34d399)",
-              width: `${budgetOverview.progress}%`,
+              width: `${budget_overview.progress}%`,
             }}
           />
           <div className="household__budget-info">
             <span className="household__budget-label">
-              💰 Budget: {formatMoney(budgetOverview.totalSpent)} /{" "}
-              {formatMoney(budgetOverview.totalBudget)}
+              💰 Budget: {format_money(budget_overview.totalSpent)} /{" "}
+              {format_money(budget_overview.totalBudget)}
             </span>
             <span
-              className={`household__budget-remaining ${budgetOverview.remaining >= 0 ? "" : "household__budget-remaining--over"}`}
+              className={`household__budget-remaining ${budget_overview.remaining >= 0 ? "" : "household__budget-remaining--over"}`}
             >
-              {budgetOverview.remaining >= 0
-                ? `${formatMoney(budgetOverview.remaining)} left`
-                : `${formatMoney(Math.abs(budgetOverview.remaining))} over!`}
+              {budget_overview.remaining >= 0
+                ? `${format_money(budget_overview.remaining)} left`
+                : `${format_money(Math.abs(budget_overview.remaining))} over!`}
             </span>
           </div>
-          {budgetOverview.alerts.length > 0 && (
+          {budget_overview.alerts.length > 0 && (
             <div className="household__budget-alerts">
-              {budgetOverview.alerts.map((a) => (
+              {budget_overview.alerts.map((a) => (
                 <span
                   key={a.name}
                   className={`household__budget-alert ${a.over ? "household__budget-alert--over" : "household__budget-alert--warn"}`}
@@ -82,22 +82,22 @@ function HouseholdStats({
       <div className="household__stats">
         <GlassCard
           className="household__stat"
-          value={`${combinedStats.combined.hours.toFixed(1)}h`}
+          value={`${combined_stats.combined.hours.toFixed(1)}h`}
           label="Combined Hours"
         />
         <GlassCard
           className="household__stat"
-          value={formatMoney(combinedStats.combined.pay)}
+          value={format_money(combined_stats.combined.pay)}
           label="Combined Pay"
         />
         <GlassCard
           className="household__stat"
-          value={formatMoney(combinedStats.combined.tips)}
+          value={format_money(combined_stats.combined.tips)}
           label="Combined Tips"
         />
         <GlassCard
           className="household__stat household__stat--total"
-          value={formatMoney(combinedStats.combined.total)}
+          value={format_money(combined_stats.combined.total)}
           label="Combined Total"
         />
       </div>
@@ -108,7 +108,7 @@ function HouseholdStats({
           <h3 className="household__section-title">Per Member</h3>
           <div className="household__member-cards">
             {members.map((member) => {
-              const s = combinedStats.byMember[member.user_id];
+              const s = combined_stats.byMember[member.user_id];
               if (!s) return null;
               return (
                 <div
@@ -137,7 +137,7 @@ function HouseholdStats({
                     </div>
                     <div className="household__member-stat">
                       <span className="household__member-stat-value">
-                        {formatMoney(s.pay)}
+                        {format_money(s.pay)}
                       </span>
                       <span className="household__member-stat-label">
                         Pay
@@ -145,7 +145,7 @@ function HouseholdStats({
                     </div>
                     <div className="household__member-stat">
                       <span className="household__member-stat-value">
-                        {formatMoney(s.tips)}
+                        {format_money(s.tips)}
                       </span>
                       <span className="household__member-stat-label">
                         Tips
@@ -156,7 +156,7 @@ function HouseholdStats({
                         className="household__member-stat-value"
                         style={{ color: "var(--color-primary, #818cf8)" }}
                       >
-                        {formatMoney(s.total)}
+                        {format_money(s.total)}
                       </span>
                       <span className="household__member-stat-label">
                         Total

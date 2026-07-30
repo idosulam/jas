@@ -13,7 +13,7 @@ export const SHIFT_TITLE_PREFIX = "Shift: ";
 /**
  * Parse "HH:MM" to total minutes since midnight.
  */
-export function parseTimeToMinutes(value) {
+export function parse_time_to_minutes(value) {
   if (!value) return null;
   const [hours, minutes] = value.split(":").map(Number);
   if (Number.isNaN(hours) || Number.isNaN(minutes)) return null;
@@ -23,7 +23,7 @@ export function parseTimeToMinutes(value) {
 /**
  * Convert total minutes to "HH:MM" string.
  */
-export function minutesToTime(min) {
+export function minutes_to_time(min) {
   const total = Math.max(0, Math.floor(min));
   const h = Math.floor(total / 60) % 24;
   const m = total % 60;
@@ -34,13 +34,13 @@ export function minutesToTime(min) {
  * Estimate a shift's start minutes — prefers explicit start_time,
  * falls back to deriving from end_time + hours, then 09:00.
  */
-export function estimateShiftStartMinutes(shift) {
+export function estimate_shift_start_minutes(shift) {
   if (shift.start_time) {
-    const m = parseTimeToMinutes(shift.start_time);
+    const m = parse_time_to_minutes(shift.start_time);
     if (m != null) return m;
   }
   if (shift.end_time && shift.hours) {
-    const end = parseTimeToMinutes(shift.end_time);
+    const end = parse_time_to_minutes(shift.end_time);
     if (end != null) {
       return Math.max(0, end - Math.round((parseFloat(shift.hours) || 0) * 60));
     }
@@ -51,56 +51,56 @@ export function estimateShiftStartMinutes(shift) {
 /**
  * Get the calendar event title for a shift record.
  */
-export function getShiftEventTitle(shiftRecord, placesMap) {
-  const placeLabel = placesMap[shiftRecord.place]?.label ?? shiftRecord.place;
-  return `${SHIFT_TITLE_PREFIX}${placeLabel}`;
+export function get_shift_event_title(shift_record, places_map) {
+  const place_label = places_map[shift_record.place]?.label ?? shift_record.place;
+  return `${SHIFT_TITLE_PREFIX}${place_label}`;
 }
 
 /**
  * Check if an event's notes indicate it's linked to a shift.
  */
-export function isShiftLinkNote(value) {
+export function is_shift_link_note(value) {
   return typeof value === "string" && value.startsWith("Linked shift id:");
 }
 
 /**
  * Extract visible notes (strips shift link metadata).
  */
-export function getVisibleEventNotes(value) {
-  if (isShiftLinkNote(value)) return "";
+export function get_visible_event_notes(value) {
+  if (is_shift_link_note(value)) return "";
   return value ?? "";
 }
 
 /**
  * Remove generated calendar events (wake, walk, shift-linked) for a date.
  */
-export async function removeGeneratedCalendarEvents(
+export async function remove_generated_calendar_events(
   supabase,
-  dateKey,
-  userId,
-  linkedShiftId = null,
+  date_key,
+  user_id,
+  linked_shift_id = null,
 ) {
-  const { data: eventsOnDate = [] } = await supabase
+  const { data: events_on_date = [] } = await supabase
     .from("events")
     .select("*")
-    .eq("user_id", userId)
-    .eq("event_date", dateKey);
+    .eq("user_id", user_id)
+    .eq("event_date", date_key);
 
-  const idsToDelete = (eventsOnDate || [])
+  const ids_to_delete = (events_on_date || [])
     .filter((event) => {
-      const isWakeOrWalk =
+      const is_wake_or_walk =
         event.title === WAKE_TITLE || event.title === WALK_TITLE;
-      const isLinked =
-        linkedShiftId == null
-          ? isShiftLinkNote(event.notes)
+      const is_linked =
+        linked_shift_id == null
+          ? is_shift_link_note(event.notes)
           : typeof event.notes === "string" &&
-            event.notes.includes(`Linked shift id: ${linkedShiftId}`);
-      return isWakeOrWalk || isLinked;
+            event.notes.includes(`Linked shift id: ${linked_shift_id}`);
+      return is_wake_or_walk || is_linked;
     })
     .map((event) => event.id);
 
-  if (idsToDelete.length > 0) {
-    await supabase.from("events").delete().in("id", idsToDelete);
+  if (ids_to_delete.length > 0) {
+    await supabase.from("events").delete().in("id", ids_to_delete);
   }
 }
 
@@ -108,57 +108,57 @@ export async function removeGeneratedCalendarEvents(
  * Recompute Wake up / Go for a walk events for a given date based on
  * the earliest shift that day. Safe to call even if there are no shifts.
  */
-export async function recalcWakeWalkForDate(supabase, dateKey, userId) {
-  const { data: shiftsOnDate = [] } = await supabase
+export async function recalc_wake_walk_for_date(supabase, date_key, user_id) {
+  const { data: shifts_on_date = [] } = await supabase
     .from("shifts")
     .select("*")
-    .eq("user_id", userId)
-    .eq("shift_date", dateKey);
+    .eq("user_id", user_id)
+    .eq("shift_date", date_key);
 
-  const { data: eventsOnDate = [] } = await supabase
+  const { data: events_on_date = [] } = await supabase
     .from("events")
     .select("*")
-    .eq("user_id", userId)
-    .eq("event_date", dateKey);
+    .eq("user_id", user_id)
+    .eq("event_date", date_key);
 
-  const generatedIds = (eventsOnDate || [])
+  const generated_ids = (events_on_date || [])
     .filter((e) => e.title === WAKE_TITLE || e.title === WALK_TITLE)
     .map((e) => e.id);
 
-  if (!shiftsOnDate.length) {
-    if (generatedIds.length > 0) {
-      await supabase.from("events").delete().in("id", generatedIds);
+  if (!shifts_on_date.length) {
+    if (generated_ids.length > 0) {
+      await supabase.from("events").delete().in("id", generated_ids);
     }
     return;
   }
 
-  const starts = shiftsOnDate.map(estimateShiftStartMinutes);
+  const starts = shifts_on_date.map(estimate_shift_start_minutes);
   const earliest = Math.min(...starts);
-  const desiredWake = Math.max(0, earliest - WAKEUP_BEFORE_MINUTES);
-  const desiredWalk = desiredWake + WALK_AFTER_WAKE_MINUTES;
+  const desired_wake = Math.max(0, earliest - WAKEUP_BEFORE_MINUTES);
+  const desired_walk = desired_wake + WALK_AFTER_WAKE_MINUTES;
 
-  if (generatedIds.length > 0) {
-    await supabase.from("events").delete().in("id", generatedIds);
+  if (generated_ids.length > 0) {
+    await supabase.from("events").delete().in("id", generated_ids);
   }
 
   await supabase.from("events").insert({
     title: WAKE_TITLE,
     notes: null,
-    event_date: dateKey,
-    start_time: minutesToTime(desiredWake),
-    end_time: minutesToTime(desiredWake + 15),
+    event_date: date_key,
+    start_time: minutes_to_time(desired_wake),
+    end_time: minutes_to_time(desired_wake + 15),
     color: "pink",
-    user_id: userId,
+    user_id,
   });
 
   await supabase.from("events").insert({
     title: WALK_TITLE,
     notes: null,
-    event_date: dateKey,
-    start_time: minutesToTime(desiredWalk),
-    end_time: minutesToTime(desiredWalk + 30),
+    event_date: date_key,
+    start_time: minutes_to_time(desired_walk),
+    end_time: minutes_to_time(desired_walk + 30),
     color: "green",
-    user_id: userId,
+    user_id,
   });
 }
 
@@ -166,125 +166,125 @@ export async function recalcWakeWalkForDate(supabase, dateKey, userId) {
  * Full sync of a shift record to the calendar.
  * Creates/updates the shift event and recalculates wake/walk events.
  */
-export async function syncShiftToCalendar(
+export async function sync_shift_to_calendar(
   supabase,
-  shiftRecord,
-  userId,
-  placesMap,
+  shift_record,
+  user_id,
+  places_map,
 ) {
-  if (!shiftRecord || !userId) return;
+  if (!shift_record || !user_id) return;
 
-  const dateKey = shiftRecord.shift_date;
+  const date_key = shift_record.shift_date;
 
-  const { data: shiftsOnDate = [] } = await supabase
+  const { data: shifts_on_date = [] } = await supabase
     .from("shifts")
     .select("*")
-    .eq("user_id", userId)
-    .eq("shift_date", dateKey);
+    .eq("user_id", user_id)
+    .eq("shift_date", date_key);
 
-  const { data: eventsOnDate = [] } = await supabase
+  const { data: events_on_date = [] } = await supabase
     .from("events")
     .select("*")
-    .eq("user_id", userId)
-    .eq("event_date", dateKey);
+    .eq("user_id", user_id)
+    .eq("event_date", date_key);
 
   // If no shifts left on this date, clean up everything
-  if (!shiftsOnDate.length) {
-    const idsToDelete = (eventsOnDate || [])
+  if (!shifts_on_date.length) {
+    const ids_to_delete = (events_on_date || [])
       .filter(
         (event) =>
           event.title === WAKE_TITLE ||
           event.title === WALK_TITLE ||
-          isShiftLinkNote(event.notes),
+          is_shift_link_note(event.notes),
       )
       .map((event) => event.id);
-    if (idsToDelete.length > 0) {
-      await supabase.from("events").delete().in("id", idsToDelete);
+    if (ids_to_delete.length > 0) {
+      await supabase.from("events").delete().in("id", ids_to_delete);
     }
     return;
   }
 
   // Recompute wake/walk
-  const starts = shiftsOnDate.map(estimateShiftStartMinutes);
+  const starts = shifts_on_date.map(estimate_shift_start_minutes);
   const earliest = Math.min(...starts);
-  const desiredWake = Math.max(0, earliest - WAKEUP_BEFORE_MINUTES);
-  const desiredWalk = desiredWake + WALK_AFTER_WAKE_MINUTES;
+  const desired_wake = Math.max(0, earliest - WAKEUP_BEFORE_MINUTES);
+  const desired_walk = desired_wake + WALK_AFTER_WAKE_MINUTES;
 
-  const generatedIds = (eventsOnDate || [])
+  const generated_ids = (events_on_date || [])
     .filter((e) => e.title === WAKE_TITLE || e.title === WALK_TITLE)
     .map((e) => e.id);
 
-  if (generatedIds.length > 0) {
-    await supabase.from("events").delete().in("id", generatedIds);
+  if (generated_ids.length > 0) {
+    await supabase.from("events").delete().in("id", generated_ids);
   }
 
   await supabase.from("events").insert({
     title: WAKE_TITLE,
     notes: null,
-    event_date: dateKey,
-    start_time: minutesToTime(desiredWake),
-    end_time: minutesToTime(desiredWake + 15),
+    event_date: date_key,
+    start_time: minutes_to_time(desired_wake),
+    end_time: minutes_to_time(desired_wake + 15),
     color: "pink",
-    user_id: userId,
+    user_id,
   });
 
   await supabase.from("events").insert({
     title: WALK_TITLE,
     notes: null,
-    event_date: dateKey,
-    start_time: minutesToTime(desiredWalk),
-    end_time: minutesToTime(desiredWalk + 30),
+    event_date: date_key,
+    start_time: minutes_to_time(desired_walk),
+    end_time: minutes_to_time(desired_walk + 30),
     color: "green",
-    user_id: userId,
+    user_id,
   });
 
   // Sync the shift event itself
-  const shiftTitle = getShiftEventTitle(shiftRecord, placesMap);
-  const shiftStart =
-    shiftRecord.start_time ||
-    minutesToTime(estimateShiftStartMinutes(shiftRecord));
-  const shiftEnd =
-    shiftRecord.end_time ||
-    minutesToTime(
-      estimateShiftStartMinutes(shiftRecord) +
-        Math.round((parseFloat(shiftRecord.hours) || 0) * 60),
+  const shift_title = get_shift_event_title(shift_record, places_map);
+  const shift_start =
+    shift_record.start_time ||
+    minutes_to_time(estimate_shift_start_minutes(shift_record));
+  const shift_end =
+    shift_record.end_time ||
+    minutes_to_time(
+      estimate_shift_start_minutes(shift_record) +
+        Math.round((parseFloat(shift_record.hours) || 0) * 60),
     );
 
-  const existingShiftEvent = (eventsOnDate || []).find(
+  const existing_shift_event = (events_on_date || []).find(
     (event) =>
       typeof event.notes === "string" &&
-      event.notes.includes(`Linked shift id: ${shiftRecord.id}`),
+      event.notes.includes(`Linked shift id: ${shift_record.id}`),
   );
 
-  const shiftEventPayload = {
-    title: shiftTitle,
-    notes: `Linked shift id: ${shiftRecord.id}`,
-    event_date: dateKey,
-    start_time: shiftStart,
-    end_time: shiftEnd,
-    color: shiftRecord.color || placesMap[shiftRecord.place]?.color || "cyan",
-    user_id: userId,
+  const shift_event_payload = {
+    title: shift_title,
+    notes: `Linked shift id: ${shift_record.id}`,
+    event_date: date_key,
+    start_time: shift_start,
+    end_time: shift_end,
+    color: shift_record.color || places_map[shift_record.place]?.color || "cyan",
+    user_id,
   };
 
-  if (existingShiftEvent) {
+  if (existing_shift_event) {
     await supabase
       .from("events")
-      .update(shiftEventPayload)
-      .eq("id", existingShiftEvent.id);
+      .update(shift_event_payload)
+      .eq("id", existing_shift_event.id);
   } else {
-    const fallback = (eventsOnDate || []).find(
+    const fallback = (events_on_date || []).find(
       (event) =>
-        event.title === shiftTitle &&
+        event.title === shift_title &&
         (typeof event.notes !== "string" ||
           !event.notes.includes("Linked shift id:")),
     );
     if (fallback) {
       await supabase
         .from("events")
-        .update(shiftEventPayload)
+        .update(shift_event_payload)
         .eq("id", fallback.id);
     } else {
-      await supabase.from("events").insert(shiftEventPayload);
+      await supabase.from("events").insert(shift_event_payload);
     }
   }
 }

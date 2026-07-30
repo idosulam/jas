@@ -1,6 +1,6 @@
-import { kgToLbs, lbsToKg } from "../../../lib/weight";
-import ShakeField from "../../../components/ui/form/shake_field";
-import FieldIndicator from "../../../components/ui/form/field_indicator";
+import { kg_to_lbs, lbs_to_kg } from "../../../lib/weight";
+import ShakeField from "../../../components/UI/form/shake_field";
+import FieldIndicator from "../../../components/UI/form/field_indicator";
 
 export default function ExerciseRow({
   exercise,
@@ -10,7 +10,7 @@ export default function ExerciseRow({
   showRemove,
   errors = {},
   states = {},
-  shakeKey = 0,
+  shake_key = 0,
   onFieldBlur,
 }) {
   const err = (field) => errors[`${index}_${field}`] || null;
@@ -23,7 +23,7 @@ export default function ExerciseRow({
     return "";
   };
 
-  const handleBlur = (field) => {
+  const handle_blur = (field) => {
     if (onFieldBlur) onFieldBlur(index, field);
   };
 
@@ -37,7 +37,7 @@ export default function ExerciseRow({
           value={exercise.name}
           maxLength={80}
           onChange={(e) => onChange(index, "name", e.target.value)}
-          onBlur={() => handleBlur("name")}
+          onBlur={() => handle_blur("name")}
         />
         <FieldIndicator state={state("name")} />
       </div>
@@ -48,7 +48,7 @@ export default function ExerciseRow({
     <div className="fitness__exercise-row">
       <div className="fitness__exercise-fields">
         {err("name") ? (
-          <ShakeField trigger={shakeKey}>{nameField}</ShakeField>
+          <ShakeField trigger={shake_key}>{nameField}</ShakeField>
         ) : (
           nameField
         )}
@@ -74,17 +74,17 @@ export default function ExerciseRow({
                   value={exercise[field]}
                   onChange={(e) => {
                     onChange(index, field, e.target.value);
-                    if (isWeight) onChange(index, "weight_lbs", kgToLbs(e.target.value));
-                    if (isLbs) onChange(index, "weight", lbsToKg(e.target.value));
+                    if (isWeight) onChange(index, "weight_lbs", kg_to_lbs(e.target.value));
+                    if (isLbs) onChange(index, "weight", lbs_to_kg(e.target.value));
                   }}
-                  onBlur={() => handleBlur(field)}
+                  onBlur={() => handle_blur(field)}
                 />
               </div>
             );
 
             if (err(field)) {
               return (
-                <ShakeField key={field} trigger={shakeKey}>{input}</ShakeField>
+                <ShakeField key={field} trigger={shake_key}>{input}</ShakeField>
               );
             }
             return input;

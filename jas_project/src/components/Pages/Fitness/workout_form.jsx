@@ -1,6 +1,6 @@
 import { useMemo } from "react";
-import SheetModal from "../../../components/ui/modals/sheet_modal";
-import FormField from "../../../components/ui/form/form_field.jsx";
+import SheetModal from "../../../components/UI/modals/sheet_modal";
+import FormField from "../../../components/UI/form/form_field.jsx";
 import ExerciseRow from "./exercise_row";
 import { calcVolume, formatVolume } from "./workout_utils";
 
@@ -10,13 +10,13 @@ export default function WorkoutForm({
   onClose,
   editingWorkout,
   form,
-  setForm,
-  fieldErrors,
-  fieldStates,
-  shakeKey,
+  set_form,
+  field_errors,
+  field_states,
+  shake_key,
   saving,
-  isFormValid,
-  onAddExercise,
+  is_form_valid,
+  on_add_exercise,
   onRemoveExercise,
   onUpdateExercise,
   onSubmit,
@@ -28,7 +28,7 @@ export default function WorkoutForm({
 }) {
   const volume = useMemo(() => calcVolume(form.exercises), [form.exercises]);
 
-  const handleExerciseChange = (index, field, value) => {
+  const handle_exercise_change = (index, field, value) => {
     onUpdateExercise(index, field, value);
   };
 
@@ -46,16 +46,16 @@ export default function WorkoutForm({
       <form className="fitness__form" onSubmit={onSubmit}>
         <FormField
           label="Date"
-          error={fieldErrors.workout_date}
-          state={fieldStates.workout_date}
-          showIndicator
-          shake={fieldErrors.workout_date ? shakeKey : 0}
+          error={field_errors.workout_date}
+          state={field_states.workout_date}
+          show_indicator
+          shake={field_errors.workout_date ? shake_key : 0}
         >
           <input
             type="date"
             value={form.workout_date}
             onChange={(e) => {
-              setForm((f) => ({ ...f, workout_date: e.target.value }));
+              set_form((f) => ({ ...f, workout_date: e.target.value }));
             }}
             onBlur={() => onFieldBlur("workout_date")}
             required
@@ -64,10 +64,10 @@ export default function WorkoutForm({
 
         <FormField
           label="Workout name"
-          error={fieldErrors.preset_name}
-          state={fieldStates.preset_name}
-          showIndicator
-          shake={fieldErrors.preset_name ? shakeKey : 0}
+          error={field_errors.preset_name}
+          state={field_states.preset_name}
+          show_indicator
+          shake={field_errors.preset_name ? shake_key : 0}
         >
           <input
             type="text"
@@ -75,7 +75,7 @@ export default function WorkoutForm({
             value={form.preset_name}
             maxLength={60}
             onChange={(e) => {
-              setForm((f) => ({ ...f, preset_name: e.target.value }));
+              set_form((f) => ({ ...f, preset_name: e.target.value }));
             }}
             onBlur={() => onFieldBlur("preset_name")}
             required
@@ -85,9 +85,9 @@ export default function WorkoutForm({
         <div className="fitness__exercises-section">
           <div className="fitness__exercises-header">
             <span className="fitness__exercises-label">Exercises</span>
-            {fieldErrors.exercises && (
+            {field_errors.exercises && (
               <span className="fitness__field-error-text">
-                {fieldErrors.exercises}
+                {field_errors.exercises}
               </span>
             )}
           </div>
@@ -96,19 +96,19 @@ export default function WorkoutForm({
               key={i}
               exercise={ex}
               index={i}
-              onChange={handleExerciseChange}
+              onChange={handle_exercise_change}
               onRemove={handleExerciseRemove}
               showRemove={exerciseCount > 1}
               errors={exerciseErrors}
               states={exerciseStates}
-              shakeKey={shakeKey}
+              shake_key={shake_key}
               onFieldBlur={onExerciseFieldBlur}
             />
           ))}
           <button
             type="button"
             className="fitness__exercise-add"
-            onClick={onAddExercise}
+            onClick={on_add_exercise}
           >
             + Add exercise
           </button>
@@ -122,17 +122,17 @@ export default function WorkoutForm({
             placeholder="e.g. 60"
             value={form.duration_minutes}
             onChange={(e) =>
-              setForm((f) => ({ ...f, duration_minutes: e.target.value }))
+              set_form((f) => ({ ...f, duration_minutes: e.target.value }))
             }
           />
         </FormField>
 
         <FormField
           label="Calories burned"
-          error={fieldErrors.calories_burned}
-          state={fieldStates.calories_burned}
-          showIndicator
-          shake={fieldErrors.calories_burned ? shakeKey : 0}
+          error={field_errors.calories_burned}
+          state={field_states.calories_burned}
+          show_indicator
+          shake={field_errors.calories_burned ? shake_key : 0}
           optional
         >
           <input
@@ -142,7 +142,7 @@ export default function WorkoutForm({
             placeholder="e.g. 350"
             value={form.calories_burned}
             onChange={(e) => {
-              setForm((f) => ({ ...f, calories_burned: e.target.value }));
+              set_form((f) => ({ ...f, calories_burned: e.target.value }));
             }}
             onBlur={() => onFieldBlur("calories_burned")}
           />
@@ -151,15 +151,15 @@ export default function WorkoutForm({
         <FormField
           label="Notes"
           optional
-          charCount={form.notes.length}
-          maxChars={500}
+          char_count={form.notes.length}
+          max_chars={500}
         >
           <textarea
             placeholder="e.g. Felt strong, increased bench PR"
             value={form.notes}
             maxLength={500}
             onChange={(e) =>
-              setForm((f) => ({ ...f, notes: e.target.value }))
+              set_form((f) => ({ ...f, notes: e.target.value }))
             }
           />
         </FormField>
@@ -182,7 +182,7 @@ export default function WorkoutForm({
           <button
             type="submit"
             className="btn btn--primary"
-            disabled={saving || !isFormValid}
+            disabled={saving || !is_form_valid}
           >
             {saving ? (
               <>

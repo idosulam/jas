@@ -1,126 +1,126 @@
 import { useCallback, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { hapticError } from "./security";
+import { haptic_error } from "./security";
 import {
-  fetchPalette,
-  addPaletteColor,
-  updatePaletteColor,
-  deletePaletteColor,
-  clearPalette,
+  fetch_palette,
+  add_palette_color,
+  update_palette_color,
+  delete_palette_color,
+  clear_palette,
 } from "./color_palette";
-import FormField from "../components/ui/form/form_field.jsx";
+import FormField from "../components/UI/form/form_field.jsx";
 import "./color_palette_picker.css";
 
 const MODAL_EXIT_MS = 260;
 
-function isValidHex(value) {
+function is_valid_hex(value) {
   return /^#[0-9a-fA-F]{6}$/.test(value);
 }
 
 export default function ColorPalettePicker({ value, onChange }) {
-  const [palette, setPalette] = useState([]);
-  const [pickerOpen, setPickerOpen] = useState(false);
-  const [pickerClosing, setPickerClosing] = useState(false);
+  const [palette, set_palette] = useState([]);
+  const [picker_open, set_picker_open] = useState(false);
+  const [picker_closing, set_picker_closing] = useState(false);
   const [editing, setEditing] = useState(null);
   const [hex, setHex] = useState("");
   const [label, setLabel] = useState("");
-  const [saving, setSaving] = useState(false);
-  const [hexTouched, setHexTouched] = useState(false);
-  const [hexState, setHexState] = useState("idle");
-  const [hexError, setHexError] = useState(null);
+  const [saving, set_saving] = useState(false);
+  const [hex_touched, set_hex_touched] = useState(false);
+  const [hex_state, set_hex_state] = useState("idle");
+  const [hex_error, set_hex_error] = useState(null);
 
   useEffect(() => {
-    fetchPalette().then(setPalette);
+    fetch_palette().then(set_palette);
   }, []);
 
-  const openAdd = useCallback(() => {
+  const open_add = useCallback(() => {
     setEditing(null);
     setHex("");
     setLabel("");
-    setHexTouched(false);
-    setHexState("valid");
-    setHexError(null);
-    setPickerClosing(false);
-    setPickerOpen(true);
+    set_hex_touched(false);
+    set_hex_state("valid");
+    set_hex_error(null);
+    set_picker_closing(false);
+    set_picker_open(true);
   }, []);
 
-  const openEdit = useCallback((entry) => {
+  const open_edit = useCallback((entry) => {
     setEditing(entry);
     setHex(entry.hex);
     setLabel(entry.label);
-    setHexTouched(false);
-    setHexState("valid");
-    setHexError(null);
-    setPickerClosing(false);
-    setPickerOpen(true);
+    set_hex_touched(false);
+    set_hex_state("valid");
+    set_hex_error(null);
+    set_picker_closing(false);
+    set_picker_open(true);
   }, []);
 
-  const closePicker = useCallback(() => {
-    setPickerClosing(true);
+  const close_picker = useCallback(() => {
+    set_picker_closing(true);
     setTimeout(() => {
-      setPickerOpen(false);
-      setPickerClosing(false);
+      set_picker_open(false);
+      set_picker_closing(false);
       setEditing(null);
     }, MODAL_EXIT_MS);
   }, []);
 
-  const validateHex = (value, isBlur = false) => {
+  const validate_hex = (value, is_blur = false) => {
     const trimmed = value.trim();
     if (!trimmed) {
-      if (isBlur) {
-        setHexState("error");
-        setHexError("Hex color is required");
+      if (is_blur) {
+        set_hex_state("error");
+        set_hex_error("Hex color is required");
       } else {
-        setHexState("idle");
-        setHexError(null);
+        set_hex_state("idle");
+        set_hex_error(null);
       }
       return;
     }
-    if (isValidHex(trimmed)) {
-      setHexState("valid");
-      setHexError(null);
+    if (is_valid_hex(trimmed)) {
+      set_hex_state("valid");
+      set_hex_error(null);
     } else {
-      setHexState("error");
-      setHexError("Enter a valid hex (e.g. #818cf8)");
+      set_hex_state("error");
+      set_hex_error("Enter a valid hex (e.g. #818cf8)");
     }
   };
 
-  const handleHexBlur = () => {
-    setHexTouched(true);
-    validateHex(hex, true);
-    if (!hex.trim() || !isValidHex(hex.trim())) {
-      hapticError();
+  const handle_hex_blur = () => {
+    set_hex_touched(true);
+    validate_hex(hex, true);
+    if (!hex.trim() || !is_valid_hex(hex.trim())) {
+      haptic_error();
     }
   };
 
-  const handleHexChange = (value) => {
+  const handle_hex_change = (value) => {
     setHex(value);
-    if (hexTouched) validateHex(value);
+    if (hex_touched) validate_hex(value);
   };
 
-  const handleSave = useCallback(async () => {
-    const cleanHex = hex.trim();
-    if (!cleanHex || !isValidHex(cleanHex)) return;
+  const handle_save = useCallback(async () => {
+    const clean_hex = hex.trim();
+    if (!clean_hex || !is_valid_hex(clean_hex)) return;
 
-    setSaving(true);
+    set_saving(true);
 
     if (editing) {
-      await updatePaletteColor(editing.id, cleanHex, label.trim() || cleanHex);
+      await update_palette_color(editing.id, clean_hex, label.trim() || clean_hex);
     } else {
-      await addPaletteColor(cleanHex, label.trim() || cleanHex);
+      await add_palette_color(clean_hex, label.trim() || clean_hex);
     }
 
-    const updated = await fetchPalette();
-    setPalette(updated);
-    setSaving(false);
-    closePicker();
-  }, [hex, label, editing, onChange, closePicker]);
+    const updated = await fetch_palette();
+    set_palette(updated);
+    set_saving(false);
+    close_picker();
+  }, [hex, label, editing, onChange, close_picker]);
 
-  const handleDelete = useCallback(
+  const handle_delete = useCallback(
     async (id) => {
-      await deletePaletteColor(id);
-      const updated = await fetchPalette();
-      setPalette(updated);
+      await delete_palette_color(id);
+      const updated = await fetch_palette();
+      set_palette(updated);
       if (
         value &&
         !updated.some((c) => c.hex === value) &&
@@ -128,14 +128,14 @@ export default function ColorPalettePicker({ value, onChange }) {
       ) {
         onChange(updated[0].hex);
       }
-      closePicker();
+      close_picker();
     },
-    [value, onChange, closePicker],
+    [value, onChange, close_picker],
   );
 
-  const handleClearAll = useCallback(async () => {
-    await clearPalette();
-    setPalette([]);
+  const handle_clear_all = useCallback(async () => {
+    await clear_palette();
+    set_palette([]);
     onChange("");
   }, [onChange]);
 
@@ -159,7 +159,7 @@ export default function ColorPalettePicker({ value, onChange }) {
             <button
               type="button"
               className="cpp__edit-btn"
-              onClick={() => openEdit(entry)}
+              onClick={() => open_edit(entry)}
               aria-label={`Edit ${entry.label}`}
               title={`Edit ${entry.label}`}
             >
@@ -170,7 +170,7 @@ export default function ColorPalettePicker({ value, onChange }) {
         <button
           type="button"
           className="cpp__add-btn"
-          onClick={openAdd}
+          onClick={open_add}
           aria-label="Add color"
           title="Add color"
         >
@@ -180,7 +180,7 @@ export default function ColorPalettePicker({ value, onChange }) {
           <button
             type="button"
             className="cpp__clear-btn"
-            onClick={handleClearAll}
+            onClick={handle_clear_all}
             aria-label="Clear all colors"
             title="Clear all colors"
           >
@@ -189,14 +189,14 @@ export default function ColorPalettePicker({ value, onChange }) {
         )}
       </div>
 
-      {pickerOpen &&
+      {picker_open &&
         createPortal(
           <div
-            className={`cpp__overlay${pickerClosing ? " cpp__overlay--closing" : ""}`}
-            onClick={closePicker}
+            className={`cpp__overlay${picker_closing ? " cpp__overlay--closing" : ""}`}
+            onClick={close_picker}
           >
             <div
-              className={`cpp__modal${pickerClosing ? " cpp__modal--closing" : ""}`}
+              className={`cpp__modal${picker_closing ? " cpp__modal--closing" : ""}`}
               onClick={(e) => e.stopPropagation()}
               role="dialog"
               aria-modal="true"
@@ -217,8 +217,8 @@ export default function ColorPalettePicker({ value, onChange }) {
                   value={hex}
                   onChange={(e) => {
                     setHex(e.target.value);
-                    setHexState("valid");
-                    setHexError(null);
+                    set_hex_state("valid");
+                    set_hex_error(null);
                   }}
                   className="cpp__native-picker"
                   aria-label="Pick a color"
@@ -227,16 +227,16 @@ export default function ColorPalettePicker({ value, onChange }) {
 
               <FormField
                 label="Hex color"
-                error={hexError}
-                state={hexState}
-                showIndicator
-                shake={hexError ? 1 : 0}
+                error={hex_error}
+                state={hex_state}
+                show_indicator
+                shake={hex_error ? 1 : 0}
               >
                 <input
                   type="text"
                   value={hex}
-                  onChange={(e) => handleHexChange(e.target.value)}
-                  onBlur={handleHexBlur}
+                  onChange={(e) => handle_hex_change(e.target.value)}
+                  onBlur={handle_hex_blur}
                   placeholder="#818cf8"
                   maxLength={7}
                   className="cpp__hex-input"
@@ -258,7 +258,7 @@ export default function ColorPalettePicker({ value, onChange }) {
                   <button
                     type="button"
                     className="cpp__btn cpp__btn--danger"
-                    onClick={() => handleDelete(editing.id)}
+                    onClick={() => handle_delete(editing.id)}
                   >
                     Delete
                   </button>
@@ -266,16 +266,16 @@ export default function ColorPalettePicker({ value, onChange }) {
                 <button
                   type="button"
                   className="cpp__btn cpp__btn--ghost"
-                  onClick={closePicker}
+                  onClick={close_picker}
                 >
                   Cancel
                 </button>
                 <button
                   type="button"
                   className="cpp__btn cpp__btn--primary"
-                  onClick={handleSave}
+                  onClick={handle_save}
                   disabled={
-                    saving || !isValidHex(hex)
+                    saving || !is_valid_hex(hex)
                   }
                 >
                   {saving ? "Saving…" : editing ? "Save" : "Add"}

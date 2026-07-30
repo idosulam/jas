@@ -7,7 +7,7 @@
  * @param {number} amount
  * @returns {string}
  */
-export function formatMoney(amount) {
+export function format_money(amount) {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "USD",
@@ -16,11 +16,11 @@ export function formatMoney(amount) {
 
 /**
  * Format a date string (YYYY-MM-DD) to a short readable format.
- * @param {string} dateStr
+ * @param {string} date_str
  * @returns {string}
  */
-export function formatDate(dateStr) {
-  const d = new Date(`${dateStr}T12:00:00`);
+export function format_date(date_str) {
+  const d = new Date(`${date_str}T12:00:00`);
   return d.toLocaleDateString(undefined, {
     weekday: "short",
     month: "short",
@@ -30,11 +30,11 @@ export function formatDate(dateStr) {
 
 /**
  * Format a date string to a group label (Today, Yesterday, or full date).
- * @param {string} dateStr
+ * @param {string} date_str
  * @returns {string}
  */
-export function formatDateGroup(dateStr) {
-  const d = new Date(`${dateStr}T12:00:00`);
+export function format_date_group(date_str) {
+  const d = new Date(`${date_str}T12:00:00`);
   const today = new Date();
   const yesterday = new Date(today);
   yesterday.setDate(yesterday.getDate() - 1);
@@ -51,11 +51,11 @@ export function formatDateGroup(dateStr) {
 
 /**
  * Format a date string to a short label (Mon, Jul 27).
- * @param {string} dateStr
+ * @param {string} date_str
  * @returns {string}
  */
-export function formatDateLabel(dateStr) {
-  const d = new Date(`${dateStr}T12:00:00`);
+export function format_date_label(date_str) {
+  const d = new Date(`${date_str}T12:00:00`);
   return d.toLocaleDateString(undefined, {
     weekday: "short",
     month: "short",

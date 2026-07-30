@@ -18,15 +18,15 @@ export const ACTIVITY_LEVELS = [
 
 /**
  * Calculate Basal Metabolic Rate using Mifflin-St Jeor.
- * @param {number} weightKg - Body weight in kg
- * @param {number} heightCm - Height in cm
+ * @param {number} weight_kg - Body weight in kg
+ * @param {number} height_cm - Height in cm
  * @param {number} age - Age in years
  * @param {string} gender - "male" or "female"
  * @returns {number|null} BMR in kcal/day, or null if inputs are missing
  */
-export function calcBMR(weightKg, heightCm, age, gender) {
-  if (!weightKg || !heightCm || !age) return null;
-  const base = 10 * weightKg + 6.25 * heightCm - 5 * age;
+export function calcBMR(weight_kg, height_cm, age, gender) {
+  if (!weight_kg || !height_cm || !age) return null;
+  const base = 10 * weight_kg + 6.25 * height_cm - 5 * age;
   return gender === "female" ? base - 161 : base + 5;
 }
 
@@ -50,15 +50,15 @@ export function calcTDEE(bmr, activityLevel) {
  * Carbs: remaining calories / 4
  * Fiber: 25g target
  *
- * @param {number} weightKg - Body weight in kg
+ * @param {number} weight_kg - Body weight in kg
  * @param {number} tdee - Total Daily Energy Expenditure
  * @returns {{ protein: number, carbs: number, fats: number, fiber: number, calories: number } | null}
  */
-export function calcMacroTargets(weightKg, tdee) {
-  if (!weightKg || !tdee) return null;
+export function calcMacroTargets(weight_kg, tdee) {
+  if (!weight_kg || !tdee) return null;
 
-  const protein = Math.round(weightKg * 2);
-  const fats = Math.round(weightKg * 0.8);
+  const protein = Math.round(weight_kg * 2);
+  const fats = Math.round(weight_kg * 0.8);
   const proteinCals = protein * 4;
   const fatsCals = fats * 9;
   const remainingCals = tdee - proteinCals - fatsCals;

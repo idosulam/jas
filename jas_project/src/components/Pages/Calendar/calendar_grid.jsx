@@ -1,31 +1,31 @@
-import { toDateKey } from "./calendar_layout";
+import { to_date_key } from "./calendar_layout";
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 export default function CalendarGrid({
-  visibleDays,
-  selectedDate,
+  visible_days,
+  selected_date,
   today,
-  viewMode,
-  busyDates,
+  view_mode,
+  busy_dates,
   onDaySelect,
 }) {
-  const selectedKey = toDateKey(selectedDate);
+  const selected_key = to_date_key(selected_date);
 
   return (
     <div
-      className={`calendar__week animate-in animate-in--2${viewMode === "month" ? " calendar__week--month" : " calendar__week--week"}`}
+      className={`calendar__week animate-in animate-in--2${view_mode === "month" ? " calendar__week--month" : " calendar__week--week"}`}
       role="group"
-      aria-label={viewMode === "week" ? "Week days" : "Month days"}
+      aria-label={view_mode === "week" ? "Week days" : "Month days"}
     >
-      {visibleDays.map((day) => {
-        const key = toDateKey(day);
-        const isSelected = key === selectedKey;
-        const isDayToday = key === toDateKey(today);
-        const hasEvents = busyDates.has(key);
+      {visible_days.map((day) => {
+        const key = to_date_key(day);
+        const isSelected = key === selected_key;
+        const isDayToday = key === to_date_key(today);
+        const hasEvents = busy_dates.has(key);
         const isInCurrentMonth =
-          viewMode === "month"
-            ? day.getMonth() === selectedDate.getMonth()
+          view_mode === "month"
+            ? day.getMonth() === selected_date.getMonth()
             : true;
 
         return (
@@ -36,7 +36,7 @@ export default function CalendarGrid({
             onClick={() => onDaySelect(day)}
             aria-pressed={isSelected}
           >
-            {viewMode === "week" && (
+            {view_mode === "week" && (
               <span className="calendar__week-label">
                 {WEEKDAYS[day.getDay()]}
               </span>

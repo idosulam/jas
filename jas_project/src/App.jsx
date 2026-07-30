@@ -1,10 +1,10 @@
 import { useRef, useState, lazy, Suspense } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import Navbar from "./components/navbar/navbar.jsx";
+import Navbar from "./components/Navbar/navbar.jsx";
 import Page_transition from "./components/page_transition.jsx";
 import { ToastProvider } from "./lib/glass_toast_provider.jsx";
 import { supabase } from "./lib/superbase.jsx";
-import { AuthProvider, useAuth } from "./lib/auth_context.jsx";
+import { AuthProvider, use_auth } from "./lib/auth_context.jsx";
 import { HouseholdProvider } from "./lib/household_context.jsx";
 
 // Lazy-loaded page components (route-level code splitting)
@@ -37,27 +37,27 @@ const PAGES = {
 };
 
 function AppContent() {
-  const { session, loading } = useAuth();
-  const [activeNav, setActiveNav] = useState("Shifts");
-  const [direction, setDirection] = useState("forward");
-  const [returnTo, setReturnTo] = useState("Shifts");
-  const prevNavRef = useRef("Shifts");
+  const { session, loading } = use_auth();
+  const [active_nav, set_active_nav] = useState("Shifts");
+  const [direction, set_direction] = useState("forward");
+  const [return_to, set_return_to] = useState("Shifts");
+  const prev_nav_ref = useRef("Shifts");
 
-  const handleNavChange = (id) => {
-    if (id === activeNav) return;
+  const handle_nav_change = (id) => {
+    if (id === active_nav) return;
 
     if (id === "Workplaces") {
-      setReturnTo(activeNav);
+      set_return_to(active_nav);
     }
 
-    const prevIndex = TAB_ORDER.indexOf(prevNavRef.current);
-    const nextIndex = TAB_ORDER.indexOf(id);
-    setDirection(nextIndex > prevIndex ? "forward" : "backward");
-    prevNavRef.current = id;
-    setActiveNav(id);
+    const prev_index = TAB_ORDER.indexOf(prev_nav_ref.current);
+    const next_index = TAB_ORDER.indexOf(id);
+    set_direction(next_index > prev_index ? "forward" : "backward");
+    prev_nav_ref.current = id;
+    set_active_nav(id);
   };
 
-  const handleSignOut = async () => {
+  const handle_sign_out = async () => {
     if (supabase) {
       await supabase.auth.signOut();
     }
@@ -115,13 +115,13 @@ function AppContent() {
   }
 
   // Show auth page — require a real session when Supabase is configured
-  const isAuthenticated = !!supabase && !!session;
+  const is_authenticated = !!supabase && !!session;
 
-  const ActivePage = PAGES[activeNav];
+  const ActivePage = PAGES[active_nav];
 
   return (
     <AnimatePresence mode="wait">
-      {!isAuthenticated ? (
+      {!is_authenticated ? (
         <motion.div
           key="auth"
           initial={{ opacity: 0 }}
@@ -142,7 +142,7 @@ function AppContent() {
           transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
         >
           <main className="app__content">
-            <Page_transition pageKey={activeNav} direction={direction}>
+            <Page_transition page_key={active_nav} direction={direction}>
               <Suspense
                 fallback={
                   <div
@@ -166,18 +166,18 @@ function AppContent() {
                   </div>
                 }
               >
-                <ActivePage onNavigate={handleNavChange} returnTo={returnTo} />
+                <ActivePage onNavigate={handle_nav_change} return_to={return_to} />
               </Suspense>
             </Page_transition>
           </main>
-          <Navbar activeId={activeNav} onChange={handleNavChange} />
+          <Navbar active_id={active_nav} onChange={handle_nav_change} />
           <Suspense fallback={null}>
             <ProfileOnboarding />
           </Suspense>
           {supabase && (
             <button
               type="button"
-              onClick={handleSignOut}
+              onClick={handle_sign_out}
               className="sign-out-btn"
               style={{
                 position: "absolute",

@@ -14,13 +14,13 @@ export default function SheetModal({
   compact = false,
   variant = "default", // "default" | "danger" | "warning"
   className = "",
-  overlayClassName = "",
-  swipeBind,
-  swipeStyle,
+  overlay_class_name = "",
+  swipe_bind,
+  swipe_style,
 }) {
   if (!open && !closing) return null;
 
-  const modalClasses = [
+  const modal_classes = [
     "sheet-modal",
     compact && "sheet-modal--compact",
     variant !== "default" && `sheet-modal--${variant}`,
@@ -30,23 +30,23 @@ export default function SheetModal({
     .filter(Boolean)
     .join(" ");
 
-  const overlayClasses = [
+  const overlay_classes = [
     "sheet-overlay",
     closing && "sheet-overlay--closing",
-    overlayClassName,
+    overlay_class_name,
   ]
     .filter(Boolean)
     .join(" ");
 
   return createPortal(
-    <div className={overlayClasses} onClick={onClose}>
+    <div className={overlay_classes} onClick={onClose}>
       <div
-        className={modalClasses}
+        className={modal_classes}
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
-        {...swipeBind}
-        style={swipeStyle}
+        {...swipe_bind}
+        style={swipe_style}
       >
         {title && (
           <h2

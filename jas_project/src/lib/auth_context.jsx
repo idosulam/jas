@@ -1,20 +1,20 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import { supabase } from "./superbase.jsx";
 
-const AuthContext = createContext({
+const auth_context = createContext({
   session: null,
   user: null,
-  userId: null,
+  user_id: null,
   loading: true,
 });
 
 export function AuthProvider({ children }) {
   const [session, setSession] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, set_loading] = useState(true);
 
   useEffect(() => {
     if (!supabase) {
-      setLoading(false);
+      set_loading(false);
       return;
     }
 
@@ -32,7 +32,7 @@ export function AuthProvider({ children }) {
       } else {
         setSession(null);
       }
-      setLoading(false);
+      set_loading(false);
     });
 
     // Listen for auth changes
@@ -46,20 +46,20 @@ export function AuthProvider({ children }) {
   }, []);
 
   const user = session?.user ?? null;
-  const userId = user?.id ?? null;
+  const user_id = user?.id ?? null;
 
   return (
-    <AuthContext.Provider value={{ session, user, userId, loading }}>
+    <auth_context.Provider value={{ session, user, user_id, loading }}>
       {children}
-    </AuthContext.Provider>
+    </auth_context.Provider>
   );
 }
 
-export function useAuth() {
-  return useContext(AuthContext);
+export function use_auth() {
+  return useContext(auth_context);
 }
 
-export function useUserId() {
-  const { userId } = useAuth();
-  return userId;
+export function use_user_id() {
+  const { user_id } = use_auth();
+  return user_id;
 }

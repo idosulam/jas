@@ -1,4 +1,4 @@
-import { formatMoney } from "../../../lib/format";
+import { format_money } from "../../../lib/format";
 
 /**
  * Avatar color palette — rotates based on name hash.
@@ -80,7 +80,7 @@ export default function TransactionCard({ transaction, onEdit }) {
       </div>
       <span className={`transactions__item-amount ${type}`}>
         {type === "expense" ? "-" : "+"}
-        {formatMoney(amount)}
+        {format_money(amount)}
       </span>
     </div>
   );

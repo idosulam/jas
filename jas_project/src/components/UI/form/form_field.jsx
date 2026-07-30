@@ -3,7 +3,7 @@
  * Replaces the repeated label + input + error pattern.
  *
  * Enhanced mode (when `state` prop is provided):
- *   - Shows FieldIndicator (check/cross) if `showIndicator` is true
+ *   - Shows FieldIndicator (check/cross) if `show_indicator` is true
  *   - Uses animated FieldError instead of static error text
  *   - Wraps in ShakeField if `shake` is truthy
  *   - Adds form-field--valid or form-field--error-enhanced class
@@ -17,61 +17,61 @@ import "./form_field.css";
 export default function FormField({
   label,
   error,
-  charCount,
-  maxChars,
+  char_count,
+  max_chars,
   children,
   className = "",
   optional = false,
   // Enhanced mode props:
   state, // "idle" | "valid" | "error"
-  showIndicator = false,
+  show_indicator = false,
   shake, // boolean or number — truthy enables shake wrapper
 }) {
-  const hasError = !!error;
+  const has_error = !!error;
   const enhanced = state != null;
 
   // Determine CSS class for enhanced mode
-  let stateClass = "";
+  let state_class = "";
   if (enhanced) {
-    if (state === "valid") stateClass = "form-field--valid";
-    else if (state === "error") stateClass = "form-field--error-enhanced";
+    if (state === "valid") state_class = "form-field--valid";
+    else if (state === "error") state_class = "form-field--error-enhanced";
   }
 
   // In enhanced mode with indicator, wrap the first child (input/select/textarea)
   // in a positioned container so the indicator sits inside the field
-  let fieldContent = children;
-  if (enhanced && showIndicator) {
-    const childArray = Children.toArray(children);
-    if (childArray.length > 0) {
-      const firstChild = childArray[0];
-      if (firstChild && typeof firstChild === "object" && firstChild.props) {
+  let field_content = children;
+  if (enhanced && show_indicator) {
+    const child_array = Children.toArray(children);
+    if (child_array.length > 0) {
+      const first_child = child_array[0];
+      if (first_child && typeof first_child === "object" && first_child.props) {
         const wrapped = (
           <div key="form-field-wrap" className="form-field__input-wrap">
-            {firstChild}
+            {first_child}
             <FieldIndicator state={state} />
           </div>
         );
-        fieldContent = [wrapped, ...childArray.slice(1)];
+        field_content = [wrapped, ...child_array.slice(1)];
       }
     }
   }
 
   const inner = (
     <label
-      className={`form-field ${hasError && !enhanced ? "form-field--error" : ""} ${stateClass} ${className}`}
+      className={`form-field ${has_error && !enhanced ? "form-field--error" : ""} ${state_class} ${className}`}
     >
       <span>
         {label}{" "}
         {optional && <span className="form-field__optional">(optional)</span>}
-        {hasError && !enhanced && (
+        {has_error && !enhanced && (
           <span className="form-field__error-inline"> — {error}</span>
         )}
       </span>
-      {fieldContent}
+      {field_content}
       {enhanced ? <FieldError message={error || null} /> : null}
-      {charCount != null && maxChars != null && charCount > 0 && (
+      {char_count != null && max_chars != null && char_count > 0 && (
         <span className="form-field__char-count">
-          {charCount}/{maxChars}
+          {char_count}/{max_chars}
         </span>
       )}
     </label>

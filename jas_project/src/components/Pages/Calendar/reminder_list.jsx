@@ -1,15 +1,15 @@
-import { formatTime12 } from "./calendar_layout";
+import { format_time_12 } from "./calendar_layout";
 
 export default function ReminderList({
   events,
-  isWakeEvent,
+  is_wake_event,
   onCheck,
   onEdit,
   onDelete,
-  togglingId,
-  removingId,
+  toggling_id,
+  removing_id,
 }) {
-  const filtered = events.filter((event) => !isWakeEvent(event));
+  const filtered = events.filter((event) => !is_wake_event(event));
 
   if (filtered.length === 0) return null;
 
@@ -18,13 +18,13 @@ export default function ReminderList({
       {filtered.map((event) => (
         <li
           key={`list-${event.id}`}
-          className={`calendar__reminder${event.is_completed ? " calendar__reminder--done" : ""}${removingId === event.id ? " calendar__reminder--removing" : ""}`}
+          className={`calendar__reminder${event.is_completed ? " calendar__reminder--done" : ""}${removing_id === event.id ? " calendar__reminder--removing" : ""}`}
         >
           <button
             type="button"
             className="calendar__check calendar__check--list"
             onClick={() => onCheck(event)}
-            disabled={togglingId === event.id}
+            disabled={toggling_id === event.id}
             aria-label={
               event.is_completed
                 ? `Mark ${event.title} as pending`
@@ -41,8 +41,8 @@ export default function ReminderList({
           >
             <span className="calendar__reminder-title">{event.title}</span>
             <span className="calendar__reminder-time">
-              {formatTime12(event.start_time)} –{" "}
-              {formatTime12(event.end_time)}
+              {format_time_12(event.start_time)} –{" "}
+              {format_time_12(event.end_time)}
             </span>
           </button>
           <button

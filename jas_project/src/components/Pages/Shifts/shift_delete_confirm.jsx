@@ -1,14 +1,14 @@
-import ConfirmModal from "../../../components/ui/modals/confirm_modal";
-import Badge from "../../../components/ui/badge";
-import { formatDateFriendly } from "../../../lib/security";
-import { formatMoney } from "../../../lib/format";
+import ConfirmModal from "../../../components/UI/modals/confirm_modal";
+import Badge from "../../../components/UI/badge";
+import { format_date_friendly } from "../../../lib/security";
+import { format_money } from "../../../lib/format";
 import { calcPay } from "./shift_utils";
 
 /**
  * Delete-confirmation modal for a single shift.
  *
  * Props:
- *   deleteTarget  – the shift object to delete (null = hidden)
+ *   delete_target  – the shift object to delete (null = hidden)
  *   closing       – animation closing flag
  *   onClose()     – close handler
  *   onConfirm()   – confirm-delete handler
@@ -16,34 +16,34 @@ import { calcPay } from "./shift_utils";
  *   places        – PLACES map
  */
 export default function ShiftDeleteConfirm({
-  deleteTarget,
+  delete_target,
   closing,
   onClose,
   onConfirm,
   deleting,
   places,
 }) {
-  if (!deleteTarget) return null;
+  if (!delete_target) return null;
 
-  const placeInfo = places[deleteTarget.place];
+  const placeInfo = places[delete_target.place];
   const pay = calcPay(
     places,
-    deleteTarget.place,
-    deleteTarget.hours,
-    deleteTarget.pay_type,
+    delete_target.place,
+    delete_target.hours,
+    delete_target.pay_type,
   );
-  const tips = parseFloat(deleteTarget.tips) || 0;
+  const tips = parseFloat(delete_target.tips) || 0;
 
   return (
     <ConfirmModal
-      open={!!deleteTarget}
+      open={!!delete_target}
       closing={closing}
       onClose={onClose}
       onConfirm={onConfirm}
       loading={deleting}
       title="Delete this shift?"
       description="This action cannot be undone."
-      confirmLabel="Delete shift"
+      confirm_label="Delete shift"
       icon={
         <svg
           viewBox="0 0 24 24"
@@ -62,18 +62,18 @@ export default function ShiftDeleteConfirm({
           <Badge
             className="shifts__badge"
             color={
-              deleteTarget.color ||
-              places[deleteTarget.place]?.color ||
+              delete_target.color ||
+              places[delete_target.place]?.color ||
               "#818cf8"
             }
           >
             {placeInfo?.label}
           </Badge>
           <span className="shifts__delete-date">
-            {formatDateFriendly(deleteTarget.shift_date)}
+            {format_date_friendly(delete_target.shift_date)}
           </span>
           <span className="shifts__delete-amount">
-            {formatMoney(pay + tips)}
+            {format_money(pay + tips)}
           </span>
         </>
       }

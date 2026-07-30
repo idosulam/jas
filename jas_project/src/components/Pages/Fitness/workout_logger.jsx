@@ -1,32 +1,32 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { getSupabaseClient } from "../../../lib/superbase";
-import { useUserId } from "../../../lib/auth_context.jsx";
+import { get_supabase_client } from "../../../lib/superbase";
+import { use_user_id } from "../../../lib/auth_context.jsx";
 import {
-  getUserFacingError,
-  sanitizeDate,
-  sanitizeNumber,
-  sanitizeText,
-  formatDateFriendly,
-  hapticError,
+  get_user_facing_error,
+  sanitize_date,
+  sanitize_number,
+  sanitize_text,
+  format_date_friendly,
+  haptic_error,
 } from "../../../lib/security";
-import { useBodyScrollLock, useModal } from "../../../hooks";
-import { useGlassToast } from "../../../lib/glass_toast_provider.jsx";
+import { use_body_scroll_lock, use_modal } from "../../../Hooks";
+import { use_glass_toast } from "../../../lib/glass_toast_provider.jsx";
 
-import SheetModal from "../../../components/ui/modals/sheet_modal";
-import ConfirmModal from "../../../components/ui/modals/confirm_modal";
-import FormField from "../../../components/ui/form/form_field.jsx";
-import EmptyState from "../../../components/ui/Empty_state";
-import LoadingSkeleton from "../../../components/ui/loading_skeleton";
-import GlassCard from "../../../components/ui/glass_card";
-import FAB from "../../../components/ui/fab";
+import SheetModal from "../../../components/UI/modals/sheet_modal";
+import ConfirmModal from "../../../components/UI/modals/confirm_modal";
+import FormField from "../../../components/UI/form/form_field.jsx";
+import EmptyState from "../../../components/UI/Empty_state";
+import LoadingSkeleton from "../../../components/UI/loading_skeleton";
+import GlassCard from "../../../components/UI/glass_card";
+import FAB from "../../../components/UI/fab";
 
-import { kgToLbs } from "../../../lib/weight";
+import { kg_to_lbs } from "../../../lib/weight";
 
 import {
   MODAL_EXIT_MS,
   WEEKDAYS,
   emptyExercise,
-  emptyForm,
+  empty_form,
   calcVolume,
   formatVolume,
 } from "./workout_utils";
@@ -35,157 +35,157 @@ import WorkoutCard from "./workout_card";
 import WorkoutForm from "./workout_form";
 
 function WorkoutLogger() {
-  const userId = useUserId();
+  const user_id = use_user_id();
   const now = new Date();
-  const [selectedDate, setSelectedDate] = useState(now);
-  const [viewMode, setViewMode] = useState("week");
+  const [selected_date, set_selected_date] = useState(now);
+  const [view_mode, set_view_mode] = useState("week");
   const [workouts, setWorkouts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [form, setForm] = useState(emptyForm());
+  const [loading, set_loading] = useState(true);
+  const [error, set_error] = useState(null);
+  const [form, set_form] = useState(empty_form());
   const [editingWorkout, setEditingWorkout] = useState(null);
-  const [saving, setSaving] = useState(false);
-  const [deleteTarget, setDeleteTarget] = useState(null);
-  const [deleting, setDeleting] = useState(false);
-  const [removingId, setRemovingId] = useState(null);
-  const [fieldErrors, setFieldErrors] = useState({});
-  const [fieldStates, setFieldStates] = useState({});
-  const [shakeKey, setShakeKey] = useState(0);
-  const [presets, setPresets] = useState([]);
-  const [editingPreset, setEditingPreset] = useState(null);
-  const [presetForm, setPresetForm] = useState({
+  const [saving, set_saving] = useState(false);
+  const [delete_target, set_delete_target] = useState(null);
+  const [deleting, set_deleting] = useState(false);
+  const [removing_id, set_removing_id] = useState(null);
+  const [field_errors, set_field_errors] = useState({});
+  const [field_states, set_field_states] = useState({});
+  const [shake_key, set_shake_key] = useState(0);
+  const [presets, set_presets] = useState([]);
+  const [editing_preset, set_editing_preset] = useState(null);
+  const [preset_form, set_preset_form] = useState({
     name: "",
     exercises: [emptyExercise()],
   });
   const [presetFieldErrors, setPresetFieldErrors] = useState({});
   const [presetFieldStates, setPresetFieldStates] = useState({});
   const [presetShakeKey, setPresetShakeKey] = useState(0);
-  const [expandedNoteId, setExpandedNoteId] = useState(null);
-  const [showFloatingActions, setShowFloatingActions] = useState(false);
-  const addBtnRef = useRef(null);
+  const [expanded_note_id, set_expanded_note_id] = useState(null);
+  const [show_floating_actions, set_show_floating_actions] = useState(false);
+  const add_btn_ref = useRef(null);
 
-  const formModal = useModal(MODAL_EXIT_MS);
-  const deleteModal = useModal(MODAL_EXIT_MS);
-  const presetModal = useModal(MODAL_EXIT_MS);
+  const form_modal = use_modal(MODAL_EXIT_MS);
+  const delete_modal = use_modal(MODAL_EXIT_MS);
+  const preset_modal = use_modal(MODAL_EXIT_MS);
 
-  const { success: toastSuccess, error: toastError } = useGlassToast();
+  const { success: toast_success, error: toast_error } = use_glass_toast();
 
   // Week helpers
-  const startOfWeek = (date) => {
+  const start_of_week = (date) => {
     const d = new Date(date);
     d.setDate(d.getDate() - d.getDay());
     d.setHours(0, 0, 0, 0);
     return d;
   };
 
-  const addDays = (date, n) => {
+  const add_days = (date, n) => {
     const d = new Date(date);
     d.setDate(d.getDate() + n);
     return d;
   };
 
-  const toDateKey = (date) => date.toISOString().slice(0, 10);
+  const to_date_key = (date) => date.toISOString().slice(0, 10);
 
-  const selectedKey = toDateKey(selectedDate);
-  const isToday = selectedKey === toDateKey(now);
+  const selected_key = to_date_key(selected_date);
+  const is_today = selected_key === to_date_key(now);
 
-  const weekDays = useMemo(() => {
-    const start = startOfWeek(selectedDate);
-    return Array.from({ length: 7 }, (_, i) => addDays(start, i));
-  }, [selectedDate]);
+  const week_days = useMemo(() => {
+    const start = start_of_week(selected_date);
+    return Array.from({ length: 7 }, (_, i) => add_days(start, i));
+  }, [selected_date]);
 
-  const monthDays = useMemo(() => {
-    const d = new Date(selectedDate);
-    const start = startOfWeek(new Date(d.getFullYear(), d.getMonth(), 1));
-    return Array.from({ length: 42 }, (_, i) => addDays(start, i));
-  }, [selectedDate]);
+  const month_days = useMemo(() => {
+    const d = new Date(selected_date);
+    const start = start_of_week(new Date(d.getFullYear(), d.getMonth(), 1));
+    return Array.from({ length: 42 }, (_, i) => add_days(start, i));
+  }, [selected_date]);
 
-  const visibleDays = viewMode === "week" ? weekDays : monthDays;
+  const visible_days = view_mode === "week" ? week_days : month_days;
 
-  const dayTitle = useMemo(() => {
-    return selectedDate.toLocaleDateString(undefined, {
+  const day_title = useMemo(() => {
+    return selected_date.toLocaleDateString(undefined, {
       weekday: "long",
       month: "long",
       day: "numeric",
     });
-  }, [selectedDate]);
+  }, [selected_date]);
 
   // ── Fetch workouts ──
   const fetchWorkouts = useCallback(async () => {
-    if (!userId) return;
-    setLoading(true);
-    setError(null);
+    if (!user_id) return;
+    set_loading(true);
+    set_error(null);
 
-    const d = new Date(selectedDate);
-    const rangeStart =
-      viewMode === "week"
-        ? startOfWeek(d)
+    const d = new Date(selected_date);
+    const range_start =
+      view_mode === "week"
+        ? start_of_week(d)
         : new Date(d.getFullYear(), d.getMonth(), 1);
-    const rangeEnd =
-      viewMode === "week"
-        ? addDays(rangeStart, 6)
+    const range_end =
+      view_mode === "week"
+        ? add_days(range_start, 6)
         : new Date(d.getFullYear(), d.getMonth() + 1, 0);
-    const startDate = toDateKey(rangeStart);
-    const endDate = toDateKey(rangeEnd);
+    const startDate = to_date_key(range_start);
+    const endDate = to_date_key(range_end);
 
     try {
-      const supabase = getSupabaseClient();
-      const { data, error: fetchError } = await supabase
+      const supabase = get_supabase_client();
+      const { data, error: fetch_error } = await supabase
         .from("workout_logs")
         .select("*")
-        .eq("user_id", userId)
+        .eq("user_id", user_id)
         .gte("workout_date", startDate)
         .lte("workout_date", endDate)
         .order("workout_date", { ascending: true });
 
-      if (fetchError) {
-        setError(getUserFacingError(fetchError.message));
+      if (fetch_error) {
+        set_error(get_user_facing_error(fetch_error.message));
         setWorkouts([]);
       } else {
         setWorkouts(data ?? []);
       }
     } catch (err) {
-      setError(getUserFacingError(err.message));
+      set_error(get_user_facing_error(err.message));
       setWorkouts([]);
     }
-    setLoading(false);
-  }, [selectedDate, viewMode, userId]);
+    set_loading(false);
+  }, [selected_date, view_mode, user_id]);
 
   useEffect(() => {
     fetchWorkouts();
   }, [fetchWorkouts]);
 
   // ── Fetch presets ──
-  const fetchPresets = useCallback(async () => {
-    if (!userId) return;
+  const fetch_presets = useCallback(async () => {
+    if (!user_id) return;
     try {
-      const supabase = getSupabaseClient();
-      const { data, error: fetchError } = await supabase
+      const supabase = get_supabase_client();
+      const { data, error: fetch_error } = await supabase
         .from("workout_presets")
         .select("*")
-        .eq("user_id", userId)
+        .eq("user_id", user_id)
         .order("created_at", { ascending: true });
-      if (!fetchError) setPresets(data ?? []);
+      if (!fetch_error) set_presets(data ?? []);
     } catch {
       // silent
     }
-  }, [userId]);
+  }, [user_id]);
 
   useEffect(() => {
-    fetchPresets();
-  }, [fetchPresets]);
+    fetch_presets();
+  }, [fetch_presets]);
 
-  useBodyScrollLock(formModal.open, deleteModal.open, presetModal.open);
+  use_body_scroll_lock(form_modal.open, delete_modal.open, preset_modal.open);
 
   // ── Floating actions observer ──
   useEffect(() => {
-    const target = addBtnRef.current;
+    const target = add_btn_ref.current;
     if (!target) return;
     const observer = new IntersectionObserver(
       ([entry]) => {
         const scrolledPastIt =
           !entry.isIntersecting && entry.boundingClientRect.top < 0;
-        setShowFloatingActions(scrolledPastIt);
+        set_show_floating_actions(scrolledPastIt);
       },
       { threshold: 0 },
     );
@@ -209,33 +209,33 @@ function WorkoutLogger() {
   }, [workouts]);
 
   // ── Form: exercise helpers ──
-  const addExercise = () => {
+  const add_exercise = () => {
     if (form.exercises.length >= 20) return;
-    setForm((f) => ({
+    set_form((f) => ({
       ...f,
       exercises: [...f.exercises, emptyExercise()],
     }));
   };
 
-  const removeExercise = (index) => {
-    setForm((f) => ({
+  const remove_exercise = (index) => {
+    set_form((f) => ({
       ...f,
       exercises: f.exercises.filter((_, i) => i !== index),
     }));
   };
 
   const updateExercise = (index, field, value) => {
-    setForm((f) => {
+    set_form((f) => {
       const next = [...f.exercises];
       next[index] = { ...next[index], [field]: value };
       return { ...f, exercises: next };
     });
     // Re-validate if field was previously validated (has a state)
     const key = `${index}_${field}`;
-    if (fieldStates[key]) {
+    if (field_states[key]) {
       const err = validateExerciseField(index, field, value);
-      setFieldErrors((prev) => ({ ...prev, [key]: err }));
-      setFieldStates((prev) => ({
+      set_field_errors((prev) => ({ ...prev, [key]: err }));
+      set_field_states((prev) => ({
         ...prev,
         [key]: err ? "error" : value ? "valid" : "idle",
       }));
@@ -244,12 +244,12 @@ function WorkoutLogger() {
     const pairedField = field === "weight" ? "weight_lbs" : field === "weight_lbs" ? "weight" : null;
     if (pairedField) {
       const pairedKey = `${index}_${pairedField}`;
-      if (fieldStates[pairedKey]) {
+      if (field_states[pairedKey]) {
         // Compute the paired value from the current form state
-        const pairedValue = field === "weight" ? kgToLbs(value) : lbsToKg(value);
+        const pairedValue = field === "weight" ? kg_to_lbs(value) : lbs_to_kg(value);
         const err = validateExerciseField(index, pairedField, pairedValue);
-        setFieldErrors((prev) => ({ ...prev, [pairedKey]: err }));
-        setFieldStates((prev) => ({
+        set_field_errors((prev) => ({ ...prev, [pairedKey]: err }));
+        set_field_states((prev) => ({
           ...prev,
           [pairedKey]: err ? "error" : pairedValue ? "valid" : "idle",
         }));
@@ -258,26 +258,26 @@ function WorkoutLogger() {
   };
 
   // ── Modal open/close ──
-  const openAddModal = () => {
+  const open_add_modal = () => {
     setEditingWorkout(null);
-    const f = emptyForm();
-    f.workout_date = selectedKey;
-    setForm(f);
-    setFieldErrors({});
-    setFieldStates({});
-    formModal.openModal();
+    const f = empty_form();
+    f.workout_date = selected_key;
+    set_form(f);
+    set_field_errors({});
+    set_field_states({});
+    form_modal.open_modal();
   };
 
-  const openEditModal = (workout) => {
+  const open_edit_modal = (workout) => {
     setEditingWorkout(workout);
     const exercises =
       Array.isArray(workout.exercises) && workout.exercises.length > 0
         ? workout.exercises.map((ex) => ({
             ...ex,
-            weight_lbs: ex.weight ? kgToLbs(ex.weight) : "",
+            weight_lbs: ex.weight ? kg_to_lbs(ex.weight) : "",
           }))
         : [emptyExercise()];
-    setForm({
+    set_form({
       workout_date: workout.workout_date,
       preset_name: workout.preset_name ?? "",
       exercises,
@@ -289,63 +289,63 @@ function WorkoutLogger() {
         ? String(workout.calories_burned)
         : "",
     });
-    setFieldErrors({});
-    setFieldStates({});
-    formModal.openModal();
+    set_field_errors({});
+    set_field_states({});
+    form_modal.open_modal();
   };
 
-  const closeFormModal = () => {
-    formModal.closeModal();
+  const close_form_modal = () => {
+    form_modal.close_modal();
     setTimeout(() => {
       setEditingWorkout(null);
-      setForm(emptyForm());
-      setFieldStates({});
+      set_form(empty_form());
+      set_field_states({});
     }, MODAL_EXIT_MS);
   };
 
   // ── Presets ──
-  const openPresetModal = (preset = null) => {
+  const open_preset_modal = (preset = null) => {
     if (preset) {
-      setEditingPreset(preset);
+      set_editing_preset(preset);
       const exercises =
         Array.isArray(preset.exercises) && preset.exercises.length > 0
           ? preset.exercises
           : [emptyExercise()];
-      setPresetForm({ name: preset.name, exercises });
+      set_preset_form({ name: preset.name, exercises });
     } else {
-      setEditingPreset(null);
-      setPresetForm({ name: "", exercises: [emptyExercise()] });
+      set_editing_preset(null);
+      set_preset_form({ name: "", exercises: [emptyExercise()] });
     }
     setPresetFieldErrors({});
     setPresetFieldStates({});
-    presetModal.openModal();
+    preset_modal.open_modal();
   };
 
-  const closePresetModal = () => {
-    presetModal.closeModal();
+  const close_preset_modal = () => {
+    preset_modal.close_modal();
     setTimeout(() => {
-      setEditingPreset(null);
+      set_editing_preset(null);
       setPresetFieldStates({});
     }, MODAL_EXIT_MS);
   };
 
   const addPresetExercise = () => {
-    if (presetForm.exercises.length >= 20) return;
-    setPresetForm((f) => ({
+    if (preset_form.exercises.length >= 20) return;
+    set_preset_form((f) => ({
       ...f,
       exercises: [...f.exercises, emptyExercise()],
     }));
   };
 
   const removePresetExercise = (index) => {
-    setPresetForm((f) => ({
+    set_preset_form((f) => ({
       ...f,
       exercises: f.exercises.filter((_, i) => i !== index),
     }));
   };
 
   const updatePresetExercise = (index, field, value) => {
-    setPresetForm((f) => {
+    set_preset_form((f) => {
       const next = [...f.exercises];
       next[index] = { ...next[index], [field]: value };
       return { ...f, exercises: next };
@@ -365,7 +365,7 @@ function WorkoutLogger() {
     if (pairedField) {
       const pairedKey = `${index}_${pairedField}`;
       if (presetFieldStates[pairedKey]) {
-        const pairedValue = field === "weight" ? kgToLbs(value) : lbsToKg(value);
+        const pairedValue = field === "weight" ? kg_to_lbs(value) : lbs_to_kg(value);
         const err = validatePresetExerciseField(index, pairedField, pairedValue);
         setPresetFieldErrors((prev) => ({ ...prev, [pairedKey]: err }));
         setPresetFieldStates((prev) => ({
@@ -377,7 +377,7 @@ function WorkoutLogger() {
   };
 
   const validatePresetExerciseField = (index, field, overrideValue) => {
-    const ex = presetForm.exercises[index];
+    const ex = preset_form.exercises[index];
     if (!ex) return null;
     const val = overrideValue !== undefined ? overrideValue : ex[field];
     switch (field) {
@@ -386,17 +386,17 @@ function WorkoutLogger() {
       case "weight":
       case "weight_lbs": {
         if (!val && val !== 0) return "Required";
-        const n = sanitizeNumber(val, 0, 9999);
+        const n = sanitize_number(val, 0, 9999);
         return n == null ? "Invalid" : null;
       }
       case "sets": {
         if (!val && val !== 0) return "Required";
-        const n = sanitizeNumber(val, 0, 999);
+        const n = sanitize_number(val, 0, 999);
         return n == null ? "Invalid" : null;
       }
       case "reps": {
         if (!val && val !== 0) return "Required";
-        const n = sanitizeNumber(val, 0, 9999);
+        const n = sanitize_number(val, 0, 9999);
         return n == null ? "Invalid" : null;
       }
       default:
@@ -410,17 +410,17 @@ function WorkoutLogger() {
     setPresetFieldErrors((prev) => ({ ...prev, [key]: err }));
     setPresetFieldStates((prev) => ({
       ...prev,
-      [key]: err ? "error" : presetForm.exercises[index]?.[field] ? "valid" : "idle",
+      [key]: err ? "error" : preset_form.exercises[index]?.[field] ? "valid" : "idle",
     }));
     if (err) {
       setPresetShakeKey((k) => k + 1);
-      hapticError();
+      haptic_error();
     }
     // Also validate the paired weight field
     const pairedField = field === "weight" ? "weight_lbs" : field === "weight_lbs" ? "weight" : null;
     if (pairedField) {
       const pairedKey = `${index}_${pairedField}`;
-      const pairedVal = presetForm.exercises[index]?.[pairedField];
+      const pairedVal = preset_form.exercises[index]?.[pairedField];
       const pairedErr = validatePresetExerciseField(index, pairedField);
       setPresetFieldErrors((prev) => ({ ...prev, [pairedKey]: pairedErr }));
       setPresetFieldStates((prev) => ({
@@ -430,13 +430,13 @@ function WorkoutLogger() {
     }
   };
 
-  const savePreset = useCallback(async () => {
-    const name = presetForm.name.trim();
+  const save_preset = useCallback(async () => {
+    const name = preset_form.name.trim();
     if (!name) return;
-    const cleanedExercises = presetForm.exercises
+    const cleanedExercises = preset_form.exercises
       .filter((ex) => ex.name.trim())
       .map((ex) => ({
-        name: sanitizeText(ex.name, 80),
+        name: sanitize_text(ex.name, 80),
         weight: ex.weight || "",
         sets: ex.sets || "",
         reps: ex.reps || "",
@@ -444,59 +444,59 @@ function WorkoutLogger() {
     const payload = {
       name,
       exercises: cleanedExercises,
-      ...(userId && { user_id: userId }),
+      ...(user_id && { user_id: user_id }),
     };
     try {
-      const supabase = getSupabaseClient();
+      const supabase = get_supabase_client();
       let dbError;
-      if (editingPreset) {
+      if (editing_preset) {
         ({ error: dbError } = await supabase
           .from("workout_presets")
           .update(payload)
-          .eq("id", editingPreset.id));
+          .eq("id", editing_preset.id));
       } else {
         ({ error: dbError } = await supabase
           .from("workout_presets")
           .insert(payload));
       }
       if (dbError) {
-        toastError(getUserFacingError(dbError.message));
+        toast_error(get_user_facing_error(dbError.message));
         return;
       }
-      closePresetModal();
-      toastSuccess(editingPreset ? "Preset updated." : "Preset created.");
-      fetchPresets();
+      close_preset_modal();
+      toast_success(editing_preset ? "Preset updated." : "Preset created.");
+      fetch_presets();
     } catch (err) {
-      toastError(getUserFacingError(err.message));
+      toast_error(get_user_facing_error(err.message));
     }
   }, [
-    presetForm,
-    editingPreset,
-    fetchPresets,
-    toastSuccess,
-    toastError,
-    userId,
+    preset_form,
+    editing_preset,
+    fetch_presets,
+    toast_success,
+    toast_error,
+    user_id,
   ]);
 
-  const deletePreset = useCallback(
+  const delete_preset = useCallback(
     async (id) => {
       try {
-        const supabase = getSupabaseClient();
+        const supabase = get_supabase_client();
         const { error: dbError } = await supabase
           .from("workout_presets")
           .delete()
           .eq("id", id);
         if (dbError) {
-          toastError(getUserFacingError(dbError.message));
+          toast_error(get_user_facing_error(dbError.message));
           return;
         }
-        toastSuccess("Preset removed.");
-        fetchPresets();
+        toast_success("Preset removed.");
+        fetch_presets();
       } catch (err) {
-        toastError(getUserFacingError(err.message));
+        toast_error(get_user_facing_error(err.message));
       }
     },
-    [fetchPresets, toastSuccess, toastError],
+    [fetch_presets, toast_success, toast_error],
   );
 
   const applyPreset = (preset) => {
@@ -504,33 +504,33 @@ function WorkoutLogger() {
       Array.isArray(preset.exercises) && preset.exercises.length > 0
         ? preset.exercises.map((ex) => ({
             ...ex,
-            name: sanitizeText(ex.name, 80),
-            weight_lbs: ex.weight ? kgToLbs(ex.weight) : "",
+            name: sanitize_text(ex.name, 80),
+            weight_lbs: ex.weight ? kg_to_lbs(ex.weight) : "",
           }))
         : [emptyExercise()];
     setEditingWorkout(null);
-    setForm({
+    set_form({
       workout_date: new Date().toISOString().slice(0, 10),
       preset_name: preset.name,
       exercises,
       notes: "",
       duration_minutes: "",
     });
-    setFieldErrors({});
-    setFieldStates({});
-    formModal.openModal();
+    set_field_errors({});
+    set_field_states({});
+    form_modal.open_modal();
   };
 
   // ── Validation ──
-  const validateField = (fieldName, value) => {
-    switch (fieldName) {
+  const validate_field = (field_name, value) => {
+    switch (field_name) {
       case "workout_date":
         return !value ? "Pick a date" : null;
       case "preset_name":
         return !value || !value.trim() ? "Workout name is required" : null;
       case "calories_burned": {
         if (!value) return null;
-        const n = sanitizeNumber(value, 0, 9999);
+        const n = sanitize_number(value, 0, 9999);
         return n == null ? "Enter a valid number" : null;
       }
       default:
@@ -548,17 +548,17 @@ function WorkoutLogger() {
       case "weight":
       case "weight_lbs": {
         if (!val && val !== 0) return "Required";
-        const n = sanitizeNumber(val, 0, 9999);
+        const n = sanitize_number(val, 0, 9999);
         return n == null ? "Invalid" : null;
       }
       case "sets": {
         if (!val && val !== 0) return "Required";
-        const n = sanitizeNumber(val, 0, 999);
+        const n = sanitize_number(val, 0, 999);
         return n == null ? "Invalid" : null;
       }
       case "reps": {
         if (!val && val !== 0) return "Required";
-        const n = sanitizeNumber(val, 0, 9999);
+        const n = sanitize_number(val, 0, 9999);
         return n == null ? "Invalid" : null;
       }
       default:
@@ -566,30 +566,30 @@ function WorkoutLogger() {
     }
   };
 
-  const handleFieldBlur = (fieldName) => {
-    const err = validateField(fieldName, form[fieldName]);
-    setFieldErrors((prev) => ({ ...prev, [fieldName]: err }));
-    setFieldStates((prev) => ({
+  const handle_field_blur = (field_name) => {
+    const err = validate_field(field_name, form[field_name]);
+    set_field_errors((prev) => ({ ...prev, [field_name]: err }));
+    set_field_states((prev) => ({
       ...prev,
-      [fieldName]: err ? "error" : form[fieldName] ? "valid" : "idle",
+      [field_name]: err ? "error" : form[field_name] ? "valid" : "idle",
     }));
     if (err) {
-      setShakeKey((k) => k + 1);
-      hapticError();
+      set_shake_key((k) => k + 1);
+      haptic_error();
     }
   };
 
   const handleExerciseFieldBlur = (index, field) => {
     const err = validateExerciseField(index, field);
     const key = `${index}_${field}`;
-    setFieldErrors((prev) => ({ ...prev, [key]: err }));
-    setFieldStates((prev) => ({
+    set_field_errors((prev) => ({ ...prev, [key]: err }));
+    set_field_states((prev) => ({
       ...prev,
       [key]: err ? "error" : form.exercises[index]?.[field] ? "valid" : "idle",
     }));
     if (err) {
-      setShakeKey((k) => k + 1);
-      hapticError();
+      set_shake_key((k) => k + 1);
+      haptic_error();
     }
     // Also validate the paired weight field
     const pairedField = field === "weight" ? "weight_lbs" : field === "weight_lbs" ? "weight" : null;
@@ -597,8 +597,8 @@ function WorkoutLogger() {
       const pairedKey = `${index}_${pairedField}`;
       const pairedVal = form.exercises[index]?.[pairedField];
       const pairedErr = validateExerciseField(index, pairedField);
-      setFieldErrors((prev) => ({ ...prev, [pairedKey]: pairedErr }));
-      setFieldStates((prev) => ({
+      set_field_errors((prev) => ({ ...prev, [pairedKey]: pairedErr }));
+      set_field_states((prev) => ({
         ...prev,
         [pairedKey]: pairedErr ? "error" : pairedVal ? "valid" : "idle",
       }));
@@ -607,14 +607,14 @@ function WorkoutLogger() {
 
   const exerciseErrors = {};
   const exerciseStates = {};
-  Object.keys(fieldErrors).forEach((k) => {
-    if (k.includes("_")) exerciseErrors[k] = fieldErrors[k];
+  Object.keys(field_errors).forEach((k) => {
+    if (k.includes("_")) exerciseErrors[k] = field_errors[k];
   });
-  Object.keys(fieldStates).forEach((k) => {
-    if (k.includes("_")) exerciseStates[k] = fieldStates[k];
+  Object.keys(field_states).forEach((k) => {
+    if (k.includes("_")) exerciseStates[k] = field_states[k];
   });
 
-  const isFormValid = useMemo(() => {
+  const is_form_valid = useMemo(() => {
     if (!form.workout_date) return false;
     if (!form.preset_name || !form.preset_name.trim()) return false;
     const hasAtLeastOneExercise = form.exercises.some(
@@ -628,49 +628,49 @@ function WorkoutLogger() {
   }, [form]);
 
   // ── Submit ──
-  const handleSubmit = async (e) => {
+  const handle_submit = async (e) => {
     e.preventDefault();
 
-    const workoutDate = sanitizeDate(
+    const workoutDate = sanitize_date(
       form.workout_date,
       new Date().toISOString().slice(0, 10),
     );
     if (!workoutDate) {
-      setFieldErrors({ workout_date: "Pick a date" });
-      setFieldStates({ workout_date: "error" });
-      setShakeKey((k) => k + 1);
+      set_field_errors({ workout_date: "Pick a date" });
+      set_field_states({ workout_date: "error" });
+      set_shake_key((k) => k + 1);
       return;
     }
 
     const cleanedExercises = form.exercises
       .filter((ex) => ex.name.trim())
       .map((ex) => ({
-        name: sanitizeText(ex.name, 80),
-        weight: String(sanitizeNumber(ex.weight, 0, 9999) ?? ""),
-        sets: String(sanitizeNumber(ex.sets, 0, 999) ?? ""),
-        reps: String(sanitizeNumber(ex.reps, 0, 9999) ?? ""),
+        name: sanitize_text(ex.name, 80),
+        weight: String(sanitize_number(ex.weight, 0, 9999) ?? ""),
+        sets: String(sanitize_number(ex.sets, 0, 999) ?? ""),
+        reps: String(sanitize_number(ex.reps, 0, 9999) ?? ""),
       }));
 
     if (cleanedExercises.length === 0) {
-      setFieldErrors({ exercises: "Add at least one exercise" });
-      setShakeKey((k) => k + 1);
+      set_field_errors({ exercises: "Add at least one exercise" });
+      set_shake_key((k) => k + 1);
       return;
     }
 
     const workoutName = form.preset_name.trim();
     if (!workoutName) {
-      setFieldErrors({ preset_name: "Workout name is required" });
-      setFieldStates({ preset_name: "error" });
-      setShakeKey((k) => k + 1);
+      set_field_errors({ preset_name: "Workout name is required" });
+      set_field_states({ preset_name: "error" });
+      set_shake_key((k) => k + 1);
       return;
     }
 
-    const duration = sanitizeNumber(form.duration_minutes, 1, 600);
-    const caloriesBurned = sanitizeNumber(form.calories_burned, 0, 9999);
-    const notes = form.notes.trim() ? sanitizeText(form.notes, 500) : null;
+    const duration = sanitize_number(form.duration_minutes, 1, 600);
+    const calories_burned = sanitize_number(form.calories_burned, 0, 9999);
+    const notes = form.notes.trim() ? sanitize_text(form.notes, 500) : null;
 
-    setSaving(true);
-    setError(null);
+    set_saving(true);
+    set_error(null);
 
     const payload = {
       workout_date: workoutDate,
@@ -678,12 +678,12 @@ function WorkoutLogger() {
       exercises: cleanedExercises,
       notes,
       duration_minutes: duration ?? null,
-      calories_burned: caloriesBurned ?? null,
-      ...(userId && { user_id: userId }),
+      calories_burned: calories_burned ?? null,
+      ...(user_id && { user_id: user_id }),
     };
 
     try {
-      const supabase = getSupabaseClient();
+      const supabase = get_supabase_client();
       let dbError;
       if (editingWorkout) {
         ({ error: dbError } = await supabase
@@ -696,12 +696,12 @@ function WorkoutLogger() {
           .insert(payload));
       }
 
-      setSaving(false);
+      set_saving(false);
 
       if (dbError) {
-        const message = getUserFacingError(dbError.message);
-        setError(message);
-        toastError(
+        const message = get_user_facing_error(dbError.message);
+        set_error(message);
+        toast_error(
           editingWorkout
             ? "Couldn't update workout."
             : "Couldn't save workout.",
@@ -709,13 +709,13 @@ function WorkoutLogger() {
         return;
       }
 
-      closeFormModal();
-      toastSuccess(editingWorkout ? "Workout updated." : "Workout logged.");
+      close_form_modal();
+      toast_success(editingWorkout ? "Workout updated." : "Workout logged.");
       fetchWorkouts();
     } catch (err) {
-      setSaving(false);
-      setError(getUserFacingError(err.message));
-      toastError(
+      set_saving(false);
+      set_error(get_user_facing_error(err.message));
+      toast_error(
         editingWorkout ? "Couldn't update workout." : "Couldn't save workout.",
       );
     }
@@ -723,49 +723,49 @@ function WorkoutLogger() {
 
   // ── Delete ──
   const openDeleteModal = (workout) => {
-    setDeleteTarget(workout);
-    deleteModal.openModal();
+    set_delete_target(workout);
+    delete_modal.open_modal();
   };
 
-  const closeDeleteModal = () => {
-    deleteModal.closeModal();
+  const close_delete_modal = () => {
+    delete_modal.close_modal();
     setTimeout(() => {
-      setDeleteTarget(null);
+      set_delete_target(null);
     }, MODAL_EXIT_MS);
   };
 
-  const confirmDelete = async () => {
-    if (!deleteTarget) return;
-    setDeleting(true);
-    setError(null);
+  const confirm_delete = async () => {
+    if (!delete_target) return;
+    set_deleting(true);
+    set_error(null);
 
     try {
-      const supabase = getSupabaseClient();
+      const supabase = get_supabase_client();
       const { error: dbError } = await supabase
         .from("workout_logs")
         .delete()
-        .eq("id", deleteTarget.id);
+        .eq("id", delete_target.id);
 
-      setDeleting(false);
+      set_deleting(false);
 
       if (dbError) {
-        setError(getUserFacingError(dbError.message));
-        toastError("Failed to delete workout.");
+        set_error(get_user_facing_error(dbError.message));
+        toast_error("Failed to delete workout.");
         return;
       }
 
-      const removedId = deleteTarget.id;
-      closeDeleteModal();
-      toastSuccess("Workout deleted.");
-      setRemovingId(removedId);
+      const removedId = delete_target.id;
+      close_delete_modal();
+      toast_success("Workout deleted.");
+      set_removing_id(removedId);
       setTimeout(() => {
         setWorkouts((prev) => prev.filter((w) => w.id !== removedId));
-        setRemovingId(null);
+        set_removing_id(null);
       }, 380);
     } catch (err) {
-      setDeleting(false);
-      setError(getUserFacingError(err.message));
-      toastError("Failed to delete workout.");
+      set_deleting(false);
+      set_error(get_user_facing_error(err.message));
+      toast_error("Failed to delete workout.");
     }
   };
 
@@ -777,26 +777,26 @@ function WorkoutLogger() {
           <button
             type="button"
             className="fitness__date-btn"
-            onClick={() => setSelectedDate((d) => addDays(d, viewMode === "week" ? -7 : -30))}
+            onClick={() => set_selected_date((d) => add_days(d, view_mode === "week" ? -7 : -30))}
             aria-label="Previous day"
           >
             ‹
           </button>
-          <span className="fitness__date-label">{dayTitle}</span>
+          <span className="fitness__date-label">{day_title}</span>
           <button
             type="button"
             className="fitness__date-btn"
-            onClick={() => setSelectedDate((d) => addDays(d, viewMode === "week" ? 7 : 30))}
+            onClick={() => set_selected_date((d) => add_days(d, view_mode === "week" ? 7 : 30))}
             aria-label="Next day"
           >
             ›
           </button>
         </div>
-        {!isToday && (
+        {!is_today && (
           <button
             type="button"
             className="fitness__date-today"
-            onClick={() => setSelectedDate(new Date())}
+            onClick={() => set_selected_date(new Date())}
           >
             Today
           </button>
@@ -805,18 +805,18 @@ function WorkoutLogger() {
 
       {/* Week day selector */}
       <div
-        className={`fitness__week-days animate-in animate-in--1${viewMode === "month" ? " fitness__week-days--month" : ""}`}
+        className={`fitness__week-days animate-in animate-in--1${view_mode === "month" ? " fitness__week-days--month" : ""}`}
         role="group"
-        aria-label={viewMode === "week" ? "Week days" : "Month days"}
+        aria-label={view_mode === "week" ? "Week days" : "Month days"}
       >
-        {visibleDays.map((day) => {
-          const key = toDateKey(day);
-          const isSelected = key === selectedKey;
-          const isDayToday = key === toDateKey(now);
+        {visible_days.map((day) => {
+          const key = to_date_key(day);
+          const isSelected = key === selected_key;
+          const isDayToday = key === to_date_key(now);
           const hasWorkout = workouts.some((w) => w.workout_date === key);
           const isInCurrentMonth =
-            viewMode === "month"
-              ? day.getMonth() === selectedDate.getMonth()
+            view_mode === "month"
+              ? day.getMonth() === selected_date.getMonth()
               : true;
 
           return (
@@ -824,7 +824,7 @@ function WorkoutLogger() {
               key={key}
               type="button"
               className={`fitness__week-day${isSelected ? " fitness__week-day--active" : ""}${isDayToday ? " fitness__week-day--today" : ""}${hasWorkout ? " fitness__week-day--busy" : ""}${!isInCurrentMonth ? " fitness__week-day--muted" : ""}`}
-              onClick={() => setSelectedDate(day)}
+              onClick={() => set_selected_date(day)}
               aria-pressed={isSelected}
             >
               <span className="fitness__week-day-label">
@@ -847,17 +847,17 @@ function WorkoutLogger() {
       >
         <button
           type="button"
-          className={`fitness__view-btn${viewMode === "week" ? " fitness__view-btn--active" : ""}`}
-          onClick={() => setViewMode("week")}
-          aria-pressed={viewMode === "week"}
+          className={`fitness__view-btn${view_mode === "week" ? " fitness__view-btn--active" : ""}`}
+          onClick={() => set_view_mode("week")}
+          aria-pressed={view_mode === "week"}
         >
           1 week
         </button>
         <button
           type="button"
-          className={`fitness__view-btn${viewMode === "month" ? " fitness__view-btn--active" : ""}`}
-          onClick={() => setViewMode("month")}
-          aria-pressed={viewMode === "month"}
+          className={`fitness__view-btn${view_mode === "month" ? " fitness__view-btn--active" : ""}`}
+          onClick={() => set_view_mode("month")}
+          aria-pressed={view_mode === "month"}
         >
           1 month
         </button>
@@ -866,7 +866,7 @@ function WorkoutLogger() {
       {/* Summary */}
       <div
         className="fitness__summary animate-in animate-in--2"
-        key={selectedKey}
+        key={selected_key}
       >
         <GlassCard
           value={String(totals.workouts)}
@@ -910,7 +910,7 @@ function WorkoutLogger() {
             <button
               type="button"
               className="fitness__preset-edit"
-              onClick={() => openPresetModal(preset)}
+              onClick={() => open_preset_modal(preset)}
               aria-label={`Edit ${preset.name} preset`}
             >
               ✎
@@ -920,7 +920,7 @@ function WorkoutLogger() {
         <button
           type="button"
           className="fitness__template-chip fitness__template-chip--add"
-          onClick={() => openPresetModal()}
+          onClick={() => open_preset_modal()}
         >
           + New preset
         </button>
@@ -928,12 +928,12 @@ function WorkoutLogger() {
 
       {/* List header */}
       <div className="fitness__list-header animate-in animate-in--4">
-        <h2 className="fitness__list-title">{dayTitle}</h2>
+        <h2 className="fitness__list-title">{day_title}</h2>
         <button
           type="button"
           className="fitness__add-btn"
-          onClick={openAddModal}
-          ref={addBtnRef}
+          onClick={open_add_modal}
+          ref={add_btn_ref}
         >
           + Add workout
         </button>
@@ -965,19 +965,19 @@ function WorkoutLogger() {
           text='Tap "+ Add workout" to log your first one.'
         />
       ) : (
-        <ul className="fitness__list" key={`list-${selectedKey}`}>
+        <ul className="fitness__list" key={`list-${selected_key}`}>
           {workouts.map((workout, index) => (
             <WorkoutCard
               key={workout.id}
               workout={workout}
               index={index}
-              onEdit={openEditModal}
+              onEdit={open_edit_modal}
               onDelete={openDeleteModal}
               onToggleNote={(id) =>
-                setExpandedNoteId(expandedNoteId === id ? null : id)
+                set_expanded_note_id(expanded_note_id === id ? null : id)
               }
-              expandedNoteId={expandedNoteId}
-              isRemoving={removingId === workout.id}
+              expanded_note_id={expanded_note_id}
+              isRemoving={removing_id === workout.id}
             />
           ))}
         </ul>
@@ -985,22 +985,22 @@ function WorkoutLogger() {
 
       {/* Add/Edit Workout Modal */}
       <WorkoutForm
-        open={formModal.open}
-        closing={formModal.closing}
-        onClose={closeFormModal}
+        open={form_modal.open}
+        closing={form_modal.closing}
+        onClose={close_form_modal}
         editingWorkout={editingWorkout}
         form={form}
-        setForm={setForm}
-        fieldErrors={fieldErrors}
-        fieldStates={fieldStates}
-        shakeKey={shakeKey}
+        set_form={set_form}
+        field_errors={field_errors}
+        field_states={field_states}
+        shake_key={shake_key}
         saving={saving}
-        isFormValid={isFormValid}
-        onAddExercise={addExercise}
-        onRemoveExercise={removeExercise}
+        is_form_valid={is_form_valid}
+        on_add_exercise={add_exercise}
+        onRemoveExercise={remove_exercise}
         onUpdateExercise={updateExercise}
-        onSubmit={handleSubmit}
-        onFieldBlur={handleFieldBlur}
+        onSubmit={handle_submit}
+        onFieldBlur={handle_field_blur}
         exerciseCount={form.exercises.length}
         exerciseErrors={exerciseErrors}
         exerciseStates={exerciseStates}
@@ -1009,10 +1009,10 @@ function WorkoutLogger() {
 
       {/* Preset Modal */}
       <SheetModal
-        open={presetModal.open}
-        closing={presetModal.closing}
-        onClose={closePresetModal}
-        title={editingPreset ? "Edit preset" : "Create preset"}
+        open={preset_modal.open}
+        closing={preset_modal.closing}
+        onClose={close_preset_modal}
+        title={editing_preset ? "Edit preset" : "Create preset"}
       >
         <p className="fitness__preset-hint">
           Presets let you quick-add common workouts with one tap.
@@ -1022,25 +1022,25 @@ function WorkoutLogger() {
             label="Preset name"
             error={presetFieldErrors.preset_name}
             state={presetFieldStates.preset_name}
-            showIndicator
+            show_indicator
             shake={presetFieldErrors.preset_name ? presetShakeKey : 0}
           >
             <input
               type="text"
-              value={presetForm.name}
+              value={preset_form.name}
               onChange={(e) =>
-                setPresetForm((f) => ({ ...f, name: e.target.value }))
+                set_preset_form((f) => ({ ...f, name: e.target.value }))
               }
               onBlur={() => {
-                const err = !presetForm.name.trim() ? "Preset name is required" : null;
+                const err = !preset_form.name.trim() ? "Preset name is required" : null;
                 setPresetFieldErrors((prev) => ({ ...prev, preset_name: err }));
                 setPresetFieldStates((prev) => ({
                   ...prev,
-                  preset_name: err ? "error" : presetForm.name ? "valid" : "idle",
+                  preset_name: err ? "error" : preset_form.name ? "valid" : "idle",
                 }));
                 if (err) {
                   setPresetShakeKey((k) => k + 1);
-                  hapticError();
+                  haptic_error();
                 }
               }}
               placeholder="e.g. Push day"
@@ -1051,17 +1051,17 @@ function WorkoutLogger() {
 
           <div className="fitness__exercises-section">
             <span className="fitness__exercises-label">Exercises</span>
-            {presetForm.exercises.map((ex, i) => (
+            {preset_form.exercises.map((ex, i) => (
               <ExerciseRow
                 key={i}
                 exercise={ex}
                 index={i}
                 onChange={updatePresetExercise}
                 onRemove={removePresetExercise}
-                showRemove={presetForm.exercises.length > 1}
+                showRemove={preset_form.exercises.length > 1}
                 errors={presetFieldErrors}
                 states={presetFieldStates}
-                shakeKey={presetShakeKey}
+                shake_key={presetShakeKey}
                 onFieldBlur={handlePresetExerciseFieldBlur}
               />
             ))}
@@ -1075,13 +1075,13 @@ function WorkoutLogger() {
           </div>
 
           <div className="btn-row">
-            {editingPreset && (
+            {editing_preset && (
               <button
                 type="button"
                 className="btn btn--danger-outline"
                 onClick={() => {
-                  deletePreset(editingPreset.id);
-                  closePresetModal();
+                  delete_preset(editing_preset.id);
+                  close_preset_modal();
                 }}
               >
                 Delete
@@ -1090,17 +1090,17 @@ function WorkoutLogger() {
             <button
               type="button"
               className="btn btn--ghost"
-              onClick={closePresetModal}
+              onClick={close_preset_modal}
             >
               Cancel
             </button>
             <button
               type="button"
               className="btn btn--primary"
-              onClick={savePreset}
-              disabled={!presetForm.name.trim()}
+              onClick={save_preset}
+              disabled={!preset_form.name.trim()}
             >
-              {editingPreset ? "Update" : "Create"}
+              {editing_preset ? "Update" : "Create"}
             </button>
           </div>
         </div>
@@ -1108,14 +1108,14 @@ function WorkoutLogger() {
 
       {/* Delete Confirmation */}
       <ConfirmModal
-        open={!!deleteTarget}
-        closing={deleteModal.closing}
-        onClose={closeDeleteModal}
-        onConfirm={confirmDelete}
+        open={!!delete_target}
+        closing={delete_modal.closing}
+        onClose={close_delete_modal}
+        onConfirm={confirm_delete}
         loading={deleting}
         title="Delete this workout?"
         description="This action cannot be undone."
-        confirmLabel="Delete workout"
+        confirm_label="Delete workout"
         icon={
           <svg
             viewBox="0 0 24 24"
@@ -1130,14 +1130,14 @@ function WorkoutLogger() {
           </svg>
         }
         preview={
-          deleteTarget && (
+          delete_target && (
             <>
               <span className="fitness__delete-date">
-                {formatDateFriendly(deleteTarget.workout_date)}
+                {format_date_friendly(delete_target.workout_date)}
               </span>
-              {deleteTarget.preset_name && (
+              {delete_target.preset_name && (
                 <span className="fitness__delete-name">
-                  {deleteTarget.preset_name}
+                  {delete_target.preset_name}
                 </span>
               )}
             </>
@@ -1146,10 +1146,10 @@ function WorkoutLogger() {
       />
 
       <FAB
-        visible={showFloatingActions}
-        onScrollTop={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-        onAdd={openAddModal}
-        addLabel="Log workout"
+        visible={show_floating_actions}
+        on_scroll_top={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+        on_add={open_add_modal}
+        add_label="Log workout"
       />
     </div>
   );

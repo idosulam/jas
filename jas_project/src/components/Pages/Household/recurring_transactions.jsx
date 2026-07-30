@@ -1,22 +1,22 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { getSupabaseClient } from "../../../lib/superbase";
+import { get_supabase_client } from "../../../lib/superbase";
 import {
-  getUserFacingError,
-  sanitizeNumber,
-  sanitizeText,
-  hapticError,
+  get_user_facing_error,
+  sanitize_number,
+  sanitize_text,
+  haptic_error,
 } from "../../../lib/security";
-import { useGlassToast } from "../../../lib/glass_toast_provider.jsx";
-import { useModal, useBodyScrollLock } from "../../../hooks";
-import SheetModal from "../../ui/modals/sheet_modal";
-import ConfirmModal from "../../ui/modals/confirm_modal";
-import FormField from "../../ui/form/form_field.jsx";
-import GlassCard from "../../ui/glass_card";
-import EmptyState from "../../ui/Empty_state";
+import { use_glass_toast } from "../../../lib/glass_toast_provider.jsx";
+import { use_modal, use_body_scroll_lock } from "../../../Hooks";
+import SheetModal from "../../UI/modals/sheet_modal";
+import ConfirmModal from "../../UI/modals/confirm_modal";
+import FormField from "../../UI/form/form_field.jsx";
+import GlassCard from "../../UI/glass_card";
+import EmptyState from "../../UI/Empty_state";
 
-import { formatMoney } from "../../../lib/format";
+import { format_money } from "../../../lib/format";
 
-function formatDate(dateStr) {
+function format_date(dateStr) {
   if (!dateStr) return "—";
   const d = new Date(`${dateStr}T12:00:00`);
   return d.toLocaleDateString(undefined, {
@@ -34,16 +34,16 @@ const FREQUENCIES = [
   { value: "yearly", label: "Yearly" },
 ];
 
-function RecurringTransactions({ householdId, userId, categories }) {
+function RecurringTransactions({ householdId, user_id, categories }) {
   const [recurring, setRecurring] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const { success: toastSuccess, error: toastError } = useGlassToast();
+  const [loading, set_loading] = useState(true);
+  const { success: toast_success, error: toast_error } = use_glass_toast();
 
-  const addModal = useModal(260);
-  const editModal = useModal(260);
-  const deleteModal = useModal(260);
+  const addModal = use_modal(260);
+  const editModal = use_modal(260);
+  const delete_modal = use_modal(260);
 
-  const [form, setForm] = useState({
+  const [form, set_form] = useState({
     type: "expense",
     amount: "",
     description: "",
@@ -54,8 +54,8 @@ function RecurringTransactions({ householdId, userId, categories }) {
     day_of_week: "1",
   });
   const [editingRec, setEditingRec] = useState(null);
-  const [deleteTarget, setDeleteTarget] = useState(null);
-  const [deleting, setDeleting] = useState(false);
+  const [delete_target, set_delete_target] = useState(null);
+  const [deleting, set_deleting] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   // Field states
@@ -65,7 +65,7 @@ function RecurringTransactions({ householdId, userId, categories }) {
   const [descState, setDescState] = useState("idle");
   const [descError, setDescError] = useState(null);
   const [descTouched, setDescTouched] = useState(false);
-  const [shakeKey, setShakeKey] = useState(0);
+  const [shake_key, set_shake_key] = useState(0);
 
   // Sliding indicator state
   const typeToggleRef = useRef(null);
@@ -85,12 +85,12 @@ function RecurringTransactions({ householdId, userId, categories }) {
     }
   }, [form.type]);
 
-  useBodyScrollLock(addModal.open, editModal.open, deleteModal.open);
+  use_body_scroll_lock(addModal.open, editModal.open, delete_modal.open);
 
-  const fetchRecurring = useCallback(async () => {
+  const fetch_recurring = useCallback(async () => {
     if (!householdId) return;
     try {
-      const supabase = getSupabaseClient();
+      const supabase = get_supabase_client();
       const { data, error } = await supabase
         .from("recurring_transactions")
         .select("*, transaction_categories(name, icon, color)")
@@ -102,16 +102,16 @@ function RecurringTransactions({ householdId, userId, categories }) {
     } catch {
       // silent
     }
-    setLoading(false);
+    set_loading(false);
   }, [householdId]);
 
   useEffect(() => {
-    fetchRecurring();
-  }, [fetchRecurring]);
+    fetch_recurring();
+  }, [fetch_recurring]);
 
-  const validateAmount = (value, isBlur = false) => {
+  const validateAmount = (value, is_blur = false) => {
     if (!value) {
-      if (isBlur) {
+      if (is_blur) {
         setAmountState("error");
         setAmountError("Amount is required");
       } else {
@@ -130,9 +130,9 @@ function RecurringTransactions({ householdId, userId, categories }) {
     }
   };
 
-  const validateDesc = (value, isBlur = false) => {
+  const validateDesc = (value, is_blur = false) => {
     if (!value.trim()) {
-      if (isBlur) {
+      if (is_blur) {
         setDescState("error");
         setDescError("Description is required");
       } else {
@@ -154,9 +154,9 @@ function RecurringTransactions({ householdId, userId, categories }) {
     setDescError(null);
   };
 
-  const openAdd = () => {
+  const open_add = () => {
     setEditingRec(null);
-    setForm({
+    set_form({
       type: "expense",
       amount: "",
       description: "",
@@ -167,12 +167,12 @@ function RecurringTransactions({ householdId, userId, categories }) {
       day_of_week: "1",
     });
     resetFieldStates();
-    addModal.openModal();
+    addModal.open_modal();
   };
 
-  const openEdit = (rec) => {
+  const open_edit = (rec) => {
     setEditingRec(rec);
-    setForm({
+    set_form({
       type: rec.type,
       amount: String(rec.amount),
       description: rec.description || "",
@@ -183,7 +183,7 @@ function RecurringTransactions({ householdId, userId, categories }) {
       day_of_week: String(rec.day_of_week ?? 1),
     });
     resetFieldStates();
-    editModal.openModal();
+    editModal.open_modal();
   };
 
   const calcNextDueDate = () => {
@@ -224,24 +224,24 @@ function RecurringTransactions({ householdId, userId, categories }) {
     }
   };
 
-  const handleSubmit = async () => {
+  const handle_submit = async () => {
     setAmountTouched(true);
     setDescTouched(true);
     validateAmount(form.amount, true);
     validateDesc(form.description, true);
 
     if (!form.amount || Number(form.amount) <= 0 || !form.description.trim()) {
-      setShakeKey((k) => k + 1);
-      hapticError();
+      set_shake_key((k) => k + 1);
+      haptic_error();
       return;
     }
 
     setSubmitting(true);
     try {
-      const supabase = getSupabaseClient();
+      const supabase = get_supabase_client();
       const payload = {
         household_id: householdId,
-        user_id: userId,
+        user_id: user_id,
         category_id:
           /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
             form.category_id,
@@ -250,8 +250,8 @@ function RecurringTransactions({ householdId, userId, categories }) {
             : null,
         type: form.type,
         amount: Number(Number(form.amount).toFixed(2)),
-        description: sanitizeText(form.description, 100),
-        note: sanitizeText(form.note, 500) || null,
+        description: sanitize_text(form.description, 100),
+        note: sanitize_text(form.note, 500) || null,
         frequency: form.frequency,
         day_of_month:
           form.frequency === "monthly" ? parseInt(form.day_of_month) : null,
@@ -270,55 +270,55 @@ function RecurringTransactions({ householdId, userId, categories }) {
           .update(payload)
           .eq("id", editingRec.id);
         if (error) throw error;
-        toastSuccess("Recurring transaction updated.");
+        toast_success("Recurring transaction updated.");
       } else {
         const { error } = await supabase
           .from("recurring_transactions")
           .insert(payload);
         if (error) throw error;
-        toastSuccess("Recurring transaction created!");
+        toast_success("Recurring transaction created!");
       }
 
-      addModal.closeModal();
-      editModal.closeModal();
-      fetchRecurring();
+      addModal.close_modal();
+      editModal.close_modal();
+      fetch_recurring();
     } catch (err) {
-      toastError(getUserFacingError(err.message));
+      toast_error(get_user_facing_error(err.message));
     }
     setSubmitting(false);
   };
 
   const toggleActive = async (rec) => {
     try {
-      const supabase = getSupabaseClient();
+      const supabase = get_supabase_client();
       const { error } = await supabase
         .from("recurring_transactions")
         .update({ is_active: !rec.is_active })
         .eq("id", rec.id);
       if (error) throw error;
-      fetchRecurring();
+      fetch_recurring();
     } catch (err) {
-      toastError(getUserFacingError(err.message));
+      toast_error(get_user_facing_error(err.message));
     }
   };
 
-  const confirmDelete = async () => {
-    if (!deleteTarget) return;
-    setDeleting(true);
+  const confirm_delete = async () => {
+    if (!delete_target) return;
+    set_deleting(true);
     try {
-      const supabase = getSupabaseClient();
+      const supabase = get_supabase_client();
       const { error } = await supabase
         .from("recurring_transactions")
         .delete()
-        .eq("id", deleteTarget.id);
+        .eq("id", delete_target.id);
       if (error) throw error;
-      deleteModal.closeModal();
-      toastSuccess("Recurring transaction deleted.");
-      fetchRecurring();
+      delete_modal.close_modal();
+      toast_success("Recurring transaction deleted.");
+      fetch_recurring();
     } catch (err) {
-      toastError(getUserFacingError(err.message));
+      toast_error(get_user_facing_error(err.message));
     }
-    setDeleting(false);
+    set_deleting(false);
   };
 
   const getFrequencyLabel = (freq) => {
@@ -342,7 +342,7 @@ function RecurringTransactions({ householdId, userId, categories }) {
   const availableCategories = categories.filter((c) => c.type === form.type);
 
   // Monthly total estimate
-  const monthlyEstimate = recurring
+  const monthly_estimate = recurring
     .filter((r) => r.is_active)
     .reduce((sum, r) => {
       const amt = Number(r.amount);
@@ -367,7 +367,7 @@ function RecurringTransactions({ householdId, userId, categories }) {
       {/* Summary Cards */}
       <div className="recurring__summary">
         <GlassCard
-          value={formatMoney(monthlyEstimate)}
+          value={format_money(monthly_estimate)}
           label="Monthly Estimate"
         />
         <GlassCard
@@ -383,7 +383,7 @@ function RecurringTransactions({ householdId, userId, categories }) {
       {/* List */}
       <div className="recurring__header">
         <h3 className="recurring__section-title">Recurring</h3>
-        <button className="btn btn--primary btn--sm" onClick={openAdd}>
+        <button className="btn btn--primary btn--sm" onClick={open_add}>
           + Add
         </button>
       </div>
@@ -405,7 +405,7 @@ function RecurringTransactions({ householdId, userId, categories }) {
           title="No recurring transactions"
           text="Set up bills, subscriptions, or regular income to auto-track them."
           action={
-            <button className="btn btn--primary" onClick={openAdd}>
+            <button className="btn btn--primary" onClick={open_add}>
               + Add recurring
             </button>
           }
@@ -435,13 +435,13 @@ function RecurringTransactions({ householdId, userId, categories }) {
                   <span className="recurring__item-meta">
                     {getFrequencyLabel(rec.frequency)} {getDayLabel(rec)}
                     {rec.next_due_date &&
-                      ` · Next: ${formatDate(rec.next_due_date)}`}
+                      ` · Next: ${format_date(rec.next_due_date)}`}
                   </span>
                 </div>
                 <div className="recurring__item-right">
                   <span className={`recurring__item-amount ${rec.type}`}>
                     {rec.type === "expense" ? "-" : "+"}
-                    {formatMoney(rec.amount)}
+                    {format_money(rec.amount)}
                   </span>
                   <div className="recurring__item-actions">
                     <button
@@ -456,7 +456,7 @@ function RecurringTransactions({ householdId, userId, categories }) {
                     </button>
                     <button
                       className="recurring__edit-btn"
-                      onClick={() => openEdit(rec)}
+                      onClick={() => open_edit(rec)}
                       title="Edit"
                     >
                       ✎
@@ -464,8 +464,8 @@ function RecurringTransactions({ householdId, userId, categories }) {
                     <button
                       className="recurring__delete-btn"
                       onClick={() => {
-                        setDeleteTarget(rec);
-                        deleteModal.openModal();
+                        set_delete_target(rec);
+                        delete_modal.open_modal();
                       }}
                       title="Delete"
                     >
@@ -484,8 +484,8 @@ function RecurringTransactions({ householdId, userId, categories }) {
         open={addModal.open || editModal.open}
         closing={addModal.closing || editModal.closing}
         onClose={() => {
-          addModal.closeModal();
-          editModal.closeModal();
+          addModal.close_modal();
+          editModal.close_modal();
         }}
         title={editingRec ? "Edit recurring" : "New recurring transaction"}
       >
@@ -508,7 +508,7 @@ function RecurringTransactions({ householdId, userId, categories }) {
                 type="button"
                 className={`recurring__type-btn ${form.type === t ? `active ${t}` : ""}`}
                 onClick={() =>
-                  setForm((f) => ({ ...f, type: t, category_id: "" }))
+                  set_form((f) => ({ ...f, type: t, category_id: "" }))
                 }
               >
                 {t === "expense" ? "Expense" : "Income"}
@@ -520,8 +520,8 @@ function RecurringTransactions({ householdId, userId, categories }) {
             label="Amount"
             error={amountError}
             state={amountState}
-            showIndicator
-            shake={amountError ? shakeKey : 0}
+            show_indicator
+            shake={amountError ? shake_key : 0}
           >
             <input
               type="number"
@@ -529,15 +529,15 @@ function RecurringTransactions({ householdId, userId, categories }) {
               step="0.01"
               value={form.amount}
               onChange={(e) => {
-                setForm((f) => ({ ...f, amount: e.target.value }));
+                set_form((f) => ({ ...f, amount: e.target.value }));
                 if (amountTouched) validateAmount(e.target.value);
               }}
               onBlur={() => {
                 setAmountTouched(true);
                 validateAmount(form.amount, true);
                 if (!form.amount || Number(form.amount) <= 0) {
-                  setShakeKey((k) => k + 1);
-                  hapticError();
+                  set_shake_key((k) => k + 1);
+                  haptic_error();
                 }
               }}
               placeholder="0.00"
@@ -548,22 +548,22 @@ function RecurringTransactions({ householdId, userId, categories }) {
             label="Description"
             error={descError}
             state={descState}
-            showIndicator
-            shake={descError ? shakeKey : 0}
+            show_indicator
+            shake={descError ? shake_key : 0}
           >
             <input
               type="text"
               value={form.description}
               onChange={(e) => {
-                setForm((f) => ({ ...f, description: e.target.value }));
+                set_form((f) => ({ ...f, description: e.target.value }));
                 if (descTouched) validateDesc(e.target.value);
               }}
               onBlur={() => {
                 setDescTouched(true);
                 validateDesc(form.description, true);
                 if (!form.description.trim()) {
-                  setShakeKey((k) => k + 1);
-                  hapticError();
+                  set_shake_key((k) => k + 1);
+                  haptic_error();
                 }
               }}
               placeholder="e.g. Netflix, Rent, Salary"
@@ -581,14 +581,14 @@ function RecurringTransactions({ householdId, userId, categories }) {
             ) : (
               <div className="recurring__category-grid">
                 {availableCategories.map((cat) => {
-                  const isActive = form.category_id === cat.id;
+                  const is_active = form.category_id === cat.id;
                   return (
                     <button
                       key={cat.id}
                       type="button"
-                      className={`recurring__category-chip ${isActive ? "active" : ""}`}
+                      className={`recurring__category-chip ${is_active ? "active" : ""}`}
                       style={
-                        isActive
+                        is_active
                           ? {
                               borderColor: cat.color,
                               background: `${cat.color}15`,
@@ -596,7 +596,7 @@ function RecurringTransactions({ householdId, userId, categories }) {
                           : {}
                       }
                       onClick={() =>
-                        setForm((f) => ({ ...f, category_id: cat.id }))
+                        set_form((f) => ({ ...f, category_id: cat.id }))
                       }
                     >
                       <span>{cat.icon}</span>
@@ -613,7 +613,7 @@ function RecurringTransactions({ householdId, userId, categories }) {
             <select
               value={form.frequency}
               onChange={(e) =>
-                setForm((f) => ({ ...f, frequency: e.target.value }))
+                set_form((f) => ({ ...f, frequency: e.target.value }))
               }
             >
               {FREQUENCIES.map((f) => (
@@ -630,7 +630,7 @@ function RecurringTransactions({ householdId, userId, categories }) {
               <select
                 value={form.day_of_month}
                 onChange={(e) =>
-                  setForm((f) => ({ ...f, day_of_month: e.target.value }))
+                  set_form((f) => ({ ...f, day_of_month: e.target.value }))
                 }
               >
                 {Array.from({ length: 31 }, (_, i) => i + 1).map((d) => (
@@ -648,7 +648,7 @@ function RecurringTransactions({ householdId, userId, categories }) {
               <select
                 value={form.day_of_week}
                 onChange={(e) =>
-                  setForm((f) => ({ ...f, day_of_week: e.target.value }))
+                  set_form((f) => ({ ...f, day_of_week: e.target.value }))
                 }
               >
                 <option value="0">Sunday</option>
@@ -666,7 +666,7 @@ function RecurringTransactions({ householdId, userId, categories }) {
             <input
               type="text"
               value={form.note}
-              onChange={(e) => setForm((f) => ({ ...f, note: e.target.value }))}
+              onChange={(e) => set_form((f) => ({ ...f, note: e.target.value }))}
               placeholder="Add a note..."
               maxLength={500}
             />
@@ -677,8 +677,8 @@ function RecurringTransactions({ householdId, userId, categories }) {
               type="button"
               className="btn btn--ghost"
               onClick={() => {
-                addModal.closeModal();
-                editModal.closeModal();
+                addModal.close_modal();
+                editModal.close_modal();
               }}
             >
               Cancel
@@ -688,8 +688,8 @@ function RecurringTransactions({ householdId, userId, categories }) {
                 type="button"
                 className="btn btn--danger"
                 onClick={() => {
-                  setDeleteTarget(editingRec);
-                  deleteModal.openModal();
+                  set_delete_target(editingRec);
+                  delete_modal.open_modal();
                 }}
               >
                 Delete
@@ -698,7 +698,7 @@ function RecurringTransactions({ householdId, userId, categories }) {
             <button
               type="button"
               className="btn btn--primary"
-              onClick={handleSubmit}
+              onClick={handle_submit}
               disabled={submitting}
             >
               {submitting ? "Saving…" : editingRec ? "Update" : "Create"}
@@ -709,13 +709,13 @@ function RecurringTransactions({ householdId, userId, categories }) {
 
       {/* Delete Confirmation */}
       <ConfirmModal
-        open={deleteModal.open}
-        closing={deleteModal.closing}
-        onClose={() => deleteModal.closeModal()}
+        open={delete_modal.open}
+        closing={delete_modal.closing}
+        onClose={() => delete_modal.close_modal()}
         title="Delete recurring transaction"
-        message={`Delete "${deleteTarget?.description}"? Future transactions won't be generated.`}
+        message={`Delete "${delete_target?.description}"? Future transactions won't be generated.`}
         confirmText={deleting ? "Deleting…" : "Delete"}
-        onConfirm={confirmDelete}
+        onConfirm={confirm_delete}
         danger
       />
     </div>

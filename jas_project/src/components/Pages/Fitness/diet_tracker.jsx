@@ -1,15 +1,15 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { getSupabaseClient } from "../../../lib/superbase";
-import { useUserId } from "../../../lib/auth_context.jsx";
+import { get_supabase_client } from "../../../lib/superbase";
+import { use_user_id } from "../../../lib/auth_context.jsx";
 import {
-  getUserFacingError,
-  sanitizeDate,
-  sanitizeNumber,
-  sanitizeText,
-  hapticError,
+  get_user_facing_error,
+  sanitize_date,
+  sanitize_number,
+  sanitize_text,
+  haptic_error,
 } from "../../../lib/security";
-import { useBodyScrollLock, useModal } from "../../../hooks";
-import { useGlassToast } from "../../../lib/glass_toast_provider.jsx";
+import { use_body_scroll_lock, use_modal } from "../../../Hooks";
+import { use_glass_toast } from "../../../lib/glass_toast_provider.jsx";
 import {
   calcBMR,
   calcTDEE,
@@ -18,10 +18,10 @@ import {
   GENDER_OPTIONS,
 } from "./macro_calculator";
 
-import SheetModal from "../../../components/ui/modals/sheet_modal";
-import ConfirmModal from "../../../components/ui/modals/confirm_modal";
-import FormField from "../../../components/ui/form/form_field.jsx";
-import GlassCard from "../../../components/ui/glass_card";
+import SheetModal from "../../../components/UI/modals/sheet_modal";
+import ConfirmModal from "../../../components/UI/modals/confirm_modal";
+import FormField from "../../../components/UI/form/form_field.jsx";
+import GlassCard from "../../../components/UI/glass_card";
 
 import MacroProgressBar from "./macro_progress_bar";
 import DietEntryForm from "./diet_entry_form";
@@ -52,26 +52,26 @@ function emptyEntryForm() {
 }
 
 function DietTracker({ profileData }) {
-  const userId = useUserId();
+  const user_id = use_user_id();
   const today = new Date().toISOString().slice(0, 10);
-  const [selectedDate, setSelectedDate] = useState(today);
-  const [viewMode, setViewMode] = useState("week");
+  const [selected_date, set_selected_date] = useState(today);
+  const [view_mode, set_view_mode] = useState("week");
   const [entries, setEntries] = useState([]);
-  const [caloriesBurned, setCaloriesBurned] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [form, setForm] = useState(emptyEntryForm());
+  const [calories_burned, set_calories_burned] = useState(0);
+  const [loading, set_loading] = useState(true);
+  const [error, set_error] = useState(null);
+  const [form, set_form] = useState(emptyEntryForm());
   const [editingEntry, setEditingEntry] = useState(null);
-  const [saving, setSaving] = useState(false);
-  const [deleteTarget, setDeleteTarget] = useState(null);
-  const [deleting, setDeleting] = useState(false);
-  const [removingId, setRemovingId] = useState(null);
-  const [fieldErrors, setFieldErrors] = useState({});
-  const [fieldStates, setFieldStates] = useState({});
-  const [shakeKey, setShakeKey] = useState(0);
-  const [presets, setPresets] = useState([]);
-  const [editingPreset, setEditingPreset] = useState(null);
-  const [presetForm, setPresetForm] = useState({
+  const [saving, set_saving] = useState(false);
+  const [delete_target, set_delete_target] = useState(null);
+  const [deleting, set_deleting] = useState(false);
+  const [removing_id, set_removing_id] = useState(null);
+  const [field_errors, set_field_errors] = useState({});
+  const [field_states, set_field_states] = useState({});
+  const [shake_key, set_shake_key] = useState(0);
+  const [presets, set_presets] = useState([]);
+  const [editing_preset, set_editing_preset] = useState(null);
+  const [preset_form, set_preset_form] = useState({
     name: "",
     meal_type: "breakfast",
     calories: "",
@@ -80,20 +80,20 @@ function DietTracker({ profileData }) {
     fats_g: "",
     fiber_g: "",
   });
-  const [showFloatingActions, setShowFloatingActions] = useState(false);
-  const addBtnRef = useRef(null);
+  const [show_floating_actions, set_show_floating_actions] = useState(false);
+  const add_btn_ref = useRef(null);
   const hasLoadedOnce = useRef(false);
 
-  const formModal = useModal(MODAL_EXIT_MS);
-  const deleteModal = useModal(MODAL_EXIT_MS);
-  const presetModal = useModal(MODAL_EXIT_MS);
+  const form_modal = use_modal(MODAL_EXIT_MS);
+  const delete_modal = use_modal(MODAL_EXIT_MS);
+  const preset_modal = use_modal(MODAL_EXIT_MS);
 
-  const { success: toastSuccess, error: toastError } = useGlassToast();
+  const { success: toast_success, error: toast_error } = use_glass_toast();
 
   // ── Profile-derived macro targets ──
   const profile = profileData;
-  const weightKg = profile?.weight_kg ? Number(profile.weight_kg) : null;
-  const heightCm = profile?.height_cm ? Number(profile.height_cm) : null;
+  const weight_kg = profile?.weight_kg ? Number(profile.weight_kg) : null;
+  const height_cm = profile?.height_cm ? Number(profile.height_cm) : null;
   const age = profile?.age ? Number(profile.age) : null;
   const gender = profile?.gender || "male";
   const rawActivityLevel = profile?.activity_level || "moderate";
@@ -101,40 +101,40 @@ function DietTracker({ profileData }) {
     ? rawActivityLevel
     : "moderate";
 
-  const bmr = calcBMR(weightKg, heightCm, age, gender);
+  const bmr = calcBMR(weight_kg, height_cm, age, gender);
   const tdee = calcTDEE(bmr, activityLevel);
-  const macroTargets = calcMacroTargets(weightKg, tdee);
+  const macroTargets = calcMacroTargets(weight_kg, tdee);
 
   // ── Fetch entries for selected date ──
   const fetchEntries = useCallback(async () => {
-    if (!userId) return;
-    if (!hasLoadedOnce.current) setLoading(true);
-    setError(null);
+    if (!user_id) return;
+    if (!hasLoadedOnce.current) set_loading(true);
+    set_error(null);
 
-    const d = new Date(`${selectedDate}T12:00:00`);
-    const rangeStart =
-      viewMode === "week"
-        ? startOfWeek(d)
+    const d = new Date(`${selected_date}T12:00:00`);
+    const range_start =
+      view_mode === "week"
+        ? start_of_week(d)
         : new Date(d.getFullYear(), d.getMonth(), 1);
-    const rangeEnd =
-      viewMode === "week"
-        ? addDays(rangeStart, 6)
+    const range_end =
+      view_mode === "week"
+        ? add_days(range_start, 6)
         : new Date(d.getFullYear(), d.getMonth() + 1, 0);
-    const startDateKey = toDateKey(rangeStart);
-    const endDateKey = toDateKey(rangeEnd);
+    const startDateKey = to_date_key(range_start);
+    const endDateKey = to_date_key(range_end);
 
     try {
-      const supabase = getSupabaseClient();
-      const { data, error: fetchError } = await supabase
+      const supabase = get_supabase_client();
+      const { data, error: fetch_error } = await supabase
         .from("diet_entries")
         .select("*")
-        .eq("user_id", userId)
+        .eq("user_id", user_id)
         .gte("entry_date", startDateKey)
         .lte("entry_date", endDateKey)
         .order("created_at", { ascending: true });
 
-      if (fetchError) {
-        setError(getUserFacingError(fetchError.message));
+      if (fetch_error) {
+        set_error(get_user_facing_error(fetch_error.message));
         setEntries([]);
       } else {
         setEntries(data ?? []);
@@ -145,61 +145,61 @@ function DietTracker({ profileData }) {
         const { data: workoutData } = await supabase
           .from("workout_logs")
           .select("calories_burned")
-          .eq("user_id", userId)
-          .eq("workout_date", selectedDate);
+          .eq("user_id", user_id)
+          .eq("workout_date", selected_date);
 
         const totalBurned = (workoutData ?? []).reduce(
           (sum, w) => sum + (parseInt(w.calories_burned, 10) || 0),
           0,
         );
-        setCaloriesBurned(totalBurned);
+        set_calories_burned(totalBurned);
       } catch {
         // calories_burned column may not exist yet — ignore
-        setCaloriesBurned(0);
+        set_calories_burned(0);
       }
     } catch (err) {
-      setError(getUserFacingError(err.message));
+      set_error(get_user_facing_error(err.message));
       setEntries([]);
     }
     hasLoadedOnce.current = true;
-    setLoading(false);
-  }, [selectedDate, viewMode, userId]);
+    set_loading(false);
+  }, [selected_date, view_mode, user_id]);
 
   useEffect(() => {
     fetchEntries();
   }, [fetchEntries]);
 
   // ── Fetch presets ──
-  const fetchPresets = useCallback(async () => {
-    if (!userId) return;
+  const fetch_presets = useCallback(async () => {
+    if (!user_id) return;
     try {
-      const supabase = getSupabaseClient();
-      const { data, error: fetchError } = await supabase
+      const supabase = get_supabase_client();
+      const { data, error: fetch_error } = await supabase
         .from("diet_presets")
         .select("*")
-        .eq("user_id", userId)
+        .eq("user_id", user_id)
         .order("created_at", { ascending: true });
-      if (!fetchError) setPresets(data ?? []);
+      if (!fetch_error) set_presets(data ?? []);
     } catch {
       // silent
     }
-  }, [userId]);
+  }, [user_id]);
 
   useEffect(() => {
-    fetchPresets();
-  }, [fetchPresets]);
+    fetch_presets();
+  }, [fetch_presets]);
 
-  useBodyScrollLock(formModal.open, deleteModal.open, presetModal.open);
+  use_body_scroll_lock(form_modal.open, delete_modal.open, preset_modal.open);
 
   // ── Floating actions ──
   useEffect(() => {
-    const target = addBtnRef.current;
+    const target = add_btn_ref.current;
     if (!target) return;
     const observer = new IntersectionObserver(
       ([entry]) => {
         const scrolledPastIt =
           !entry.isIntersecting && entry.boundingClientRect.top < 0;
-        setShowFloatingActions(scrolledPastIt);
+        set_show_floating_actions(scrolledPastIt);
       },
       { threshold: 0 },
     );
@@ -210,8 +210,8 @@ function DietTracker({ profileData }) {
   // ── Daily totals ──
   // ── Entries for the selected date only ──
   const dayEntries = useMemo(
-    () => entries.filter((e) => e.entry_date === selectedDate),
-    [entries, selectedDate],
+    () => entries.filter((e) => e.entry_date === selected_date),
+    [entries, selected_date],
   );
 
   const dailyTotals = useMemo(() => {
@@ -238,34 +238,34 @@ function DietTracker({ profileData }) {
   }, [dayEntries]);
 
   // ── Date navigation ──
-  const startOfWeek = (date) => {
+  const start_of_week = (date) => {
     const d = new Date(date);
     d.setDate(d.getDate() - d.getDay());
     d.setHours(0, 0, 0, 0);
     return d;
   };
 
-  const addDays = (date, n) => {
+  const add_days = (date, n) => {
     const d = new Date(date);
     d.setDate(d.getDate() + n);
     return d;
   };
 
-  const toDateKey = (date) => date.toISOString().slice(0, 10);
+  const to_date_key = (date) => date.toISOString().slice(0, 10);
 
   const changeDate = (offset) => {
-    const d = new Date(`${selectedDate}T12:00:00`);
+    const d = new Date(`${selected_date}T12:00:00`);
     d.setDate(d.getDate() + offset);
-    setSelectedDate(d.toISOString().slice(0, 10));
+    set_selected_date(d.toISOString().slice(0, 10));
   };
 
   const shiftNav = (direction) => {
-    const offset = viewMode === "week" ? 7 : 30;
+    const offset = view_mode === "week" ? 7 : 30;
     changeDate(direction === "next" ? offset : -offset);
   };
 
   const formatSelectedDate = () => {
-    const d = new Date(`${selectedDate}T12:00:00`);
+    const d = new Date(`${selected_date}T12:00:00`);
     return d.toLocaleDateString(undefined, {
       weekday: "long",
       month: "long",
@@ -273,38 +273,38 @@ function DietTracker({ profileData }) {
     });
   };
 
-  const isToday = selectedDate === today;
+  const is_today = selected_date === today;
 
-  const weekDays = useMemo(() => {
-    const d = new Date(`${selectedDate}T12:00:00`);
-    const start = startOfWeek(d);
-    return Array.from({ length: 7 }, (_, i) => addDays(start, i));
-  }, [selectedDate]);
+  const week_days = useMemo(() => {
+    const d = new Date(`${selected_date}T12:00:00`);
+    const start = start_of_week(d);
+    return Array.from({ length: 7 }, (_, i) => add_days(start, i));
+  }, [selected_date]);
 
-  const monthDays = useMemo(() => {
-    const d = new Date(`${selectedDate}T12:00:00`);
-    const start = startOfWeek(new Date(d.getFullYear(), d.getMonth(), 1));
-    return Array.from({ length: 42 }, (_, i) => addDays(start, i));
-  }, [selectedDate]);
+  const month_days = useMemo(() => {
+    const d = new Date(`${selected_date}T12:00:00`);
+    const start = start_of_week(new Date(d.getFullYear(), d.getMonth(), 1));
+    return Array.from({ length: 42 }, (_, i) => add_days(start, i));
+  }, [selected_date]);
 
-  const visibleDays = viewMode === "week" ? weekDays : monthDays;
+  const visible_days = view_mode === "week" ? week_days : month_days;
 
   // ── Modal open/close ──
-  const openAddModal = (mealType = "breakfast") => {
+  const open_add_modal = (mealType = "breakfast") => {
     setEditingEntry(null);
-    setForm({
+    set_form({
       ...emptyEntryForm(),
-      entry_date: selectedDate,
+      entry_date: selected_date,
       meal_type: mealType,
     });
-    setFieldErrors({});
-    setFieldStates({});
-    formModal.openModal();
+    set_field_errors({});
+    set_field_states({});
+    form_modal.open_modal();
   };
 
-  const openEditModal = (entry) => {
+  const open_edit_modal = (entry) => {
     setEditingEntry(entry);
-    setForm({
+    set_form({
       entry_date: entry.entry_date,
       meal_type: entry.meal_type,
       food_name: entry.food_name ?? "",
@@ -314,25 +314,25 @@ function DietTracker({ profileData }) {
       fats_g: entry.fats_g ? String(entry.fats_g) : "",
       fiber_g: entry.fiber_g ? String(entry.fiber_g) : "",
     });
-    setFieldErrors({});
-    setFieldStates({});
-    formModal.openModal();
+    set_field_errors({});
+    set_field_states({});
+    form_modal.open_modal();
   };
 
-  const closeFormModal = () => {
-    formModal.closeModal();
+  const close_form_modal = () => {
+    form_modal.close_modal();
     setTimeout(() => {
       setEditingEntry(null);
-      setForm(emptyEntryForm());
-      setFieldStates({});
+      set_form(emptyEntryForm());
+      set_field_states({});
     }, MODAL_EXIT_MS);
   };
 
   // ── Presets ──
-  const openPresetModal = (preset = null) => {
+  const open_preset_modal = (preset = null) => {
     if (preset) {
-      setEditingPreset(preset);
-      setPresetForm({
+      set_editing_preset(preset);
+      set_preset_form({
         name: preset.name,
         meal_type: preset.meal_type || "breakfast",
         calories: preset.calories ? String(preset.calories) : "",
@@ -342,8 +342,8 @@ function DietTracker({ profileData }) {
         fiber_g: preset.fiber_g ? String(preset.fiber_g) : "",
       });
     } else {
-      setEditingPreset(null);
-      setPresetForm({
+      set_editing_preset(null);
+      set_preset_form({
         name: "",
         meal_type: "breakfast",
         calories: "",
@@ -353,79 +353,79 @@ function DietTracker({ profileData }) {
         fiber_g: "",
       });
     }
-    presetModal.openModal();
+    preset_modal.open_modal();
   };
 
-  const closePresetModal = () => {
-    presetModal.closeModal();
+  const close_preset_modal = () => {
+    preset_modal.close_modal();
     setTimeout(() => {
-      setEditingPreset(null);
+      set_editing_preset(null);
     }, MODAL_EXIT_MS);
   };
 
-  const savePreset = useCallback(async () => {
-    const name = presetForm.name.trim();
+  const save_preset = useCallback(async () => {
+    const name = preset_form.name.trim();
     if (!name) return;
     const payload = {
       name,
-      meal_type: presetForm.meal_type,
-      calories: sanitizeNumber(presetForm.calories, 0, 10000) ?? 0,
-      protein_g: sanitizeNumber(presetForm.protein_g, 0, 999) ?? 0,
-      carbs_g: sanitizeNumber(presetForm.carbs_g, 0, 999) ?? 0,
-      fats_g: sanitizeNumber(presetForm.fats_g, 0, 999) ?? 0,
-      fiber_g: sanitizeNumber(presetForm.fiber_g, 0, 99) ?? 0,
-      ...(userId && { user_id: userId }),
+      meal_type: preset_form.meal_type,
+      calories: sanitize_number(preset_form.calories, 0, 10000) ?? 0,
+      protein_g: sanitize_number(preset_form.protein_g, 0, 999) ?? 0,
+      carbs_g: sanitize_number(preset_form.carbs_g, 0, 999) ?? 0,
+      fats_g: sanitize_number(preset_form.fats_g, 0, 999) ?? 0,
+      fiber_g: sanitize_number(preset_form.fiber_g, 0, 99) ?? 0,
+      ...(user_id && { user_id: user_id }),
     };
     try {
-      const supabase = getSupabaseClient();
+      const supabase = get_supabase_client();
       let dbError;
-      if (editingPreset) {
+      if (editing_preset) {
         ({ error: dbError } = await supabase
           .from("diet_presets")
           .update(payload)
-          .eq("id", editingPreset.id));
+          .eq("id", editing_preset.id));
       } else {
         ({ error: dbError } = await supabase
           .from("diet_presets")
           .insert(payload));
       }
       if (dbError) {
-        toastError(getUserFacingError(dbError.message));
+        toast_error(get_user_facing_error(dbError.message));
         return;
       }
-      closePresetModal();
-      toastSuccess(editingPreset ? "Preset updated." : "Preset created.");
-      fetchPresets();
+      close_preset_modal();
+      toast_success(editing_preset ? "Preset updated." : "Preset created.");
+      fetch_presets();
     } catch (err) {
-      toastError(getUserFacingError(err.message));
+      toast_error(get_user_facing_error(err.message));
     }
-  }, [presetForm, editingPreset, fetchPresets, toastSuccess, toastError, userId]);
+  }, [preset_form, editing_preset, fetch_presets, toast_success, toast_error, user_id]);
 
-  const deletePreset = useCallback(
+  const delete_preset = useCallback(
     async (id) => {
       try {
-        const supabase = getSupabaseClient();
+        const supabase = get_supabase_client();
         const { error: dbError } = await supabase
           .from("diet_presets")
           .delete()
           .eq("id", id);
         if (dbError) {
-          toastError(getUserFacingError(dbError.message));
+          toast_error(get_user_facing_error(dbError.message));
           return;
         }
-        toastSuccess("Preset removed.");
-        fetchPresets();
+        toast_success("Preset removed.");
+        fetch_presets();
       } catch (err) {
-        toastError(getUserFacingError(err.message));
+        toast_error(get_user_facing_error(err.message));
       }
     },
-    [fetchPresets, toastSuccess, toastError],
+    [fetch_presets, toast_success, toast_error],
   );
 
   const applyPreset = (preset) => {
     setEditingEntry(null);
-    setForm({
-      entry_date: selectedDate,
+    set_form({
+      entry_date: selected_date,
       meal_type: preset.meal_type || "breakfast",
       food_name: preset.name,
       calories: preset.calories ? String(preset.calories) : "",
@@ -434,14 +434,14 @@ function DietTracker({ profileData }) {
       fats_g: preset.fats_g ? String(preset.fats_g) : "",
       fiber_g: preset.fiber_g ? String(preset.fiber_g) : "",
     });
-    setFieldErrors({});
-    setFieldStates({});
-    formModal.openModal();
+    set_field_errors({});
+    set_field_states({});
+    form_modal.open_modal();
   };
 
   // ── Validation ──
-  const validateField = (fieldName, value) => {
-    switch (fieldName) {
+  const validate_field = (field_name, value) => {
+    switch (field_name) {
       case "food_name":
         return !value || !value.trim() ? "Enter food name" : null;
       case "entry_date":
@@ -451,69 +451,69 @@ function DietTracker({ profileData }) {
     }
   };
 
-  const handleFieldBlur = (fieldName) => {
-    const error = validateField(fieldName, form[fieldName]);
-    setFieldErrors((prev) => ({ ...prev, [fieldName]: error }));
-    setFieldStates((prev) => ({
+  const handle_field_blur = (field_name) => {
+    const error = validate_field(field_name, form[field_name]);
+    set_field_errors((prev) => ({ ...prev, [field_name]: error }));
+    set_field_states((prev) => ({
       ...prev,
-      [fieldName]: error ? "error" : form[fieldName] ? "valid" : "idle",
+      [field_name]: error ? "error" : form[field_name] ? "valid" : "idle",
     }));
     if (error) {
-      setShakeKey((k) => k + 1);
-      hapticError();
+      set_shake_key((k) => k + 1);
+      haptic_error();
     }
   };
 
-  const isFormValid = useMemo(() => {
+  const is_form_valid = useMemo(() => {
     if (!form.food_name || !form.food_name.trim()) return false;
     if (!form.entry_date) return false;
     return true;
   }, [form]);
 
   // ── Submit ──
-  const handleSubmit = async (e) => {
+  const handle_submit = async (e) => {
     e.preventDefault();
 
-    const foodName = sanitizeText(form.food_name, 120);
-    const entryDate = sanitizeDate(
+    const foodName = sanitize_text(form.food_name, 120);
+    const entry_date = sanitize_date(
       form.entry_date,
       new Date().toISOString().slice(0, 10),
     );
 
-    if (!foodName || !entryDate) {
+    if (!foodName || !entry_date) {
       const errors = {};
       const states = {};
       if (!foodName) {
         errors.food_name = "Enter food name";
         states.food_name = "error";
       }
-      if (!entryDate) {
+      if (!entry_date) {
         errors.entry_date = "Pick a date";
         states.entry_date = "error";
       }
-      setFieldErrors((prev) => ({ ...prev, ...errors }));
-      setFieldStates((prev) => ({ ...prev, ...states }));
-      setShakeKey((k) => k + 1);
+      set_field_errors((prev) => ({ ...prev, ...errors }));
+      set_field_states((prev) => ({ ...prev, ...states }));
+      set_shake_key((k) => k + 1);
       return;
     }
 
-    setSaving(true);
-    setError(null);
+    set_saving(true);
+    set_error(null);
 
     const payload = {
-      entry_date: entryDate,
+      entry_date: entry_date,
       meal_type: form.meal_type,
       food_name: foodName,
-      calories: sanitizeNumber(form.calories, 0, 10000) ?? 0,
-      protein_g: sanitizeNumber(form.protein_g, 0, 999) ?? 0,
-      carbs_g: sanitizeNumber(form.carbs_g, 0, 999) ?? 0,
-      fats_g: sanitizeNumber(form.fats_g, 0, 999) ?? 0,
-      fiber_g: sanitizeNumber(form.fiber_g, 0, 99) ?? 0,
-      ...(userId && { user_id: userId }),
+      calories: sanitize_number(form.calories, 0, 10000) ?? 0,
+      protein_g: sanitize_number(form.protein_g, 0, 999) ?? 0,
+      carbs_g: sanitize_number(form.carbs_g, 0, 999) ?? 0,
+      fats_g: sanitize_number(form.fats_g, 0, 999) ?? 0,
+      fiber_g: sanitize_number(form.fiber_g, 0, 99) ?? 0,
+      ...(user_id && { user_id: user_id }),
     };
 
     try {
-      const supabase = getSupabaseClient();
+      const supabase = get_supabase_client();
       let dbError;
       if (editingEntry) {
         ({ error: dbError } = await supabase
@@ -526,24 +526,24 @@ function DietTracker({ profileData }) {
           .insert(payload));
       }
 
-      setSaving(false);
+      set_saving(false);
 
       if (dbError) {
-        const message = getUserFacingError(dbError.message);
-        setError(message);
-        toastError(
+        const message = get_user_facing_error(dbError.message);
+        set_error(message);
+        toast_error(
           editingEntry ? "Couldn't update entry." : "Couldn't save entry.",
         );
         return;
       }
 
-      closeFormModal();
-      toastSuccess(editingEntry ? "Entry updated." : "Food logged.");
+      close_form_modal();
+      toast_success(editingEntry ? "Entry updated." : "Food logged.");
       fetchEntries();
     } catch (err) {
-      setSaving(false);
-      setError(getUserFacingError(err.message));
-      toastError(
+      set_saving(false);
+      set_error(get_user_facing_error(err.message));
+      toast_error(
         editingEntry ? "Couldn't update entry." : "Couldn't save entry.",
       );
     }
@@ -551,53 +551,53 @@ function DietTracker({ profileData }) {
 
   // ── Delete ──
   const openDeleteModal = (entry) => {
-    setDeleteTarget(entry);
-    deleteModal.openModal();
+    set_delete_target(entry);
+    delete_modal.open_modal();
   };
 
-  const closeDeleteModal = () => {
-    deleteModal.closeModal();
+  const close_delete_modal = () => {
+    delete_modal.close_modal();
     setTimeout(() => {
-      setDeleteTarget(null);
+      set_delete_target(null);
     }, MODAL_EXIT_MS);
   };
 
-  const confirmDelete = async () => {
-    if (!deleteTarget) return;
-    setDeleting(true);
-    setError(null);
+  const confirm_delete = async () => {
+    if (!delete_target) return;
+    set_deleting(true);
+    set_error(null);
 
     try {
-      const supabase = getSupabaseClient();
+      const supabase = get_supabase_client();
       const { error: dbError } = await supabase
         .from("diet_entries")
         .delete()
-        .eq("id", deleteTarget.id);
+        .eq("id", delete_target.id);
 
-      setDeleting(false);
+      set_deleting(false);
 
       if (dbError) {
-        setError(getUserFacingError(dbError.message));
-        toastError("Failed to delete entry.");
+        set_error(get_user_facing_error(dbError.message));
+        toast_error("Failed to delete entry.");
         return;
       }
 
-      const removedId = deleteTarget.id;
-      closeDeleteModal();
-      toastSuccess("Entry deleted.");
-      setRemovingId(removedId);
+      const removedId = delete_target.id;
+      close_delete_modal();
+      toast_success("Entry deleted.");
+      set_removing_id(removedId);
       setTimeout(() => {
         setEntries((prev) => prev.filter((e) => e.id !== removedId));
-        setRemovingId(null);
+        set_removing_id(null);
       }, 380);
     } catch (err) {
-      setDeleting(false);
-      setError(getUserFacingError(err.message));
-      toastError("Failed to delete entry.");
+      set_deleting(false);
+      set_error(get_user_facing_error(err.message));
+      toast_error("Failed to delete entry.");
     }
   };
 
-  const hasProfileForBMR = !!(weightKg && heightCm && age);
+  const hasProfileForBMR = !!(weight_kg && height_cm && age);
 
   return (
     <div className="fitness__diet">
@@ -615,7 +615,7 @@ function DietTracker({ profileData }) {
               <MacroProgressBar
                 label="Calories"
                 current={dailyTotals.calories}
-                target={macroTargets.calories + caloriesBurned}
+                target={macroTargets.calories + calories_burned}
                 unit=" kcal"
                 color="#f59e0b"
               />
@@ -683,11 +683,11 @@ function DietTracker({ profileData }) {
             ›
           </button>
         </div>
-        {!isToday && (
+        {!is_today && (
           <button
             type="button"
             className="fitness__date-today"
-            onClick={() => setSelectedDate(today)}
+            onClick={() => set_selected_date(today)}
           >
             Today
           </button>
@@ -696,18 +696,18 @@ function DietTracker({ profileData }) {
 
       {/* Week day selector */}
       <div
-        className={`fitness__week-days animate-in animate-in--2${viewMode === "month" ? " fitness__week-days--month" : ""}`}
+        className={`fitness__week-days animate-in animate-in--2${view_mode === "month" ? " fitness__week-days--month" : ""}`}
         role="group"
-        aria-label={viewMode === "week" ? "Week days" : "Month days"}
+        aria-label={view_mode === "week" ? "Week days" : "Month days"}
       >
-        {visibleDays.map((day) => {
-          const key = toDateKey(day);
-          const isSelected = key === selectedDate;
+        {visible_days.map((day) => {
+          const key = to_date_key(day);
+          const isSelected = key === selected_date;
           const isDayToday = key === today;
           const hasEntries = entries.some((e) => e.entry_date === key);
-          const d = new Date(`${selectedDate}T12:00:00`);
+          const d = new Date(`${selected_date}T12:00:00`);
           const isInCurrentMonth =
-            viewMode === "month"
+            view_mode === "month"
               ? day.getMonth() === d.getMonth()
               : true;
 
@@ -716,7 +716,7 @@ function DietTracker({ profileData }) {
               key={key}
               type="button"
               className={`fitness__week-day${isSelected ? " fitness__week-day--active" : ""}${isDayToday ? " fitness__week-day--today" : ""}${hasEntries ? " fitness__week-day--busy" : ""}${!isInCurrentMonth ? " fitness__week-day--muted" : ""}`}
-              onClick={() => setSelectedDate(key)}
+              onClick={() => set_selected_date(key)}
               aria-pressed={isSelected}
             >
               <span className="fitness__week-day-label">{WEEKDAYS[day.getDay()]}</span>
@@ -737,24 +737,24 @@ function DietTracker({ profileData }) {
       >
         <button
           type="button"
-          className={`fitness__view-btn${viewMode === "week" ? " fitness__view-btn--active" : ""}`}
-          onClick={() => setViewMode("week")}
-          aria-pressed={viewMode === "week"}
+          className={`fitness__view-btn${view_mode === "week" ? " fitness__view-btn--active" : ""}`}
+          onClick={() => set_view_mode("week")}
+          aria-pressed={view_mode === "week"}
         >
           1 week
         </button>
         <button
           type="button"
-          className={`fitness__view-btn${viewMode === "month" ? " fitness__view-btn--active" : ""}`}
-          onClick={() => setViewMode("month")}
-          aria-pressed={viewMode === "month"}
+          className={`fitness__view-btn${view_mode === "month" ? " fitness__view-btn--active" : ""}`}
+          onClick={() => set_view_mode("month")}
+          aria-pressed={view_mode === "month"}
         >
           1 month
         </button>
       </div>
 
       {/* Daily summary */}
-      <div className="fitness__summary animate-in animate-in--3" key={selectedDate}>
+      <div className="fitness__summary animate-in animate-in--3" key={selected_date}>
         <GlassCard
           value={Math.round(dailyTotals.calories).toString()}
           label="Calories"
@@ -776,7 +776,7 @@ function DietTracker({ profileData }) {
           className="fitness__stat fitness__stat--diet"
         />
         <GlassCard
-          value={caloriesBurned > 0 ? caloriesBurned.toString() : "—"}
+          value={calories_burned > 0 ? calories_burned.toString() : "—"}
           label="Burned"
           className="fitness__stat fitness__stat--workout"
         />
@@ -805,7 +805,7 @@ function DietTracker({ profileData }) {
             <button
               type="button"
               className="fitness__preset-edit"
-              onClick={() => openPresetModal(preset)}
+              onClick={() => open_preset_modal(preset)}
               aria-label={`Edit ${preset.name} preset`}
             >
               ✎
@@ -815,7 +815,7 @@ function DietTracker({ profileData }) {
         <button
           type="button"
           className="fitness__template-chip fitness__template-chip--add"
-          onClick={() => openPresetModal()}
+          onClick={() => open_preset_modal()}
         >
           + New preset
         </button>
@@ -828,39 +828,39 @@ function DietTracker({ profileData }) {
             key={meal.id}
             meal={meal}
             entries={groupedEntries[meal.id]}
-            removingId={removingId}
-            onEdit={openEditModal}
+            removing_id={removing_id}
+            onEdit={open_edit_modal}
             onDelete={openDeleteModal}
-            onAddForMeal={openAddModal}
-            addBtnRef={addBtnRef}
+            on_add_for_meal={open_add_modal}
+            add_btn_ref={add_btn_ref}
           />
         ))}
       </div>
 
       {/* Add/Edit Entry Modal */}
       <DietEntryForm
-        open={formModal.open}
-        closing={formModal.closing}
-        onClose={closeFormModal}
+        open={form_modal.open}
+        closing={form_modal.closing}
+        onClose={close_form_modal}
         editingEntry={editingEntry}
         form={form}
-        setForm={setForm}
+        set_form={set_form}
         saving={saving}
-        isFormValid={isFormValid}
-        fieldErrors={fieldErrors}
-        setFieldErrors={setFieldErrors}
-        fieldStates={fieldStates}
-        shakeKey={shakeKey}
-        onSubmit={handleSubmit}
-        onFieldBlur={handleFieldBlur}
+        is_form_valid={is_form_valid}
+        field_errors={field_errors}
+        set_field_errors={set_field_errors}
+        field_states={field_states}
+        shake_key={shake_key}
+        onSubmit={handle_submit}
+        onFieldBlur={handle_field_blur}
       />
 
       {/* Preset Modal */}
       <SheetModal
-        open={presetModal.open}
-        closing={presetModal.closing}
-        onClose={closePresetModal}
-        title={editingPreset ? "Edit meal preset" : "Create meal preset"}
+        open={preset_modal.open}
+        closing={preset_modal.closing}
+        onClose={close_preset_modal}
+        title={editing_preset ? "Edit meal preset" : "Create meal preset"}
       >
         <p className="fitness__preset-hint">
           Save common meals for quick logging.
@@ -869,9 +869,9 @@ function DietTracker({ profileData }) {
           <FormField label="Preset name">
             <input
               type="text"
-              value={presetForm.name}
+              value={preset_form.name}
               onChange={(e) =>
-                setPresetForm((f) => ({ ...f, name: e.target.value }))
+                set_preset_form((f) => ({ ...f, name: e.target.value }))
               }
               placeholder="e.g. Protein shake, Chicken & rice"
               maxLength={60}
@@ -880,9 +880,9 @@ function DietTracker({ profileData }) {
           </FormField>
           <FormField label="Meal type">
             <select
-              value={presetForm.meal_type}
+              value={preset_form.meal_type}
               onChange={(e) =>
-                setPresetForm((f) => ({ ...f, meal_type: e.target.value }))
+                set_preset_form((f) => ({ ...f, meal_type: e.target.value }))
               }
             >
               {MEAL_TYPES.map((m) => (
@@ -899,9 +899,9 @@ function DietTracker({ profileData }) {
               max="10000"
               step="1"
               placeholder="0"
-              value={presetForm.calories}
+              value={preset_form.calories}
               onChange={(e) =>
-                setPresetForm((f) => ({ ...f, calories: e.target.value }))
+                set_preset_form((f) => ({ ...f, calories: e.target.value }))
               }
             />
           </FormField>
@@ -913,9 +913,9 @@ function DietTracker({ profileData }) {
                 max="999"
                 step="0.1"
                 placeholder="0"
-                value={presetForm.protein_g}
+                value={preset_form.protein_g}
                 onChange={(e) =>
-                  setPresetForm((f) => ({ ...f, protein_g: e.target.value }))
+                  set_preset_form((f) => ({ ...f, protein_g: e.target.value }))
                 }
               />
             </FormField>
@@ -926,9 +926,9 @@ function DietTracker({ profileData }) {
                 max="999"
                 step="0.1"
                 placeholder="0"
-                value={presetForm.carbs_g}
+                value={preset_form.carbs_g}
                 onChange={(e) =>
-                  setPresetForm((f) => ({ ...f, carbs_g: e.target.value }))
+                  set_preset_form((f) => ({ ...f, carbs_g: e.target.value }))
                 }
               />
             </FormField>
@@ -939,9 +939,9 @@ function DietTracker({ profileData }) {
                 max="999"
                 step="0.1"
                 placeholder="0"
-                value={presetForm.fats_g}
+                value={preset_form.fats_g}
                 onChange={(e) =>
-                  setPresetForm((f) => ({ ...f, fats_g: e.target.value }))
+                  set_preset_form((f) => ({ ...f, fats_g: e.target.value }))
                 }
               />
             </FormField>
@@ -953,20 +953,20 @@ function DietTracker({ profileData }) {
               max="99"
               step="0.1"
               placeholder="0"
-              value={presetForm.fiber_g}
+              value={preset_form.fiber_g}
               onChange={(e) =>
-                setPresetForm((f) => ({ ...f, fiber_g: e.target.value }))
+                set_preset_form((f) => ({ ...f, fiber_g: e.target.value }))
               }
             />
           </FormField>
           <div className="btn-row">
-            {editingPreset && (
+            {editing_preset && (
               <button
                 type="button"
                 className="btn btn--danger-outline"
                 onClick={() => {
-                  deletePreset(editingPreset.id);
-                  closePresetModal();
+                  delete_preset(editing_preset.id);
+                  close_preset_modal();
                 }}
               >
                 Delete
@@ -975,17 +975,17 @@ function DietTracker({ profileData }) {
             <button
               type="button"
               className="btn btn--ghost"
-              onClick={closePresetModal}
+              onClick={close_preset_modal}
             >
               Cancel
             </button>
             <button
               type="button"
               className="btn btn--primary"
-              onClick={savePreset}
-              disabled={!presetForm.name.trim()}
+              onClick={save_preset}
+              disabled={!preset_form.name.trim()}
             >
-              {editingPreset ? "Update" : "Create"}
+              {editing_preset ? "Update" : "Create"}
             </button>
           </div>
         </div>
@@ -993,14 +993,14 @@ function DietTracker({ profileData }) {
 
       {/* Delete Confirmation */}
       <ConfirmModal
-        open={!!deleteTarget}
-        closing={deleteModal.closing}
-        onClose={closeDeleteModal}
-        onConfirm={confirmDelete}
+        open={!!delete_target}
+        closing={delete_modal.closing}
+        onClose={close_delete_modal}
+        onConfirm={confirm_delete}
         loading={deleting}
         title="Delete this food entry?"
         description="This action cannot be undone."
-        confirmLabel="Delete entry"
+        confirm_label="Delete entry"
         icon={
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
             <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6h14Z" />
@@ -1008,13 +1008,13 @@ function DietTracker({ profileData }) {
           </svg>
         }
         preview={
-          deleteTarget && (
+          delete_target && (
             <>
               <span className="fitness__delete-date">
-                {deleteTarget.food_name}
+                {delete_target.food_name}
               </span>
               <span className="fitness__delete-name">
-                {Math.round(Number(deleteTarget.calories))} kcal
+                {Math.round(Number(delete_target.calories))} kcal
               </span>
             </>
           )

@@ -1,13 +1,13 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { getSupabaseClient } from "../../../lib/superbase";
-import { getUserFacingError, hapticError } from "../../../lib/security";
-import { useGlassToast } from "../../../lib/glass_toast_provider.jsx";
-import { useModal, useBodyScrollLock } from "../../../hooks";
-import SheetModal from "../../ui/modals/sheet_modal";
-import ConfirmModal from "../../ui/modals/confirm_modal";
-import FormField from "../../ui/form/form_field.jsx";
-import EmptyState from "../../ui/Empty_state";
-import { formatMoney } from "../../../lib/format";
+import { get_supabase_client } from "../../../lib/superbase";
+import { get_user_facing_error, haptic_error } from "../../../lib/security";
+import { use_glass_toast } from "../../../lib/glass_toast_provider.jsx";
+import { use_modal, use_body_scroll_lock } from "../../../Hooks";
+import SheetModal from "../../UI/modals/sheet_modal";
+import ConfirmModal from "../../UI/modals/confirm_modal";
+import FormField from "../../UI/form/form_field.jsx";
+import EmptyState from "../../UI/Empty_state";
+import { format_money } from "../../../lib/format";
 import ColorPalettePicker from "../../../lib/color_palette_picker.jsx";
 import { DEFAULT_ICONS } from "./category_manager";
 
@@ -21,11 +21,11 @@ function Budgets({
   const [budgets, setBudgets] = useState([]);
   const [budgetCategories, setBudgetCategories] = useState([]);
   const [categories, setCategories] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const { success: toastSuccess, error: toastError } = useGlassToast();
+  const [loading, set_loading] = useState(true);
+  const { success: toast_success, error: toast_error } = use_glass_toast();
 
   // Edit budget modal
-  const editModal = useModal(260);
+  const editModal = use_modal(260);
   const [editingBudget, setEditingBudget] = useState(null);
   const [editName, setEditName] = useState("");
   const [editIcon, setEditIcon] = useState("📊");
@@ -36,7 +36,7 @@ function Budgets({
   const [editAmountError, setEditAmountError] = useState(null);
 
   // Create budget modal
-  const createModal = useModal(260);
+  const createModal = use_modal(260);
   const [newName, setNewName] = useState("");
   const [newIcon, setNewIcon] = useState("📊");
   const [newColor, setNewColor] = useState("#818cf8");
@@ -46,20 +46,20 @@ function Budgets({
   const [newAmountError, setNewAmountError] = useState(null);
 
   // Delete confirm
-  const deleteModal = useModal(260);
-  const [deleteTarget, setDeleteTarget] = useState(null);
+  const delete_modal = use_modal(260);
+  const [delete_target, set_delete_target] = useState(null);
 
-  const [shakeKey, setShakeKey] = useState(0);
+  const [shake_key, set_shake_key] = useState(0);
   const [submitting, setSubmitting] = useState(false);
 
-  useBodyScrollLock(editModal.open, createModal.open, deleteModal.open);
+  use_body_scroll_lock(editModal.open, createModal.open, delete_modal.open);
 
   // ── Fetch ──
 
   const fetchCategories = useCallback(async () => {
     if (!householdId) return;
     try {
-      const supabase = getSupabaseClient();
+      const supabase = get_supabase_client();
       const { data, error } = await supabase
         .from("transaction_categories")
         .select("*")
@@ -73,13 +73,13 @@ function Budgets({
     }
   }, [householdId]);
 
-  const fetchBudgets = useCallback(async () => {
+  const fetch_budgets = useCallback(async () => {
     if (!householdId) {
-      setLoading(false);
+      set_loading(false);
       return;
     }
     try {
-      const supabase = getSupabaseClient();
+      const supabase = get_supabase_client();
       const { data: budgetData, error: budgetErr } = await supabase
         .from("budgets")
         .select("*")
@@ -104,13 +104,13 @@ function Budgets({
     } catch {
       // silent
     }
-    setLoading(false);
+    set_loading(false);
   }, [householdId]);
 
   useEffect(() => {
     fetchCategories();
-    fetchBudgets();
-  }, [fetchCategories, fetchBudgets]);
+    fetch_budgets();
+  }, [fetchCategories, fetch_budgets]);
 
   // ── Derived data ──
 
@@ -150,7 +150,7 @@ function Budgets({
     });
   }, [budgets, budgetCategories, transactions, catMap]);
 
-  const overallSummary = useMemo(() => {
+  const overall_summary = useMemo(() => {
     const totalBudget = budgetData.reduce((s, b) => s + Number(b.amount), 0);
     const totalSpent = budgetData.reduce((s, b) => s + b.spent, 0);
     const totalRemaining = totalBudget - totalSpent;
@@ -177,7 +177,7 @@ function Budgets({
     setNewSelectedCats(new Set());
     setNewNameError(null);
     setNewAmountError(null);
-    createModal.openModal();
+    createModal.open_modal();
   };
 
   const toggleNewCat = (catId) => {
@@ -190,29 +190,29 @@ function Budgets({
   };
 
   const createBudget = async () => {
-    let hasError = false;
+    let has_error = false;
     if (!newName.trim()) {
       setNewNameError("Name is required");
-      hasError = true;
+      has_error = true;
     }
     const amount = Number(newAmount);
     if (!newAmount || isNaN(amount) || amount <= 0) {
       setNewAmountError("Enter a valid amount");
-      hasError = true;
+      has_error = true;
     }
     if (newSelectedCats.size === 0) {
-      toastError("Select at least one category to track.");
+      toast_error("Select at least one category to track.");
       return;
     }
-    if (hasError) {
-      setShakeKey((k) => k + 1);
-      hapticError();
+    if (has_error) {
+      set_shake_key((k) => k + 1);
+      haptic_error();
       return;
     }
 
     setSubmitting(true);
     try {
-      const supabase = getSupabaseClient();
+      const supabase = get_supabase_client();
       const { data: budgetRow, error: budgetErr } = await supabase
         .from("budgets")
         .insert({
@@ -237,11 +237,11 @@ function Budgets({
 
       if (linkErr) throw linkErr;
 
-      createModal.closeModal();
-      toastSuccess(`Budget "${newName.trim()}" created.`);
-      fetchBudgets();
+      createModal.close_modal();
+      toast_success(`Budget "${newName.trim()}" created.`);
+      fetch_budgets();
     } catch (err) {
-      toastError(getUserFacingError(err.message));
+      toast_error(get_user_facing_error(err.message));
     }
     setSubmitting(false);
   };
@@ -257,7 +257,7 @@ function Budgets({
     setEditSelectedCats(new Set(budget.catIds));
     setEditNameError(null);
     setEditAmountError(null);
-    editModal.openModal();
+    editModal.open_modal();
   };
 
   const toggleEditCat = (catId) => {
@@ -270,29 +270,29 @@ function Budgets({
   };
 
   const saveEdit = async () => {
-    let hasError = false;
+    let has_error = false;
     if (!editName.trim()) {
       setEditNameError("Name is required");
-      hasError = true;
+      has_error = true;
     }
     const amount = Number(editAmount);
     if (!editAmount || isNaN(amount) || amount <= 0) {
       setEditAmountError("Enter a valid amount");
-      hasError = true;
+      has_error = true;
     }
     if (editSelectedCats.size === 0) {
-      toastError("Select at least one category to track.");
+      toast_error("Select at least one category to track.");
       return;
     }
-    if (hasError) {
-      setShakeKey((k) => k + 1);
-      hapticError();
+    if (has_error) {
+      set_shake_key((k) => k + 1);
+      haptic_error();
       return;
     }
 
     setSubmitting(true);
     try {
-      const supabase = getSupabaseClient();
+      const supabase = get_supabase_client();
 
       // Update budget row
       const { error: updateErr } = await supabase
@@ -324,11 +324,11 @@ function Budgets({
         if (linkErr) throw linkErr;
       }
 
-      editModal.closeModal();
-      toastSuccess(`Budget "${editName.trim()}" updated.`);
-      fetchBudgets();
+      editModal.close_modal();
+      toast_success(`Budget "${editName.trim()}" updated.`);
+      fetch_budgets();
     } catch (err) {
-      toastError(getUserFacingError(err.message));
+      toast_error(get_user_facing_error(err.message));
     }
     setSubmitting(false);
   };
@@ -336,26 +336,26 @@ function Budgets({
   // ── Delete ──
 
   const openDeleteBudget = (budget) => {
-    setDeleteTarget(budget);
-    deleteModal.openModal();
+    set_delete_target(budget);
+    delete_modal.open_modal();
   };
 
-  const confirmDelete = async () => {
-    if (!deleteTarget) return;
+  const confirm_delete = async () => {
+    if (!delete_target) return;
     setSubmitting(true);
     try {
-      const supabase = getSupabaseClient();
+      const supabase = get_supabase_client();
       const { error } = await supabase
         .from("budgets")
         .delete()
-        .eq("id", deleteTarget.id);
+        .eq("id", delete_target.id);
       if (error) throw error;
 
-      deleteModal.closeModal();
-      toastSuccess(`Budget "${deleteTarget.name}" deleted.`);
-      fetchBudgets();
+      delete_modal.close_modal();
+      toast_success(`Budget "${delete_target.name}" deleted.`);
+      fetch_budgets();
     } catch (err) {
-      toastError(getUserFacingError(err.message));
+      toast_error(get_user_facing_error(err.message));
     }
     setSubmitting(false);
   };
@@ -422,24 +422,24 @@ function Budgets({
               <div className="budgets__summary-item">
                 <span className="budgets__summary-label">Budget</span>
                 <span className="budgets__summary-value">
-                  {formatMoney(overallSummary.totalBudget)}
+                  {format_money(overall_summary.totalBudget)}
                 </span>
               </div>
               <div className="budgets__summary-divider" />
               <div className="budgets__summary-item">
                 <span className="budgets__summary-label">Spent</span>
                 <span className="budgets__summary-value budgets__summary-value--spent">
-                  {formatMoney(overallSummary.totalSpent)}
+                  {format_money(overall_summary.totalSpent)}
                 </span>
               </div>
               <div className="budgets__summary-divider" />
               <div className="budgets__summary-item">
                 <span className="budgets__summary-label">Remaining</span>
                 <span
-                  className={`budgets__summary-value ${overallSummary.totalRemaining >= 0 ? "budgets__summary-value--ok" : "budgets__summary-value--over"}`}
+                  className={`budgets__summary-value ${overall_summary.totalRemaining >= 0 ? "budgets__summary-value--ok" : "budgets__summary-value--over"}`}
                 >
-                  {overallSummary.totalRemaining >= 0 ? "" : "-"}
-                  {formatMoney(Math.abs(overallSummary.totalRemaining))}
+                  {overall_summary.totalRemaining >= 0 ? "" : "-"}
+                  {format_money(Math.abs(overall_summary.totalRemaining))}
                 </span>
               </div>
             </div>
@@ -448,18 +448,18 @@ function Budgets({
               <div
                 className="budgets__overall-fill"
                 style={{
-                  width: `${overallSummary.progress}%`,
+                  width: `${overall_summary.progress}%`,
                   background:
-                    overallSummary.progress >= 100
+                    overall_summary.progress >= 100
                       ? "var(--color-danger, #f87171)"
-                      : overallSummary.progress >= 85
+                      : overall_summary.progress >= 85
                         ? "var(--color-warning, #fbbf24)"
                         : "var(--color-success, #34d399)",
                 }}
               />
             </div>
             <span className="budgets__overall-pct">
-              {Math.round(overallSummary.progress)}% used
+              {Math.round(overall_summary.progress)}% used
             </span>
           </div>
         </div>
@@ -491,8 +491,8 @@ function Budgets({
                         {budget.name}
                       </span>
                       <span className="budgets__card-amounts">
-                        {formatMoney(budget.spent)} /{" "}
-                        {formatMoney(budget.amount)}
+                        {format_money(budget.spent)} /{" "}
+                        {format_money(budget.amount)}
                       </span>
                     </div>
                     <div className="budgets__card-actions">
@@ -547,10 +547,10 @@ function Budgets({
                     <div className="budgets__progress-meta">
                       <span>{Math.round(budget.progress)}%</span>
                       {budget.remaining >= 0 ? (
-                        <span>{formatMoney(budget.remaining)} left</span>
+                        <span>{format_money(budget.remaining)} left</span>
                       ) : (
                         <span style={{ color: "var(--color-danger, #f87171)" }}>
-                          Over by {formatMoney(Math.abs(budget.remaining))}
+                          Over by {format_money(Math.abs(budget.remaining))}
                         </span>
                       )}
                     </div>
@@ -598,7 +598,7 @@ function Budgets({
       <SheetModal
         open={createModal.open}
         closing={createModal.closing}
-        onClose={() => createModal.closeModal()}
+        onClose={() => createModal.close_modal()}
         title="Create budget"
       >
         <div className="budgets__form">
@@ -606,8 +606,8 @@ function Budgets({
             label="Budget name"
             error={newNameError}
             state={newNameError ? "error" : newName ? "valid" : "idle"}
-            showIndicator
-            shake={newNameError ? shakeKey : 0}
+            show_indicator
+            shake={newNameError ? shake_key : 0}
           >
             <input
               type="text"
@@ -659,8 +659,8 @@ function Budgets({
             label="Monthly budget (₪)"
             error={newAmountError}
             state={newAmountError ? "error" : newAmount ? "valid" : "idle"}
-            showIndicator
-            shake={newAmountError ? shakeKey : 0}
+            show_indicator
+            shake={newAmountError ? shake_key : 0}
           >
             <input
               type="number"
@@ -686,7 +686,7 @@ function Budgets({
                   setNewAmountError(null);
                 }}
               >
-                {formatMoney(amt)}
+                {format_money(amt)}
               </button>
             ))}
           </div>
@@ -695,7 +695,7 @@ function Budgets({
             <button
               type="button"
               className="btn btn--ghost"
-              onClick={() => createModal.closeModal()}
+              onClick={() => createModal.close_modal()}
             >
               Cancel
             </button>
@@ -720,7 +720,7 @@ function Budgets({
       <SheetModal
         open={editModal.open}
         closing={editModal.closing}
-        onClose={() => editModal.closeModal()}
+        onClose={() => editModal.close_modal()}
         title={`Edit ${editingBudget?.name || "budget"}`}
       >
         <div className="budgets__form">
@@ -728,8 +728,8 @@ function Budgets({
             label="Budget name"
             error={editNameError}
             state={editNameError ? "error" : editName ? "valid" : "idle"}
-            showIndicator
-            shake={editNameError ? shakeKey : 0}
+            show_indicator
+            shake={editNameError ? shake_key : 0}
           >
             <input
               type="text"
@@ -772,8 +772,8 @@ function Budgets({
             label="Monthly budget (₪)"
             error={editAmountError}
             state={editAmountError ? "error" : editAmount ? "valid" : "idle"}
-            showIndicator
-            shake={editAmountError ? shakeKey : 0}
+            show_indicator
+            shake={editAmountError ? shake_key : 0}
           >
             <input
               type="number"
@@ -798,7 +798,7 @@ function Budgets({
                   setEditAmountError(null);
                 }}
               >
-                {formatMoney(amt)}
+                {format_money(amt)}
               </button>
             ))}
           </div>
@@ -808,7 +808,7 @@ function Budgets({
               type="button"
               className="btn btn--danger-outline"
               onClick={() => {
-                editModal.closeModal();
+                editModal.close_modal();
                 setTimeout(() => openDeleteBudget(editingBudget), 280);
               }}
             >
@@ -817,7 +817,7 @@ function Budgets({
             <button
               type="button"
               className="btn btn--ghost"
-              onClick={() => editModal.closeModal()}
+              onClick={() => editModal.close_modal()}
             >
               Cancel
             </button>
@@ -839,16 +839,16 @@ function Budgets({
       </SheetModal>
 
       {/* ── Delete Confirm ── */}
-      {deleteTarget && (
+      {delete_target && (
         <ConfirmModal
-          open={deleteModal.open}
-          closing={deleteModal.closing}
-          onClose={() => deleteModal.closeModal()}
-          onConfirm={confirmDelete}
+          open={delete_modal.open}
+          closing={delete_modal.closing}
+          onClose={() => delete_modal.close_modal()}
+          onConfirm={confirm_delete}
           loading={submitting}
-          title={`Delete "${deleteTarget.name}"?`}
+          title={`Delete "${delete_target.name}"?`}
           description="This will remove the budget. Transactions and categories are not affected."
-          confirmLabel="Delete"
+          confirm_label="Delete"
           variant="danger"
         />
       )}

@@ -1,5 +1,5 @@
 import { SheetModal, FormField } from "../../../components";
-import { useSwipeDownToClose } from "../../../hooks";
+import { use_swipe_down_to_close } from "../../../Hooks";
 
 export default function WeightForm({
   weightModal,
@@ -18,7 +18,7 @@ export default function WeightForm({
   onFieldBlur,
   isValid,
 }) {
-  const weightSwipe = useSwipeDownToClose(
+  const weightSwipe = use_swipe_down_to_close(
     weightModal.open,
     weightModal.closing,
     onClose,
@@ -31,15 +31,15 @@ export default function WeightForm({
       onClose={onClose}
       title={editingEntry ? "Edit weigh-in" : "Log weigh-in"}
       className={weightSwipe.dragging ? "sheet-modal--dragging" : ""}
-      swipeBind={weightSwipe.bind}
-      swipeStyle={weightSwipe.style}
+      swipe_bind={weightSwipe.bind}
+      swipe_style={weightSwipe.style}
     >
       <form className="profile__form" onSubmit={onSubmit}>
         <FormField
           label="Date"
           error={weightFieldErrors.entry_date}
           state={weightFieldStates.entry_date}
-          showIndicator
+          show_indicator
           shake={weightFieldErrors.entry_date ? weightShakeKey : 0}
         >
           <input
@@ -64,7 +64,7 @@ export default function WeightForm({
             label="Weight (kg)"
             error={weightFieldErrors.weight_kg}
             state={weightFieldStates.weight_kg}
-            showIndicator
+            show_indicator
             shake={weightFieldErrors.weight_kg ? weightShakeKey : 0}
           >
             <input
@@ -88,7 +88,7 @@ export default function WeightForm({
             label="Weight (lbs)"
             error={weightFieldErrors.weight_lbs}
             state={weightFieldStates.weight_lbs}
-            showIndicator
+            show_indicator
             shake={weightFieldErrors.weight_lbs ? weightShakeKey : 0}
           >
             <input

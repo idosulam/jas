@@ -1,16 +1,16 @@
 import "./profile.css";
 import { useCallback, useEffect, useMemo, useState, useRef } from "react";
-import { getSupabaseClient } from "../../../lib/superbase";
-import { useUserId } from "../../../lib/auth_context.jsx";
+import { get_supabase_client } from "../../../lib/superbase";
+import { use_user_id } from "../../../lib/auth_context.jsx";
 import {
-  getUserFacingError,
-  sanitizeDate,
-  sanitizeNumber,
-  sanitizeText,
-  hapticError,
+  get_user_facing_error,
+  sanitize_date,
+  sanitize_number,
+  sanitize_text,
+  haptic_error,
 } from "../../../lib/security";
 
-import { useGlassToast } from "../../../lib/glass_toast_provider.jsx";
+import { use_glass_toast } from "../../../lib/glass_toast_provider.jsx";
 import {
   SheetModal,
   ConfirmModal,
@@ -19,17 +19,17 @@ import {
   FAB,
   LoadingSkeleton,
 } from "../../../components";
-import { useHousehold } from "../../../lib/household_context.jsx";
+import { use_household } from "../../../lib/household_context.jsx";
 import {
-  useBodyScrollLock,
-  useModal,
-  useFloatingActions,
-} from "../../../hooks";
+  use_body_scroll_lock,
+  use_modal,
+  use_floating_actions,
+} from "../../../Hooks";
 import { ACTIVITY_LEVELS, GENDER_OPTIONS } from "../Fitness/macro_calculator";
 
-import { formatDateLabel } from "../../../lib/format";
+import { format_date_label } from "../../../lib/format";
 
-import { loadUnit, toDisplayKg, formatWeight, formatWeightBoth, kgToLbs, lbsToKg, cmToFeetAndInches, feetAndInchesToCm, formatHeight, calcBmi, bmiLabel, healthyWeightRangeKg } from "../../../lib/weight";
+import { load_unit, to_display_kg, format_weight, format_weight_both, kg_to_lbs, lbs_to_kg, cm_to_feet_and_inches, feet_and_inches_to_cm, format_height, calc_bmi, bmi_label, healthy_weight_range_kg } from "../../../lib/weight";
 
 import WeightChart from "./weight_chart";
 import { daysBetween, buildInsight } from "./weight_utils";
@@ -61,28 +61,28 @@ const emptyWeightForm = () => ({
 
 
 function Profile({ onNavigate }) {
-  const { householdName } = useHousehold();
-  const userId = useUserId();
-  const [removingId, setRemovingId] = useState(null);
+  const { household_name } = use_household();
+  const user_id = use_user_id();
+  const [removing_id, set_removing_id] = useState(null);
   const [unit, setUnit] = useState("kg");
   const [profile, setProfile] = useState(null);
   const [entries, setEntries] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [loading, set_loading] = useState(true);
+  const [error, set_error] = useState(null);
 
-  const weightModal = useModal(MODAL_EXIT_MS);
-  const profileModal = useModal(MODAL_EXIT_MS);
-  const deleteModal = useModal(MODAL_EXIT_MS);
-  const deleteAccountModal = useModal(MODAL_EXIT_MS);
+  const weightModal = use_modal(MODAL_EXIT_MS);
+  const profileModal = use_modal(MODAL_EXIT_MS);
+  const delete_modal = use_modal(MODAL_EXIT_MS);
+  const deleteAccountModal = use_modal(MODAL_EXIT_MS);
 
-  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [delete_target, set_delete_target] = useState(null);
 
   const [weightForm, setWeightForm] = useState(emptyWeightForm);
   const [profileForm, setProfileForm] = useState(emptyProfileForm);
   const [editingEntry, setEditingEntry] = useState(null);
-  const [saving, setSaving] = useState(false);
-  const [deleting, setDeleting] = useState(false);
-  const [duplicateDateConfirm, setDuplicateDateConfirm] = useState(null);
+  const [saving, set_saving] = useState(false);
+  const [deleting, set_deleting] = useState(false);
+  const [duplicate_date_confirm, set_duplicate_date_confirm] = useState(null);
   const [profileFieldErrors, setProfileFieldErrors] = useState({});
   const [profileFieldStates, setProfileFieldStates] = useState({});
   const [profileShakeKey, setProfileShakeKey] = useState(0);
@@ -90,38 +90,38 @@ function Profile({ onNavigate }) {
   const [weightFieldStates, setWeightFieldStates] = useState({});
   const [weightShakeKey, setWeightShakeKey] = useState(0);
   const hasLoadedOnce = useRef(false);
-  const { success: toastSuccess, error: toastError } = useGlassToast();
+  const { success: toast_success, error: toast_error } = use_glass_toast();
 
-  const { ref: logWeightBtnRef, visible: showFloatingActions } =
-    useFloatingActions();
+  const { ref: logWeightBtnRef, visible: show_floating_actions } =
+    use_floating_actions();
 
   const fetchData = useCallback(async () => {
-    if (!userId) return;
+    if (!user_id) return;
 
     // only show the full-page loading state the first time
     if (!hasLoadedOnce.current) {
-      setLoading(true);
+      set_loading(true);
     }
-    setError(null);
+    set_error(null);
 
     try {
-      const supabase = getSupabaseClient();
+      const supabase = get_supabase_client();
       const [profileRes, entriesRes] = await Promise.all([
         supabase
           .from("profile")
           .select("*")
-          .eq("user_id", userId)
+          .eq("user_id", user_id)
           .limit(1)
           .maybeSingle(),
         supabase
           .from("weight_entries")
           .select("*")
-          .eq("user_id", userId)
+          .eq("user_id", user_id)
           .order("entry_date", { ascending: true }),
       ]);
 
       if (profileRes.error) {
-        setError(getUserFacingError(profileRes.error.message));
+        set_error(get_user_facing_error(profileRes.error.message));
         setProfile(null);
       } else {
         setProfile(profileRes.data);
@@ -131,39 +131,39 @@ function Profile({ onNavigate }) {
       }
 
       if (entriesRes.error) {
-        setError(getUserFacingError(entriesRes.error.message));
+        set_error(get_user_facing_error(entriesRes.error.message));
         setEntries([]);
       } else {
         setEntries(entriesRes.data ?? []);
       }
     } catch (err) {
-      setError(getUserFacingError(err.message));
+      set_error(get_user_facing_error(err.message));
       setProfile(null);
       setEntries([]);
     }
 
     hasLoadedOnce.current = true;
-    setLoading(false);
-  }, [userId]);
+    set_loading(false);
+  }, [user_id]);
 
   useEffect(() => {
     fetchData();
   }, [fetchData]);
 
-  useBodyScrollLock(
+  use_body_scroll_lock(
     weightModal.open,
     weightModal.closing,
     profileModal.open,
     profileModal.closing,
-    deleteModal.open,
-    deleteModal.closing,
+    delete_modal.open,
+    delete_modal.closing,
   );
 
   const handleUnitChange = async (nextUnit) => {
     setUnit(nextUnit);
     if (profile) {
       try {
-        const supabase = getSupabaseClient();
+        const supabase = get_supabase_client();
         await supabase
           .from("profile")
           .update({ weight_unit: nextUnit })
@@ -174,30 +174,30 @@ function Profile({ onNavigate }) {
     }
   };
 
-  const openAddWeight = () => {
+  const open_add_weight = () => {
     setEditingEntry(null);
     setWeightForm(emptyWeightForm());
     setWeightFieldErrors({});
     setWeightFieldStates({});
-    weightModal.openModal();
+    weightModal.open_modal();
   };
 
   const openEditWeight = (entry) => {
-    const weightKg = Number(entry.weight_kg);
+    const weight_kg = Number(entry.weight_kg);
     setEditingEntry(entry);
     setWeightForm({
       entry_date: entry.entry_date,
-      weight_kg: String(weightKg.toFixed(1)),
-      weight_lbs: String(kgToLbs(weightKg)?.toFixed(1) ?? ""),
+      weight_kg: String(weight_kg.toFixed(1)),
+      weight_lbs: String(kg_to_lbs(weight_kg)?.toFixed(1) ?? ""),
       notes: entry.notes ?? "",
     });
     setWeightFieldErrors({});
     setWeightFieldStates({});
-    weightModal.openModal();
+    weightModal.open_modal();
   };
 
   const closeWeightModal = () => {
-    weightModal.closeModal();
+    weightModal.close_modal();
     setTimeout(() => {
       setEditingEntry(null);
       setWeightForm(emptyWeightForm());
@@ -208,20 +208,20 @@ function Profile({ onNavigate }) {
 
   const openProfileEdit = () => {
     if (profile) {
-      const heightCm =
+      const height_cm =
         profile.height_cm != null ? Number(profile.height_cm) : null;
-      const { feet, inches } = cmToFeetAndInches(heightCm);
+      const { feet, inches } = cm_to_feet_and_inches(height_cm);
       const goalKg =
         profile.goal_weight_kg != null ? Number(profile.goal_weight_kg) : null;
       setProfileForm({
         display_name: profile.display_name ?? "",
         age: profile.age != null ? String(profile.age) : "",
-        height_cm: heightCm != null ? String(heightCm) : "",
+        height_cm: height_cm != null ? String(height_cm) : "",
         height_ft: feet,
         height_in: inches,
         goal_weight_kg: goalKg != null ? String(goalKg.toFixed(1)) : "",
         goal_weight_lbs:
-          goalKg != null ? String(kgToLbs(goalKg)?.toFixed(1) ?? "") : "",
+          goalKg != null ? String(kg_to_lbs(goalKg)?.toFixed(1) ?? "") : "",
         gender: profile.gender || "",
         activity_level: profile.activity_level || "",
       });
@@ -230,11 +230,11 @@ function Profile({ onNavigate }) {
     }
     setProfileFieldErrors({});
     setProfileFieldStates({});
-    profileModal.openModal();
+    profileModal.open_modal();
   };
 
   const closeProfileModal = () => {
-    profileModal.closeModal();
+    profileModal.close_modal();
     setTimeout(() => {
       setProfileFieldErrors({});
       setProfileFieldStates({});
@@ -242,20 +242,20 @@ function Profile({ onNavigate }) {
   };
 
   const openDeleteConfirm = (entry) => {
-    setDeleteTarget(entry);
-    deleteModal.openModal();
+    set_delete_target(entry);
+    delete_modal.open_modal();
   };
 
-  const closeDeleteModal = () => {
-    deleteModal.closeModal();
+  const close_delete_modal = () => {
+    delete_modal.close_modal();
     setTimeout(() => {
-      setDeleteTarget(null);
+      set_delete_target(null);
     }, MODAL_EXIT_MS);
   };
 
   const handleHeightCmChange = (value) => {
-    const cmValue = sanitizeNumber(value, 1, 300);
-    const { feet, inches } = cmToFeetAndInches(cmValue);
+    const cmValue = sanitize_number(value, 1, 300);
+    const { feet, inches } = cm_to_feet_and_inches(cmValue);
     setProfileForm((current) => ({
       ...current,
       height_cm: value,
@@ -265,41 +265,41 @@ function Profile({ onNavigate }) {
   };
 
   const handleGoalWeightKgChange = (value) => {
-    const kgValue = sanitizeNumber(value, 1, 1000);
+    const kgValue = sanitize_number(value, 1, 1000);
     setProfileForm((current) => ({
       ...current,
       goal_weight_kg: value,
       goal_weight_lbs:
-        kgValue != null ? String(kgToLbs(kgValue)?.toFixed(1) ?? "") : "",
+        kgValue != null ? String(kg_to_lbs(kgValue)?.toFixed(1) ?? "") : "",
     }));
   };
 
   const handleGoalWeightLbsChange = (value) => {
-    const lbsValue = sanitizeNumber(value, 1, 2200);
+    const lbsValue = sanitize_number(value, 1, 2200);
     setProfileForm((current) => ({
       ...current,
       goal_weight_kg:
-        lbsValue != null ? String(lbsToKg(lbsValue)?.toFixed(2) ?? "") : "",
+        lbsValue != null ? String(lbs_to_kg(lbsValue)?.toFixed(2) ?? "") : "",
       goal_weight_lbs: value,
     }));
   };
 
   const handleWeightKgChange = (value) => {
-    const kgValue = sanitizeNumber(value, 1, 1000);
+    const kgValue = sanitize_number(value, 1, 1000);
     setWeightForm((current) => ({
       ...current,
       weight_kg: value,
       weight_lbs:
-        kgValue != null ? String(kgToLbs(kgValue)?.toFixed(1) ?? "") : "",
+        kgValue != null ? String(kg_to_lbs(kgValue)?.toFixed(1) ?? "") : "",
     }));
   };
 
   const handleWeightLbsChange = (value) => {
-    const lbsValue = sanitizeNumber(value, 1, 2200);
+    const lbsValue = sanitize_number(value, 1, 2200);
     setWeightForm((current) => ({
       ...current,
       weight_kg:
-        lbsValue != null ? String(lbsToKg(lbsValue)?.toFixed(2) ?? "") : "",
+        lbsValue != null ? String(lbs_to_kg(lbsValue)?.toFixed(2) ?? "") : "",
       weight_lbs: value,
     }));
   };
@@ -309,7 +309,7 @@ function Profile({ onNavigate }) {
       ...profileForm,
       [field]: value,
     };
-    const convertedCm = feetAndInchesToCm(
+    const convertedCm = feet_and_inches_to_cm(
       nextState.height_ft,
       nextState.height_in,
     );
@@ -320,29 +320,29 @@ function Profile({ onNavigate }) {
   };
 
   const performSaveWeight = async () => {
-    const weightKg =
-      sanitizeNumber(weightForm.weight_kg, 1, 1000) ??
-      lbsToKg(weightForm.weight_lbs);
-    const entryDate = sanitizeDate(
+    const weight_kg =
+      sanitize_number(weightForm.weight_kg, 1, 1000) ??
+      lbs_to_kg(weightForm.weight_lbs);
+    const entry_date = sanitize_date(
       weightForm.entry_date,
       emptyWeightForm().entry_date,
     );
-    const notes = sanitizeText(weightForm.notes, 240);
-    if (!weightKg || weightKg <= 0 || !entryDate) return;
+    const notes = sanitize_text(weightForm.notes, 240);
+    if (!weight_kg || weight_kg <= 0 || !entry_date) return;
 
-    setSaving(true);
-    setError(null);
-    setDuplicateDateConfirm(null);
+    set_saving(true);
+    set_error(null);
+    set_duplicate_date_confirm(null);
 
     const payload = {
-      entry_date: entryDate,
-      weight_kg: Number(weightKg.toFixed(2)),
+      entry_date: entry_date,
+      weight_kg: Number(weight_kg.toFixed(2)),
       notes: notes || null,
-      ...(userId && { user_id: userId }),
+      ...(user_id && { user_id: user_id }),
     };
 
     try {
-      const supabase = getSupabaseClient();
+      const supabase = get_supabase_client();
       const query = editingEntry
         ? supabase
             .from("weight_entries")
@@ -353,70 +353,70 @@ function Profile({ onNavigate }) {
             .upsert(payload, { onConflict: "user_id,entry_date" });
 
       const { error: saveError } = await query;
-      setSaving(false);
+      set_saving(false);
 
       if (saveError) {
         const rawMsg = saveError.message || "";
         // Supabase returns this when the unique constraint is missing
         if (/on conflict|no unique/i.test(rawMsg)) {
-          const existing = entries.find((e) => e.entry_date === entryDate);
+          const existing = entries.find((e) => e.entry_date === entry_date);
           if (existing) {
-            setDuplicateDateConfirm({
-              existingEntry: existing,
-              newWeight: weightKg,
+            set_duplicate_date_confirm({
+              existing_entry: existing,
+              newWeight: weight_kg,
               newNotes: notes,
             });
             return;
           }
         }
         const friendly = /permission|duplicate|conflict/i.test(rawMsg)
-          ? `Could not save — there's already an entry for ${formatDateLabel(entryDate)}. Edit the existing one instead.`
-          : getUserFacingError(rawMsg);
-        setError(friendly);
-        toastError(friendly);
+          ? `Could not save — there's already an entry for ${format_date_label(entry_date)}. Edit the existing one instead.`
+          : get_user_facing_error(rawMsg);
+        set_error(friendly);
+        toast_error(friendly);
         return;
       }
 
-      const isUpdate = !!editingEntry || !!duplicateDateConfirm;
+      const isUpdate = !!editingEntry || !!duplicate_date_confirm;
       closeWeightModal();
-      toastSuccess(
+      toast_success(
         isUpdate
-          ? `Weight updated for ${formatDateLabel(entryDate)}.`
-          : `Weight logged for ${formatDateLabel(entryDate)}.`,
+          ? `Weight updated for ${format_date_label(entry_date)}.`
+          : `Weight logged for ${format_date_label(entry_date)}.`,
       );
       fetchData();
     } catch (err) {
-      setSaving(false);
-      setError(getUserFacingError(err.message));
-      toastError("Something went wrong. Please try again.");
+      set_saving(false);
+      set_error(get_user_facing_error(err.message));
+      toast_error("Something went wrong. Please try again.");
     }
   };
 
   const isWeightFormValid = useMemo(() => {
     if (!weightForm.entry_date) return false;
-    const weightKg =
-      sanitizeNumber(weightForm.weight_kg, 1, 1000) ??
-      lbsToKg(weightForm.weight_lbs);
-    if (!weightKg || weightKg <= 0) return false;
+    const weight_kg =
+      sanitize_number(weightForm.weight_kg, 1, 1000) ??
+      lbs_to_kg(weightForm.weight_lbs);
+    if (!weight_kg || weight_kg <= 0) return false;
     return true;
   }, [weightForm]);
 
   const isProfileFormValid = useMemo(() => {
     if (!profileForm.display_name || !profileForm.display_name.trim())
       return false;
-    const age = sanitizeNumber(profileForm.age, 13, 120);
+    const age = sanitize_number(profileForm.age, 13, 120);
     if (!profileForm.age || age == null) return false;
-    const heightCm =
-      sanitizeNumber(profileForm.height_cm, 1, 300) ??
-      feetAndInchesToCm(profileForm.height_ft, profileForm.height_in);
-    if (!heightCm) return false;
+    const height_cm =
+      sanitize_number(profileForm.height_cm, 1, 300) ??
+      feet_and_inches_to_cm(profileForm.height_ft, profileForm.height_in);
+    if (!height_cm) return false;
     if (!profileForm.gender) return false;
     if (!profileForm.activity_level) return false;
     return true;
   }, [profileForm]);
 
-  const validateProfileField = (fieldName) => {
-    switch (fieldName) {
+  const validateProfileField = (field_name) => {
+    switch (field_name) {
       case "display_name": {
         if (!profileForm.display_name || !profileForm.display_name.trim())
           return "Name is required";
@@ -426,20 +426,20 @@ function Profile({ onNavigate }) {
       }
       case "age": {
         if (!profileForm.age) return "Age is required";
-        const age = sanitizeNumber(profileForm.age, 13, 120);
+        const age = sanitize_number(profileForm.age, 13, 120);
         if (age == null) return "Enter a valid age (13–120)";
         return null;
       }
       case "height_cm": {
         if (!profileForm.height_cm && !profileForm.height_ft && !profileForm.height_in)
           return "Height is required";
-        const cm = sanitizeNumber(profileForm.height_cm, 1, 300);
+        const cm = sanitize_number(profileForm.height_cm, 1, 300);
         if (profileForm.height_cm && cm == null) return "Enter a valid height";
         return null;
       }
       case "goal_weight_kg": {
         if (!profileForm.goal_weight_kg) return null; // optional
-        const kg = sanitizeNumber(profileForm.goal_weight_kg, 1, 1000);
+        const kg = sanitize_number(profileForm.goal_weight_kg, 1, 1000);
         if (kg == null) return "Enter a valid weight";
         return null;
       }
@@ -462,21 +462,21 @@ function Profile({ onNavigate }) {
     }
   };
 
-  const handleProfileFieldBlur = (fieldName) => {
-    const error = validateProfileField(fieldName);
-    setProfileFieldErrors((prev) => ({ ...prev, [fieldName]: error }));
+  const handleProfileFieldBlur = (field_name) => {
+    const error = validateProfileField(field_name);
+    setProfileFieldErrors((prev) => ({ ...prev, [field_name]: error }));
     setProfileFieldStates((prev) => ({
       ...prev,
-      [fieldName]: error ? "error" : profileForm[fieldName] ? "valid" : "idle",
+      [field_name]: error ? "error" : profileForm[field_name] ? "valid" : "idle",
     }));
     if (error) {
       setProfileShakeKey((k) => k + 1);
-      hapticError();
+      haptic_error();
     }
   };
 
-  const validateWeightField = (fieldName) => {
-    switch (fieldName) {
+  const validateWeightField = (field_name) => {
+    switch (field_name) {
       case "entry_date": {
         if (!weightForm.entry_date) return "Pick a date";
         return null;
@@ -484,7 +484,7 @@ function Profile({ onNavigate }) {
       case "weight_kg": {
         if (!weightForm.weight_kg && !weightForm.weight_lbs)
           return "Enter your weight";
-        const kg = sanitizeNumber(weightForm.weight_kg, 1, 1000);
+        const kg = sanitize_number(weightForm.weight_kg, 1, 1000);
         if (weightForm.weight_kg && kg == null)
           return "Must be between 1 and 1000";
         return null;
@@ -492,7 +492,7 @@ function Profile({ onNavigate }) {
       case "weight_lbs": {
         if (!weightForm.weight_lbs && !weightForm.weight_kg)
           return "Enter your weight";
-        const lbs = sanitizeNumber(weightForm.weight_lbs, 1, 2200);
+        const lbs = sanitize_number(weightForm.weight_lbs, 1, 2200);
         if (weightForm.weight_lbs && lbs == null)
           return "Must be between 1 and 2200";
         return null;
@@ -502,10 +502,10 @@ function Profile({ onNavigate }) {
     }
   };
 
-  const handleWeightFieldBlur = (fieldName) => {
-    const error = validateWeightField(fieldName);
+  const handleWeightFieldBlur = (field_name) => {
+    const error = validateWeightField(field_name);
     // If the other field has a valid value, don't show error on this one
-    const otherField = fieldName === "weight_kg" ? "weight_lbs" : "weight_kg";
+    const otherField = field_name === "weight_kg" ? "weight_lbs" : "weight_kg";
     const otherHasValue = !!weightForm[otherField];
     const effectiveError = otherHasValue ? null : error;
 
@@ -513,14 +513,14 @@ function Profile({ onNavigate }) {
     const hasAnyWeight = weightForm.weight_kg || weightForm.weight_lbs;
     setWeightFieldErrors((prev) => ({
       ...prev,
-      [fieldName]: effectiveError,
+      [field_name]: effectiveError,
       ...(hasAnyWeight ? { [otherField]: null } : {}),
     }));
     setWeightFieldStates((prev) => ({
       ...prev,
-      [fieldName]: effectiveError
+      [field_name]: effectiveError
         ? "error"
-        : weightForm[fieldName]
+        : weightForm[field_name]
           ? "valid"
           : hasAnyWeight
             ? "valid"
@@ -529,28 +529,28 @@ function Profile({ onNavigate }) {
     }));
     if (effectiveError) {
       setWeightShakeKey((k) => k + 1);
-      hapticError();
+      haptic_error();
     }
   };
 
   const saveWeight = async (e) => {
     e.preventDefault();
-    const weightKg =
-      sanitizeNumber(weightForm.weight_kg, 1, 1000) ??
-      lbsToKg(weightForm.weight_lbs);
-    const entryDate = sanitizeDate(
+    const weight_kg =
+      sanitize_number(weightForm.weight_kg, 1, 1000) ??
+      lbs_to_kg(weightForm.weight_lbs);
+    const entry_date = sanitize_date(
       weightForm.entry_date,
       emptyWeightForm().entry_date,
     );
-    if (!weightKg || weightKg <= 0 || !entryDate) {
+    if (!weight_kg || weight_kg <= 0 || !entry_date) {
       // Trigger validation display
       const errors = {};
       const states = {};
-      if (!entryDate) {
+      if (!entry_date) {
         errors.entry_date = "Pick a date";
         states.entry_date = "error";
       }
-      if (!weightKg || weightKg <= 0) {
+      if (!weight_kg || weight_kg <= 0) {
         errors.weight_kg = "Enter your weight";
         states.weight_kg = "error";
       }
@@ -562,12 +562,12 @@ function Profile({ onNavigate }) {
 
     // If adding (not editing), check for an existing entry on the same date
     if (!editingEntry) {
-      const existing = entries.find((e) => e.entry_date === entryDate);
+      const existing = entries.find((e) => e.entry_date === entry_date);
       if (existing) {
-        setDuplicateDateConfirm({
-          existingEntry: existing,
-          newWeight: weightKg,
-          newNotes: sanitizeText(weightForm.notes, 240),
+        set_duplicate_date_confirm({
+          existing_entry: existing,
+          newWeight: weight_kg,
+          newNotes: sanitize_text(weightForm.notes, 240),
         });
         return;
       }
@@ -578,37 +578,37 @@ function Profile({ onNavigate }) {
 
   const confirmDuplicateSave = () => {
     // User confirmed — switch to edit mode on the existing entry
-    if (duplicateDateConfirm?.existingEntry) {
-      setEditingEntry(duplicateDateConfirm.existingEntry);
+    if (duplicate_date_confirm?.existing_entry) {
+      setEditingEntry(duplicate_date_confirm.existing_entry);
     }
     performSaveWeight();
   };
 
   const closeDuplicateConfirm = () => {
-    setDuplicateDateConfirm(null);
+    set_duplicate_date_confirm(null);
   };
 
-  const saveProfile = async (e) => {
+  const save_profile = async (e) => {
     e.preventDefault();
-    setSaving(true);
-    setError(null);
+    set_saving(true);
+    set_error(null);
 
     const goalKg =
-      sanitizeNumber(profileForm.goal_weight_kg, 1, 1000) ??
-      lbsToKg(profileForm.goal_weight_lbs);
-    const displayName = sanitizeText(profileForm.display_name, 40) || "Jas";
-    const age = sanitizeNumber(profileForm.age, 13, 120);
-    const heightCmFromCm = sanitizeNumber(profileForm.height_cm, 1, 300);
-    const heightCmFromImperial = feetAndInchesToCm(
+      sanitize_number(profileForm.goal_weight_kg, 1, 1000) ??
+      lbs_to_kg(profileForm.goal_weight_lbs);
+    const display_name = sanitize_text(profileForm.display_name, 40) || "Jas";
+    const age = sanitize_number(profileForm.age, 13, 120);
+    const heightCmFromCm = sanitize_number(profileForm.height_cm, 1, 300);
+    const heightCmFromImperial = feet_and_inches_to_cm(
       profileForm.height_ft,
       profileForm.height_in,
     );
-    const heightCm = heightCmFromCm ?? heightCmFromImperial;
+    const height_cm = heightCmFromCm ?? heightCmFromImperial;
 
     const payload = {
-      display_name: displayName,
+      display_name: display_name,
       age,
-      height_cm: heightCm ?? null,
+      height_cm: height_cm ?? null,
       goal_weight_kg: goalKg ? Number(goalKg.toFixed(2)) : null,
       gender: profileForm.gender,
       activity_level: profileForm.activity_level,
@@ -616,66 +616,66 @@ function Profile({ onNavigate }) {
     };
 
     try {
-      const supabase = getSupabaseClient();
+      const supabase = get_supabase_client();
       const { error: saveError } = profile
         ? await supabase.from("profile").update(payload).eq("id", profile.id)
         : await supabase
             .from("profile")
-            .insert({ ...payload, ...(userId && { user_id: userId }) });
+            .insert({ ...payload, ...(user_id && { user_id: user_id }) });
 
-      setSaving(false);
+      set_saving(false);
 
       if (saveError) {
-        setError(getUserFacingError(saveError.message));
-        toastError("Couldn't save profile.");
+        set_error(get_user_facing_error(saveError.message));
+        toast_error("Couldn't save profile.");
         return;
       }
 
       closeProfileModal();
-      toastSuccess("Profile saved.");
+      toast_success("Profile saved.");
       fetchData();
     } catch (err) {
-      setSaving(false);
-      setError(getUserFacingError(err.message));
-      toastError("Couldn't save profile.");
+      set_saving(false);
+      set_error(get_user_facing_error(err.message));
+      toast_error("Couldn't save profile.");
     }
   };
 
-  const confirmDelete = async () => {
-    if (!deleteTarget) return;
-    const targetId = deleteTarget.id;
+  const confirm_delete = async () => {
+    if (!delete_target) return;
+    const targetId = delete_target.id;
 
-    setDeleting(true);
-    setRemovingId(targetId);
-    closeDeleteModal();
+    set_deleting(true);
+    set_removing_id(targetId);
+    close_delete_modal();
 
     // wait for the exit animation, then optimistically remove it
     await new Promise((resolve) => setTimeout(resolve, 240));
     setEntries((prev) => prev.filter((e) => e.id !== targetId));
-    setRemovingId(null);
+    set_removing_id(null);
 
     try {
-      const supabase = getSupabaseClient();
+      const supabase = get_supabase_client();
       const { error: deleteError } = await supabase
         .from("weight_entries")
         .delete()
         .eq("id", targetId);
 
-      setDeleting(false);
+      set_deleting(false);
 
       if (deleteError) {
-        setError(getUserFacingError(deleteError.message));
-        toastError("Failed to delete weight entry.");
+        set_error(get_user_facing_error(deleteError.message));
+        toast_error("Failed to delete weight entry.");
         fetchData(); // resync in case the optimistic update was wrong
         return;
       }
 
-      toastSuccess("Entry deleted.");
+      toast_success("Entry deleted.");
       fetchData(); // quiet background resync, no loading flash now
     } catch (err) {
-      setDeleting(false);
-      setError(getUserFacingError(err.message));
-      toastError("Couldn't delete entry.");
+      set_deleting(false);
+      set_error(get_user_facing_error(err.message));
+      toast_error("Couldn't delete entry.");
       fetchData();
     }
   };
@@ -683,14 +683,14 @@ function Profile({ onNavigate }) {
   // Delete account
   const handleDeleteAccount = async () => {
     try {
-      const supabase = getSupabaseClient();
+      const supabase = get_supabase_client();
       const { error } = await supabase.rpc("delete_current_user");
       if (error) throw error;
-      deleteAccountModal.closeModal();
-      toastSuccess("Account deleted.");
+      deleteAccountModal.close_modal();
+      toast_success("Account deleted.");
       await supabase.auth.signOut();
     } catch (err) {
-      toastError(getUserFacingError(err.message));
+      toast_error(get_user_facing_error(err.message));
     }
   };
 
@@ -700,7 +700,7 @@ function Profile({ onNavigate }) {
     );
     const latest = sorted[sorted.length - 1];
     const first = sorted[0];
-    const heightCm = profile?.height_cm ? Number(profile.height_cm) : null;
+    const height_cm = profile?.height_cm ? Number(profile.height_cm) : null;
     const goalKg = profile?.goal_weight_kg
       ? Number(profile.goal_weight_kg)
       : null;
@@ -719,8 +719,8 @@ function Profile({ onNavigate }) {
       weeklyChangeKg = (totalChangeKg / spanDays) * 7;
     }
 
-    const bmi = calcBmi(currentKg, heightCm);
-    const range = healthyWeightRangeKg(heightCm);
+    const bmi = calc_bmi(currentKg, height_cm);
+    const range = healthy_weight_range_kg(height_cm);
 
     let goalProgress = null;
     let remainingKg = null;
@@ -750,19 +750,19 @@ function Profile({ onNavigate }) {
       totalChangeKg,
       weeklyChangeKg,
       bmi,
-      bmiCategory: bmiLabel(bmi),
+      bmiCategory: bmi_label(bmi),
       range,
       goalProgress,
       remainingKg,
       goalKg,
-      heightCm,
+      height_cm,
       age,
       insight,
       sorted,
     };
   }, [entries, profile]);
 
-  const displayName = profile?.display_name || "";
+  const display_name = profile?.display_name || "";
   const unitLabel = unit === "kg" ? "kg" : "lbs";
 
   return (
@@ -770,13 +770,13 @@ function Profile({ onNavigate }) {
       <PageHeader
         className="profile__header"
         eyebrow={
-          householdName ? `Progress · ${householdName}` : "Your progress"
+          household_name ? `Progress · ${household_name}` : "Your progress"
         }
-        title={`Hi ${displayName}`}
+        title={`Hi ${display_name}`}
         subtitle="Weight loss analytics tuned for your training."
       >
         <div className="profile__avatar" aria-hidden="true">
-          {displayName.charAt(0).toUpperCase()}
+          {display_name.charAt(0).toUpperCase()}
         </div>
         <div
           className="profile__unit-toggle"
@@ -834,7 +834,7 @@ function Profile({ onNavigate }) {
               <button
                 type="button"
                 className="profile__text-btn"
-                onClick={openAddWeight}
+                onClick={open_add_weight}
                 ref={logWeightBtnRef}
               >
                 + Log weight
@@ -877,13 +877,13 @@ function Profile({ onNavigate }) {
                   <span>
                     Target{" "}
                     <strong>
-                      {formatWeightBoth(analytics.goalKg)}
+                      {format_weight_both(analytics.goalKg)}
                     </strong>
                   </span>
                   {analytics.remainingKg != null && (
                     <span>
                       {analytics.remainingKg > 0
-                        ? `${formatWeightBoth(analytics.remainingKg)} to go`
+                        ? `${format_weight_both(analytics.remainingKg)} to go`
                         : "🎉 Goal reached!"}
                     </span>
                   )}
@@ -912,23 +912,23 @@ function Profile({ onNavigate }) {
               Training insight
             </h2>
             <p className="profile__insight-text">{analytics.insight}</p>
-            {analytics.range && analytics.heightCm && (
+            {analytics.range && analytics.height_cm && (
               <p className="profile__insight-meta">
                 Healthy weight for your height:{" "}
                 <strong>
-                  {formatWeightBoth(analytics.range.min, 0)}
+                  {format_weight_both(analytics.range.min, 0)}
                   {" – "}
-                  {formatWeightBoth(analytics.range.max, 0)}
+                  {format_weight_both(analytics.range.max, 0)}
                 </strong>
                 {analytics.age ? ` · Age ${analytics.age}` : ""}
               </p>
             )}
-            {analytics.heightCm && (
+            {analytics.height_cm && (
               <p className="profile__insight-meta">
-                Height: {formatHeight(analytics.heightCm)}
+                Height: {format_height(analytics.height_cm)}
               </p>
             )}
-            {!analytics.heightCm && (
+            {!analytics.height_cm && (
               <button
                 type="button"
                 className="profile__link-btn"
@@ -957,7 +957,7 @@ function Profile({ onNavigate }) {
               <button
                 type="button"
                 className="profile__text-btn profile__text-btn--danger"
-                onClick={() => deleteAccountModal.openModal()}
+                onClick={() => deleteAccountModal.open_modal()}
               >
                 Delete account
               </button>
@@ -973,7 +973,7 @@ function Profile({ onNavigate }) {
             </div>
             <ProfileHistory
               sorted={analytics.sorted}
-              removingId={removingId}
+              removing_id={removing_id}
               unit={unit}
               unitLabel={unitLabel}
               onEdit={openEditWeight}
@@ -1009,12 +1009,12 @@ function Profile({ onNavigate }) {
         onClose={closeProfileModal}
         title="Edit profile"
       >
-        <form className="profile__form" onSubmit={saveProfile}>
+        <form className="profile__form" onSubmit={save_profile}>
           <FormField
             label="Name"
             error={profileFieldErrors.display_name}
             state={profileFieldStates.display_name}
-            showIndicator
+            show_indicator
             shake={profileFieldErrors.display_name ? profileShakeKey : 0}
           >
             <input
@@ -1037,7 +1037,7 @@ function Profile({ onNavigate }) {
             label="Age"
             error={profileFieldErrors.age}
             state={profileFieldStates.age}
-            showIndicator
+            show_indicator
             shake={profileFieldErrors.age ? profileShakeKey : 0}
           >
             <input
@@ -1057,7 +1057,7 @@ function Profile({ onNavigate }) {
             label="Height (cm)"
             error={profileFieldErrors.height_cm}
             state={profileFieldStates.height_cm}
-            showIndicator
+            show_indicator
             shake={profileFieldErrors.height_cm ? profileShakeKey : 0}
           >
             <input
@@ -1108,7 +1108,7 @@ function Profile({ onNavigate }) {
               label="Goal weight (kg)"
               error={profileFieldErrors.goal_weight_kg}
               state={profileFieldStates.goal_weight_kg}
-              showIndicator
+              show_indicator
               shake={profileFieldErrors.goal_weight_kg ? profileShakeKey : 0}
               optional
             >
@@ -1144,7 +1144,7 @@ function Profile({ onNavigate }) {
             label="Gender"
             error={profileFieldErrors.gender}
             state={profileFieldStates.gender}
-            showIndicator
+            show_indicator
             shake={profileFieldErrors.gender ? profileShakeKey : 0}
           >
             <select
@@ -1170,7 +1170,7 @@ function Profile({ onNavigate }) {
             label="Activity Level"
             error={profileFieldErrors.activity_level}
             state={profileFieldStates.activity_level}
-            showIndicator
+            show_indicator
             shake={profileFieldErrors.activity_level ? profileShakeKey : 0}
           >
             <select
@@ -1223,24 +1223,24 @@ function Profile({ onNavigate }) {
       </SheetModal>
 
       {/* Delete Confirmation Modal */}
-      {deleteTarget && (
+      {delete_target && (
         <ConfirmModal
-          open={deleteModal.open}
-          closing={deleteModal.closing}
-          onClose={closeDeleteModal}
-          onConfirm={confirmDelete}
+          open={delete_modal.open}
+          closing={delete_modal.closing}
+          onClose={close_delete_modal}
+          onConfirm={confirm_delete}
           loading={deleting}
           title="Delete weigh-in?"
-          description={`Remove ${formatDateLabel(deleteTarget.entry_date)} (${formatWeightBoth(Number(deleteTarget.weight_kg))})?`}
-          confirmLabel="Delete"
+          description={`Remove ${format_date_label(delete_target.entry_date)} (${format_weight_both(Number(delete_target.weight_kg))})?`}
+          confirm_label="Delete"
           variant="danger"
         />
       )}
 
       {/* Duplicate Date Confirmation */}
-      {duplicateDateConfirm && (
+      {duplicate_date_confirm && (
         <SheetModal
-          open={!!duplicateDateConfirm}
+          open={!!duplicate_date_confirm}
           closing={false}
           onClose={closeDuplicateConfirm}
           compact
@@ -1260,19 +1260,19 @@ function Profile({ onNavigate }) {
           </div>
           <h2 className="sheet-modal__title sheet-modal__title--compact">
             Already logged for{" "}
-            {formatDateLabel(duplicateDateConfirm.existingEntry.entry_date)}
+            {format_date_label(duplicate_date_confirm.existing_entry.entry_date)}
           </h2>
           <p className="profile__dup-desc">
             You have{" "}
             <strong>
-              {formatWeightBoth(Number(duplicateDateConfirm.existingEntry.weight_kg))}
+              {format_weight_both(Number(duplicate_date_confirm.existing_entry.weight_kg))}
             </strong>{" "}
             recorded for this day.
           </p>
           <p className="profile__dup-desc">
             Updating to{" "}
             <strong>
-              {formatWeightBoth(duplicateDateConfirm.newWeight)}
+              {format_weight_both(duplicate_date_confirm.newWeight)}
             </strong>
             ?
           </p>
@@ -1297,21 +1297,21 @@ function Profile({ onNavigate }) {
       )}
 
       <FAB
-        visible={showFloatingActions}
-        onScrollTop={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-        onAdd={openAddWeight}
-        addLabel="Log weight"
+        visible={show_floating_actions}
+        on_scroll_top={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+        on_add={open_add_weight}
+        add_label="Log weight"
       />
 
       {/* Delete Account Confirmation */}
       <ConfirmModal
         open={deleteAccountModal.open}
         closing={deleteAccountModal.closing}
-        onClose={() => deleteAccountModal.closeModal()}
+        onClose={() => deleteAccountModal.close_modal()}
         onConfirm={handleDeleteAccount}
         title="Delete your account?"
         description="This will permanently delete your account, all shifts, weight entries, and household data. This cannot be undone."
-        confirmLabel="Delete account"
+        confirm_label="Delete account"
         variant="danger"
       />
     </section>

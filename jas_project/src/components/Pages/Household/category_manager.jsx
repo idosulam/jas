@@ -1,4 +1,4 @@
-import FormField from "../../ui/form/form_field.jsx";
+import FormField from "../../UI/form/form_field.jsx";
 import ColorPalettePicker from "../../../lib/color_palette_picker.jsx";
 
 export const DEFAULT_ICONS = [

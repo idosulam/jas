@@ -85,7 +85,7 @@ function ShakeField({ trigger, children, ...rest }) {
   );
 }
 
-const slideVariants = {
+const slide_variants = {
   enter: (dir) => ({ x: dir > 0 ? 80 : -80, opacity: 0, scale: 0.96 }),
   center: { x: 0, opacity: 1, scale: 1 },
   exit: (dir) => ({ x: dir > 0 ? -80 : 80, opacity: 0, scale: 0.96 }),
@@ -96,39 +96,39 @@ function AuthForm({
   direction,
   email,
   password,
-  confirmPassword,
-  displayName,
-  showPassword,
+  confirm_password,
+  display_name,
+  show_password,
   loading,
   error,
-  successMsg,
-  emailState,
-  passwordState,
-  confirmState,
-  nameState,
-  emailError,
-  passwordError,
-  confirmError,
-  nameError,
-  emailTouched,
-  passwordTouched,
-  confirmTouched,
-  nameTouched,
-  shakeKey,
-  emailRef,
-  isFormValid,
-  onEmailChange,
-  onPasswordChange,
+  success_msg,
+  email_state,
+  password_state,
+  confirm_state,
+  name_state,
+  email_error,
+  password_error,
+  confirm_error,
+  name_error,
+  email_touched,
+  password_touched,
+  confirm_touched,
+  name_touched,
+  shake_key,
+  email_ref,
+  is_form_valid,
+  on_email_change,
+  on_password_change,
   onConfirmChange,
-  onNameChange,
-  onEmailBlur,
-  onPasswordBlur,
-  onConfirmBlur,
-  onNameBlur,
+  on_name_change,
+  on_email_blur,
+  on_password_blur,
+  on_confirm_blur,
+  on_name_blur,
   onToggleShowPassword,
   onSubmit,
 }) {
-  const inputClass = (touched, state) =>
+  const input_class = (touched, state) =>
     [
       "auth__input",
       touched && state === "valid" ? "auth__input--valid" : "",
@@ -137,7 +137,7 @@ function AuthForm({
       .filter(Boolean)
       .join(" ");
 
-  const wrapClass = (touched, state) =>
+  const wrap_class = (touched, state) =>
     `${touched && state === "valid" ? "auth__input-wrap--valid" : ""} ${touched && state === "error" ? "auth__input-wrap--error" : ""}`.trim();
 
   return (
@@ -147,7 +147,7 @@ function AuthForm({
         className="auth__form"
         onSubmit={onSubmit}
         custom={direction}
-        variants={slideVariants}
+        variants={slide_variants}
         initial="enter"
         animate="center"
         exit="exit"
@@ -156,14 +156,14 @@ function AuthForm({
         {/* Name (register only) */}
         {mode === MODES.REGISTER && (
           <ShakeField
-            trigger={nameState === "error" ? shakeKey : 0}
+            trigger={name_state === "error" ? shake_key : 0}
             className="auth__field"
           >
             <label className="auth__label" htmlFor="auth-name">
               Name
             </label>
             <div
-              className={`auth__input-wrap ${wrapClass(nameTouched, nameState)}`}
+              className={`auth__input-wrap ${wrap_class(name_touched, name_state)}`}
             >
               <svg
                 className="auth__input-icon"
@@ -179,31 +179,31 @@ function AuthForm({
               <input
                 id="auth-name"
                 type="text"
-                className={inputClass(nameTouched, nameState)}
+                className={input_class(name_touched, name_state)}
                 placeholder="Your name"
-                value={displayName}
-                onChange={onNameChange}
-                onBlur={onNameBlur}
+                value={display_name}
+                onChange={on_name_change}
+                onBlur={on_name_blur}
                 required
                 autoComplete="name"
                 maxLength={40}
               />
-              {nameTouched && <FieldIndicator state={nameState} />}
+              {name_touched && <FieldIndicator state={name_state} />}
             </div>
-            <FieldError message={nameTouched ? nameError : null} />
+            <FieldError message={name_touched ? name_error : null} />
           </ShakeField>
         )}
 
         {/* Email */}
         <ShakeField
-          trigger={emailState === "error" ? shakeKey : 0}
+          trigger={email_state === "error" ? shake_key : 0}
           className="auth__field"
         >
           <label className="auth__label" htmlFor="auth-email">
             Email
           </label>
           <div
-            className={`auth__input-wrap ${wrapClass(emailTouched, emailState)}`}
+            className={`auth__input-wrap ${wrap_class(email_touched, email_state)}`}
           >
             <svg
               className="auth__input-icon"
@@ -217,34 +217,34 @@ function AuthForm({
               <path d="m2 7 10 6 10-6" />
             </svg>
             <input
-              ref={emailRef}
+              ref={email_ref}
               id="auth-email"
               type="email"
-              className={inputClass(emailTouched, emailState)}
+              className={input_class(email_touched, email_state)}
               placeholder="you@example.com"
               value={email}
-              onChange={onEmailChange}
-              onBlur={onEmailBlur}
+              onChange={on_email_change}
+              onBlur={on_email_blur}
               required
               autoComplete="email"
               autoCapitalize="none"
               spellCheck="false"
             />
-            {emailTouched && <FieldIndicator state={emailState} />}
+            {email_touched && <FieldIndicator state={email_state} />}
           </div>
-          <FieldError message={emailTouched ? emailError : null} />
+          <FieldError message={email_touched ? email_error : null} />
         </ShakeField>
 
         {/* Password */}
         <ShakeField
-          trigger={passwordState === "error" ? shakeKey : 0}
+          trigger={password_state === "error" ? shake_key : 0}
           className="auth__field"
         >
           <label className="auth__label" htmlFor="auth-password">
             Password
           </label>
           <div
-            className={`auth__input-wrap ${wrapClass(passwordTouched, passwordState)}`}
+            className={`auth__input-wrap ${wrap_class(password_touched, password_state)}`}
           >
             <svg
               className="auth__input-icon"
@@ -259,12 +259,12 @@ function AuthForm({
             </svg>
             <input
               id="auth-password"
-              type={showPassword ? "text" : "password"}
-              className={inputClass(passwordTouched, passwordState)}
+              type={show_password ? "text" : "password"}
+              className={input_class(password_touched, password_state)}
               placeholder="••••••••"
               value={password}
-              onChange={onPasswordChange}
-              onBlur={onPasswordBlur}
+              onChange={on_password_change}
+              onBlur={on_password_blur}
               required
               autoComplete={
                 mode === MODES.LOGIN ? "current-password" : "new-password"
@@ -275,10 +275,10 @@ function AuthForm({
               type="button"
               className="auth__eye-btn"
               onClick={onToggleShowPassword}
-              aria-label={showPassword ? "Hide password" : "Show password"}
+              aria-label={show_password ? "Hide password" : "Show password"}
               tabIndex={-1}
             >
-              {showPassword ? (
+              {show_password ? (
                 <svg
                   viewBox="0 0 24 24"
                   fill="none"
@@ -300,23 +300,23 @@ function AuthForm({
                 </svg>
               )}
             </button>
-            {passwordTouched && <FieldIndicator state={passwordState} />}
+            {password_touched && <FieldIndicator state={password_state} />}
           </div>
-          <FieldError message={passwordTouched ? passwordError : null} />
+          <FieldError message={password_touched ? password_error : null} />
           <PasswordStrengthBar password={password} mode={mode} />
         </ShakeField>
 
         {/* Confirm Password */}
         {(mode === MODES.REGISTER || mode === MODES.FORGOT) && (
           <ShakeField
-            trigger={confirmState === "error" ? shakeKey : 0}
+            trigger={confirm_state === "error" ? shake_key : 0}
             className="auth__field"
           >
             <label className="auth__label" htmlFor="auth-confirm">
               Confirm password
             </label>
             <div
-              className={`auth__input-wrap ${wrapClass(confirmTouched, confirmState)}`}
+              className={`auth__input-wrap ${wrap_class(confirm_touched, confirm_state)}`}
             >
               <svg
                 className="auth__input-icon"
@@ -331,19 +331,19 @@ function AuthForm({
               </svg>
               <input
                 id="auth-confirm"
-                type={showPassword ? "text" : "password"}
-                className={inputClass(confirmTouched, confirmState)}
+                type={show_password ? "text" : "password"}
+                className={input_class(confirm_touched, confirm_state)}
                 placeholder="••••••••"
-                value={confirmPassword}
+                value={confirm_password}
                 onChange={onConfirmChange}
-                onBlur={onConfirmBlur}
+                onBlur={on_confirm_blur}
                 required
                 autoComplete="new-password"
                 minLength={6}
               />
-              {confirmTouched && <FieldIndicator state={confirmState} />}
+              {confirm_touched && <FieldIndicator state={confirm_state} />}
             </div>
-            <FieldError message={confirmTouched ? confirmError : null} />
+            <FieldError message={confirm_touched ? confirm_error : null} />
           </ShakeField>
         )}
 
@@ -376,7 +376,7 @@ function AuthForm({
 
         {/* Global Success */}
         <AnimatePresence>
-          {successMsg && (
+          {success_msg && (
             <motion.div
               className="auth__success"
               initial={{ opacity: 0, y: -8, height: 0 }}
@@ -395,7 +395,7 @@ function AuthForm({
                 <circle cx="12" cy="12" r="10" />
                 <path d="m9 12 2 2 4-4" />
               </svg>
-              {successMsg}
+              {success_msg}
             </motion.div>
           )}
         </AnimatePresence>
@@ -404,7 +404,7 @@ function AuthForm({
         <motion.button
           type="submit"
           className={`auth__submit ${loading ? "auth__submit--loading" : ""}`}
-          disabled={loading || !isFormValid}
+          disabled={loading || !is_form_valid}
           whileTap={{ scale: 0.97 }}
           whileHover={{ scale: 1.01 }}
         >
@@ -439,5 +439,5 @@ function AuthForm({
   );
 }
 
-export { FieldIndicator, FieldError, ShakeField, slideVariants };
+export { FieldIndicator, FieldError, ShakeField, slide_variants };
 export default AuthForm;

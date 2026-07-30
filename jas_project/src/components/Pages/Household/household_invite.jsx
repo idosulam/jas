@@ -1,41 +1,41 @@
 import { useState } from "react";
-import { hapticError } from "../../../lib/security";
-import { getUserFacingError } from "../../../lib/security";
-import { getSupabaseClient } from "../../../lib/superbase";
-import { useGlassToast } from "../../../lib/glass_toast_provider.jsx";
-import SheetModal from "../../ui/modals/sheet_modal";
-import FormField from "../../ui/form/form_field.jsx";
-import EmptyState from "../../ui/Empty_state";
+import { haptic_error } from "../../../lib/security";
+import { get_user_facing_error } from "../../../lib/security";
+import { get_supabase_client } from "../../../lib/superbase";
+import { use_glass_toast } from "../../../lib/glass_toast_provider.jsx";
+import SheetModal from "../../UI/modals/sheet_modal";
+import FormField from "../../UI/form/form_field.jsx";
+import EmptyState from "../../UI/Empty_state";
 
 function HouseholdInvite({
   household,
   members,
   joinModal,
   createModal,
-  deleteModal,
-  fetchHousehold,
+  delete_modal,
+  fetch_household,
   deleting,
-  handleDelete,
+  handle_delete,
 }) {
-  const { success: toastSuccess, error: toastError } = useGlassToast();
-  const [householdName, setHouseholdName] = useState("");
+  const { success: toast_success, error: toast_error } = use_glass_toast();
+  const [household_name, setHouseholdName] = useState("");
   const [joinCode, setJoinCode] = useState("");
   const [joinLoading, setJoinLoading] = useState(false);
 
   // Field validation states
   const [nameFieldState, setNameFieldState] = useState("idle");
   const [nameFieldError, setNameFieldError] = useState(null);
-  const [nameTouched, setNameTouched] = useState(false);
+  const [name_touched, set_name_touched] = useState(false);
   const [codeFieldState, setCodeFieldState] = useState("idle");
   const [codeFieldError, setCodeFieldError] = useState(null);
   const [codeTouched, setCodeTouched] = useState(false);
-  const [shakeKey, setShakeKey] = useState(0);
+  const [shake_key, set_shake_key] = useState(0);
 
   // Field validation
-  const validateNameField = (value, isBlur = false) => {
+  const validate_name_field = (value, is_blur = false) => {
     const trimmed = value.trim();
     if (!trimmed) {
-      if (isBlur) {
+      if (is_blur) {
         setNameFieldState("error");
         setNameFieldError("Household name is required");
       } else {
@@ -56,10 +56,10 @@ function HouseholdInvite({
     }
   };
 
-  const validateCodeField = (value, isBlur = false) => {
+  const validateCodeField = (value, is_blur = false) => {
     const trimmed = value.trim();
     if (!trimmed) {
-      if (isBlur) {
+      if (is_blur) {
         setCodeFieldState("error");
         setCodeFieldError("Invite code is required");
       } else {
@@ -72,12 +72,12 @@ function HouseholdInvite({
     setCodeFieldError(null);
   };
 
-  const handleNameBlur = () => {
-    setNameTouched(true);
-    validateNameField(householdName, true);
-    if (!householdName.trim() || householdName.trim().length < 2) {
-      setShakeKey((k) => k + 1);
-      hapticError();
+  const handle_name_blur = () => {
+    set_name_touched(true);
+    validate_name_field(household_name, true);
+    if (!household_name.trim() || household_name.trim().length < 2) {
+      set_shake_key((k) => k + 1);
+      haptic_error();
     }
   };
 
@@ -85,15 +85,15 @@ function HouseholdInvite({
     setCodeTouched(true);
     validateCodeField(joinCode, true);
     if (!joinCode.trim()) {
-      setShakeKey((k) => k + 1);
-      hapticError();
+      set_shake_key((k) => k + 1);
+      haptic_error();
     }
   };
 
-  const handleNameChange = (e) => {
+  const handle_name_change = (e) => {
     const v = e.target.value;
     setHouseholdName(v);
-    if (nameTouched) validateNameField(v);
+    if (name_touched) validate_name_field(v);
   };
 
   const handleCodeChange = (e) => {
@@ -104,28 +104,28 @@ function HouseholdInvite({
 
   // Create household
   const handleCreate = async () => {
-    setNameTouched(true);
-    if (!householdName.trim() || householdName.trim().length < 2) {
-      validateNameField(householdName, true);
-      setShakeKey((k) => k + 1);
+    set_name_touched(true);
+    if (!household_name.trim() || household_name.trim().length < 2) {
+      validate_name_field(household_name, true);
+      set_shake_key((k) => k + 1);
       return;
     }
     setJoinLoading(true);
     try {
-      const supabase = getSupabaseClient();
+      const supabase = get_supabase_client();
       const { data: hh, error: createError } = await supabase
         .rpc("create_household", {
-          household_name: householdName.trim() || "Our Household",
+          household_name: household_name.trim() || "Our Household",
         })
         .single();
       if (createError) throw createError;
-      createModal.closeModal();
-      toastSuccess(
+      createModal.close_modal();
+      toast_success(
         "Household created! Share the invite code with your partner.",
       );
-      fetchHousehold();
+      fetch_household();
     } catch (err) {
-      toastError(getUserFacingError(err.message));
+      toast_error(get_user_facing_error(err.message));
     }
     setJoinLoading(false);
   };
@@ -135,28 +135,28 @@ function HouseholdInvite({
     setCodeTouched(true);
     if (!joinCode.trim()) {
       validateCodeField(joinCode, true);
-      setShakeKey((k) => k + 1);
+      set_shake_key((k) => k + 1);
       return;
     }
     setJoinLoading(true);
     try {
-      const supabase = getSupabaseClient();
+      const supabase = get_supabase_client();
       const { error: joinError } = await supabase.rpc("join_household", {
         invite_code_param: joinCode.trim(),
       });
       if (joinError) {
         if (joinError.message.includes("duplicate"))
-          toastError("You're already in this household.");
+          toast_error("You're already in this household.");
         else if (joinError.message.includes("Invalid invite code"))
-          toastError("Invalid invite code. Check and try again.");
+          toast_error("Invalid invite code. Check and try again.");
         else throw joinError;
       } else {
-        joinModal.closeModal();
-        toastSuccess("Joined household!");
-        fetchHousehold();
+        joinModal.close_modal();
+        toast_success("Joined household!");
+        fetch_household();
       }
     } catch (err) {
-      toastError(getUserFacingError(err.message));
+      toast_error(get_user_facing_error(err.message));
     }
     setJoinLoading(false);
   };
@@ -165,16 +165,16 @@ function HouseholdInvite({
     if (household?.invite_code) {
       navigator.clipboard
         .writeText(household.invite_code)
-        .then(() => toastSuccess("Invite code copied!"));
+        .then(() => toast_success("Invite code copied!"));
     }
   };
 
   const openCreateModal = () => {
-    setNameTouched(false);
+    set_name_touched(false);
     setNameFieldState("idle");
     setNameFieldError(null);
     setHouseholdName("");
-    createModal.openModal();
+    createModal.open_modal();
   };
 
   const openJoinModal = () => {
@@ -182,21 +182,21 @@ function HouseholdInvite({
     setCodeFieldState("idle");
     setCodeFieldError(null);
     setJoinCode("");
-    joinModal.openModal();
+    joinModal.open_modal();
   };
 
   const closeCreateModal = () => {
-    setNameTouched(false);
+    set_name_touched(false);
     setNameFieldState("idle");
     setNameFieldError(null);
-    createModal.closeModal();
+    createModal.close_modal();
   };
 
   const closeJoinModal = () => {
     setCodeTouched(false);
     setCodeFieldState("idle");
     setCodeFieldError(null);
-    joinModal.closeModal();
+    joinModal.close_modal();
   };
 
   return (
@@ -266,7 +266,7 @@ function HouseholdInvite({
           <button
             type="button"
             className="household__delete-btn"
-            onClick={() => deleteModal.openModal()}
+            onClick={() => delete_modal.open_modal()}
             title="Delete household"
           >
             🗑
@@ -300,14 +300,14 @@ function HouseholdInvite({
             label="Household name"
             error={nameFieldError}
             state={nameFieldState}
-            showIndicator
-            shake={nameFieldError ? shakeKey : 0}
+            show_indicator
+            shake={nameFieldError ? shake_key : 0}
           >
             <input
               type="text"
-              value={householdName}
-              onChange={handleNameChange}
-              onBlur={handleNameBlur}
+              value={household_name}
+              onChange={handle_name_change}
+              onBlur={handle_name_blur}
               placeholder="Our Household"
               maxLength={40}
               autoFocus
@@ -328,7 +328,7 @@ function HouseholdInvite({
               type="button"
               className="btn btn--primary"
               onClick={handleCreate}
-              disabled={joinLoading || !householdName.trim()}
+              disabled={joinLoading || !household_name.trim()}
             >
               {joinLoading ? "Creating…" : "Create"}
             </button>
@@ -348,8 +348,8 @@ function HouseholdInvite({
             label="Invite code"
             error={codeFieldError}
             state={codeFieldState}
-            showIndicator
-            shake={codeFieldError ? shakeKey : 0}
+            show_indicator
+            shake={codeFieldError ? shake_key : 0}
           >
             <input
               type="text"

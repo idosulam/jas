@@ -28,7 +28,7 @@ export default function ConfirmModal({
   title,
   description,
   preview,
-  confirmLabel = "Confirm",
+  confirm_label = "Confirm",
   icon,
   variant = "danger",
   children,
@@ -68,10 +68,10 @@ export default function ConfirmModal({
           {loading ? (
             <>
               <span className="btn__spinner" aria-hidden="true" />
-              {confirmLabel}…
+              {confirm_label}…
             </>
           ) : (
-            confirmLabel
+            confirm_label
           )}
         </button>
       </div>

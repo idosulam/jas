@@ -1,9 +1,9 @@
-import { formatDateLabel } from "../../../lib/format";
-import { formatWeightBoth } from "../../../lib/weight";
+import { format_date_label } from "../../../lib/format";
+import { format_weight_both } from "../../../lib/weight";
 
 export default function ProfileHistory({
   sorted,
-  removingId,
+  removing_id,
   unit,
   unitLabel,
   onEdit,
@@ -23,7 +23,7 @@ export default function ProfileHistory({
         <li
           key={entry.id}
           className={`profile__history-item${
-            removingId === entry.id
+            removing_id === entry.id
               ? " profile__history-item--removing"
               : ""
           }`}
@@ -31,7 +31,7 @@ export default function ProfileHistory({
           {" "}
           <div>
             <span className="profile__history-date">
-              {formatDateLabel(entry.entry_date)}
+              {format_date_label(entry.entry_date)}
             </span>
             {entry.notes && (
               <span className="profile__history-note">
@@ -41,7 +41,7 @@ export default function ProfileHistory({
           </div>
           <div className="profile__history-actions">
             <span className="profile__history-weight">
-              {formatWeightBoth(Number(entry.weight_kg))}
+              {format_weight_both(Number(entry.weight_kg))}
             </span>
             <button
               type="button"

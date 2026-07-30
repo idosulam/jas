@@ -1,10 +1,10 @@
-function Nav_Shifts({ isActive, onClick }) {
+function NavShifts({ is_active, onClick }) {
   return (
     <button
       type="button"
-      className={`nav-option ${isActive ? "nav-option--active" : ""}`}
+      className={`nav-option ${is_active ? "nav-option--active" : ""}`}
       onClick={onClick}
-      aria-current={isActive ? "page" : undefined}
+      aria-current={is_active ? "page" : undefined}
     >
       <svg
         className="nav-option__icon"
@@ -24,4 +24,4 @@ function Nav_Shifts({ isActive, onClick }) {
   );
 }
 
-export default Nav_Shifts;
+export default NavShifts;

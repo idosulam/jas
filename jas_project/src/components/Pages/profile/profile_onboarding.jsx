@@ -1,30 +1,30 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { getSupabaseClient } from "../../../lib/superbase";
-import { useUserId } from "../../../lib/auth_context.jsx";
+import { get_supabase_client } from "../../../lib/superbase";
+import { use_user_id } from "../../../lib/auth_context.jsx";
 import {
-  getUserFacingError,
-  sanitizeNumber,
-  sanitizeText,
-  hapticError,
+  get_user_facing_error,
+  sanitize_number,
+  sanitize_text,
+  haptic_error,
 } from "../../../lib/security";
-import { useBodyScrollLock } from "../../../hooks";
-import { useGlassToast } from "../../../lib/glass_toast_provider.jsx";
+import { use_body_scroll_lock } from "../../../Hooks";
+import { use_glass_toast } from "../../../lib/glass_toast_provider.jsx";
 import { ACTIVITY_LEVELS, GENDER_OPTIONS } from "../Fitness/macro_calculator";
-import SheetModal from "../../ui/modals/sheet_modal";
-import FormField from "../../ui/form/form_field.jsx";
+import SheetModal from "../../UI/modals/sheet_modal";
+import FormField from "../../UI/form/form_field.jsx";
 
-function cmToFeetAndInches(heightCm) {
-  if (heightCm == null || Number.isNaN(heightCm))
+function cm_to_feet_and_inches(height_cm) {
+  if (height_cm == null || Number.isNaN(height_cm))
     return { feet: "", inches: "" };
-  const totalInches = heightCm / 2.54;
+  const totalInches = height_cm / 2.54;
   const feet = Math.floor(totalInches / 12);
   const inches = Number((totalInches % 12).toFixed(1));
   return { feet: String(feet), inches: String(inches) };
 }
 
-function feetAndInchesToCm(feet, inches) {
-  const parsedFeet = sanitizeNumber(feet, 0, 9);
-  const parsedInches = sanitizeNumber(inches, 0, 11.9);
+function feet_and_inches_to_cm(feet, inches) {
+  const parsedFeet = sanitize_number(feet, 0, 9);
+  const parsedInches = sanitize_number(inches, 0, 11.9);
   if (parsedFeet == null && parsedInches == null) return null;
   const totalInches = (parsedFeet ?? 0) * 12 + (parsedInches ?? 0);
   return Number((totalInches * 2.54).toFixed(2));
@@ -37,14 +37,14 @@ function feetAndInchesToCm(feet, inches) {
  * Non-dismissable until the required fields are filled.
  */
 export default function ProfileOnboarding() {
-  const userId = useUserId();
+  const user_id = use_user_id();
   const [profile, setProfile] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [open, setOpen] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState(null);
+  const [loading, set_loading] = useState(true);
+  const [open, set_open] = useState(false);
+  const [saving, set_saving] = useState(false);
+  const [error, set_error] = useState(null);
 
-  const [form, setForm] = useState({
+  const [form, set_form] = useState({
     display_name: "",
     age: "",
     height_cm: "",
@@ -55,26 +55,26 @@ export default function ProfileOnboarding() {
     activity_level: "",
   });
 
-  const [fieldErrors, setFieldErrors] = useState({});
-  const [fieldStates, setFieldStates] = useState({});
-  const [shakeKey, setShakeKey] = useState(0);
+  const [field_errors, set_field_errors] = useState({});
+  const [field_states, set_field_states] = useState({});
+  const [shake_key, set_shake_key] = useState(0);
 
-  const { success: toastSuccess, error: toastError } = useGlassToast();
+  const { success: toast_success, error: toast_error } = use_glass_toast();
 
   // Fetch profile on mount
-  const fetchProfile = useCallback(async () => {
-    if (!userId) return;
+  const fetch_profile = useCallback(async () => {
+    if (!user_id) return;
     try {
-      const supabase = getSupabaseClient();
-      const { data, error: fetchError } = await supabase
+      const supabase = get_supabase_client();
+      const { data, error: fetch_error } = await supabase
         .from("profile")
         .select("*")
-        .eq("user_id", userId)
+        .eq("user_id", user_id)
         .limit(1)
         .maybeSingle();
 
-      if (fetchError) {
-        setLoading(false);
+      if (fetch_error) {
+        set_loading(false);
         return;
       }
 
@@ -89,12 +89,12 @@ export default function ProfileOnboarding() {
 
       if (isIncomplete) {
         // Pre-fill form with existing data
-        const heightCm = data?.height_cm != null ? Number(data.height_cm) : null;
-        const { feet, inches } = cmToFeetAndInches(heightCm);
-        setForm({
+        const height_cm = data?.height_cm != null ? Number(data.height_cm) : null;
+        const { feet, inches } = cm_to_feet_and_inches(height_cm);
+        set_form({
           display_name: data?.display_name ?? "",
           age: data?.age != null ? String(data.age) : "",
-          height_cm: heightCm != null ? String(heightCm) : "",
+          height_cm: height_cm != null ? String(height_cm) : "",
           height_ft: feet,
           height_in: inches,
           goal_weight_kg:
@@ -104,31 +104,31 @@ export default function ProfileOnboarding() {
           gender: data?.gender || "",
           activity_level: data?.activity_level || "",
         });
-        setOpen(true);
+        set_open(true);
       }
     } catch {
       // silent
     }
-    setLoading(false);
-  }, [userId]);
+    set_loading(false);
+  }, [user_id]);
 
   useEffect(() => {
-    fetchProfile();
-  }, [fetchProfile]);
+    fetch_profile();
+  }, [fetch_profile]);
 
   // Prevent closing via backdrop/escape (non-dismissable)
-  const handleClose = () => {
+  const handle_close = () => {
     // Only allow close if profile is now complete
     if (isProfileComplete) {
-      setOpen(false);
+      set_open(false);
     }
   };
 
-  useBodyScrollLock(open);
+  use_body_scroll_lock(open);
 
   // Validation
-  const validateField = (fieldName) => {
-    switch (fieldName) {
+  const validate_field = (field_name) => {
+    switch (field_name) {
       case "display_name": {
         if (!form.display_name || !form.display_name.trim())
           return "Name is required";
@@ -137,20 +137,20 @@ export default function ProfileOnboarding() {
       }
       case "age": {
         if (!form.age) return "Age is required";
-        const age = sanitizeNumber(form.age, 13, 120);
+        const age = sanitize_number(form.age, 13, 120);
         if (age == null) return "Enter a valid age (13–120)";
         return null;
       }
       case "height_cm": {
         if (!form.height_cm && !form.height_ft && !form.height_in)
           return "Height is required";
-        const cm = sanitizeNumber(form.height_cm, 1, 300);
+        const cm = sanitize_number(form.height_cm, 1, 300);
         if (form.height_cm && cm == null) return "Enter a valid height";
         return null;
       }
       case "goal_weight_kg": {
         if (!form.goal_weight_kg) return null; // optional
-        const kg = sanitizeNumber(form.goal_weight_kg, 1, 1000);
+        const kg = sanitize_number(form.goal_weight_kg, 1, 1000);
         if (kg == null) return "Enter a valid weight";
         return null;
       }
@@ -159,35 +159,35 @@ export default function ProfileOnboarding() {
     }
   };
 
-  const handleFieldBlur = (fieldName) => {
-    const error = validateField(fieldName);
-    setFieldErrors((prev) => ({ ...prev, [fieldName]: error }));
-    setFieldStates((prev) => ({
+  const handle_field_blur = (field_name) => {
+    const error = validate_field(field_name);
+    set_field_errors((prev) => ({ ...prev, [field_name]: error }));
+    set_field_states((prev) => ({
       ...prev,
-      [fieldName]: error ? "error" : form[fieldName] ? "valid" : "idle",
+      [field_name]: error ? "error" : form[field_name] ? "valid" : "idle",
     }));
     if (error) {
-      setShakeKey((k) => k + 1);
-      hapticError();
+      set_shake_key((k) => k + 1);
+      haptic_error();
     }
   };
 
   const isProfileComplete = useMemo(() => {
     if (!form.display_name || !form.display_name.trim()) return false;
-    const age = sanitizeNumber(form.age, 13, 120);
+    const age = sanitize_number(form.age, 13, 120);
     if (!form.age || age == null) return false;
-    const heightCm =
-      sanitizeNumber(form.height_cm, 1, 300) ??
-      feetAndInchesToCm(form.height_ft, form.height_in);
-    if (!heightCm) return false;
+    const height_cm =
+      sanitize_number(form.height_cm, 1, 300) ??
+      feet_and_inches_to_cm(form.height_ft, form.height_in);
+    if (!height_cm) return false;
     return true;
   }, [form]);
 
   // Height helpers
   const handleHeightCmChange = (value) => {
-    const cmValue = sanitizeNumber(value, 1, 300);
-    const { feet, inches } = cmToFeetAndInches(cmValue);
-    setForm((f) => ({
+    const cmValue = sanitize_number(value, 1, 300);
+    const { feet, inches } = cm_to_feet_and_inches(cmValue);
+    set_form((f) => ({
       ...f,
       height_cm: value,
       height_ft: cmValue != null ? feet : "",
@@ -197,50 +197,50 @@ export default function ProfileOnboarding() {
 
   const handleHeightImperialChange = (field, value) => {
     const next = { ...form, [field]: value };
-    const convertedCm = feetAndInchesToCm(next.height_ft, next.height_in);
-    setForm({
+    const convertedCm = feet_and_inches_to_cm(next.height_ft, next.height_in);
+    set_form({
       ...next,
       height_cm: convertedCm != null ? String(convertedCm) : "",
     });
   };
 
-  const handleSubmit = async (e) => {
+  const handle_submit = async (e) => {
     e.preventDefault();
 
     // Validate all required fields
     const errors = {};
-    const nameErr = validateField("display_name");
-    const ageErr = validateField("age");
-    const heightErr = validateField("height_cm");
+    const nameErr = validate_field("display_name");
+    const ageErr = validate_field("age");
+    const heightErr = validate_field("height_cm");
     if (nameErr) errors.display_name = nameErr;
     if (ageErr) errors.age = ageErr;
     if (heightErr) errors.height_cm = heightErr;
 
     if (Object.keys(errors).length > 0) {
-      setFieldErrors(errors);
+      set_field_errors(errors);
       const newStates = {};
       Object.keys(errors).forEach((k) => {
         newStates[k] = "error";
       });
-      setFieldStates((prev) => ({ ...prev, ...newStates }));
-      setShakeKey((k) => k + 1);
+      set_field_states((prev) => ({ ...prev, ...newStates }));
+      set_shake_key((k) => k + 1);
       return;
     }
 
-    setSaving(true);
-    setError(null);
+    set_saving(true);
+    set_error(null);
 
-    const displayName = sanitizeText(form.display_name, 40) || "Jas";
-    const age = sanitizeNumber(form.age, 13, 120);
-    const heightCm =
-      sanitizeNumber(form.height_cm, 1, 300) ??
-      feetAndInchesToCm(form.height_ft, form.height_in);
-    const goalKg = sanitizeNumber(form.goal_weight_kg, 1, 1000);
+    const display_name = sanitize_text(form.display_name, 40) || "Jas";
+    const age = sanitize_number(form.age, 13, 120);
+    const height_cm =
+      sanitize_number(form.height_cm, 1, 300) ??
+      feet_and_inches_to_cm(form.height_ft, form.height_in);
+    const goalKg = sanitize_number(form.goal_weight_kg, 1, 1000);
 
     const payload = {
-      display_name: displayName,
+      display_name: display_name,
       age,
-      height_cm: heightCm ?? null,
+      height_cm: height_cm ?? null,
       goal_weight_kg: goalKg ? Number(goalKg.toFixed(2)) : null,
       gender: form.gender || "male",
       activity_level: form.activity_level || "moderate",
@@ -248,27 +248,27 @@ export default function ProfileOnboarding() {
     };
 
     try {
-      const supabase = getSupabaseClient();
+      const supabase = get_supabase_client();
       const { error: saveError } = profile
         ? await supabase.from("profile").update(payload).eq("id", profile.id)
         : await supabase
             .from("profile")
-            .insert({ ...payload, ...(userId && { user_id: userId }) });
+            .insert({ ...payload, ...(user_id && { user_id: user_id }) });
 
-      setSaving(false);
+      set_saving(false);
 
       if (saveError) {
-        setError(getUserFacingError(saveError.message));
-        toastError("Couldn't save profile.");
+        set_error(get_user_facing_error(saveError.message));
+        toast_error("Couldn't save profile.");
         return;
       }
 
-      setOpen(false);
-      toastSuccess("Profile saved! Welcome aboard.");
+      set_open(false);
+      toast_success("Profile saved! Welcome aboard.");
     } catch (err) {
-      setSaving(false);
-      setError(err.message || "Something went wrong.");
-      toastError("Couldn't save profile.");
+      set_saving(false);
+      set_error(err.message || "Something went wrong.");
+      toast_error("Couldn't save profile.");
     }
   };
 
@@ -278,7 +278,7 @@ export default function ProfileOnboarding() {
     <SheetModal
       open={open}
       closing={false}
-      onClose={handleClose}
+      onClose={handle_close}
       title="Complete your profile"
       // Non-dismissable: no swipe-to-close
     >
@@ -292,22 +292,22 @@ export default function ProfileOnboarding() {
         </p>
       )}
 
-      <form className="profile-onboarding__form" onSubmit={handleSubmit}>
+      <form className="profile-onboarding__form" onSubmit={handle_submit}>
         <FormField
           label="Name"
-          error={fieldErrors.display_name}
-          state={fieldStates.display_name}
-          showIndicator
-          shake={fieldErrors.display_name ? shakeKey : 0}
+          error={field_errors.display_name}
+          state={field_states.display_name}
+          show_indicator
+          shake={field_errors.display_name ? shake_key : 0}
         >
           <input
             type="text"
             value={form.display_name}
             onChange={(e) => {
-              setForm((f) => ({ ...f, display_name: e.target.value }));
-              setFieldErrors((prev) => ({ ...prev, display_name: null }));
+              set_form((f) => ({ ...f, display_name: e.target.value }));
+              set_field_errors((prev) => ({ ...prev, display_name: null }));
             }}
-            onBlur={() => handleFieldBlur("display_name")}
+            onBlur={() => handle_field_blur("display_name")}
             placeholder="Your name"
             autoFocus
             required
@@ -316,10 +316,10 @@ export default function ProfileOnboarding() {
 
         <FormField
           label="Age"
-          error={fieldErrors.age}
-          state={fieldStates.age}
-          showIndicator
-          shake={fieldErrors.age ? shakeKey : 0}
+          error={field_errors.age}
+          state={field_states.age}
+          show_indicator
+          shake={field_errors.age ? shake_key : 0}
         >
           <input
             type="number"
@@ -328,20 +328,20 @@ export default function ProfileOnboarding() {
             placeholder="26"
             value={form.age}
             onChange={(e) => {
-              setForm((f) => ({ ...f, age: e.target.value }));
-              setFieldErrors((prev) => ({ ...prev, age: null }));
+              set_form((f) => ({ ...f, age: e.target.value }));
+              set_field_errors((prev) => ({ ...prev, age: null }));
             }}
-            onBlur={() => handleFieldBlur("age")}
+            onBlur={() => handle_field_blur("age")}
             required
           />
         </FormField>
 
         <FormField
           label="Height (cm)"
-          error={fieldErrors.height_cm}
-          state={fieldStates.height_cm}
-          showIndicator
-          shake={fieldErrors.height_cm ? shakeKey : 0}
+          error={field_errors.height_cm}
+          state={field_states.height_cm}
+          show_indicator
+          shake={field_errors.height_cm ? shake_key : 0}
         >
           <input
             type="number"
@@ -351,9 +351,9 @@ export default function ProfileOnboarding() {
             value={form.height_cm}
             onChange={(e) => {
               handleHeightCmChange(e.target.value);
-              setFieldErrors((prev) => ({ ...prev, height_cm: null }));
+              set_field_errors((prev) => ({ ...prev, height_cm: null }));
             }}
-            onBlur={() => handleFieldBlur("height_cm")}
+            onBlur={() => handle_field_blur("height_cm")}
             required
           />
         </FormField>
@@ -388,10 +388,10 @@ export default function ProfileOnboarding() {
 
         <FormField
           label="Goal weight (kg)"
-          error={fieldErrors.goal_weight_kg}
-          state={fieldStates.goal_weight_kg}
-          showIndicator
-          shake={fieldErrors.goal_weight_kg ? shakeKey : 0}
+          error={field_errors.goal_weight_kg}
+          state={field_states.goal_weight_kg}
+          show_indicator
+          shake={field_errors.goal_weight_kg ? shake_key : 0}
           optional
         >
           <input
@@ -401,17 +401,17 @@ export default function ProfileOnboarding() {
             placeholder="58"
             value={form.goal_weight_kg}
             onChange={(e) => {
-              setForm((f) => ({ ...f, goal_weight_kg: e.target.value }));
-              setFieldErrors((prev) => ({ ...prev, goal_weight_kg: null }));
+              set_form((f) => ({ ...f, goal_weight_kg: e.target.value }));
+              set_field_errors((prev) => ({ ...prev, goal_weight_kg: null }));
             }}
-            onBlur={() => handleFieldBlur("goal_weight_kg")}
+            onBlur={() => handle_field_blur("goal_weight_kg")}
           />
         </FormField>
 
         <FormField label="Gender" optional>
           <select
             value={form.gender}
-            onChange={(e) => setForm((f) => ({ ...f, gender: e.target.value }))}
+            onChange={(e) => set_form((f) => ({ ...f, gender: e.target.value }))}
           >
             <option value="" disabled>
               Select gender…
@@ -428,7 +428,7 @@ export default function ProfileOnboarding() {
           <select
             value={form.activity_level}
             onChange={(e) =>
-              setForm((f) => ({ ...f, activity_level: e.target.value }))
+              set_form((f) => ({ ...f, activity_level: e.target.value }))
             }
           >
             <option value="" disabled>

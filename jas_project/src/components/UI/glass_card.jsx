@@ -6,14 +6,14 @@ export default function GlassCard({
   value,
   label,
   className = "",
-  valueClassName = "",
+  value_class_name = "",
   ...rest
 }) {
   return (
     <div className={`glass-card noise-overlay ${className}`} {...rest}>
       <div className="glass-card__glow" aria-hidden="true" />
       <span
-        className={`glass-card__value${valueClassName ? ` ${valueClassName}` : ""}`}
+        className={`glass-card__value${value_class_name ? ` ${value_class_name}` : ""}`}
       >
         {value}
       </span>

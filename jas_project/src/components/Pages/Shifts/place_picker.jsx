@@ -1,4 +1,4 @@
-import SheetModal from "../../../components/ui/modals/sheet_modal";
+import SheetModal from "../../../components/UI/modals/sheet_modal";
 
 /**
  * Workplace filter: inline pills (desktop) or trigger + picker sheet (mobile).
@@ -8,9 +8,9 @@ import SheetModal from "../../../components/ui/modals/sheet_modal";
  *   placeFilters      – array of { id, label, active? }
  *   selectedPlaceId   – current filter id ("all" or a slug)
  *   onSelect(id)      – select a filter
- *   isMobile          – boolean
- *   pickerOpen        – mobile picker modal open flag
- *   pickerClosing     – mobile picker modal closing flag
+ *   is_mobile          – boolean
+ *   picker_open        – mobile picker modal open flag
+ *   picker_closing     – mobile picker modal closing flag
  *   onOpenPicker()    – open mobile picker
  *   onClosePicker()   – close mobile picker
  *   indicator         – { left, width } for the sliding pill indicator
@@ -21,15 +21,15 @@ export default function PlacePicker({
   placeFilters,
   selectedPlaceId,
   onSelect,
-  isMobile,
-  pickerOpen,
-  pickerClosing,
+  is_mobile,
+  picker_open,
+  picker_closing,
   onOpenPicker,
   onClosePicker,
   indicator,
   containerRef,
 }) {
-  const useInline = !isMobile && placeFilters.length > 1;
+  const useInline = !is_mobile && placeFilters.length > 1;
 
   if (placeFilters.length <= 1) return null;
 
@@ -79,7 +79,7 @@ export default function PlacePicker({
         className="shifts__place-trigger animate-in animate-in--2"
         onClick={onOpenPicker}
         aria-haspopup="listbox"
-        aria-expanded={pickerOpen}
+        aria-expanded={picker_open}
       >
         <span
           className="shifts__place-trigger-dot"
@@ -98,15 +98,15 @@ export default function PlacePicker({
       </button>
 
       <SheetModal
-        open={pickerOpen}
-        closing={pickerClosing}
+        open={picker_open}
+        closing={picker_closing}
         onClose={onClosePicker}
         title="Filter by workplace"
         compact
       >
         <ul className="shifts__picker-list">
           {placeFilters.map(({ id, label, active }) => {
-            const isActive = selectedPlaceId === id;
+            const is_active = selectedPlaceId === id;
             const color =
               id === "all"
                 ? "var(--color-primary, #818cf8)"
@@ -115,10 +115,10 @@ export default function PlacePicker({
               <li key={id}>
                 <button
                   type="button"
-                  className={`shifts__picker-item${isActive ? " shifts__picker-item--active" : ""}${active === false ? " shifts__picker-item--deactivated" : ""}`}
+                  className={`shifts__picker-item${is_active ? " shifts__picker-item--active" : ""}${active === false ? " shifts__picker-item--deactivated" : ""}`}
                   onClick={() => onSelect(id)}
                   role="option"
-                  aria-selected={isActive}
+                  aria-selected={is_active}
                 >
                   <span
                     className="shifts__picker-dot"
@@ -130,7 +130,7 @@ export default function PlacePicker({
                       inactive
                     </span>
                   )}
-                  {isActive && (
+                  {is_active && (
                     <span className="shifts__picker-check" aria-hidden="true">
                       ✓
                     </span>

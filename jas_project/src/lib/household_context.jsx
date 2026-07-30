@@ -1,32 +1,32 @@
 import { createContext, useContext, useState, useEffect, useCallback } from "react";
-import { getSupabaseClient } from "./superbase";
-import { useUserId } from "./auth_context.jsx";
+import { get_supabase_client } from "./superbase";
+import { use_user_id } from "./auth_context.jsx";
 
-const HouseholdContext = createContext({
+const household_context = createContext({
   household: null,
-  householdName: null,
-  isMember: false,
+  household_name: null,
+  is_member: false,
   loading: false,
   refresh: () => {},
 });
 
 export function HouseholdProvider({ children }) {
-  const userId = useUserId();
+  const user_id = use_user_id();
   const [household, setHousehold] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, set_loading] = useState(false);
 
-  const fetchHousehold = useCallback(async () => {
-    if (!userId) {
+  const fetch_household = useCallback(async () => {
+    if (!user_id) {
       setHousehold(null);
       return;
     }
-    setLoading(true);
+    set_loading(true);
     try {
-      const supabase = getSupabaseClient();
+      const supabase = get_supabase_client();
       const { data: membership, error } = await supabase
         .from("household_members")
         .select("household_id, households(id, name, invite_code)")
-        .eq("user_id", userId)
+        .eq("user_id", user_id)
         .maybeSingle();
 
       if (error || !membership) {
@@ -37,28 +37,28 @@ export function HouseholdProvider({ children }) {
     } catch {
       setHousehold(null);
     }
-    setLoading(false);
-  }, [userId]);
+    set_loading(false);
+  }, [user_id]);
 
   useEffect(() => {
-    fetchHousehold();
-  }, [fetchHousehold]);
+    fetch_household();
+  }, [fetch_household]);
 
   const value = {
     household,
-    householdName: household?.name || null,
-    isMember: !!household,
+    household_name: household?.name || null,
+    is_member: !!household,
     loading,
-    refresh: fetchHousehold,
+    refresh: fetch_household,
   };
 
   return (
-    <HouseholdContext.Provider value={value}>
+    <household_context.Provider value={value}>
       {children}
-    </HouseholdContext.Provider>
+    </household_context.Provider>
   );
 }
 
-export function useHousehold() {
-  return useContext(HouseholdContext);
+export function use_household() {
+  return useContext(household_context);
 }

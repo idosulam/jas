@@ -1,38 +1,38 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { getSupabaseClient } from "../../../lib/superbase";
+import { get_supabase_client } from "../../../lib/superbase";
 import {
-  getUserFacingError,
-  sanitizeText,
+  get_user_facing_error,
+  sanitize_text,
 } from "../../../lib/security";
-import { useGlassToast } from "../../../lib/glass_toast_provider.jsx";
-import { useModal, useBodyScrollLock } from "../../../hooks";
-import SheetModal from "../../ui/modals/sheet_modal";
-import ConfirmModal from "../../ui/modals/confirm_modal";
-import EmptyState from "../../ui/Empty_state";
-import FormField from "../../ui/form/form_field";
+import { use_glass_toast } from "../../../lib/glass_toast_provider.jsx";
+import { use_modal, use_body_scroll_lock } from "../../../Hooks";
+import SheetModal from "../../UI/modals/sheet_modal";
+import ConfirmModal from "../../UI/modals/confirm_modal";
+import EmptyState from "../../UI/Empty_state";
+import FormField from "../../UI/form/form_field";
 import ColorPalettePicker from "../../../lib/color_palette_picker.jsx";
 
-import { formatMoney, formatDateGroup } from "../../../lib/format";
+import { format_money, format_date_group } from "../../../lib/format";
 import TransactionForm from "./transaction_form";
 import TransactionCard from "./transaction_card";
 import CategoryManager, { DEFAULT_ICONS } from "./category_manager";
 
-function Transactions({ householdId, userId, members, goals = [] }) {
+function Transactions({ householdId, user_id, members, goals = [] }) {
   const [transactions, setTransactions] = useState([]);
   const [categories, setCategories] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, set_loading] = useState(true);
   const [month, setMonth] = useState(new Date().getMonth());
   const [year, setYear] = useState(new Date().getFullYear());
   const [typeFilter, setTypeFilter] = useState("all");
 
-  const { success: toastSuccess, error: toastError } = useGlassToast();
-  const addModal = useModal(260);
-  const editModal = useModal(260);
-  const deleteModal = useModal(260);
-  const categoryModal = useModal(260);
-  const deleteCategoryModal = useModal(260);
+  const { success: toast_success, error: toast_error } = use_glass_toast();
+  const addModal = use_modal(260);
+  const editModal = use_modal(260);
+  const delete_modal = use_modal(260);
+  const categoryModal = use_modal(260);
+  const deleteCategoryModal = use_modal(260);
 
-  const [form, setForm] = useState({
+  const [form, set_form] = useState({
     type: "expense",
     amount: "",
     description: "",
@@ -42,8 +42,8 @@ function Transactions({ householdId, userId, members, goals = [] }) {
     transaction_date: new Date().toISOString().slice(0, 10),
   });
   const [editingTx, setEditingTx] = useState(null);
-  const [deleteTarget, setDeleteTarget] = useState(null);
-  const [deleting, setDeleting] = useState(false);
+  const [delete_target, set_delete_target] = useState(null);
+  const [deleting, set_deleting] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   // Category form
@@ -78,10 +78,10 @@ function Transactions({ householdId, userId, members, goals = [] }) {
     }
   }, [typeFilter]);
 
-  useBodyScrollLock(
+  use_body_scroll_lock(
     addModal.open,
     editModal.open,
-    deleteModal.open,
+    delete_modal.open,
     categoryModal.open,
     deleteCategoryModal.open,
   );
@@ -90,7 +90,7 @@ function Transactions({ householdId, userId, members, goals = [] }) {
   const fetchCategories = useCallback(async () => {
     if (!householdId) return;
     try {
-      const supabase = getSupabaseClient();
+      const supabase = get_supabase_client();
       const { data, error } = await supabase
         .from("transaction_categories")
         .select("*")
@@ -105,13 +105,13 @@ function Transactions({ householdId, userId, members, goals = [] }) {
   }, [householdId]);
 
   // Fetch transactions
-  const fetchTransactions = useCallback(async () => {
+  const fetch_transactions = useCallback(async () => {
     if (!householdId) return;
     const startDate = new Date(year, month, 1).toISOString().slice(0, 10);
     const endDate = new Date(year, month + 1, 0).toISOString().slice(0, 10);
 
     try {
-      const supabase = getSupabaseClient();
+      const supabase = get_supabase_client();
       const { data, error } = await supabase
         .from("transactions")
         .select(
@@ -131,7 +131,7 @@ function Transactions({ householdId, userId, members, goals = [] }) {
           return {
             ...t,
             display_name: member?.display_name || "User",
-            is_me: t.user_id === userId,
+            is_me: t.user_id === user_id,
             category_name: t.savings_goals?.title || "Savings",
             category_icon: t.savings_goals?.icon || "🎯",
             category_color: t.savings_goals?.color || "#818cf8",
@@ -140,7 +140,7 @@ function Transactions({ householdId, userId, members, goals = [] }) {
         return {
           ...t,
           display_name: member?.display_name || "User",
-          is_me: t.user_id === userId,
+          is_me: t.user_id === user_id,
           category_name: t.transaction_categories?.name || "Other",
           category_icon: t.transaction_categories?.icon || "📦",
           category_color: t.transaction_categories?.color || "#6b7280",
@@ -149,17 +149,17 @@ function Transactions({ householdId, userId, members, goals = [] }) {
 
       setTransactions(enriched);
     } catch (err) {
-      toastError(getUserFacingError(err.message));
+      toast_error(get_user_facing_error(err.message));
     }
-    setLoading(false);
-  }, [householdId, members, userId, month, year]);
+    set_loading(false);
+  }, [householdId, members, user_id, month, year]);
 
   useEffect(() => {
     fetchCategories();
   }, [fetchCategories]);
   useEffect(() => {
-    if (householdId) fetchTransactions();
-  }, [householdId, fetchTransactions]);
+    if (householdId) fetch_transactions();
+  }, [householdId, fetch_transactions]);
 
   // Filtered transactions
   const filtered = useMemo(() => {
@@ -235,9 +235,9 @@ function Transactions({ householdId, userId, members, goals = [] }) {
     return goals.filter((g) => !g.is_completed);
   }, [goals]);
 
-  const openAdd = (type = "expense") => {
+  const open_add = (type = "expense") => {
     setEditingTx(null);
-    setForm({
+    set_form({
       type,
       amount: "",
       description: "",
@@ -246,12 +246,12 @@ function Transactions({ householdId, userId, members, goals = [] }) {
       goal_id: "",
       transaction_date: new Date().toISOString().slice(0, 10),
     });
-    addModal.openModal();
+    addModal.open_modal();
   };
 
-  const openEdit = (tx) => {
+  const open_edit = (tx) => {
     setEditingTx(tx);
-    setForm({
+    set_form({
       type: tx.type,
       amount: String(tx.amount),
       description: tx.description || "",
@@ -260,20 +260,20 @@ function Transactions({ householdId, userId, members, goals = [] }) {
       goal_id: tx.goal_id || "",
       transaction_date: tx.transaction_date,
     });
-    editModal.openModal();
+    editModal.open_modal();
   };
 
-  const handleSubmit = async () => {
+  const handle_submit = async () => {
     setSubmitting(true);
     try {
-      const supabase = getSupabaseClient();
+      const supabase = get_supabase_client();
       const amount = Number(Number(form.amount).toFixed(2));
       const isUUID =
         /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
       const payload = {
         household_id: householdId,
-        user_id: userId,
+        user_id: user_id,
         category_id: isUUID.test(form.category_id) ? form.category_id : null,
         goal_id:
           form.type === "contribute" && isUUID.test(form.goal_id)
@@ -281,8 +281,8 @@ function Transactions({ householdId, userId, members, goals = [] }) {
             : null,
         type: form.type,
         amount,
-        description: sanitizeText(form.description, 100),
-        note: sanitizeText(form.note, 500) || null,
+        description: sanitize_text(form.description, 100),
+        note: sanitize_text(form.note, 500) || null,
         transaction_date: form.transaction_date,
       };
 
@@ -292,7 +292,7 @@ function Transactions({ householdId, userId, members, goals = [] }) {
           .update(payload)
           .eq("id", editingTx.id);
         if (error) throw error;
-        toastSuccess("Transaction updated.");
+        toast_success("Transaction updated.");
       } else {
         const { error } = await supabase.from("transactions").insert(payload);
         if (error) throw error;
@@ -309,9 +309,9 @@ function Transactions({ householdId, userId, members, goals = [] }) {
 
             await supabase.from("savings_contributions").insert({
               goal_id: form.goal_id,
-              user_id: userId,
+              user_id: user_id,
               amount,
-              note: sanitizeText(form.note, 200) || null,
+              note: sanitize_text(form.note, 200) || null,
             });
           }
         }
@@ -321,37 +321,37 @@ function Transactions({ householdId, userId, members, goals = [] }) {
           income: "Income",
           contribute: "Contribution",
         };
-        toastSuccess(`${labels[form.type] || "Transaction"} added!`);
+        toast_success(`${labels[form.type] || "Transaction"} added!`);
       }
 
-      addModal.closeModal();
-      editModal.closeModal();
-      fetchTransactions();
+      addModal.close_modal();
+      editModal.close_modal();
+      fetch_transactions();
     } catch (err) {
-      toastError(getUserFacingError(err.message));
+      toast_error(get_user_facing_error(err.message));
     }
     setSubmitting(false);
   };
 
-  const confirmDelete = async () => {
-    if (!deleteTarget) return;
-    setDeleting(true);
+  const confirm_delete = async () => {
+    if (!delete_target) return;
+    set_deleting(true);
     try {
-      const supabase = getSupabaseClient();
+      const supabase = get_supabase_client();
       const { error } = await supabase
         .from("transactions")
         .delete()
-        .eq("id", deleteTarget.id);
+        .eq("id", delete_target.id);
       if (error) throw error;
-      deleteModal.closeModal();
-      editModal.closeModal();
+      delete_modal.close_modal();
+      editModal.close_modal();
       setEditingTx(null);
-      toastSuccess("Transaction deleted.");
-      fetchTransactions();
+      toast_success("Transaction deleted.");
+      fetch_transactions();
     } catch (err) {
-      toastError(getUserFacingError(err.message));
+      toast_error(get_user_facing_error(err.message));
     }
-    setDeleting(false);
+    set_deleting(false);
   };
 
   // ── Category Management ──────────────────────────────────
@@ -359,7 +359,7 @@ function Transactions({ householdId, userId, members, goals = [] }) {
   const openNewCategory = (type = "expense") => {
     setEditingCategory(null);
     setCategoryForm({ name: "", icon: "📦", color: "", type });
-    categoryModal.openModal();
+    categoryModal.open_modal();
   };
 
   const openEditCategory = (cat) => {
@@ -370,15 +370,15 @@ function Transactions({ householdId, userId, members, goals = [] }) {
       color: cat.color,
       type: cat.type,
     });
-    categoryModal.openModal();
+    categoryModal.open_modal();
   };
 
   const saveCategory = async () => {
-    const name = sanitizeText(categoryForm.name, 40);
+    const name = sanitize_text(categoryForm.name, 40);
     if (!name) return;
 
     try {
-      const supabase = getSupabaseClient();
+      const supabase = get_supabase_client();
       const payload = {
         name,
         icon: categoryForm.icon,
@@ -393,19 +393,19 @@ function Transactions({ householdId, userId, members, goals = [] }) {
           .update(payload)
           .eq("id", editingCategory.id);
         if (error) throw error;
-        toastSuccess("Label updated.");
+        toast_success("Label updated.");
       } else {
         const { error } = await supabase
           .from("transaction_categories")
           .insert(payload);
         if (error) throw error;
-        toastSuccess("Label created!");
+        toast_success("Label created!");
       }
 
-      categoryModal.closeModal();
+      categoryModal.close_modal();
       fetchCategories();
     } catch (err) {
-      toastError(getUserFacingError(err.message));
+      toast_error(get_user_facing_error(err.message));
     }
   };
 
@@ -413,19 +413,19 @@ function Transactions({ householdId, userId, members, goals = [] }) {
     if (!deleteCategoryTarget) return;
     setDeletingCategory(true);
     try {
-      const supabase = getSupabaseClient();
+      const supabase = get_supabase_client();
       const { error } = await supabase
         .from("transaction_categories")
         .delete()
         .eq("id", deleteCategoryTarget.id);
       if (error) throw error;
-      deleteCategoryModal.closeModal();
-      categoryModal.closeModal();
+      deleteCategoryModal.close_modal();
+      categoryModal.close_modal();
       setEditingCategory(null);
-      toastSuccess("Label deleted.");
+      toast_success("Label deleted.");
       fetchCategories();
     } catch (err) {
-      toastError(getUserFacingError(err.message));
+      toast_error(get_user_facing_error(err.message));
     }
     setDeletingCategory(false);
   };
@@ -444,7 +444,7 @@ function Transactions({ householdId, userId, members, goals = [] }) {
             <div>
               <span className="transactions__balance-label">Income</span>
               <span className="transactions__balance-value transactions__balance-value--income">
-                {formatMoney(stats.totalIncome)}
+                {format_money(stats.totalIncome)}
               </span>
             </div>
           </div>
@@ -454,7 +454,7 @@ function Transactions({ householdId, userId, members, goals = [] }) {
             <div>
               <span className="transactions__balance-label">Expenses</span>
               <span className="transactions__balance-value transactions__balance-value--expense">
-                {formatMoney(stats.totalExpense)}
+                {format_money(stats.totalExpense)}
               </span>
             </div>
           </div>
@@ -471,7 +471,7 @@ function Transactions({ householdId, userId, members, goals = [] }) {
                   className="transactions__balance-value"
                   style={{ color: "#818cf8" }}
                 >
-                  {formatMoney(stats.totalContribute)}
+                  {format_money(stats.totalContribute)}
                 </span>
               </div>
             </div>
@@ -483,7 +483,7 @@ function Transactions({ householdId, userId, members, goals = [] }) {
             className={`transactions__balance-net-value ${stats.balance >= 0 ? "positive" : "negative"}`}
           >
             {stats.balance >= 0 ? "+" : ""}
-            {formatMoney(stats.balance)}
+            {format_money(stats.balance)}
           </span>
         </div>
       </div>
@@ -545,7 +545,7 @@ function Transactions({ householdId, userId, members, goals = [] }) {
                       />
                     </div>
                     <span className="transactions__category-amount">
-                      {formatMoney(cat.total)}
+                      {format_money(cat.total)}
                     </span>
                   </div>
                 </div>
@@ -560,13 +560,13 @@ function Transactions({ householdId, userId, members, goals = [] }) {
         <div className="transactions__add-btns">
           <button
             className="btn btn--ghost btn--sm"
-            onClick={() => openAdd("expense")}
+            onClick={() => open_add("expense")}
           >
             + Expense
           </button>
           <button
             className="btn btn--ghost btn--sm"
-            onClick={() => openAdd("income")}
+            onClick={() => open_add("income")}
             style={{ marginLeft: 6 }}
           >
             + Income
@@ -574,7 +574,7 @@ function Transactions({ householdId, userId, members, goals = [] }) {
           {activeGoals.length > 0 && (
             <button
               className="btn btn--primary btn--sm"
-              onClick={() => openAdd("contribute")}
+              onClick={() => open_add("contribute")}
               style={{ marginLeft: 6 }}
             >
               + Contribute
@@ -593,7 +593,7 @@ function Transactions({ householdId, userId, members, goals = [] }) {
             <button
               type="button"
               className="btn btn--primary btn--sm"
-              onClick={() => openAdd("expense")}
+              onClick={() => open_add("expense")}
             >
               + Add transaction
             </button>
@@ -613,13 +613,13 @@ function Transactions({ householdId, userId, members, goals = [] }) {
               <div key={date} className="transactions__group">
                 <div className="transactions__group-header">
                   <span className="transactions__group-date">
-                    {formatDateGroup(date)}
+                    {format_date_group(date)}
                   </span>
                   <span
                     className={`transactions__group-total ${dayTotal >= 0 ? "positive" : "negative"}`}
                   >
                     {dayTotal >= 0 ? "+" : ""}
-                    {formatMoney(Math.abs(dayTotal))}
+                    {format_money(Math.abs(dayTotal))}
                   </span>
                 </div>
                 <div className="transactions__group-items">
@@ -627,7 +627,7 @@ function Transactions({ householdId, userId, members, goals = [] }) {
                     <TransactionCard
                       key={tx.id}
                       transaction={tx}
-                      onEdit={openEdit}
+                      onEdit={open_edit}
                     />
                   ))}
                 </div>
@@ -642,41 +642,41 @@ function Transactions({ householdId, userId, members, goals = [] }) {
         open={addModal.open || editModal.open}
         closing={addModal.closing || editModal.closing}
         onClose={() => {
-          addModal.closeModal();
-          editModal.closeModal();
+          addModal.close_modal();
+          editModal.close_modal();
         }}
         title={editingTx ? "Edit transaction" : `Add ${typeLabel}`}
       >
         <TransactionForm
           form={form}
-          setForm={setForm}
+          set_form={set_form}
           editingTx={editingTx}
           categories={categories}
           goals={goals}
           submitting={submitting}
-          onSubmit={handleSubmit}
+          onSubmit={handle_submit}
           onCancel={() => {
-            addModal.closeModal();
-            editModal.closeModal();
+            addModal.close_modal();
+            editModal.close_modal();
           }}
           onDelete={() => {
-            setDeleteTarget(editingTx);
-            deleteModal.openModal();
+            set_delete_target(editingTx);
+            delete_modal.open_modal();
           }}
           onOpenNewCategory={openNewCategory}
-          onError={toastError}
+          onError={toast_error}
         />
       </SheetModal>
 
       {/* ── Delete Confirmation ────────────────────────────── */}
       <ConfirmModal
-        open={deleteModal.open}
-        closing={deleteModal.closing}
-        onClose={() => deleteModal.closeModal()}
+        open={delete_modal.open}
+        closing={delete_modal.closing}
+        onClose={() => delete_modal.close_modal()}
         title="Delete transaction"
-        message={`Delete "${deleteTarget?.description}"? This can't be undone.`}
+        message={`Delete "${delete_target?.description}"? This can't be undone.`}
         confirmText={deleting ? "Deleting…" : "Delete"}
-        onConfirm={confirmDelete}
+        onConfirm={confirm_delete}
         danger
       />
 
@@ -684,7 +684,7 @@ function Transactions({ householdId, userId, members, goals = [] }) {
       <SheetModal
         open={categoryModal.open}
         closing={categoryModal.closing}
-        onClose={() => categoryModal.closeModal()}
+        onClose={() => categoryModal.close_modal()}
         title={editingCategory ? "Edit label" : "Manage labels"}
       >
         <div className="transactions__form">
@@ -827,7 +827,7 @@ function Transactions({ householdId, userId, members, goals = [] }) {
             <button
               type="button"
               className="btn btn--ghost"
-              onClick={() => categoryModal.closeModal()}
+              onClick={() => categoryModal.close_modal()}
             >
               {editingCategory ? "Back" : "Done"}
             </button>
@@ -837,7 +837,7 @@ function Transactions({ householdId, userId, members, goals = [] }) {
                 className="btn btn--danger"
                 onClick={() => {
                   setDeleteCategoryTarget(editingCategory);
-                  deleteCategoryModal.openModal();
+                  deleteCategoryModal.open_modal();
                 }}
               >
                 Delete
@@ -859,7 +859,7 @@ function Transactions({ householdId, userId, members, goals = [] }) {
       <ConfirmModal
         open={deleteCategoryModal.open}
         closing={deleteCategoryModal.closing}
-        onClose={() => deleteCategoryModal.closeModal()}
+        onClose={() => deleteCategoryModal.close_modal()}
         title="Delete label"
         message={`Delete "${deleteCategoryTarget?.name}"? Existing transactions will keep their data.`}
         confirmText={deletingCategory ? "Deleting…" : "Delete"}

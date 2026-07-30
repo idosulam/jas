@@ -23,10 +23,10 @@ export const EVENT_COLORS = {
  * Resolve a color key (named or hex) to accent/bg values.
  * Named keys look up EVENT_COLORS; hex values generate accent + bg directly.
  */
-export function resolveColor(colorKey) {
-  if (EVENT_COLORS[colorKey]) return EVENT_COLORS[colorKey];
+export function resolve_color(color_key) {
+  if (EVENT_COLORS[color_key]) return EVENT_COLORS[color_key];
   // Treat as hex color
-  const hex = colorKey && colorKey.startsWith("#") ? colorKey : "#818cf8";
+  const hex = color_key && color_key.startsWith("#") ? color_key : "#818cf8";
   return {
     label: "Custom",
     accent: hex,
@@ -34,32 +34,32 @@ export function resolveColor(colorKey) {
   };
 }
 
-export function parseTimeToMinutes(timeStr) {
-  const [h, m] = timeStr.slice(0, 5).split(":").map(Number);
+export function parse_time_to_minutes(time_str) {
+  const [h, m] = time_str.slice(0, 5).split(":").map(Number);
   return h * 60 + m;
 }
 
-export function formatTime12(timeStr) {
-  const [h, m] = timeStr.slice(0, 5).split(":").map(Number);
+export function format_time_12(time_str) {
+  const [h, m] = time_str.slice(0, 5).split(":").map(Number);
   const period = h >= 12 ? "PM" : "AM";
   const hour12 = h % 12 || 12;
   return `${hour12}:${String(m).padStart(2, "0")} ${period}`;
 }
 
-export function toDateKey(date) {
+export function to_date_key(date) {
   const y = date.getFullYear();
   const m = String(date.getMonth() + 1).padStart(2, "0");
   const d = String(date.getDate()).padStart(2, "0");
   return `${y}-${m}-${d}`;
 }
 
-export function addDays(date, days) {
+export function add_days(date, days) {
   const next = new Date(date);
   next.setDate(next.getDate() + days);
   return next;
 }
 
-export function startOfWeek(date) {
+export function start_of_week(date) {
   const d = new Date(date);
   const day = d.getDay();
   d.setDate(d.getDate() - day);
@@ -67,18 +67,18 @@ export function startOfWeek(date) {
   return d;
 }
 
-function eventsOverlap(a, b) {
+function events_overlap(a, b) {
   return a.start < b.end && a.end > b.start;
 }
 
-function mergeClusters(clusters) {
+function merge_clusters(clusters) {
   let merged = true;
   while (merged) {
     merged = false;
     for (let i = 0; i < clusters.length; i += 1) {
       for (let j = i + 1; j < clusters.length; j += 1) {
         const shouldMerge = clusters[i].some((a) =>
-          clusters[j].some((b) => eventsOverlap(a, b)),
+          clusters[j].some((b) => events_overlap(a, b)),
         );
         if (shouldMerge) {
           clusters[i] = [...clusters[i], ...clusters[j]];
@@ -93,31 +93,31 @@ function mergeClusters(clusters) {
   return clusters;
 }
 
-function layoutCluster(cluster) {
+function layout_cluster(cluster) {
   const sorted = [...cluster].sort(
     (a, b) => a.start - b.start || b.end - b.start - (a.end - a.start),
   );
 
-  const columnEnds = [];
+  const column_ends = [];
   const laid = sorted.map((event) => {
-    let column = columnEnds.findIndex((end) => end <= event.start);
+    let column = column_ends.findIndex((end) => end <= event.start);
     if (column === -1) {
-      column = columnEnds.length;
-      columnEnds.push(0);
+      column = column_ends.length;
+      column_ends.push(0);
     }
-    columnEnds[column] = event.end;
+    column_ends[column] = event.end;
     return { ...event, column };
   });
 
-  const totalColumns = columnEnds.length;
-  return laid.map((event) => ({ ...event, totalColumns }));
+  const total_columns = column_ends.length;
+  return laid.map((event) => ({ ...event, total_columns }));
 }
 
-export function layoutOverlappingEvents(events) {
+export function layout_overlapping_events(events) {
   const parsed = events.map((event) => ({
     ...event,
-    start: parseTimeToMinutes(event.start_time),
-    end: parseTimeToMinutes(event.end_time),
+    start: parse_time_to_minutes(event.start_time),
+    end: parse_time_to_minutes(event.end_time),
   }));
 
   const sorted = [...parsed].sort((a, b) => a.start - b.start);
@@ -126,7 +126,7 @@ export function layoutOverlappingEvents(events) {
   for (const event of sorted) {
     let placed = false;
     for (const cluster of clusters) {
-      if (cluster.some((item) => eventsOverlap(item, event))) {
+      if (cluster.some((item) => events_overlap(item, event))) {
         cluster.push(event);
         placed = true;
         break;
@@ -135,29 +135,29 @@ export function layoutOverlappingEvents(events) {
     if (!placed) clusters.push([event]);
   }
 
-  return mergeClusters(clusters).flatMap(layoutCluster);
+  return merge_clusters(clusters).flatMap(layout_cluster);
 }
 
-export function eventStyle(layoutEvent) {
-  const dayStartMin = DAY_START_HOUR * 60;
-  const dayEndMin = (DAY_END_HOUR + 1) * 60;
-  const clampedStart = Math.max(layoutEvent.start, dayStartMin);
-  const clampedEnd = Math.min(layoutEvent.end, dayEndMin);
+export function event_style(layout_event) {
+  const day_start_min = DAY_START_HOUR * 60;
+  const day_end_min = (DAY_END_HOUR + 1) * 60;
+  const clamped_start = Math.max(layout_event.start, day_start_min);
+  const clamped_end = Math.min(layout_event.end, day_end_min);
 
-  if (clampedEnd <= clampedStart) return null;
+  if (clamped_end <= clamped_start) return null;
 
-  const top = ((clampedStart - dayStartMin) / 60) * HOUR_HEIGHT;
+  const top = ((clamped_start - day_start_min) / 60) * HOUR_HEIGHT;
   const height = Math.max(
-    ((clampedEnd - clampedStart) / 60) * HOUR_HEIGHT - 4,
+    ((clamped_end - clamped_start) / 60) * HOUR_HEIGHT - 4,
     28,
   );
-  const widthPct = 100 / layoutEvent.totalColumns;
-  const leftPct = layoutEvent.column * widthPct;
+  const width_pct = 100 / layout_event.total_columns;
+  const left_pct = layout_event.column * width_pct;
 
   return {
     top: `${top}px`,
     height: `${height}px`,
-    width: `calc(${widthPct}% - 4px)`,
-    left: `calc(${leftPct}% + 2px)`,
+    width: `calc(${width_pct}% - 4px)`,
+    left: `calc(${left_pct}% + 2px)`,
   };
 }

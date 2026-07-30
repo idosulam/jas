@@ -1,7 +1,7 @@
-function PageTransition({ pageKey, direction, children }) {
+function PageTransition({ page_key, direction, children }) {
   return (
     <div
-      key={pageKey}
+      key={page_key}
       className={`page-transition page-transition--${direction}`}
     >
       {children}

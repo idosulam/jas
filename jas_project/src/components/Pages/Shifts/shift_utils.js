@@ -1,5 +1,5 @@
-import { parseTimeToMinutes } from "../../../lib/calendar_sync";
-import { formatMoney } from "../../../lib/format";
+import { parse_time_to_minutes } from "../../../lib/calendar_sync";
+import { format_money } from "../../../lib/format";
 
 // ── Constants ──────────────────────────────────────────────────────
 
@@ -19,7 +19,7 @@ export const MODAL_EXIT_MS = 320;
 /**
  * Return the current local time as "HH:MM".
  */
-export function getCurrentLocalTime() {
+export function get_current_local_time() {
   const now = new Date();
   const hours = String(now.getHours()).padStart(2, "0");
   const minutes = String(now.getMinutes()).padStart(2, "0");
@@ -30,9 +30,9 @@ export function getCurrentLocalTime() {
  * Calculate hours between two "HH:MM" time strings, handling overnight.
  * Returns a number (decimal hours) or null when inputs are missing.
  */
-export function calculateHoursFromTimes(startTime, endTime) {
-  const start = parseTimeToMinutes(startTime);
-  const end = parseTimeToMinutes(endTime);
+export function calculate_hours_from_times(start_time, end_time) {
+  const start = parse_time_to_minutes(start_time);
+  const end = parse_time_to_minutes(end_time);
   if (start == null || end == null) return null;
   const diffMinutes = end >= start ? end - start : 24 * 60 - start + end;
   return Number((diffMinutes / 60).toFixed(2));
@@ -41,24 +41,24 @@ export function calculateHoursFromTimes(startTime, endTime) {
 /**
  * Calculate the pay for a shift given the PLACES map and shift fields.
  */
-export function calcPay(places, place, hours, payType = "hourly") {
-  if (payType === "tips_only") return 0;
+export function calc_pay(places, place, hours, pay_type = "hourly") {
+  if (pay_type === "tips_only") return 0;
   return (places[place]?.rate ?? 0) * (parseFloat(hours) || 0);
 }
 
 /**
  * Default empty form factory.
  */
-export const emptyForm = (firstPlace) => ({
+export const empty_form = (firstPlace) => ({
   place: firstPlace || "",
   pay_type: "hourly",
   shift_date: new Date().toISOString().slice(0, 10),
-  start_time: getCurrentLocalTime(),
+  start_time: get_current_local_time(),
   end_time: "",
   hours: "",
   tips: "",
   notes: "",
 });
 
-// Re-export formatMoney so consumers can get everything from one module.
-export { formatMoney };
+// Re-export format_money so consumers can get everything from one module.
+export { format_money };

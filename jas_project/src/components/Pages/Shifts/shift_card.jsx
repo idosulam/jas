@@ -1,6 +1,6 @@
-import Badge from "../../../components/ui/badge";
-import { formatDateFriendly } from "../../../lib/security";
-import { formatMoney } from "../../../lib/format";
+import Badge from "../../../components/UI/badge";
+import { format_date_friendly } from "../../../lib/security";
+import { format_money } from "../../../lib/format";
 import { calcPay } from "./shift_utils";
 
 /**
@@ -9,24 +9,24 @@ import { calcPay } from "./shift_utils";
  * Props:
  *   shift           – shift object
  *   places          – PLACES map
- *   deactivatedSlugs– Set of deactivated slugs
+ *   deactivated_slugs– Set of deactivated slugs
  *   onEdit(shift)   – open edit modal
  *   onCopy(shift)   – copy shift to today (opens add modal prefilled)
  *   onDelete(shift) – open delete confirmation
  *   onToggleNote(id)– toggle expanded note panel
- *   expandedNoteId  – id of the currently-expanded note (or null)
+ *   expanded_note_id  – id of the currently-expanded note (or null)
  *   isRemoving      – card is animating out
  *   animDelay       – CSS delay string for stagger animation
  */
 export default function ShiftCard({
   shift,
   places,
-  deactivatedSlugs,
+  deactivated_slugs,
   onEdit,
   onCopy,
   onDelete,
   onToggleNote,
-  expandedNoteId,
+  expanded_note_id,
   isRemoving,
   animDelay,
 }) {
@@ -34,7 +34,7 @@ export default function ShiftCard({
   const tips = parseFloat(shift.tips) || 0;
   const placeInfo = places[shift.place];
   const isTipsOnly = shift.pay_type === "tips_only";
-  const isDeactivated = deactivatedSlugs.has(shift.place);
+  const isDeactivated = deactivated_slugs.has(shift.place);
 
   return (
     <li
@@ -54,16 +54,16 @@ export default function ShiftCard({
           </Badge>
           <div className="shifts__card-top-right">
             <span className="shifts__date">
-              {formatDateFriendly(shift.shift_date)}
+              {format_date_friendly(shift.shift_date)}
             </span>
             {shift.notes && (
               <button
                 type="button"
-                className={`shifts__note-toggle${expandedNoteId === shift.id ? " shifts__note-toggle--active" : ""}`}
+                className={`shifts__note-toggle${expanded_note_id === shift.id ? " shifts__note-toggle--active" : ""}`}
                 onClick={() => onToggleNote(shift.id)}
-                aria-expanded={expandedNoteId === shift.id}
+                aria-expanded={expanded_note_id === shift.id}
                 aria-label={
-                  expandedNoteId === shift.id
+                  expanded_note_id === shift.id
                     ? "Hide note"
                     : "View note"
                 }
@@ -93,12 +93,12 @@ export default function ShiftCard({
               {shift.hours}h × ₪{placeInfo?.rate}
             </span>
           )}
-          {tips > 0 && <span>Tips {formatMoney(tips)}</span>}
+          {tips > 0 && <span>Tips {format_money(tips)}</span>}
           <span className="shifts__card-total">
-            {formatMoney(pay + tips)}
+            {format_money(pay + tips)}
           </span>
         </div>
-        {shift.notes && expandedNoteId === shift.id && (
+        {shift.notes && expanded_note_id === shift.id && (
           <p className="shifts__note-panel">{shift.notes}</p>
         )}
       </div>

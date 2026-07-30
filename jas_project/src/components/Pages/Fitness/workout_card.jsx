@@ -1,5 +1,5 @@
-import { formatDateFriendly } from "../../../lib/security";
-import { kgToLbs } from "../../../lib/weight";
+import { format_date_friendly } from "../../../lib/security";
+import { kg_to_lbs } from "../../../lib/weight";
 import { calcVolume, formatVolume } from "./workout_utils";
 
 export default function WorkoutCard({
@@ -8,7 +8,7 @@ export default function WorkoutCard({
   onEdit,
   onDelete,
   onToggleNote,
-  expandedNoteId,
+  expanded_note_id,
   isRemoving,
 }) {
   const exercises = Array.isArray(workout.exercises) ? workout.exercises : [];
@@ -22,7 +22,7 @@ export default function WorkoutCard({
       <div className="fitness__card-main">
         <div className="fitness__card-top">
           <span className="fitness__card-date">
-            {formatDateFriendly(workout.workout_date)}
+            {format_date_friendly(workout.workout_date)}
           </span>
           {workout.preset_name && (
             <span className="fitness__card-preset">
@@ -32,9 +32,9 @@ export default function WorkoutCard({
           {workout.notes && (
             <button
               type="button"
-              className={`fitness__note-toggle${expandedNoteId === workout.id ? " fitness__note-toggle--active" : ""}`}
+              className={`fitness__note-toggle${expanded_note_id === workout.id ? " fitness__note-toggle--active" : ""}`}
               onClick={() => onToggleNote(workout.id)}
-              aria-expanded={expandedNoteId === workout.id}
+              aria-expanded={expanded_note_id === workout.id}
             >
               <svg
                 viewBox="0 0 24 24"
@@ -53,7 +53,7 @@ export default function WorkoutCard({
           {exercises.map((ex, i) => (
             <span key={i} className="fitness__card-exercise">
               {ex.name}
-              {ex.weight ? ` ${ex.weight}kg (${kgToLbs(ex.weight)}lbs)` : ""}
+              {ex.weight ? ` ${ex.weight}kg (${kg_to_lbs(ex.weight)}lbs)` : ""}
               {ex.sets && ex.reps ? ` ${ex.sets}×${ex.reps}` : ""}
             </span>
           ))}
@@ -75,7 +75,7 @@ export default function WorkoutCard({
             </span>
           )}
         </div>
-        {workout.notes && expandedNoteId === workout.id && (
+        {workout.notes && expanded_note_id === workout.id && (
           <p className="fitness__note-panel">{workout.notes}</p>
         )}
       </div>

@@ -4,16 +4,16 @@
 import { createPortal } from "react-dom";
 import "../../styles/fab.css";
 
-export default function FAB({ visible, onScrollTop, onAdd, addLabel = "Add" }) {
+export default function FAB({ visible, on_scroll_top, on_add, add_label = "Add" }) {
   if (!visible) return null;
 
   return createPortal(
     <div className="fab-stack">
-      {onScrollTop && (
+      {on_scroll_top && (
         <button
           type="button"
           className="fab fab--up"
-          onClick={onScrollTop}
+          onClick={on_scroll_top}
           aria-label="Scroll to top"
         >
           <svg
@@ -29,12 +29,12 @@ export default function FAB({ visible, onScrollTop, onAdd, addLabel = "Add" }) {
           </svg>
         </button>
       )}
-      {onAdd && (
+      {on_add && (
         <button
           type="button"
           className="fab fab--add"
-          onClick={onAdd}
-          aria-label={addLabel}
+          onClick={on_add}
+          aria-label={add_label}
         >
           <svg
             viewBox="0 0 24 24"

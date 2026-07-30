@@ -5,12 +5,12 @@ import { useEffect, useRef, useState } from "react";
  * used to show/hide floating action buttons.
  *
  * @param {object} options
- * @param {boolean} options.requireScrolledPast - Only show when element scrolled above viewport (default true)
+ * @param {boolean} options.require_scrolled_past - Only show when element scrolled above viewport (default true)
  * @returns {{ ref, visible }}
  */
-export function useFloatingActions({ requireScrolledPast = true } = {}) {
+export function use_floating_actions({ require_scrolled_past = true } = {}) {
   const ref = useRef(null);
-  const [visible, setVisible] = useState(false);
+  const [visible, set_visible] = useState(false);
 
   useEffect(() => {
     const target = ref.current;
@@ -18,12 +18,12 @@ export function useFloatingActions({ requireScrolledPast = true } = {}) {
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (requireScrolledPast) {
-          const scrolledPast =
+        if (require_scrolled_past) {
+          const scrolled_past =
             !entry.isIntersecting && entry.boundingClientRect.top < 0;
-          setVisible(scrolledPast);
+          set_visible(scrolled_past);
         } else {
-          setVisible(!entry.isIntersecting);
+          set_visible(!entry.isIntersecting);
         }
       },
       { threshold: 0 },
@@ -31,7 +31,7 @@ export function useFloatingActions({ requireScrolledPast = true } = {}) {
 
     observer.observe(target);
     return () => observer.disconnect();
-  }, [requireScrolledPast]);
+  }, [require_scrolled_past]);
 
   return { ref, visible };
 }

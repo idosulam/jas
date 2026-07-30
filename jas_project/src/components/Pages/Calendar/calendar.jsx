@@ -1,39 +1,39 @@
 import "./calendar.css";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { getSupabaseClient } from "../../../lib/superbase";
-import { useUserId } from "../../../lib/auth_context.jsx";
+import { get_supabase_client } from "../../../lib/superbase";
+import { use_user_id } from "../../../lib/auth_context.jsx";
 import {
-  addDays,
+  add_days,
   DAY_END_HOUR,
   DAY_START_HOUR,
   EVENT_COLORS,
-  eventStyle,
-  resolveColor,
-  formatTime12,
+  event_style,
+  resolve_color,
+  format_time_12,
   HOUR_HEIGHT,
-  layoutOverlappingEvents,
-  startOfWeek,
-  toDateKey,
+  layout_overlapping_events,
+  start_of_week,
+  to_date_key,
   TOTAL_HOURS,
 } from "./calendar_layout";
 import {
-  getUserFacingError,
-  sanitizeDate,
-  sanitizeText,
-  sanitizeTime,
-  hapticError,
+  get_user_facing_error,
+  sanitize_date,
+  sanitize_text,
+  sanitize_time,
+  haptic_error,
 } from "../../../lib/security";
 import {
-  parseTimeToMinutes,
-  isShiftLinkNote,
-  getVisibleEventNotes,
-  recalcWakeWalkForDate,
+  parse_time_to_minutes,
+  is_shift_link_note,
+  get_visible_event_notes,
+  recalc_wake_walk_for_date,
 } from "../../../lib/calendar_sync";
 import {
-  useBodyScrollLock,
-  useModal,
-  useFloatingActions,
-} from "../../../hooks";
+  use_body_scroll_lock,
+  use_modal,
+  use_floating_actions,
+} from "../../../Hooks";
 import {
   ConfirmModal,
   EmptyState,
@@ -42,9 +42,9 @@ import {
   GlassCard,
   FAB,
 } from "../../../components";
-import { useGlassToast } from "../../../lib/glass_toast_provider.jsx";
-import { fetchPalette } from "../../../lib/color_palette.js";
-import { useHousehold } from "../../../lib/household_context.jsx";
+import { use_glass_toast } from "../../../lib/glass_toast_provider.jsx";
+import { fetch_palette } from "../../../lib/color_palette.js";
+import { use_household } from "../../../lib/household_context.jsx";
 import EventForm from "./event_form.jsx";
 import CalendarGrid from "./calendar_grid.jsx";
 import TimelineView from "./timeline_view.jsx";
@@ -52,66 +52,66 @@ import ReminderList from "./reminder_list.jsx";
 
 const MODAL_EXIT_MS = 260;
 
-const emptyForm = (dateKey) => ({
+const empty_form = (date_key) => ({
   title: "",
   notes: "",
-  event_date: dateKey,
+  event_date: date_key,
   start_time: "09:00",
   end_time: "10:00",
   color: "",
 });
 
 function Calendar() {
-  const { householdName } = useHousehold();
-  const userId = useUserId();
+  const { household_name } = use_household();
+  const user_id = use_user_id();
   const today = useMemo(() => new Date(), []);
-  const [selectedDate, setSelectedDate] = useState(today);
-  const [viewMode, setViewMode] = useState("week");
-  const [events, setEvents] = useState([]);
-  const [allEvents, setAllEvents] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [deleteTarget, setDeleteTarget] = useState(null);
-  const [editingEvent, setEditingEvent] = useState(null);
-  const [form, setForm] = useState(() => emptyForm(toDateKey(today)));
-  const [saving, setSaving] = useState(false);
-  const [deleting, setDeleting] = useState(false);
-  const [togglingId, setTogglingId] = useState(null);
-  const [removingId, setRemovingId] = useState(null);
-  const [nowTick, setNowTick] = useState(() => Date.now());
-  const [fieldErrors, setFieldErrors] = useState({});
-  const [fieldStates, setFieldStates] = useState({});
-  const [shakeKey, setShakeKey] = useState(0);
-  const [palette, setPalette] = useState([]);
+  const [selected_date, set_selected_date] = useState(today);
+  const [view_mode, set_view_mode] = useState("week");
+  const [events, set_events] = useState([]);
+  const [all_events, set_all_events] = useState([]);
+  const [loading, set_loading] = useState(true);
+  const [error, set_error] = useState(null);
+  const [delete_target, set_delete_target] = useState(null);
+  const [editing_event, set_editing_event] = useState(null);
+  const [form, set_form] = useState(() => empty_form(to_date_key(today)));
+  const [saving, set_saving] = useState(false);
+  const [deleting, set_deleting] = useState(false);
+  const [toggling_id, set_toggling_id] = useState(null);
+  const [removing_id, set_removing_id] = useState(null);
+  const [now_tick, set_now_tick] = useState(() => Date.now());
+  const [field_errors, set_field_errors] = useState({});
+  const [field_states, set_field_states] = useState({});
+  const [shake_key, set_shake_key] = useState(0);
+  const [palette, set_palette] = useState([]);
 
-  const formModal = useModal(MODAL_EXIT_MS);
-  const deleteModal = useModal(MODAL_EXIT_MS);
-  const { ref: addBtnRef, visible: showFloatingActions } = useFloatingActions();
-  const { success: toastSuccess, error: toastError } = useGlassToast();
+  const form_modal = use_modal(MODAL_EXIT_MS);
+  const delete_modal = use_modal(MODAL_EXIT_MS);
+  const { ref: add_btn_ref, visible: show_floating_actions } = use_floating_actions();
+  const { success: toast_success, error: toast_error } = use_glass_toast();
 
-  const selectedKey = toDateKey(selectedDate);
-  const isToday = selectedKey === toDateKey(today);
+  const selected_key = to_date_key(selected_date);
+  const is_today = selected_key === to_date_key(today);
 
   // Load color palette from DB
   useEffect(() => {
-    fetchPalette().then(setPalette);
+    fetch_palette().then(set_palette);
   }, []);
 
-  const weekDays = useMemo(() => {
-    const start = startOfWeek(selectedDate);
-    return Array.from({ length: 7 }, (_, i) => addDays(start, i));
-  }, [selectedDate]);
+  const week_days = useMemo(() => {
+    const start = start_of_week(selected_date);
+    return Array.from({ length: 7 }, (_, i) => add_days(start, i));
+  }, [selected_date]);
 
-  const monthDays = useMemo(() => {
-    const start = startOfWeek(
-      new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1),
+  const month_days = useMemo(() => {
+    const start = start_of_week(
+      new Date(selected_date.getFullYear(), selected_date.getMonth(), 1),
     );
-    return Array.from({ length: 42 }, (_, i) => addDays(start, i));
-  }, [selectedDate]);
+    return Array.from({ length: 42 }, (_, i) => add_days(start, i));
+  }, [selected_date]);
 
-  const visibleDays = viewMode === "week" ? weekDays : monthDays;
+  const visible_days = view_mode === "week" ? week_days : month_days;
 
-  const hourLabels = useMemo(
+  const hour_labels = useMemo(
     () =>
       Array.from({ length: TOTAL_HOURS }, (_, i) => {
         const hour = DAY_START_HOUR + i;
@@ -122,74 +122,74 @@ function Calendar() {
     [],
   );
 
-  const laidOutEvents = useMemo(
-    () => layoutOverlappingEvents(events),
+  const laid_out_events = useMemo(
+    () => layout_overlapping_events(events),
     [events],
   );
 
-  const isWakeEvent = (e) =>
+  const is_wake_event = (e) =>
     typeof e.title === "string" && e.title.toLowerCase().includes("wake");
 
-  const isGeneratedWakeEvent = (event) =>
+  const is_generated_wake_event = (event) =>
     event?.title === "Wake up" || event?.title === "Go for a walk";
 
-  const pendingCount = useMemo(
+  const pending_count = useMemo(
     () => events.filter((event) => !event.is_completed).length,
     [events],
   );
 
-  const busyDates = useMemo(
-    () => new Set(allEvents.map((event) => event.event_date)),
-    [allEvents],
+  const busy_dates = useMemo(
+    () => new Set(all_events.map((event) => event.event_date)),
+    [all_events],
   );
 
-  const nowLineTop = useMemo(() => {
-    if (!isToday) return null;
-    const now = new Date(nowTick);
+  const now_line_top = useMemo(() => {
+    if (!is_today) return null;
+    const now = new Date(now_tick);
     const minutes = now.getHours() * 60 + now.getMinutes();
-    const dayStart = DAY_START_HOUR * 60;
-    const dayEnd = (DAY_END_HOUR + 1) * 60;
-    if (minutes < dayStart || minutes > dayEnd) return null;
-    return ((minutes - dayStart) / 60) * HOUR_HEIGHT;
-  }, [isToday, nowTick]);
+    const day_start = DAY_START_HOUR * 60;
+    const day_end = (DAY_END_HOUR + 1) * 60;
+    if (minutes < day_start || minutes > day_end) return null;
+    return ((minutes - day_start) / 60) * HOUR_HEIGHT;
+  }, [is_today, now_tick]);
 
-  const fetchEvents = useCallback(async () => {
-    if (!userId) return;
-    setLoading(true);
-    setError(null);
+  const fetch_events = useCallback(async () => {
+    if (!user_id) return;
+    set_loading(true);
+    set_error(null);
 
-    const rangeStart =
-      viewMode === "week"
-        ? startOfWeek(selectedDate)
-        : new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
-    const rangeEnd =
-      viewMode === "week"
-        ? addDays(rangeStart, 6)
-        : new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 0);
+    const range_start =
+      view_mode === "week"
+        ? start_of_week(selected_date)
+        : new Date(selected_date.getFullYear(), selected_date.getMonth(), 1);
+    const range_end =
+      view_mode === "week"
+        ? add_days(range_start, 6)
+        : new Date(selected_date.getFullYear(), selected_date.getMonth() + 1, 0);
 
-    const startKey = toDateKey(rangeStart);
-    const endKey = toDateKey(rangeEnd);
+    const start_key = to_date_key(range_start);
+    const end_key = to_date_key(range_end);
 
     try {
-      const supabase = getSupabaseClient();
+      const supabase = get_supabase_client();
 
       // Sync any shifts that don't have calendar events yet
       try {
         const { data: shiftsInRange = [] } = await supabase
           .from("shifts")
           .select("*")
-          .eq("user_id", userId)
-          .gte("shift_date", startKey)
-          .lte("shift_date", endKey);
+          .eq("user_id", user_id)
+          .gte("shift_date", start_key)
+          .lte("shift_date", end_key);
 
         const { data: existingEvents = [] } = await supabase
           .from("events")
           .select("id, notes")
-          .eq("user_id", userId)
-          .gte("event_date", startKey)
-          .lte("event_date", endKey);
+          .eq("user_id", user_id)
+          .gte("event_date", start_key)
+          .lte("event_date", end_key);
 
-        const linkedShiftIds = new Set(
+        const linked_shift_ids = new Set(
           (existingEvents || [])
             .map((e) => {
               const m =
@@ -202,22 +202,22 @@ function Calendar() {
         );
 
         const unsynced = (shiftsInRange || []).filter(
-          (s) => !linkedShiftIds.has(s.id),
+          (s) => !linked_shift_ids.has(s.id),
         );
         if (unsynced.length > 0) {
           for (const shift of unsynced) {
-            const dateKey = shift.shift_date;
+            const date_key = shift.shift_date;
             const title = `Shift: ${shift.place}`;
             const start = shift.start_time || "09:00";
             const end = shift.end_time || "17:00";
             await supabase.from("events").insert({
               title,
               notes: `Linked shift id: ${shift.id}`,
-              event_date: dateKey,
+              event_date: date_key,
               start_time: start,
               end_time: end,
               color: shift.color || "cyan",
-              ...(userId && { user_id: userId }),
+              ...(user_id && { user_id: user_id }),
             });
           }
         }
@@ -225,90 +225,90 @@ function Calendar() {
         // non-critical, continue fetching
       }
 
-      const { data, error: fetchError } = await supabase
+      const { data, error: fetch_error } = await supabase
         .from("events")
         .select("*")
-        .eq("user_id", userId)
-        .gte("event_date", startKey)
-        .lte("event_date", endKey)
+        .eq("user_id", user_id)
+        .gte("event_date", start_key)
+        .lte("event_date", end_key)
         .order("start_time", { ascending: true });
 
-      if (fetchError) {
-        setError(getUserFacingError(fetchError.message));
-        setAllEvents([]);
-        setEvents([]);
+      if (fetch_error) {
+        set_error(get_user_facing_error(fetch_error.message));
+        set_all_events([]);
+        set_events([]);
       } else {
         const items = data ?? [];
-        setAllEvents(items);
-        setEvents(items.filter((event) => event.event_date === selectedKey));
+        set_all_events(items);
+        set_events(items.filter((event) => event.event_date === selected_key));
       }
     } catch (err) {
-      setError(getUserFacingError(err.message));
-      setAllEvents([]);
-      setEvents([]);
+      set_error(get_user_facing_error(err.message));
+      set_all_events([]);
+      set_events([]);
     }
-    setLoading(false);
-  }, [selectedDate, selectedKey, viewMode, userId]);
+    set_loading(false);
+  }, [selected_date, selected_key, view_mode, user_id]);
 
   useEffect(() => {
-    fetchEvents();
-  }, [fetchEvents]);
+    fetch_events();
+  }, [fetch_events]);
 
   useEffect(() => {
-    const handleCalendarRefresh = (event) => {
-      const refreshedDate = event?.detail?.date;
-      if (refreshedDate && refreshedDate === selectedKey) {
-        fetchEvents();
+    const handle_calendar_refresh = (event) => {
+      const refreshed_date = event?.detail?.date;
+      if (refreshed_date && refreshed_date === selected_key) {
+        fetch_events();
       }
     };
 
-    window.addEventListener("calendar:refresh", handleCalendarRefresh);
+    window.addEventListener("calendar:refresh", handle_calendar_refresh);
     return () => {
-      window.removeEventListener("calendar:refresh", handleCalendarRefresh);
+      window.removeEventListener("calendar:refresh", handle_calendar_refresh);
     };
-  }, [fetchEvents, selectedKey]);
+  }, [fetch_events, selected_key]);
 
   useEffect(() => {
-    const timer = setInterval(() => setNowTick(Date.now()), 60_000);
+    const timer = setInterval(() => set_now_tick(Date.now()), 60_000);
     return () => clearInterval(timer);
   }, []);
 
-  useBodyScrollLock(formModal.open, deleteTarget);
+  use_body_scroll_lock(form_modal.open, delete_target);
 
-  const validateCalendarField = (fieldName) => {
+  const validate_calendar_field = (field_name) => {
     const errors = {};
-    switch (fieldName) {
+    switch (field_name) {
       case "title": {
         if (!form.title || !form.title.trim()) {
-          errors[fieldName] = "Give it a name";
+          errors[field_name] = "Give it a name";
         }
         break;
       }
       case "event_date": {
         if (!form.event_date) {
-          errors[fieldName] = "Pick a date";
+          errors[field_name] = "Pick a date";
         }
         break;
       }
       case "start_time": {
         if (!form.start_time) {
-          errors[fieldName] = "Required";
+          errors[field_name] = "Required";
         } else if (form.end_time && form.start_time >= form.end_time) {
-          errors[fieldName] = "Must be before end";
+          errors[field_name] = "Must be before end";
         }
         break;
       }
       case "end_time": {
         if (!form.end_time) {
-          errors[fieldName] = "Required";
+          errors[field_name] = "Required";
         } else if (form.start_time && form.end_time <= form.start_time) {
-          errors[fieldName] = "Must be after start";
+          errors[field_name] = "Must be after start";
         }
         break;
       }
       case "color": {
         if (!form.color) {
-          errors[fieldName] = "Pick a color";
+          errors[field_name] = "Pick a color";
         }
         break;
       }
@@ -316,24 +316,24 @@ function Calendar() {
     return errors;
   };
 
-  const handleCalendarFieldBlur = (fieldName) => {
-    const errors = validateCalendarField(fieldName);
-    const fieldError = errors[fieldName] || null;
-    setFieldErrors((prev) => ({
+  const handle_calendar_field_blur = (field_name) => {
+    const errors = validate_calendar_field(field_name);
+    const fieldError = errors[field_name] || null;
+    set_field_errors((prev) => ({
       ...prev,
-      [fieldName]: fieldError,
+      [field_name]: fieldError,
     }));
-    setFieldStates((prev) => ({
+    set_field_states((prev) => ({
       ...prev,
-      [fieldName]: fieldError ? "error" : form[fieldName] ? "valid" : "idle",
+      [field_name]: fieldError ? "error" : form[field_name] ? "valid" : "idle",
     }));
     if (fieldError) {
-      setShakeKey((k) => k + 1);
-      hapticError();
+      set_shake_key((k) => k + 1);
+      haptic_error();
     }
   };
 
-  const isCalendarFormValid = useMemo(() => {
+  const is_calendar_form_valid = useMemo(() => {
     if (!form.title || !form.title.trim()) return false;
     if (!form.event_date) return false;
     if (!form.start_time || !form.end_time) return false;
@@ -342,107 +342,107 @@ function Calendar() {
     return true;
   }, [form]);
 
-  const shiftSelectedDate = (direction) => {
+  const shift_selected_date = (direction) => {
     const delta = direction === "next" ? 1 : -1;
-    if (viewMode === "month") {
-      const next = new Date(selectedDate);
+    if (view_mode === "month") {
+      const next = new Date(selected_date);
       next.setMonth(next.getMonth() + delta);
-      setSelectedDate(next);
+      set_selected_date(next);
       return;
     }
 
-    setSelectedDate((date) => addDays(date, delta * 7));
+    set_selected_date((date) => add_days(date, delta * 7));
   };
 
-  const openAddModal = (startTime = "09:00") => {
-    const [h] = startTime.split(":").map(Number);
+  const open_add_modal = (start_time = "09:00") => {
+    const [h] = start_time.split(":").map(Number);
     const endHour = Math.min(h + 1, DAY_END_HOUR);
-    setEditingEvent(null);
-    setForm({
-      ...emptyForm(selectedKey),
+    set_editing_event(null);
+    set_form({
+      ...empty_form(selected_key),
       color: "",
-      start_time: startTime,
+      start_time: start_time,
       end_time: `${String(endHour).padStart(2, "0")}:00`,
     });
-    setFieldErrors({});
-    setFieldStates({});
-    formModal.openModal();
+    set_field_errors({});
+    set_field_states({});
+    form_modal.open_modal();
   };
 
-  const openEditModal = (event) => {
-    setEditingEvent(event);
-    setForm({
+  const open_edit_modal = (event) => {
+    set_editing_event(event);
+    set_form({
       title: event.title,
-      notes: getVisibleEventNotes(event.notes),
+      notes: get_visible_event_notes(event.notes),
       event_date: event.event_date,
       start_time: event.start_time.slice(0, 5),
       end_time: event.end_time.slice(0, 5),
       color: event.color ?? "green",
     });
-    setFieldErrors({});
-    setFieldStates({});
-    formModal.openModal();
+    set_field_errors({});
+    set_field_states({});
+    form_modal.open_modal();
   };
 
-  const closeFormModal = () => {
-    formModal.closeModal();
+  const close_form_modal = () => {
+    form_modal.close_modal();
     setTimeout(() => {
-      setEditingEvent(null);
-      setForm(emptyForm(selectedKey));
-      setFieldErrors({});
-      setFieldStates({});
+      set_editing_event(null);
+      set_form(empty_form(selected_key));
+      set_field_errors({});
+      set_field_states({});
     }, MODAL_EXIT_MS);
   };
 
-  const closeDeleteModal = () => {
-    deleteModal.closeModal();
+  const close_delete_modal = () => {
+    delete_modal.close_modal();
     setTimeout(() => {
-      setDeleteTarget(null);
+      set_delete_target(null);
     }, MODAL_EXIT_MS);
   };
 
-  const handleSubmit = async (e) => {
+  const handle_submit = async (e) => {
     e.preventDefault();
 
-    const title = sanitizeText(form.title, 80);
-    const eventDate = sanitizeDate(form.event_date, selectedKey);
-    const startTime = sanitizeTime(form.start_time, "09:00");
-    const endTime = sanitizeTime(form.end_time, "10:00");
+    const title = sanitize_text(form.title, 80);
+    const event_date = sanitize_date(form.event_date, selected_key);
+    const start_time = sanitize_time(form.start_time, "09:00");
+    const end_time = sanitize_time(form.end_time, "10:00");
 
     const errors = {};
     if (!title) errors.title = "Give it a name";
-    if (!eventDate) errors.event_date = "Pick a date";
-    if (!startTime) errors.start_time = "Required";
-    if (!endTime) errors.end_time = "Required";
-    if (startTime && endTime && endTime <= startTime)
+    if (!event_date) errors.event_date = "Pick a date";
+    if (!start_time) errors.start_time = "Required";
+    if (!end_time) errors.end_time = "Required";
+    if (start_time && end_time && end_time <= start_time)
       errors.end_time = "Must be after start";
     if (!form.color) errors.color = "Pick a color";
 
     if (Object.keys(errors).length > 0) {
-      setFieldErrors(errors);
+      set_field_errors(errors);
       const newStates = {};
       Object.keys(errors).forEach((k) => {
         newStates[k] = "error";
       });
-      setFieldStates((prev) => ({ ...prev, ...newStates }));
-      setShakeKey((k) => k + 1);
+      set_field_states((prev) => ({ ...prev, ...newStates }));
+      set_shake_key((k) => k + 1);
       return;
     }
 
-    setSaving(true);
-    setError(null);
+    set_saving(true);
+    set_error(null);
 
-    const nextNotes = sanitizeText(form.notes, 240) || null;
+    const nextNotes = sanitize_text(form.notes, 240) || null;
     const payload = {
       title,
       notes:
-        editingEvent && isShiftLinkNote(editingEvent.notes)
-          ? editingEvent.notes
+        editing_event && is_shift_link_note(editing_event.notes)
+          ? editing_event.notes
           : nextNotes,
-      event_date: eventDate,
-      start_time: startTime,
-      end_time: endTime,
-      ...(userId && { user_id: userId }),
+      event_date: event_date,
+      start_time: start_time,
+      end_time: end_time,
+      ...(user_id && { user_id: user_id }),
       color:
         form.color && form.color.startsWith("#")
           ? form.color
@@ -452,24 +452,24 @@ function Calendar() {
     };
 
     try {
-      const supabase = getSupabaseClient();
+      const supabase = get_supabase_client();
       let dbError;
-      if (editingEvent) {
+      if (editing_event) {
         ({ error: dbError } = await supabase
           .from("events")
           .update(payload)
-          .eq("id", editingEvent.id));
+          .eq("id", editing_event.id));
       } else {
         ({ error: dbError } = await supabase.from("events").insert(payload));
       }
 
-      setSaving(false);
+      set_saving(false);
 
       if (dbError) {
-        const message = getUserFacingError(dbError.message);
-        setError(message);
-        toastError(
-          editingEvent ? "Couldn't edit event." : "Couldn't save event.",
+        const message = get_user_facing_error(dbError.message);
+        set_error(message);
+        toast_error(
+          editing_event ? "Couldn't edit event." : "Couldn't save event.",
         );
         return;
       }
@@ -477,15 +477,15 @@ function Calendar() {
       // If this event is linked to a shift, mirror the new time back onto
       // the shift record and recompute Wake up / Go for a walk for the day
       // so editing from the Calendar page stays in sync with the Shifts page.
-      if (editingEvent && isShiftLinkNote(editingEvent.notes)) {
-        const linkedShiftId = editingEvent.notes.match(
+      if (editing_event && is_shift_link_note(editing_event.notes)) {
+        const linked_shift_id = editing_event.notes.match(
           /Linked shift id:\s*([a-zA-Z0-9-]+)/,
         )?.[1];
 
-        if (linkedShiftId) {
+        if (linked_shift_id) {
           try {
-            const startMin = parseTimeToMinutes(startTime);
-            const endMin = parseTimeToMinutes(endTime);
+            const startMin = parse_time_to_minutes(start_time);
+            const endMin = parse_time_to_minutes(end_time);
             const hours =
               startMin != null && endMin != null
                 ? Number(((endMin - startMin) / 60).toFixed(2))
@@ -494,71 +494,71 @@ function Calendar() {
             await supabase
               .from("shifts")
               .update({
-                start_time: startTime,
-                end_time: endTime,
+                start_time: start_time,
+                end_time: end_time,
                 ...(hours != null ? { hours } : {}),
               })
-              .eq("id", linkedShiftId);
+              .eq("id", linked_shift_id);
 
-            await recalcWakeWalkForDate(supabase, eventDate, userId);
+            await recalc_wake_walk_for_date(supabase, event_date, user_id);
             window.dispatchEvent(new CustomEvent("shifts:refresh"));
           } catch {
-            toastError(
+            toast_error(
               "Event saved, but syncing the linked shift and wake/walk times failed.",
             );
           }
         }
       }
 
-      closeFormModal();
-      toastSuccess(
-        editingEvent ? "Event edited successfully." : "Event saved.",
+      close_form_modal();
+      toast_success(
+        editing_event ? "Event edited successfully." : "Event saved.",
       );
-      fetchEvents();
+      fetch_events();
     } catch (err) {
-      setSaving(false);
-      setError(getUserFacingError(err.message));
-      toastError(
-        editingEvent ? "Couldn't edit event." : "Couldn't save event.",
+      set_saving(false);
+      set_error(get_user_facing_error(err.message));
+      toast_error(
+        editing_event ? "Couldn't edit event." : "Couldn't save event.",
       );
     }
   };
 
-  const confirmDelete = async () => {
-    if (!deleteTarget) return;
+  const confirm_delete = async () => {
+    if (!delete_target) return;
 
-    setDeleting(true);
-    setError(null);
+    set_deleting(true);
+    set_error(null);
 
     try {
-      const supabase = getSupabaseClient();
-      const eventDate = deleteTarget.event_date;
-      const linkedShiftId =
-        typeof deleteTarget.notes === "string"
-          ? deleteTarget.notes.match(/Linked shift id:\s*([a-zA-Z0-9-]+)/)?.[1]
+      const supabase = get_supabase_client();
+      const event_date = delete_target.event_date;
+      const linked_shift_id =
+        typeof delete_target.notes === "string"
+          ? delete_target.notes.match(/Linked shift id:\s*([a-zA-Z0-9-]+)/)?.[1]
           : null;
 
       const { error: dbError } = await supabase
         .from("events")
         .delete()
-        .eq("id", deleteTarget.id);
+        .eq("id", delete_target.id);
 
-      setDeleting(false);
+      set_deleting(false);
 
       if (dbError) {
-        setError(getUserFacingError(dbError.message));
-        toastError("Failed to delete event.");
+        set_error(get_user_facing_error(dbError.message));
+        toast_error("Failed to delete event.");
         return;
       }
 
-      if (linkedShiftId) {
+      if (linked_shift_id) {
         const { error: shiftDeleteError } = await supabase
           .from("shifts")
           .delete()
-          .eq("id", linkedShiftId);
+          .eq("id", linked_shift_id);
 
         if (shiftDeleteError) {
-          toastError(
+          toast_error(
             "Deleted calendar event, but the linked shift could not be removed.",
           );
         } else {
@@ -566,25 +566,25 @@ function Calendar() {
         }
       }
 
-      const removedId = deleteTarget.id;
-      closeDeleteModal();
-      toastSuccess("Event deleted.");
-      setRemovingId(removedId);
+      const removedId = delete_target.id;
+      close_delete_modal();
+      toast_success("Event deleted.");
+      set_removing_id(removedId);
 
       setTimeout(async () => {
         const { data: remainingEvents = [] } = await supabase
           .from("events")
           .select("*")
-          .eq("event_date", eventDate);
+          .eq("event_date", event_date);
 
         let generatedIds = [];
         const shouldRemoveGenerated = remainingEvents.every(
-          (event) => isGeneratedWakeEvent(event) || event.id === removedId,
+          (event) => is_generated_wake_event(event) || event.id === removedId,
         );
 
         if (shouldRemoveGenerated) {
           generatedIds = (remainingEvents || [])
-            .filter((event) => isGeneratedWakeEvent(event))
+            .filter((event) => is_generated_wake_event(event))
             .map((event) => event.id);
 
           if (generatedIds.length > 0) {
@@ -593,32 +593,32 @@ function Calendar() {
         }
 
         const idsToRemove = [removedId, ...generatedIds];
-        setEvents((prev) =>
+        set_events((prev) =>
           prev.filter((item) => !idsToRemove.includes(item.id)),
         );
-        setAllEvents((prev) =>
+        set_all_events((prev) =>
           prev.filter((item) => !idsToRemove.includes(item.id)),
         );
-        setRemovingId(null);
+        set_removing_id(null);
         window.dispatchEvent(
-          new CustomEvent("calendar:refresh", { detail: { date: eventDate } }),
+          new CustomEvent("calendar:refresh", { detail: { date: event_date } }),
         );
       }, 380);
     } catch (err) {
-      setDeleting(false);
-      setError(getUserFacingError(err.message));
-      toastError("Failed to delete event.");
+      set_deleting(false);
+      set_error(get_user_facing_error(err.message));
+      toast_error("Failed to delete event.");
     }
   };
 
-  const toggleComplete = async (event) => {
-    setTogglingId(event.id);
-    setError(null);
+  const toggle_complete = async (event) => {
+    set_toggling_id(event.id);
+    set_error(null);
 
     const nextCompleted = !event.is_completed;
 
     try {
-      const supabase = getSupabaseClient();
+      const supabase = get_supabase_client();
       const { error: dbError } = await supabase
         .from("events")
         .update({
@@ -627,14 +627,14 @@ function Calendar() {
         })
         .eq("id", event.id);
 
-      setTogglingId(null);
+      set_toggling_id(null);
 
       if (dbError) {
-        setError(getUserFacingError(dbError.message));
+        set_error(get_user_facing_error(dbError.message));
         return;
       }
 
-      setEvents((prev) =>
+      set_events((prev) =>
         prev.map((item) =>
           item.id === event.id
             ? {
@@ -646,12 +646,12 @@ function Calendar() {
         ),
       );
     } catch (err) {
-      setTogglingId(null);
-      setError(getUserFacingError(err.message));
+      set_toggling_id(null);
+      set_error(get_user_facing_error(err.message));
     }
   };
 
-  const handleGridClick = (e) => {
+  const handle_grid_click = (e) => {
     const grid = e.currentTarget;
     const rect = grid.getBoundingClientRect();
     const y = e.clientY - rect.top;
@@ -663,12 +663,12 @@ function Calendar() {
       DAY_END_HOUR,
     );
     const minute = snappedMinutes % 60;
-    openAddModal(
+    open_add_modal(
       `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`,
     );
   };
 
-  const dayTitle = selectedDate.toLocaleDateString(undefined, {
+  const day_title = selected_date.toLocaleDateString(undefined, {
     weekday: "long",
     month: "long",
     day: "numeric",
@@ -678,7 +678,7 @@ function Calendar() {
     <section className="calendar page">
       <PageHeader
         className="calendar__header animate-in"
-        eyebrow={householdName ? `Calendar · ${householdName}` : "Daily planner"}
+        eyebrow={household_name ? `Calendar · ${household_name}` : "Daily planner"}
         title="Calendar"
       />
 
@@ -686,25 +686,25 @@ function Calendar() {
         <button
           type="button"
           className="calendar__nav-btn"
-          onClick={() => shiftSelectedDate("prev")}
-          aria-label={viewMode === "month" ? "Previous month" : "Previous week"}
+          onClick={() => shift_selected_date("prev")}
+          aria-label={view_mode === "month" ? "Previous month" : "Previous week"}
         >
           ‹
         </button>
         <div className="calendar__nav-center">
           <p className="calendar__date-label">
-            {viewMode === "month"
-              ? selectedDate.toLocaleDateString(undefined, {
+            {view_mode === "month"
+              ? selected_date.toLocaleDateString(undefined, {
                   month: "long",
                   year: "numeric",
                 })
-              : dayTitle}
+              : day_title}
           </p>
-          {!isToday && (
+          {!is_today && (
             <button
               type="button"
               className="calendar__today-btn"
-              onClick={() => setSelectedDate(new Date())}
+              onClick={() => set_selected_date(new Date())}
             >
               Today
             </button>
@@ -713,8 +713,8 @@ function Calendar() {
         <button
           type="button"
           className="calendar__nav-btn"
-          onClick={() => shiftSelectedDate("next")}
-          aria-label={viewMode === "month" ? "Next month" : "Next week"}
+          onClick={() => shift_selected_date("next")}
+          aria-label={view_mode === "month" ? "Next month" : "Next week"}
         >
           ›
         </button>
@@ -727,29 +727,29 @@ function Calendar() {
       >
         <button
           type="button"
-          className={`calendar__view-btn${viewMode === "week" ? " calendar__view-btn--active" : ""}`}
-          onClick={() => setViewMode("week")}
-          aria-pressed={viewMode === "week"}
+          className={`calendar__view-btn${view_mode === "week" ? " calendar__view-btn--active" : ""}`}
+          onClick={() => set_view_mode("week")}
+          aria-pressed={view_mode === "week"}
         >
           1 week
         </button>
         <button
           type="button"
-          className={`calendar__view-btn${viewMode === "month" ? " calendar__view-btn--active" : ""}`}
-          onClick={() => setViewMode("month")}
-          aria-pressed={viewMode === "month"}
+          className={`calendar__view-btn${view_mode === "month" ? " calendar__view-btn--active" : ""}`}
+          onClick={() => set_view_mode("month")}
+          aria-pressed={view_mode === "month"}
         >
           1 month
         </button>
       </div>
 
       <CalendarGrid
-        visibleDays={visibleDays}
-        selectedDate={selectedDate}
+        visible_days={visible_days}
+        selected_date={selected_date}
         today={today}
-        viewMode={viewMode}
-        busyDates={busyDates}
-        onDaySelect={setSelectedDate}
+        view_mode={view_mode}
+        busy_dates={busy_dates}
+        onDaySelect={set_selected_date}
       />
 
       <div className="calendar__summary animate-in animate-in--3">
@@ -760,7 +760,7 @@ function Calendar() {
         />
         <GlassCard
           className="calendar__stat"
-          value={pendingCount}
+          value={pending_count}
           label="Pending"
         />
       </div>
@@ -776,8 +776,8 @@ function Calendar() {
         <button
           type="button"
           className="calendar__add-btn"
-          onClick={() => openAddModal()}
-          ref={addBtnRef}
+          onClick={() => open_add_modal()}
+          ref={add_btn_ref}
         >
           + Add event
         </button>
@@ -788,19 +788,19 @@ function Calendar() {
       ) : (
         <div className="calendar__day animate-in animate-in--4">
           <TimelineView
-            hourLabels={hourLabels}
-            laidOutEvents={laidOutEvents}
-            nowLineTop={nowLineTop}
-            onGridClick={handleGridClick}
-            onEventClick={openEditModal}
-            onCheck={toggleComplete}
+            hour_labels={hour_labels}
+            laid_out_events={laid_out_events}
+            now_line_top={now_line_top}
+            onGridClick={handle_grid_click}
+            onEventClick={open_edit_modal}
+            onCheck={toggle_complete}
             onDelete={(event) => {
-              setDeleteTarget(event);
-              deleteModal.openModal();
+              set_delete_target(event);
+              delete_modal.open_modal();
             }}
-            togglingId={togglingId}
-            removingId={removingId}
-            isWakeEvent={isWakeEvent}
+            toggling_id={toggling_id}
+            removing_id={removing_id}
+            is_wake_event={is_wake_event}
           />
         </div>
       )}
@@ -816,63 +816,63 @@ function Calendar() {
 
       <ReminderList
         events={events}
-        isWakeEvent={isWakeEvent}
-        onCheck={toggleComplete}
-        onEdit={openEditModal}
+        is_wake_event={is_wake_event}
+        onCheck={toggle_complete}
+        onEdit={open_edit_modal}
         onDelete={(event) => {
-          setDeleteTarget(event);
-          deleteModal.openModal();
+          set_delete_target(event);
+          delete_modal.open_modal();
         }}
-        togglingId={togglingId}
-        removingId={removingId}
+        toggling_id={toggling_id}
+        removing_id={removing_id}
       />
 
       <EventForm
-        open={formModal.open}
-        closing={formModal.closing}
-        onClose={closeFormModal}
-        editingEvent={editingEvent}
+        open={form_modal.open}
+        closing={form_modal.closing}
+        onClose={close_form_modal}
+        editing_event={editing_event}
         form={form}
-        onFormChange={setForm}
+        on_form_change={set_form}
         saving={saving}
-        fieldErrors={fieldErrors}
-        fieldStates={fieldStates}
-        shakeKey={shakeKey}
-        onFieldBlur={handleCalendarFieldBlur}
-        onSubmit={handleSubmit}
+        field_errors={field_errors}
+        field_states={field_states}
+        shake_key={shake_key}
+        onFieldBlur={handle_calendar_field_blur}
+        onSubmit={handle_submit}
         onClearFieldError={(field) =>
-          setFieldErrors((prev) => ({ ...prev, [field]: null }))
+          set_field_errors((prev) => ({ ...prev, [field]: null }))
         }
         onSetFieldState={(field, state) =>
-          setFieldStates((prev) => ({ ...prev, [field]: state }))
+          set_field_states((prev) => ({ ...prev, [field]: state }))
         }
-        isValid={isCalendarFormValid}
+        isValid={is_calendar_form_valid}
       />
 
       <ConfirmModal
-        open={!!deleteTarget && deleteModal.open}
-        closing={deleteModal.closing}
-        onClose={closeDeleteModal}
-        onConfirm={confirmDelete}
+        open={!!delete_target && delete_modal.open}
+        closing={delete_modal.closing}
+        onClose={close_delete_modal}
+        onConfirm={confirm_delete}
         loading={deleting}
         title="Delete this event?"
         preview={
-          deleteTarget && (
+          delete_target && (
             <strong>
-              {deleteTarget.title} on {deleteTarget.event_date} (
-              {formatTime12(deleteTarget.start_time)} –{" "}
-              {formatTime12(deleteTarget.end_time)})
+              {delete_target.title} on {delete_target.event_date} (
+              {format_time_12(delete_target.start_time)} –{" "}
+              {format_time_12(delete_target.end_time)})
             </strong>
           )
         }
-        confirmLabel="Delete event"
+        confirm_label="Delete event"
       />
 
       <FAB
-        visible={showFloatingActions}
-        onScrollTop={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-        onAdd={() => openAddModal()}
-        addLabel="Add event"
+        visible={show_floating_actions}
+        on_scroll_top={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+        on_add={() => open_add_modal()}
+        add_label="Add event"
       />
     </section>
   );
