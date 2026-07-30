@@ -1,5 +1,5 @@
 // Jas Service Worker — offline-first for static assets
-const CACHE_NAME = "jas-v1";
+const CACHE_NAME = "jas-v2";
 const STATIC_ASSETS = [
   "/",
   "/index.html",
@@ -35,24 +35,36 @@ self.addEventListener("fetch", (event) => {
   // Skip non-GET
   if (request.method !== "GET") return;
 
+  // Skip Vite dev-server requests (HMR, module scripts, @vite/client, etc.)
+  if (url.pathname.startsWith("/@vite") || url.pathname.startsWith("/@fs") ||
+      url.pathname.includes("__vite") || url.searchParams.has("t") ||
+      url.searchParams.has("import")) return;
+
   // Supabase API calls → network only (don't cache auth/data)
   if (url.hostname.includes("supabase")) return;
 
-  // Static assets → cache-first
+  // Network-first strategy: always try network first, fall back to cache
+  // This prevents stale cached HTML from being served for module scripts
   event.respondWith(
-    caches.match(request).then((cached) => {
-      const fetchPromise = fetch(request)
-        .then((response) => {
-          // Cache successful responses
-          if (response.ok) {
+    fetch(request)
+      .then((response) => {
+        // Only cache successful same-origin responses with correct content types
+        if (response.ok && url.origin === location.origin) {
+          const contentType = response.headers.get("content-type") || "";
+          // Never cache HTML responses for non-navigation requests
+          // (prevents stale index.html from being served for .js/.jsx modules)
+          const isNavigation = request.mode === "navigate";
+          const isHTML = contentType.includes("text/html");
+          if (!isHTML || isNavigation) {
             const clone = response.clone();
             caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
           }
-          return response;
-        })
-        .catch(() => cached);
-
-      return cached || fetchPromise;
-    })
+        }
+        return response;
+      })
+      .catch(() => {
+        // Offline fallback: serve from cache
+        return caches.match(request);
+      })
   );
 });
