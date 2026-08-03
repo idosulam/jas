@@ -22,6 +22,7 @@ import Sheet_modal from "../../../Components/UI/Modals/Sheet_modal";
 import Confirm_modal from "../../../Components/UI/Modals/Confirm_modal";
 import Form_field from "../../../Components/UI/Form/Form_field.jsx";
 import Glass_card from "../../../Components/UI/Glass_card";
+import Stat_grid from "../../../Components/UI/Stat_grid";
 
 import Macro_progress_bar from "./Macro_progress_bar";
 import Diet_entry_form from "./Diet_entry_form";
@@ -753,34 +754,18 @@ function Diet_tracker({ profileData }) {
         </button>
       </div>
 
-      {/* Daily summary */}
-      <div className="fitness__summary animate-in animate-in--3" key={Selected_date}>
-        <Glass_card
-          value={Math.round(dailyTotals.calories).toString()}
-          label="Calories"
-          className="fitness__stat fitness__stat--diet glass-stat"
-        />
-        <Glass_card
-          value={`${Math.round(dailyTotals.protein)}g`}
-          label="Protein"
-          className="fitness__stat fitness__stat--diet glass-stat"
-        />
-        <Glass_card
-          value={`${Math.round(dailyTotals.carbs)}g`}
-          label="Carbs"
-          className="fitness__stat fitness__stat--diet glass-stat"
-        />
-        <Glass_card
-          value={`${Math.round(dailyTotals.fats)}g`}
-          label="Fats"
-          className="fitness__stat fitness__stat--diet glass-stat"
-        />
-        <Glass_card
-          value={Calories_burned > 0 ? Calories_burned.toString() : "—"}
-          label="Burned"
-          className="fitness__stat fitness__stat--workout glass-stat"
-        />
-      </div>
+      <Stat_grid
+        className="animate-in animate-in--3 fitness__summary"
+        key={Selected_date}
+        columns="repeat(auto-fit, minmax(0, 1fr))"
+        stats={[
+          { value: Math.round(dailyTotals.calories).toString(), label: "Calories", className: "fitness__stat fitness__stat--diet glass-stat" },
+          { value: `${Math.round(dailyTotals.protein)}g`, label: "Protein", className: "fitness__stat fitness__stat--diet glass-stat" },
+          { value: `${Math.round(dailyTotals.carbs)}g`, label: "Carbs", className: "fitness__stat fitness__stat--diet glass-stat" },
+          { value: `${Math.round(dailyTotals.fats)}g`, label: "Fats", className: "fitness__stat fitness__stat--diet glass-stat" },
+          { value: Calories_burned > 0 ? Calories_burned.toString() : "—", label: "Burned", className: "fitness__stat fitness__stat--workout glass-stat" },
+        ]}
+      />
 
       {error && (
         <p className="error-box error-box--shake" role="alert">

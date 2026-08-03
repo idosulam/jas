@@ -18,6 +18,7 @@ import Form_field from "../../../Components/UI/Form/Form_field.jsx";
 import Empty_state from "../../../Components/UI/Empty_state";
 import Loading_skeleton from "../../../Components/UI/Loading_skeleton";
 import Glass_card from "../../../Components/UI/Glass_card";
+import Stat_grid from "../../../Components/UI/Stat_grid";
 import FAB from "../../../Components/UI/Fab";
 
 import { Kg_to_lbs } from "../../../Lib/Weight";
@@ -863,32 +864,16 @@ function Workout_logger() {
         </button>
       </div>
 
-      {/* Summary */}
-      <div
-        className="fitness__summary animate-in animate-in--2"
+      <Stat_grid
+        className="animate-in animate-in--2 fitness__summary"
         key={Selected_key}
-      >
-        <Glass_card
-          value={String(totals.workouts)}
-          label="Workouts"
-          className="fitness__stat fitness__stat--workout glass-stat"
-        />
-        <Glass_card
-          value={Format_volume(totals.volume)}
-          label="Volume (kg)"
-          className="fitness__stat fitness__stat--workout glass-stat"
-        />
-        <Glass_card
-          value={totals.duration > 0 ? `${totals.duration}m` : "—"}
-          label="Duration"
-          className="fitness__stat fitness__stat--workout glass-stat"
-        />
-        <Glass_card
-          value={totals.calories > 0 ? `${totals.calories}` : "—"}
-          label="Cal Burned"
-          className="fitness__stat fitness__stat--workout glass-stat"
-        />
-      </div>
+        stats={[
+          { value: String(totals.workouts), label: "Workouts", className: "fitness__stat fitness__stat--workout glass-stat" },
+          { value: Format_volume(totals.volume), label: "Volume (kg)", className: "fitness__stat fitness__stat--workout glass-stat" },
+          { value: totals.duration > 0 ? `${totals.duration}m` : "—", label: "Duration", className: "fitness__stat fitness__stat--workout glass-stat" },
+          { value: totals.calories > 0 ? `${totals.calories}` : "—", label: "Cal Burned", className: "fitness__stat fitness__stat--workout glass-stat" },
+        ]}
+      />
 
       {error && (
         <p className="error-box error-box--shake" role="alert">

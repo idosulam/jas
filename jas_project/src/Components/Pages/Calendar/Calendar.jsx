@@ -47,6 +47,7 @@ import { Fetch_palette } from "../../../Lib/Color_palette.js";
 import { Use_household } from "../../../Lib/Household_context.jsx";
 import Event_form from "./Event_form.jsx";
 import Calendar_nav from "../../../Components/UI/Calendar_nav";
+import Stat_grid from "../../../Components/UI/Stat_grid";
 import Timeline_view from "./Timeline_view.jsx";
 import Reminder_list from "./Reminder_list.jsx";
 
@@ -661,18 +662,13 @@ function Calendar() {
         busyDates={busy_dates}
       />
 
-      <div className="calendar__summary animate-in animate-in--3">
-        <Glass_card
-          className="calendar__stat"
-          value={events.length}
-          label="Events"
-        />
-        <Glass_card
-          className="calendar__stat"
-          value={pending_count}
-          label="Pending"
-        />
-      </div>
+      <Stat_grid
+        className="animate-in animate-in--3 calendar__summary"
+        stats={[
+          { value: events.length, label: "Events", className: "calendar__stat" },
+          { value: pending_count, label: "Pending", className: "calendar__stat" },
+        ]}
+      />
 
       {error && (
         <p className="error-box" role="alert">

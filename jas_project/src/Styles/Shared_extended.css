@@ -761,6 +761,27 @@
 }
 
 
+/* ── Stat Grid (shared summary cards) ────────────────────────
+   Used by: Shifts, Calendar, Household, Fitness, Profile, Recurring
+   Markup: .stat-grid > .glass-card
+   ──────────────────────────────────────────────────────────── */
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.85rem;
+  margin-bottom: 1.5rem;
+}
+
+@media (max-width: 640px) {
+  .stat-grid {
+    grid-template-columns: 1fr;
+    gap: 0.55rem;
+    margin-bottom: 1.15rem;
+  }
+}
+
+
 /* ── Glass Card Stat Override ────────────────────────────────
    Used by: Fitness, Shifts, Household, Calendar
    Scoped overrides for .glass-card__value / .glass-card__label

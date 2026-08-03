@@ -26,6 +26,7 @@ import Empty_state from "../../../Components/UI/Empty_state";
 import Loading_skeleton from "../../../Components/UI/Loading_skeleton";
 import Page_header from "../../../Components/UI/Page_header";
 import Glass_card from "../../../Components/UI/Glass_card";
+import Stat_grid from "../../../Components/UI/Stat_grid";
 import FAB from "../../../Components/UI/Fab";
 
 import {
@@ -949,31 +950,16 @@ function Shifts({ onNavigate }) {
         containerRef={Place_filter_ref}
       />
 
-      <div
-        className="shifts__summary animate-in animate-in--3"
+      <Stat_grid
+        className="animate-in animate-in--3 shifts__summary"
         key={`${Selected_key}-${Place_filter}`}
-      >
-        <Glass_card
-          value={`${totals.hours.toFixed(1)}h`}
-          label="Hours"
-          className="shifts__stat glass-stat"
-        />
-        <Glass_card
-          value={Format_money(totals.pay)}
-          label="Pay"
-          className="shifts__stat glass-stat"
-        />
-        <Glass_card
-          value={Format_money(totals.tips)}
-          label="Tips"
-          className="shifts__stat glass-stat"
-        />
-        <Glass_card
-          value={Format_money(totals.total)}
-          label="Total"
-          className="shifts__stat glass-stat shifts__stat--total"
-        />
-      </div>
+        stats={[
+          { value: `${totals.hours.toFixed(1)}h`, label: "Hours", className: "glass-stat" },
+          { value: Format_money(totals.pay), label: "Pay", className: "glass-stat" },
+          { value: Format_money(totals.tips), label: "Tips", className: "glass-stat" },
+          { value: Format_money(totals.total), label: "Total", className: "glass-stat shifts__stat--total" },
+        ]}
+      />
 
       {error && (
         <p className="error-box error-box--shake" role="alert">

@@ -12,6 +12,7 @@ import Sheet_modal from "../../UI/Modals/Sheet_modal";
 import Confirm_modal from "../../UI/Modals/Confirm_modal";
 import Form_field from "../../UI/Form/Form_field.jsx";
 import Glass_card from "../../UI/Glass_card";
+import Stat_grid from "../../UI/Stat_grid";
 import Empty_state from "../../UI/Empty_state";
 import Color_palette_picker from "../../../Lib/Color_palette_picker.jsx";
 import { DEFAULT_ICONS } from "./Category_manager";
@@ -488,21 +489,15 @@ function Recurring_transactions({ householdId, user_id, categories: categoriesPr
 
   return (
     <div className="recurring">
-      {/* Summary Cards */}
-      <div className="recurring__summary">
-        <Glass_card
-          value={Format_money(Monthly_estimate)}
-          label="Monthly Estimate"
-        />
-        <Glass_card
-          value={String(recurring.filter((r) => r.is_active).length)}
-          label="Active"
-        />
-        <Glass_card
-          value={String(recurring.filter((r) => !r.is_active).length)}
-          label="Paused"
-        />
-      </div>
+      <Stat_grid
+        className="recurring__summary"
+        columns="repeat(3, minmax(0, 1fr))"
+        stats={[
+          { value: Format_money(Monthly_estimate), label: "Monthly Estimate" },
+          { value: String(recurring.filter((r) => r.is_active).length), label: "Active" },
+          { value: String(recurring.filter((r) => !r.is_active).length), label: "Paused" },
+        ]}
+      />
 
       {/* List */}
       <div className="recurring__header">

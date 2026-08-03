@@ -1,4 +1,5 @@
 import Glass_card from "../../UI/Glass_card";
+import Stat_grid from "../../UI/Stat_grid";
 import { Format_money } from "../../../Lib/Format.js";
 
 function Household_stats({
@@ -11,27 +12,15 @@ function Household_stats({
     <>
       {/* Quick Transaction Summary */}
       {Tx_summary && (
-        <div className="household__tx-summary">
-          <Glass_card
-            value={Format_money(Tx_summary.totalIncome)}
-            label="Income"
-            value_class_name="glass-card__value--green"
-          />
-          <Glass_card
-            value={Format_money(Tx_summary.totalExpense)}
-            label="Expenses"
-            value_class_name="glass-card__value--orange"
-          />
-          <Glass_card
-            value={Format_money(Tx_summary.balance)}
-            label="Balance"
-            value_class_name={
-              Tx_summary.balance >= 0
-                ? "glass-card__value--green"
-                : "glass-card__value--orange"
-            }
-          />
-        </div>
+        <Stat_grid
+          className="household__tx-summary"
+          columns="repeat(3, minmax(0, 1fr))"
+          stats={[
+            { value: Format_money(Tx_summary.totalIncome), label: "Income", valueClassName: "glass-card__value--green" },
+            { value: Format_money(Tx_summary.totalExpense), label: "Expenses", valueClassName: "glass-card__value--orange" },
+            { value: Format_money(Tx_summary.balance), label: "Balance", valueClassName: Tx_summary.balance >= 0 ? "glass-card__value--green" : "glass-card__value--orange" },
+          ]}
+        />
       )}
 
       {/* Budget Quick Status */}
@@ -79,28 +68,15 @@ function Household_stats({
 
       {/* Combined Earnings Stats */}
       <h3 className="section-title">Shift Earnings</h3>
-      <div className="household__stats">
-        <Glass_card
-          className="household__stat"
-          value={`${Combined_stats.combined.hours.toFixed(1)}h`}
-          label="Combined Hours"
-        />
-        <Glass_card
-          className="household__stat"
-          value={Format_money(Combined_stats.combined.pay)}
-          label="Combined Pay"
-        />
-        <Glass_card
-          className="household__stat"
-          value={Format_money(Combined_stats.combined.tips)}
-          label="Combined Tips"
-        />
-        <Glass_card
-          className="household__stat household__stat--total"
-          value={Format_money(Combined_stats.combined.total)}
-          label="Combined Total"
-        />
-      </div>
+      <Stat_grid
+        className="household__stats"
+        stats={[
+          { value: `${Combined_stats.combined.hours.toFixed(1)}h`, label: "Combined Hours", className: "household__stat" },
+          { value: Format_money(Combined_stats.combined.pay), label: "Combined Pay", className: "household__stat" },
+          { value: Format_money(Combined_stats.combined.tips), label: "Combined Tips", className: "household__stat" },
+          { value: Format_money(Combined_stats.combined.total), label: "Combined Total", className: "household__stat household__stat--total" },
+        ]}
+      />
 
       {/* Per-Member Breakdown */}
       {members.length > 1 && (
