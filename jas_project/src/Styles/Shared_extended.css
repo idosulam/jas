@@ -834,9 +834,11 @@
    ──────────────────────────────────────────────────────────── */
 
 .picker-trigger {
-  display: inline-flex;
+  display: flex;
   align-items: center;
+  justify-content: center;
   gap: 0.5rem;
+  width: 100%;
   padding: 0.55rem 1rem;
   margin-bottom: 1.25rem;
   border: 1px solid rgba(255, 255, 255, 0.12);
