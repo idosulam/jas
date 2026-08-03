@@ -46,7 +46,7 @@ function Transactions({ householdId, user_id, members, goals = [] }) {
   // Category form
   const [categoryForm, setCategoryForm] = useState({
     name: "",
-    icon: "📦",
+    icon: "",
     color: "",
     type: "expense",
   });
@@ -355,7 +355,7 @@ function Transactions({ householdId, user_id, members, goals = [] }) {
 
   const openNewCategory = (type = "expense") => {
     setEditingCategory(null);
-    setCategoryForm({ name: "", icon: "📦", color: "", type });
+    setCategoryForm({ name: "", icon: "", color: "", type });
     categoryModal.open_modal();
   };
 
@@ -844,7 +844,7 @@ function Transactions({ householdId, user_id, members, goals = [] }) {
               type="button"
               className="btn btn--primary"
               onClick={saveCategory}
-              disabled={!categoryForm.name.trim()}
+              disabled={!categoryForm.name.trim() || !categoryForm.icon}
             >
               {editingCategory ? "Update" : "Create"}
             </button>

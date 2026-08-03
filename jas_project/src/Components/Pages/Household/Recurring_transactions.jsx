@@ -80,7 +80,7 @@ function Recurring_transactions({ householdId, user_id, categories: categoriesPr
   const deleteCategoryModal = Use_modal(260);
   const [categoryForm, setCategoryForm] = useState({
     name: "",
-    icon: "📦",
+    icon: "",
     color: "",
     type: "expense",
   });
@@ -383,7 +383,7 @@ function Recurring_transactions({ householdId, user_id, categories: categoriesPr
 
   const openNewCategory = (type = "expense") => {
     setEditingCategory(null);
-    setCategoryForm({ name: "", icon: "📦", color: "", type });
+    setCategoryForm({ name: "", icon: "", color: "", type });
     categoryModal.open_modal();
   };
 
@@ -1015,7 +1015,7 @@ function Recurring_transactions({ householdId, user_id, categories: categoriesPr
               type="button"
               className="btn btn--primary"
               onClick={saveCategory}
-              disabled={!categoryForm.name.trim()}
+              disabled={!categoryForm.name.trim() || !categoryForm.icon}
             >
               {editingCategory ? "Update" : "Create"}
             </button>
