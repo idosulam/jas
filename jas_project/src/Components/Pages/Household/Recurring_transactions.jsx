@@ -74,6 +74,7 @@ function Recurring_transactions({ householdId, user_id, categories: categoriesPr
   const [descError, setDescError] = useState(null);
   const [descTouched, setDescTouched] = useState(false);
   const [Shake_key, Set_shake_key] = useState(0);
+  const [Cat_shake_key, Set_cat_shake_key] = useState(0);
 
   // Category management state
   const categoryModal = Use_modal(260);
@@ -400,7 +401,11 @@ function Recurring_transactions({ householdId, user_id, categories: categoriesPr
 
   const saveCategory = async () => {
     const name = Sanitize_text(categoryForm.name, 40);
-    if (!name) return;
+    if (!name || !categoryForm.icon) {
+      Set_cat_shake_key((k) => k + 1);
+      Haptic_error();
+      return;
+    }
 
     try {
       const supabase = Get_supabase_client();
@@ -928,7 +933,13 @@ function Recurring_transactions({ householdId, user_id, categories: categoriesPr
           )}
 
           {/* Create / Edit form */}
-          <Form_field label="Label name">
+          <Form_field
+            label="Label name"
+            error={!categoryForm.name.trim() ? "Label name is required" : null}
+            state={categoryForm.name.trim() ? "valid" : "idle"}
+            show_indicator
+            shake={!categoryForm.name.trim() ? Cat_shake_key : 0}
+          >
             <input
               type="text"
               value={categoryForm.name}
@@ -942,8 +953,18 @@ function Recurring_transactions({ householdId, user_id, categories: categoriesPr
 
           {/* Icon picker */}
           <div className="recurring__category-grid-wrap">
-            <label className="recurring__form-label">Icon</label>
-            <div className="recurring__category-grid">
+            <label className="recurring__form-label">
+              Icon
+              {!categoryForm.icon && (
+                <span style={{ color: "var(--error, #ef4444)", fontSize: 12, marginLeft: 6 }}>
+                  — Pick an icon
+                </span>
+              )}
+            </label>
+            <div
+              className={`recurring__category-grid ${!categoryForm.icon && Cat_shake_key > 0 ? "recurring__category-grid--shake" : ""}`}
+              key={`icon-grid-${Cat_shake_key}`}
+            >
               {DEFAULT_ICONS.map((icon) => (
                 <button
                   key={icon}

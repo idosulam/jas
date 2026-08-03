@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Get_supabase_client } from "../../../Lib/Superbase";
-import { Get_user_facing_error, Sanitize_text } from "../../../Lib/Security";
+import { Get_user_facing_error, Sanitize_text, Haptic_error } from "../../../Lib/Security";
 import { Use_glass_toast } from "../../../Lib/Glass_toast_provider.jsx";
 import { Use_modal, Use_body_scroll_lock } from "../../../Hooks";
 import Sheet_modal from "../../UI/Modals/Sheet_modal";
@@ -53,6 +53,7 @@ function Transactions({ householdId, user_id, members, goals = [] }) {
   const [editingCategory, setEditingCategory] = useState(null);
   const [deleteCategoryTarget, setDeleteCategoryTarget] = useState(null);
   const [deletingCategory, setDeletingCategory] = useState(false);
+  const [Cat_shake_key, Set_cat_shake_key] = useState(0);
 
   // Filter tabs sliding indicator
   const filterTabRef = useRef(null);
@@ -372,7 +373,11 @@ function Transactions({ householdId, user_id, members, goals = [] }) {
 
   const saveCategory = async () => {
     const name = Sanitize_text(categoryForm.name, 40);
-    if (!name) return;
+    if (!name || !categoryForm.icon) {
+      Set_cat_shake_key((k) => k + 1);
+      Haptic_error();
+      return;
+    }
 
     try {
       const supabase = Get_supabase_client();
@@ -754,7 +759,13 @@ function Transactions({ householdId, user_id, members, goals = [] }) {
           )}
 
           {/* Create / Edit form */}
-          <Form_field label="Label name">
+          <Form_field
+            label="Label name"
+            error={!categoryForm.name.trim() ? "Label name is required" : null}
+            state={categoryForm.name.trim() ? "valid" : "idle"}
+            show_indicator
+            shake={!categoryForm.name.trim() ? Cat_shake_key : 0}
+          >
             <input
               type="text"
               value={categoryForm.name}
@@ -768,8 +779,18 @@ function Transactions({ householdId, user_id, members, goals = [] }) {
 
           {/* Icon picker */}
           <div className="transactions__category-grid-wrap">
-            <label className="transactions__form-label">Icon</label>
-            <div className="transactions__category-grid">
+            <label className="transactions__form-label">
+              Icon
+              {!categoryForm.icon && (
+                <span style={{ color: "var(--error, #ef4444)", fontSize: 12, marginLeft: 6 }}>
+                  — Pick an icon
+                </span>
+              )}
+            </label>
+            <div
+              className={`transactions__category-grid ${!categoryForm.icon && Cat_shake_key > 0 ? "transactions__category-grid--shake" : ""}`}
+              key={`icon-grid-${Cat_shake_key}`}
+            >
               {DEFAULT_ICONS.map((icon) => (
                 <button
                   key={icon}
