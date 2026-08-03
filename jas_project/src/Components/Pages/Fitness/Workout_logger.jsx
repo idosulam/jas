@@ -771,36 +771,36 @@ function Workout_logger() {
 
   return (
     <div className="fitness__workout">
-      {/* Weekly date navigation */}
+      {/* Date navigation */}
       <div className="date-nav animate-in animate-in--1">
-        <div className="date-nav__top">
-          <button
-            type="button"
-            className="date-nav__btn"
-            onClick={() => Set_selected_date((d) => Add_days(d, View_mode === "week" ? -7 : -30))}
-            aria-label="Previous day"
-          >
-            ‹
-          </button>
+        <button
+          type="button"
+          className="date-nav__btn"
+          onClick={() => Set_selected_date((d) => Add_days(d, View_mode === "week" ? -7 : -30))}
+          aria-label="Previous"
+        >
+          ‹
+        </button>
+        <div className="date-nav__center">
           <span className="date-nav__label">{Day_title}</span>
-          <button
-            type="button"
-            className="date-nav__btn"
-            onClick={() => Set_selected_date((d) => Add_days(d, View_mode === "week" ? 7 : 30))}
-            aria-label="Next day"
-          >
-            ›
-          </button>
+          {!Is_today && (
+            <button
+              type="button"
+              className="date-nav__today"
+              onClick={() => Set_selected_date(new Date())}
+            >
+              Today
+            </button>
+          )}
         </div>
-        {!Is_today && (
-          <button
-            type="button"
-            className="date-nav__today"
-            onClick={() => Set_selected_date(new Date())}
-          >
-            Today
-          </button>
-        )}
+        <button
+          type="button"
+          className="date-nav__btn"
+          onClick={() => Set_selected_date((d) => Add_days(d, View_mode === "week" ? 7 : 30))}
+          aria-label="Next"
+        >
+          ›
+        </button>
       </div>
 
       {/* Week day selector */}

@@ -662,36 +662,36 @@ function Diet_tracker({ profileData }) {
         )}
       </div>
 
-      {/* Date selector */}
+      {/* Date navigation */}
       <div className="date-nav animate-in animate-in--2">
-        <div className="date-nav__top">
-          <button
-            type="button"
-            className="date-nav__btn"
-            onClick={() => shiftNav("prev")}
-            aria-label="Previous day"
-          >
-            ‹
-          </button>
+        <button
+          type="button"
+          className="date-nav__btn"
+          onClick={() => shiftNav("prev")}
+          aria-label="Previous"
+        >
+          ‹
+        </button>
+        <div className="date-nav__center">
           <span className="date-nav__label">{formatSelectedDate()}</span>
-          <button
-            type="button"
-            className="date-nav__btn"
-            onClick={() => shiftNav("next")}
-            aria-label="Next day"
-          >
-            ›
-          </button>
+          {!Is_today && (
+            <button
+              type="button"
+              className="date-nav__today"
+              onClick={() => Set_selected_date(today)}
+            >
+              Today
+            </button>
+          )}
         </div>
-        {!Is_today && (
-          <button
-            type="button"
-            className="date-nav__today"
-            onClick={() => Set_selected_date(today)}
-          >
-            Today
-          </button>
-        )}
+        <button
+          type="button"
+          className="date-nav__btn"
+          onClick={() => shiftNav("next")}
+          aria-label="Next"
+        >
+          ›
+        </button>
       </div>
 
       {/* Week day selector */}

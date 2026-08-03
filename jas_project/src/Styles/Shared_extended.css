@@ -14,70 +14,88 @@
 
 .date-nav {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 0.75rem;
-  padding: 0.85rem 1rem;
-  background: rgba(255, 255, 255, 0.04);
+  gap: 0.9rem;
+  margin-bottom: 1.5rem;
+  padding: 0.75rem;
   border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-xl);
+  background: var(--surface-glass);
+  backdrop-filter: var(--blur-heavy);
+  -webkit-backdrop-filter: var(--blur-heavy);
+  box-shadow: var(--shadow-md);
 }
 
-.date-nav__top {
-  display: flex;
-  align-items: center;
-  width: 100%;
-  justify-content: space-between;
+.date-nav__center {
+  flex: 1;
+  text-align: center;
 }
 
 .date-nav__btn {
-  width: 2.25rem;
-  height: 2.25rem;
+  width: 2.75rem;
+  height: 2.75rem;
+  flex-shrink: 0;
   display: grid;
   place-items: center;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: var(--radius-sm, 0.5rem);
-  background: rgba(255, 255, 255, 0.06);
-  color: var(--text, #fff);
-  font-size: 1.15rem;
+  border: none;
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 1.3rem;
   cursor: pointer;
-  transition: all 0.15s ease;
-  flex-shrink: 0;
+  transition:
+    transform var(--transition),
+    background var(--transition),
+    border-color var(--transition);
+  -webkit-tap-highlight-color: transparent;
 }
 
 .date-nav__btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+  background: var(--surface-hover);
+  border-color: var(--border-hover);
+}
+
+.date-nav__btn:active {
+  transform: scale(0.95);
 }
 
 .date-nav__label {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0;
   font-family: var(--font-heading);
-  font-weight: 800;
   font-size: 1.15rem;
-  color: #fff;
-  letter-spacing: -0.01em;
-  text-align: center;
-  min-width: 0;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--text);
 }
 
 .date-nav__today {
-  padding: 0.4rem 1.25rem;
+  margin-top: 0.45rem;
   border: none;
-  border-radius: var(--radius-pill, 999px);
-  background: linear-gradient(135deg, #b3a0e0, #9a7de3);
+  border-radius: 999px;
+  padding: 0.35rem 0.9rem;
+  background: linear-gradient(
+    135deg,
+    var(--color-primary),
+    var(--color-secondary)
+  );
   color: #fff;
   font-family: var(--font-heading);
-  font-size: 0.78rem;
+  font-size: 0.72rem;
   font-weight: 700;
   cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 4px 16px rgba(154, 125, 227, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  transition:
+    transform var(--transition),
+    box-shadow var(--transition);
 }
 
 .date-nav__today:hover {
-  transform: translateY(-2px) scale(1.04);
-  box-shadow: 0 6px 20px rgba(154, 125, 227, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  transform: translateY(-2px);
+  box-shadow: 0 0 18px var(--color-primary-glow);
 }
 
 .date-nav__today:active {
