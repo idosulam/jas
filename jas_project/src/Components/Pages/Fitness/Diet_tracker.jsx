@@ -23,6 +23,7 @@ import Confirm_modal from "../../../Components/UI/Modals/Confirm_modal";
 import Form_field from "../../../Components/UI/Form/Form_field.jsx";
 import Glass_card from "../../../Components/UI/Glass_card";
 import Stat_grid from "../../../Components/UI/Stat_grid";
+import Template_chips from "../../../Components/UI/Template_chips.jsx";
 
 import Macro_progress_bar from "./Macro_progress_bar";
 import Diet_entry_form from "./Diet_entry_form";
@@ -698,35 +699,16 @@ function Diet_tracker({ profileData }) {
       )}
 
       {/* Presets (quick-add) */}
-      <div className="template-chips animate-in animate-in--3">
-        {Presets.map((preset) => (
-          <div key={preset.id} className="preset">
-            <button
-              type="button"
-              className="template-chip"
-              onClick={() => applyPreset(preset)}
-            >
-              {preset.name}
-              <span className="template-chip__meta">{preset.calories}kcal</span>
-            </button>
-            <button
-              type="button"
-              className="preset__edit"
-              onClick={() => Open_preset_modal(preset)}
-              aria-label={`Edit ${preset.name} preset`}
-            >
-              ✎
-            </button>
-          </div>
-        ))}
-        <button
-          type="button"
-          className="template-chip template-chip--add"
-          onClick={() => Open_preset_modal()}
-        >
-          + New preset
-        </button>
-      </div>
+      <Template_chips
+        items={Presets}
+        onSelect={applyPreset}
+        onEdit={Open_preset_modal}
+        onAdd={() => Open_preset_modal()}
+        renderMeta={(preset) => (
+          <span className="template-chip__meta">{preset.calories}kcal</span>
+        )}
+        addLabel="+ New preset"
+      />
 
       {/* Food log grouped by meal */}
       <div className="fitness__meals animate-in animate-in--4">

@@ -5,6 +5,7 @@ import { Use_user_id } from "../../../Lib/Auth_context.jsx";
 import { Use_household } from "../../../Lib/Household_context.jsx";
 
 import Page_header from "../../../Components/UI/Page_header";
+import Tab_toggle from "../../../Components/UI/Tab_toggle";
 import Workout_logger from "./Workout_logger";
 import Diet_tracker from "./Diet_tracker";
 
@@ -82,40 +83,26 @@ function Fitness() {
   return (
     <section className="fitness page">
       <Page_header
-        eyebrow={Household_name ? `Fitness · ${Household_name}` : "Fitness tracker"}
+        eyebrow={
+          Household_name ? `Fitness · ${Household_name}` : "Fitness tracker"
+        }
         title="Fitness"
         className="fitness__header animate-in"
       />
 
       {/* Sub-tab toggle */}
-      <div
-        className="tab-toggle animate-in animate-in--1"
-        role="tablist"
-        aria-label="Fitness sections"
-        ref={tabRef}
-      >
-        {SUB_TABS.map((tab) => (
-          <button
-            key={tab.id}
-            type="button"
-            className={`tab-toggle__btn${activeTab === tab.id ? " tab-toggle__btn--active" : ""}`}
-            onClick={() => setActiveTab(tab.id)}
-            role="tab"
-            aria-selected={activeTab === tab.id}
-            aria-controls={`fitness-panel-${tab.id}`}
-          >
-            {tab.label}
-          </button>
-        ))}
-        <span
-          className="tab-toggle__indicator"
-          style={{
-            transform: `translateX(${tabIndicator.left}px)`,
-            width: tabIndicator.width,
-          }}
-          aria-hidden="true"
-        />
-      </div>
+      <Tab_toggle
+        options={SUB_TABS.map((tab) => ({
+          ...tab,
+          controlId: `fitness-panel-${tab.id}`,
+        }))}
+        activeId={activeTab}
+        onChange={setActiveTab}
+        ariaLabel="Fitness sections"
+        indicator={tabIndicator}
+        setIndicator={setTabIndicator}
+        containerRef={tabRef}
+      />
 
       {/* Sub-tab content */}
       <div

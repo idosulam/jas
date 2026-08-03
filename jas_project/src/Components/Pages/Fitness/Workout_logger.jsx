@@ -20,6 +20,7 @@ import Loading_skeleton from "../../../Components/UI/Loading_skeleton";
 import Glass_card from "../../../Components/UI/Glass_card";
 import Stat_grid from "../../../Components/UI/Stat_grid";
 import FAB from "../../../Components/UI/Fab";
+import Template_chips from "../../../Components/UI/Template_chips.jsx";
 
 import { Kg_to_lbs } from "../../../Lib/Weight";
 
@@ -837,34 +838,13 @@ function Workout_logger() {
       )}
 
       {/* Presets */}
-      <div className="template-chips animate-in animate-in--3">
-        {Presets.map((preset) => (
-          <div key={preset.id} className="preset">
-            <button
-              type="button"
-              className="template-chip"
-              onClick={() => applyPreset(preset)}
-            >
-              {preset.name}
-            </button>
-            <button
-              type="button"
-              className="preset__edit"
-              onClick={() => Open_preset_modal(preset)}
-              aria-label={`Edit ${preset.name} preset`}
-            >
-              ✎
-            </button>
-          </div>
-        ))}
-        <button
-          type="button"
-          className="template-chip template-chip--add"
-          onClick={() => Open_preset_modal()}
-        >
-          + New preset
-        </button>
-      </div>
+      <Template_chips
+        items={Presets}
+        onSelect={applyPreset}
+        onEdit={Open_preset_modal}
+        onAdd={() => Open_preset_modal()}
+        addLabel="+ New preset"
+      />
 
       {/* List header */}
       <div className="list-header animate-in animate-in--4">

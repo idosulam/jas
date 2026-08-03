@@ -1,5 +1,6 @@
 import Sheet_modal from "../../../Components/UI/Modals/Sheet_modal";
 import Form_field from "../../UI/Form/Form_field.jsx";
+import Template_chips from "../../../Components/UI/Template_chips.jsx";
 import { PAY_TYPES } from "./Shift_utils";
 
 /**
@@ -42,39 +43,20 @@ export default function Shift_presets({
 }) {
   return (
     <>
-      <div className="template-chips animate-in animate-in--3">
-        {Presets
-          .filter((p) => Place_filter === "all" || p.place === Place_filter)
-          .map((preset) => (
-            <div key={preset.id} className="preset">
-              <button
-                type="button"
-                className="template-chip"
-                onClick={() => onQuickAdd(preset)}
-              >
-                {preset.label}
-                <span className="template-chip__meta">
-                  {preset.start_time}–{preset.end_time}
-                </span>
-              </button>
-              <button
-                type="button"
-                className="preset__edit"
-                onClick={() => onEditPreset(preset)}
-                aria-label={`Edit ${preset.label} preset`}
-              >
-                ✎
-              </button>
-            </div>
-          ))}
-        <button
-          type="button"
-          className="template-chip template-chip--add"
-          onClick={on_add_preset}
-        >
-          + New preset
-        </button>
-      </div>
+      <Template_chips
+        items={Presets.filter(
+          (p) => Place_filter === "all" || p.place === Place_filter,
+        )}
+        onSelect={onQuickAdd}
+        onEdit={onEditPreset}
+        onAdd={on_add_preset}
+        renderMeta={(preset) => (
+          <span className="template-chip__meta">
+            {preset.start_time}–{preset.end_time}
+          </span>
+        )}
+        addLabel="+ New preset"
+      />
 
       <Sheet_modal
         open={presetModalOpen}
@@ -123,9 +105,7 @@ export default function Shift_presets({
                 key={id}
                 type="button"
                 className={`shifts__pay-toggle-btn${Preset_form.pay_type === id ? " shifts__pay-toggle-btn--active" : ""}`}
-                onClick={() =>
-                  Set_preset_form((f) => ({ ...f, pay_type: id }))
-                }
+                onClick={() => Set_preset_form((f) => ({ ...f, pay_type: id }))}
                 aria-pressed={Preset_form.pay_type === id}
               >
                 {label}
