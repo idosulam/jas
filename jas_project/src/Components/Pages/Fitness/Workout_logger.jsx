@@ -34,6 +34,7 @@ import {
 import Exercise_row from "./Exercise_row";
 import Workout_card from "./Workout_card";
 import Workout_form from "./Workout_form";
+import Calendar_nav from "../../../Components/UI/Calendar_nav";
 
 function Workout_logger() {
   const user_id = Use_user_id();
@@ -86,23 +87,7 @@ function Workout_logger() {
   };
 
   const To_date_key = (date) => date.toISOString().slice(0, 10);
-
   const Selected_key = To_date_key(Selected_date);
-  const Is_today = Selected_key === To_date_key(now);
-
-  const Week_days = useMemo(() => {
-    const start = Start_of_week(Selected_date);
-    return Array.from({ length: 7 }, (_, i) => Add_days(start, i));
-  }, [Selected_date]);
-
-  const Month_days = useMemo(() => {
-    const d = new Date(Selected_date);
-    const start = Start_of_week(new Date(d.getFullYear(), d.getMonth(), 1));
-    return Array.from({ length: 42 }, (_, i) => Add_days(start, i));
-  }, [Selected_date]);
-
-  const Visible_days = View_mode === "week" ? Week_days : Month_days;
-
   const Day_title = useMemo(() => {
     return Selected_date.toLocaleDateString(undefined, {
       weekday: "long",
@@ -110,6 +95,16 @@ function Workout_logger() {
       day: "numeric",
     });
   }, [Selected_date]);
+
+  const busyDates = useMemo(
+    () =>
+      new Set(
+        workouts.map((workout) =>
+          To_date_key(new Date(`${workout.workout_date}T12:00:00`)),
+        ),
+      ),
+    [workouts],
+  );
 
   // ── Fetch workouts ──
   const fetchWorkouts = useCallback(async () => {
@@ -242,12 +237,18 @@ function Workout_logger() {
       }));
     }
     // Also re-validate the paired weight field
-    const pairedField = field === "weight" ? "weight_lbs" : field === "weight_lbs" ? "weight" : null;
+    const pairedField =
+      field === "weight"
+        ? "weight_lbs"
+        : field === "weight_lbs"
+          ? "weight"
+          : null;
     if (pairedField) {
       const pairedKey = `${index}_${pairedField}`;
       if (Field_states[pairedKey]) {
         // Compute the paired value from the current form state
-        const pairedValue = field === "weight" ? Kg_to_lbs(value) : Lbs_to_kg(value);
+        const pairedValue =
+          field === "weight" ? Kg_to_lbs(value) : Lbs_to_kg(value);
         const err = validateExerciseField(index, pairedField, pairedValue);
         Set_field_errors((prev) => ({ ...prev, [pairedKey]: err }));
         Set_field_states((prev) => ({
@@ -362,12 +363,22 @@ function Workout_logger() {
       }));
     }
     // Also re-validate the paired weight field
-    const pairedField = field === "weight" ? "weight_lbs" : field === "weight_lbs" ? "weight" : null;
+    const pairedField =
+      field === "weight"
+        ? "weight_lbs"
+        : field === "weight_lbs"
+          ? "weight"
+          : null;
     if (pairedField) {
       const pairedKey = `${index}_${pairedField}`;
       if (presetFieldStates[pairedKey]) {
-        const pairedValue = field === "weight" ? Kg_to_lbs(value) : Lbs_to_kg(value);
-        const err = validatePresetExerciseField(index, pairedField, pairedValue);
+        const pairedValue =
+          field === "weight" ? Kg_to_lbs(value) : Lbs_to_kg(value);
+        const err = validatePresetExerciseField(
+          index,
+          pairedField,
+          pairedValue,
+        );
         setPresetFieldErrors((prev) => ({ ...prev, [pairedKey]: err }));
         setPresetFieldStates((prev) => ({
           ...prev,
@@ -411,14 +422,23 @@ function Workout_logger() {
     setPresetFieldErrors((prev) => ({ ...prev, [key]: err }));
     setPresetFieldStates((prev) => ({
       ...prev,
-      [key]: err ? "error" : Preset_form.exercises[index]?.[field] ? "valid" : "idle",
+      [key]: err
+        ? "error"
+        : Preset_form.exercises[index]?.[field]
+          ? "valid"
+          : "idle",
     }));
     if (err) {
       setPresetShakeKey((k) => k + 1);
       Haptic_error();
     }
     // Also validate the paired weight field
-    const pairedField = field === "weight" ? "weight_lbs" : field === "weight_lbs" ? "weight" : null;
+    const pairedField =
+      field === "weight"
+        ? "weight_lbs"
+        : field === "weight_lbs"
+          ? "weight"
+          : null;
     if (pairedField) {
       const pairedKey = `${index}_${pairedField}`;
       const pairedVal = Preset_form.exercises[index]?.[pairedField];
@@ -593,7 +613,12 @@ function Workout_logger() {
       Haptic_error();
     }
     // Also validate the paired weight field
-    const pairedField = field === "weight" ? "weight_lbs" : field === "weight_lbs" ? "weight" : null;
+    const pairedField =
+      field === "weight"
+        ? "weight_lbs"
+        : field === "weight_lbs"
+          ? "weight"
+          : null;
     if (pairedField) {
       const pairedKey = `${index}_${pairedField}`;
       const pairedVal = form.exercises[index]?.[pairedField];
@@ -620,10 +645,7 @@ function Workout_logger() {
     if (!form.preset_name || !form.preset_name.trim()) return false;
     const hasAtLeastOneExercise = form.exercises.some(
       (ex) =>
-        ex.name.trim() &&
-        (ex.weight || ex.weight_lbs) &&
-        ex.sets &&
-        ex.reps,
+        ex.name.trim() && (ex.weight || ex.weight_lbs) && ex.sets && ex.reps,
     );
     return hasAtLeastOneExercise;
   }, [form]);
@@ -772,106 +794,39 @@ function Workout_logger() {
 
   return (
     <div className="fitness__workout">
-      {/* Date navigation */}
-      <div className="date-nav animate-in animate-in--1">
-        <button
-          type="button"
-          className="date-nav__btn"
-          onClick={() => Set_selected_date((d) => Add_days(d, View_mode === "week" ? -7 : -30))}
-          aria-label="Previous"
-        >
-          ‹
-        </button>
-        <div className="date-nav__center">
-          <span className="date-nav__label">{Day_title}</span>
-          {!Is_today && (
-            <button
-              type="button"
-              className="date-nav__today"
-              onClick={() => Set_selected_date(new Date())}
-            >
-              Today
-            </button>
-          )}
-        </div>
-        <button
-          type="button"
-          className="date-nav__btn"
-          onClick={() => Set_selected_date((d) => Add_days(d, View_mode === "week" ? 7 : 30))}
-          aria-label="Next"
-        >
-          ›
-        </button>
-      </div>
-
-      {/* Week day selector */}
-      <div
-        className={`week-days animate-in animate-in--1${View_mode === "month" ? " week-days--month" : ""}`}
-        role="group"
-        aria-label={View_mode === "week" ? "Week days" : "Month days"}
-      >
-        {Visible_days.map((day) => {
-          const key = To_date_key(day);
-          const isSelected = key === Selected_key;
-          const isDayToday = key === To_date_key(now);
-          const hasWorkout = workouts.some((w) => w.workout_date === key);
-          const isInCurrentMonth =
-            View_mode === "month"
-              ? day.getMonth() === Selected_date.getMonth()
-              : true;
-
-          return (
-            <button
-              key={key}
-              type="button"
-              className={`week-day${isSelected ? " week-day--active" : ""}${isDayToday ? " week-day--today" : ""}${hasWorkout ? " week-day--busy" : ""}${!isInCurrentMonth ? " week-day--muted" : ""}`}
-              onClick={() => Set_selected_date(day)}
-              aria-pressed={isSelected}
-            >
-              <span className="week-day__label">
-                {WEEKDAYS[day.getDay()]}
-              </span>
-              <span className="week-day__num">{day.getDate()}</span>
-              {hasWorkout && (
-                <span className="week-day-dot" aria-hidden="true" />
-              )}
-            </button>
-          );
-        })}
-      </div>
-
-      {/* View toggle */}
-      <div
-        className="view-toggle animate-in animate-in--2"
-        role="tablist"
-        aria-label="Workout view"
-      >
-        <button
-          type="button"
-          className={`view-btn${View_mode === "week" ? " view-btn--active" : ""}`}
-          onClick={() => Set_view_mode("week")}
-          aria-pressed={View_mode === "week"}
-        >
-          1 week
-        </button>
-        <button
-          type="button"
-          className={`view-btn${View_mode === "month" ? " view-btn--active" : ""}`}
-          onClick={() => Set_view_mode("month")}
-          aria-pressed={View_mode === "month"}
-        >
-          1 month
-        </button>
-      </div>
+      <Calendar_nav
+        selectedDate={Selected_date}
+        viewMode={View_mode}
+        onDateChange={Set_selected_date}
+        onViewModeChange={Set_view_mode}
+        busyDates={busyDates}
+        className="animate-in animate-in--1"
+      />
 
       <Stat_grid
         className="animate-in animate-in--2 fitness__summary"
         key={Selected_key}
         stats={[
-          { value: String(totals.workouts), label: "Workouts", className: "fitness__stat fitness__stat--workout glass-stat" },
-          { value: Format_volume(totals.volume), label: "Volume (kg)", className: "fitness__stat fitness__stat--workout glass-stat" },
-          { value: totals.duration > 0 ? `${totals.duration}m` : "—", label: "Duration", className: "fitness__stat fitness__stat--workout glass-stat" },
-          { value: totals.calories > 0 ? `${totals.calories}` : "—", label: "Cal Burned", className: "fitness__stat fitness__stat--workout glass-stat" },
+          {
+            value: String(totals.workouts),
+            label: "Workouts",
+            className: "fitness__stat fitness__stat--workout glass-stat",
+          },
+          {
+            value: Format_volume(totals.volume),
+            label: "Volume (kg)",
+            className: "fitness__stat fitness__stat--workout glass-stat",
+          },
+          {
+            value: totals.duration > 0 ? `${totals.duration}m` : "—",
+            label: "Duration",
+            className: "fitness__stat fitness__stat--workout glass-stat",
+          },
+          {
+            value: totals.calories > 0 ? `${totals.calories}` : "—",
+            label: "Cal Burned",
+            className: "fitness__stat fitness__stat--workout glass-stat",
+          },
         ]}
       />
 
@@ -1017,11 +972,17 @@ function Workout_logger() {
                 Set_preset_form((f) => ({ ...f, name: e.target.value }))
               }
               onBlur={() => {
-                const err = !Preset_form.name.trim() ? "Preset name is required" : null;
+                const err = !Preset_form.name.trim()
+                  ? "Preset name is required"
+                  : null;
                 setPresetFieldErrors((prev) => ({ ...prev, preset_name: err }));
                 setPresetFieldStates((prev) => ({
                   ...prev,
-                  preset_name: err ? "error" : Preset_form.name ? "valid" : "idle",
+                  preset_name: err
+                    ? "error"
+                    : Preset_form.name
+                      ? "valid"
+                      : "idle",
                 }));
                 if (err) {
                   setPresetShakeKey((k) => k + 1);
