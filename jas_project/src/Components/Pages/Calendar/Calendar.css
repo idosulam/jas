@@ -40,13 +40,13 @@
    Top Navigation
    ========================================================== */
 
-.calendar__nav {
-  display: flex;
+/* ── Date Nav — Calendar-specific overrides on shared .date-nav ── */
+
+.calendar .date-nav {
+  flex-direction: row;
   align-items: center;
   gap: 0.9rem;
-  margin-bottom: 1.5rem;
   padding: 0.75rem;
-  border: 1px solid var(--border);
   border-radius: var(--radius-xl);
   background: var(--surface-glass);
   backdrop-filter: var(--blur-heavy);
@@ -54,79 +54,50 @@
   box-shadow: var(--shadow-md);
 }
 
-.calendar__nav-center {
+.calendar .date-nav__top {
   flex: 1;
-  text-align: center;
+  justify-content: center;
+  gap: 0.35rem;
 }
 
-.calendar__date-label {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 0.35rem;
-  margin: 0;
-  font-family: var(--font-heading);
+.calendar .date-nav__label {
   font-size: 1.15rem;
   font-weight: 700;
   letter-spacing: -0.03em;
 }
 
-.calendar__nav-btn {
+.calendar .date-nav__btn {
   width: 2.75rem;
   height: 2.75rem;
-  flex-shrink: 0;
-  display: grid;
-  place-items: center;
-  border: none;
   border-radius: var(--radius);
   background: var(--surface);
+  border: none;
   color: var(--text);
   font-size: 1.3rem;
-  cursor: pointer;
   transition:
     transform var(--transition),
     background var(--transition),
     border-color var(--transition);
-  -webkit-tap-highlight-color: transparent;
 }
 
-.calendar__nav-btn:hover {
+.calendar .date-nav__btn:hover {
   transform: translateY(-2px);
   background: var(--surface-hover);
   border-color: var(--border-hover);
 }
 
-.calendar__nav-btn:active {
+.calendar .date-nav__btn:active {
   transform: scale(0.95);
 }
 
-.calendar__nav-btn:active {
-  transform: scale(0.95);
-}
-
-
-
-.calendar__today-btn {
-  margin-top: 0.45rem;
-  border: none;
-  border-radius: 999px;
+.calendar .date-nav__today {
+  margin-top: 0;
+  margin-left: 0.45rem;
   padding: 0.35rem 0.9rem;
-  background: linear-gradient(
-    135deg,
-    var(--color-primary),
-    var(--color-secondary)
-  );
-  color: #fff;
   font-size: 0.72rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition:
-    transform var(--transition),
-    box-shadow var(--transition);
 }
 
-.calendar__today-btn:hover {
-  transform: translateY(-2px);
+.calendar .date-nav__today:hover {
   box-shadow: 0 0 18px var(--color-primary-glow);
 }
 
@@ -137,10 +108,10 @@
 
 
 /* ==========================================================
-   Week Grid
+   Week Grid — Calendar-specific overrides on shared .week-day
    ========================================================== */
 
-.calendar__week {
+.calendar .week-days {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
   gap: 0.8rem;
@@ -148,27 +119,23 @@
   margin-bottom: 2rem;
 }
 
-.calendar__week--month {
+.calendar .week-days--month {
   grid-template-columns: repeat(7, minmax(0, 1fr));
   width: 100%;
   max-width: 34rem;
   margin-inline: auto;
 }
 
-.calendar__week-day {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 0.25rem;
+.calendar .week-day {
   aspect-ratio: 0.8;
   padding: 0.7rem 0.25rem;
   border: 1px solid var(--border);
   border-radius: 1.25rem;
   background: var(--surface);
   color: var(--text);
-  cursor: pointer;
   overflow: hidden;
+  justify-content: center;
+  gap: 0.25rem;
   transition:
     transform var(--transition),
     background var(--transition),
@@ -176,7 +143,7 @@
     box-shadow var(--transition);
 }
 
-.calendar__week-day::before {
+.calendar .week-day::before {
   content: "";
   position: absolute;
   inset: 0;
@@ -189,18 +156,18 @@
   transition: opacity var(--transition);
 }
 
-.calendar__week-day:hover {
+.calendar .week-day:hover {
   transform: translateY(-4px);
   background: var(--surface-hover);
   border-color: rgba(99, 102, 241, 0.35);
   box-shadow: 0 10px 24px rgba(0, 0, 0, 0.22);
 }
 
-.calendar__week-day:hover::before {
+.calendar .week-day:hover::before {
   opacity: 1;
 }
 
-.calendar__week-day--active {
+.calendar .week-day--active {
   border-color: var(--color-primary);
   background: linear-gradient(
     135deg,
@@ -212,11 +179,11 @@
     0 12px 30px rgba(99, 102, 241, 0.18);
 }
 
-.calendar__week-day--today {
+.calendar .week-day--today {
   border-color: rgba(244, 114, 182, 0.55);
 }
 
-.calendar__week-day--today::after {
+.calendar .week-day--today::after {
   content: "";
   position: absolute;
   inset: 2px;
@@ -225,17 +192,15 @@
   pointer-events: none;
 }
 
-.calendar__week-day--busy {
+.calendar .week-day--busy {
   box-shadow: inset 0 0 0 1px rgba(244, 114, 182, 0.18);
 }
 
-.calendar__week-day--muted {
+.calendar .week-day--muted {
   opacity: 0.45;
 }
 
-
-
-.calendar__week-label {
+.calendar .week-day__label {
   font-size: 0.68rem;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -243,14 +208,15 @@
   color: var(--text-muted);
 }
 
-.calendar__week-num {
+.calendar .week-day__num {
   font-family: var(--font-heading);
   font-size: 1.45rem;
   font-weight: 800;
   letter-spacing: -0.04em;
 }
 
-.calendar__week-dot {
+/* Busy dot — Calendar uses a gradient dot instead of default */
+.calendar .week-day--busy::after {
   position: absolute;
   top: 8px;
   left: 50%;
@@ -260,11 +226,12 @@
   border-radius: 999px;
   background: linear-gradient(135deg, #f472b6, #f59e0b);
   box-shadow: 0 0 10px rgba(244, 114, 182, 0.45);
+  bottom: auto;
 }
 
 /* Mobile: avoid overlapping weekday text — move dot to top-right and shrink slightly */
 @media (max-width: 480px) {
-  .calendar__week-dot {
+  .calendar .week-day--busy::after {
     left: auto;
     right: 5px;
     transform: none;
@@ -273,7 +240,7 @@
     height: 0.38rem;
     box-shadow: 0 0 8px rgba(244, 114, 182, 0.35);
   }
-  .calendar__week-num {
+  .calendar .week-day__num {
     /* give the number a little extra top padding so it isn't visually crowded */
     margin-top: 0.15rem;
   }
@@ -822,24 +789,24 @@
     grid-template-columns: 1fr;
   }
 
-  .calendar__week--week {
+  .calendar .week-days:not(.week-days--month) {
     width: max-content;
     margin-left: -1.5rem;
     gap: 0.4rem;
   }
 
-  .calendar__week--month {
+  .calendar .week-days--month {
     width: 100%;
     max-width: 100%;
     margin-inline: auto;
     margin-left: 0;
     gap: 0.4rem;
   }
-  .calendar__week-day {
+  .calendar .week-day {
     border-radius: 0.9rem;
   }
 
-  .calendar__week-num {
+  .calendar .week-day__num {
     font-size: 1.15rem;
   }
 
@@ -864,7 +831,7 @@
     display: none;
   }
 
-  .calendar__week--week {
+  .calendar .week-days:not(.week-days--month) {
     display: grid;
     grid-template-columns: repeat(7, minmax(0, 1fr));
     grid-auto-flow: row;
@@ -876,11 +843,11 @@
     scroll-snap-type: none;
   }
 
-  .calendar__week--week::-webkit-scrollbar {
+  .calendar .week-days:not(.week-days--month)::-webkit-scrollbar {
     display: none;
   }
 
-  .calendar__week--week .calendar__week-day {
+  .calendar .week-days:not(.week-days--month) .week-day {
     min-width: 0;
     width: 100%;
     aspect-ratio: auto;
@@ -889,12 +856,12 @@
     border-radius: 0.7rem;
   }
 
-  .calendar__week--week .calendar__week-label {
+  .calendar .week-days:not(.week-days--month) .week-day__label {
     font-size: 0.5rem;
     letter-spacing: 0.02em;
   }
 
-  .calendar__week--week .calendar__week-num {
+  .calendar .week-days:not(.week-days--month) .week-day__num {
     font-size: 0.95rem;
   }
 
@@ -982,7 +949,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .calendar__event, .calendar__reminder, .calendar__stat, .calendar__week-day{
+  .calendar__event, .calendar__reminder, .calendar__stat, .calendar .week-day{
     animation: none !important;
     transition: none !important;
   }

@@ -3,7 +3,6 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Get_supabase_client } from "../../../Lib/Superbase";
 import { Use_user_id } from "../../../Lib/Auth_context.jsx";
 import {
-  Add_days,
   DAY_END_HOUR,
   DAY_START_HOUR,
   EVENT_COLORS,
@@ -12,10 +11,11 @@ import {
   Format_time_12,
   HOUR_HEIGHT,
   Layout_overlapping_events,
-  Start_of_week,
-  To_date_key,
   TOTAL_HOURS,
 } from "./Calendar_layout";
+import { Add_days, Start_of_week, To_date_key } from "../../../Lib/Date_utils";
+import Date_nav from "../../../Components/UI/Date_nav";
+import Day_grid from "../../../Components/UI/Day_grid";
 import {
   Get_user_facing_error,
   Sanitize_date,
@@ -46,7 +46,7 @@ import { Use_glass_toast } from "../../../Lib/Glass_toast_provider.jsx";
 import { Fetch_palette } from "../../../Lib/Color_palette.js";
 import { Use_household } from "../../../Lib/Household_context.jsx";
 import Event_form from "./Event_form.jsx";
-import Calendar_grid from "./Calendar_grid.jsx";
+
 import Timeline_view from "./Timeline_view.jsx";
 import Reminder_list from "./Reminder_list.jsx";
 
@@ -682,43 +682,23 @@ function Calendar() {
         title="Calendar"
       />
 
-      <div className="calendar__nav animate-in animate-in--1">
-        <button
-          type="button"
-          className="calendar__nav-btn"
-          onClick={() => Shift_selected_date("prev")}
-          aria-label={View_mode === "month" ? "Previous month" : "Previous week"}
-        >
-          ‹
-        </button>
-        <div className="calendar__nav-center">
-          <p className="calendar__date-label">
-            {View_mode === "month"
-              ? Selected_date.toLocaleDateString(undefined, {
-                  month: "long",
-                  year: "numeric",
-                })
-              : Day_title}
-          </p>
-          {!Is_today && (
-            <button
-              type="button"
-              className="calendar__today-btn"
-              onClick={() => Set_selected_date(new Date())}
-            >
-              Today
-            </button>
-          )}
-        </div>
-        <button
-          type="button"
-          className="calendar__nav-btn"
-          onClick={() => Shift_selected_date("next")}
-          aria-label={View_mode === "month" ? "Next month" : "Next week"}
-        >
-          ›
-        </button>
-      </div>
+      <Date_nav
+        className="animate-in animate-in--1"
+        label={
+          View_mode === "month"
+            ? Selected_date.toLocaleDateString(undefined, {
+                month: "long",
+                year: "numeric",
+              })
+            : Day_title
+        }
+        isToday={Is_today}
+        onPrev={() => Shift_selected_date("prev")}
+        onNext={() => Shift_selected_date("next")}
+        onToday={() => Set_selected_date(new Date())}
+        prevLabel={View_mode === "month" ? "Previous month" : "Previous week"}
+        nextLabel={View_mode === "month" ? "Next month" : "Next week"}
+      />
 
       <div
         className="view-toggle animate-in animate-in--2"
@@ -743,12 +723,13 @@ function Calendar() {
         </button>
       </div>
 
-      <Calendar_grid
-        Visible_days={Visible_days}
-        Selected_date={Selected_date}
+      <Day_grid
+        className="animate-in animate-in--2"
+        days={Visible_days}
+        selectedDate={Selected_date}
         today={today}
-        View_mode={View_mode}
-        busy_dates={busy_dates}
+        viewMode={View_mode}
+        busyDates={busy_dates}
         onDaySelect={Set_selected_date}
       />
 

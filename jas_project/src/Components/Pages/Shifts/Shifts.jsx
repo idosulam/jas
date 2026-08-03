@@ -31,7 +31,6 @@ import FAB from "../../../Components/UI/Fab";
 import {
   PAY_TYPES,
   FILTER_PICKER_BREAKPOINT,
-  WEEKDAYS,
   MODAL_EXIT_MS,
   get_current_local_time,
   calculate_hours_from_times,
@@ -39,6 +38,9 @@ import {
   Empty_form,
   Format_money,
 } from "./Shift_utils";
+import { To_date_key, Add_days, Start_of_week } from "../../../Lib/Date_utils";
+import Date_nav from "../../../Components/UI/Date_nav";
+import Day_grid from "../../../Components/UI/Day_grid";
 import Shift_form from "./Shift_form";
 import Shift_delete_confirm from "./Shift_delete_confirm";
 import Place_picker from "./Place_picker";
@@ -333,22 +335,6 @@ function Shifts({ onNavigate }) {
     Preset_modal.open_modal();
   }, [form, PLACES, Preset_modal]);
 
-  // Week helpers
-  const Start_of_week = (date) => {
-    const d = new Date(date);
-    d.setDate(d.getDate() - d.getDay());
-    d.setHours(0, 0, 0, 0);
-    return d;
-  };
-
-  const Add_days = (date, n) => {
-    const d = new Date(date);
-    d.setDate(d.getDate() + n);
-    return d;
-  };
-
-  const To_date_key = (date) => date.toISOString().slice(0, 10);
-
   const Selected_key = To_date_key(Selected_date);
   const Is_today = Selected_key === To_date_key(now);
 
@@ -364,6 +350,12 @@ function Shifts({ onNavigate }) {
   }, [Selected_date]);
 
   const Visible_days = View_mode === "week" ? Week_days : Month_days;
+
+  const busyDates = useMemo(() => {
+    const set = new Set();
+    shifts.forEach((s) => set.add(s.shift_date));
+    return set;
+  }, [shifts]);
 
   const Day_title = useMemo(() => {
     return Selected_date.toLocaleDateString(undefined, {
@@ -918,77 +910,26 @@ function Shifts({ onNavigate }) {
         className="shifts__header animate-in"
       />
 
-      {/* Weekly date navigation */}
-      <div className="date-nav animate-in animate-in--1">
-        <div className="date-nav__top">
-          <button
-            type="button"
-            className="date-nav__btn"
-            onClick={() =>
-              Set_selected_date((d) => Add_days(d, View_mode === "week" ? -7 : -30))
-            }
-            aria-label="Previous day"
-          >
-            ‹
-          </button>
-          <span className="date-nav__label">{Day_title}</span>
-          <button
-            type="button"
-            className="date-nav__btn"
-            onClick={() =>
-              Set_selected_date((d) => Add_days(d, View_mode === "week" ? 7 : 30))
-            }
-            aria-label="Next day"
-          >
-            ›
-          </button>
-        </div>
-        {!Is_today && (
-          <button
-            type="button"
-            className="date-nav__today"
-            onClick={() => Set_selected_date(new Date())}
-          >
-            Today
-          </button>
-        )}
-      </div>
+      {/* Date navigation */}
+      <Date_nav
+        className="animate-in animate-in--1"
+        label={Day_title}
+        isToday={Is_today}
+        onPrev={() => Set_selected_date((d) => Add_days(d, View_mode === "week" ? -7 : -30))}
+        onNext={() => Set_selected_date((d) => Add_days(d, View_mode === "week" ? 7 : 30))}
+        onToday={() => Set_selected_date(new Date())}
+      />
 
-      {/* Week day selector */}
-      <div
-        className={`week-days animate-in animate-in--1${View_mode === "month" ? " week-days--month" : ""}`}
-        role="group"
-        aria-label={View_mode === "week" ? "Week days" : "Month days"}
-      >
-        {Visible_days.map((day) => {
-          const key = To_date_key(day);
-          const isSelected = key === Selected_key;
-          const isDayToday = key === To_date_key(now);
-          const hasShift = shifts.some((s) => s.shift_date === key);
-          const isInCurrentMonth =
-            View_mode === "month"
-              ? day.getMonth() === Selected_date.getMonth()
-              : true;
-
-          return (
-            <button
-              key={key}
-              type="button"
-              className={`week-day${isSelected ? " week-day--active" : ""}${isDayToday ? " week-day--today" : ""}${hasShift ? " week-day--busy" : ""}${!isInCurrentMonth ? " week-day--muted" : ""}`}
-              onClick={() => Set_selected_date(day)}
-              aria-pressed={isSelected}
-            >
-              <span className="week-day__label">
-                {WEEKDAYS[day.getDay()]}
-              </span>
-              <span className="week-day__num">{day.getDate()}</span>
-              {hasShift && (
-                <span className="shifts__week-day-dot" aria-hidden="true" />
-              )}
-            </button>
-          );
-        })}
-      </div>
+      {/* Day grid */}
+      <Day_grid
+        className="animate-in animate-in--1"
+        days={Visible_days}
+        selectedDate={Selected_date}
+        today={now}
+        viewMode={View_mode}
+        busyDates={busyDates}
+        onDaySelect={Set_selected_date}
+      />
 
       {/* View toggle */}
       <div
