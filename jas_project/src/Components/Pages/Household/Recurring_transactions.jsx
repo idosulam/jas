@@ -85,6 +85,7 @@ function Recurring_transactions({ householdId, user_id, categories: categoriesPr
     color: "",
     type: "expense",
   });
+  const [catNameTouched, setCatNameTouched] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
   const [deleteCategoryTarget, setDeleteCategoryTarget] = useState(null);
   const [deletingCategory, setDeletingCategory] = useState(false);
@@ -385,6 +386,7 @@ function Recurring_transactions({ householdId, user_id, categories: categoriesPr
   const openNewCategory = (type = "expense") => {
     setEditingCategory(null);
     setCategoryForm({ name: "", icon: "", color: "", type });
+    setCatNameTouched(false);
     categoryModal.open_modal();
   };
 
@@ -396,6 +398,7 @@ function Recurring_transactions({ householdId, user_id, categories: categoriesPr
       color: cat.color,
       type: cat.type,
     });
+    setCatNameTouched(false);
     categoryModal.open_modal();
   };
 
@@ -937,10 +940,10 @@ function Recurring_transactions({ householdId, user_id, categories: categoriesPr
           {/* Create / Edit form */}
           <Form_field
             label="Label name"
-            error={!categoryForm.name.trim() ? "Label name is required" : null}
-            state={categoryForm.name.trim() ? "valid" : "idle"}
+            error={catNameTouched && !categoryForm.name.trim() ? "Label name is required" : null}
+            state={!catNameTouched ? "idle" : categoryForm.name.trim() ? "valid" : "error"}
             show_indicator
-            shake={!categoryForm.name.trim() ? Cat_shake_key : 0}
+            shake={catNameTouched && !categoryForm.name.trim() ? Cat_shake_key : 0}
           >
             <input
               type="text"
@@ -948,6 +951,7 @@ function Recurring_transactions({ householdId, user_id, categories: categoriesPr
               onChange={(e) =>
                 setCategoryForm((f) => ({ ...f, name: e.target.value }))
               }
+              onBlur={() => setCatNameTouched(true)}
               placeholder="e.g. Coffee, Rent, Groceries"
               maxLength={40}
             />
@@ -957,7 +961,7 @@ function Recurring_transactions({ householdId, user_id, categories: categoriesPr
           <div className="recurring__category-grid-wrap">
             <label className="recurring__form-label">
               Icon
-              {!categoryForm.icon && (
+              {!categoryForm.icon && Cat_shake_key > 0 && (
                 <span style={{ color: "var(--error, #ef4444)", fontSize: 12, marginLeft: 6 }}>
                   — Pick an icon
                 </span>

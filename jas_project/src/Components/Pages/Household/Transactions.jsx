@@ -54,6 +54,7 @@ function Transactions({ householdId, user_id, members, goals = [] }) {
   const [deleteCategoryTarget, setDeleteCategoryTarget] = useState(null);
   const [deletingCategory, setDeletingCategory] = useState(false);
   const [Cat_shake_key, Set_cat_shake_key] = useState(0);
+  const [catNameTouched, setCatNameTouched] = useState(false);
 
   // Filter tabs sliding indicator
   const filterTabRef = useRef(null);
@@ -357,6 +358,7 @@ function Transactions({ householdId, user_id, members, goals = [] }) {
   const openNewCategory = (type = "expense") => {
     setEditingCategory(null);
     setCategoryForm({ name: "", icon: "", color: "", type });
+    setCatNameTouched(false);
     categoryModal.open_modal();
   };
 
@@ -368,6 +370,7 @@ function Transactions({ householdId, user_id, members, goals = [] }) {
       color: cat.color,
       type: cat.type,
     });
+    setCatNameTouched(false);
     categoryModal.open_modal();
   };
 
@@ -763,10 +766,10 @@ function Transactions({ householdId, user_id, members, goals = [] }) {
           {/* Create / Edit form */}
           <Form_field
             label="Label name"
-            error={!categoryForm.name.trim() ? "Label name is required" : null}
-            state={categoryForm.name.trim() ? "valid" : "idle"}
+            error={catNameTouched && !categoryForm.name.trim() ? "Label name is required" : null}
+            state={!catNameTouched ? "idle" : categoryForm.name.trim() ? "valid" : "error"}
             show_indicator
-            shake={!categoryForm.name.trim() ? Cat_shake_key : 0}
+            shake={catNameTouched && !categoryForm.name.trim() ? Cat_shake_key : 0}
           >
             <input
               type="text"
@@ -774,6 +777,7 @@ function Transactions({ householdId, user_id, members, goals = [] }) {
               onChange={(e) =>
                 setCategoryForm((f) => ({ ...f, name: e.target.value }))
               }
+              onBlur={() => setCatNameTouched(true)}
               placeholder="e.g. Coffee, Rent, Groceries"
               maxLength={40}
             />
@@ -783,7 +787,7 @@ function Transactions({ householdId, user_id, members, goals = [] }) {
           <div className="transactions__category-grid-wrap">
             <label className="transactions__form-label">
               Icon
-              {!categoryForm.icon && (
+              {!categoryForm.icon && Cat_shake_key > 0 && (
                 <span style={{ color: "var(--error, #ef4444)", fontSize: 12, marginLeft: 6 }}>
                   — Pick an icon
                 </span>
