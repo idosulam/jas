@@ -615,16 +615,16 @@ function Household() {
         <>
           <button
             type="button"
-            className="household__tab-trigger animate-in animate-in--2"
+            className="picker-trigger animate-in animate-in--2"
             onClick={() => tabPickerModal.open_modal()}
             aria-haspopup="listbox"
             aria-expanded={tabPickerModal.open}
           >
-            <span className="household__tab-trigger-icon">
+            <span className="picker-trigger__icon">
               {TABS.find((t) => t.id === activeTab)?.icon}
             </span>
             {TABS.find((t) => t.id === activeTab)?.label}
-            <span className="household__tab-trigger-chevron" aria-hidden="true">
+            <span className="picker-trigger__chevron" aria-hidden="true">
               ▾
             </span>
           </button>
@@ -636,14 +636,14 @@ function Household() {
             title="Switch tab"
             compact
           >
-            <ul className="household__tab-picker-list">
+            <ul className="picker-list">
               {TABS.map((tab) => {
                 const is_active = activeTab === tab.id;
                 return (
                   <li key={tab.id}>
                     <button
                       type="button"
-                      className={`household__tab-picker-item${is_active ? " household__tab-picker-item--active" : ""}`}
+                      className={`picker-item${is_active ? " picker-item--active" : ""}`}
                       onClick={() => {
                         setActiveTab(tab.id);
                         tabPickerModal.close_modal();
@@ -651,10 +651,10 @@ function Household() {
                       role="option"
                       aria-selected={is_active}
                     >
-                      <span className="household__tab-picker-icon">{tab.icon}</span>
-                      <span className="household__tab-picker-label">{tab.label}</span>
+                      <span className="picker-item__icon">{tab.icon}</span>
+                      <span className="picker-item__label">{tab.label}</span>
                       {is_active && (
-                        <span className="household__tab-picker-check" aria-hidden="true">
+                        <span className="picker-item__check" aria-hidden="true">
                           ✓
                         </span>
                       )}

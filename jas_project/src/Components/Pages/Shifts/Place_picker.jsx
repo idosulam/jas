@@ -76,13 +76,13 @@ export default function Place_picker({
     <>
       <button
         type="button"
-        className="shifts__place-trigger animate-in animate-in--2"
+        className="picker-trigger animate-in animate-in--2"
         onClick={onOpenPicker}
         aria-haspopup="listbox"
         aria-expanded={Picker_open}
       >
         <span
-          className="shifts__place-trigger-dot"
+          className="picker-trigger__dot"
           style={{
             background:
               selectedPlaceId === "all"
@@ -92,7 +92,7 @@ export default function Place_picker({
           }}
         />
         {placeFilters.find((f) => f.id === selectedPlaceId)?.label || "All"}
-        <span className="shifts__place-trigger-chevron" aria-hidden="true">
+        <span className="picker-trigger__chevron" aria-hidden="true">
           ▾
         </span>
       </button>
@@ -104,7 +104,7 @@ export default function Place_picker({
         title="Filter by workplace"
         compact
       >
-        <ul className="shifts__picker-list">
+        <ul className="picker-list">
           {placeFilters.map(({ id, label, active }) => {
             const is_active = selectedPlaceId === id;
             const color =
@@ -115,23 +115,23 @@ export default function Place_picker({
               <li key={id}>
                 <button
                   type="button"
-                  className={`shifts__picker-item${is_active ? " shifts__picker-item--active" : ""}${active === false ? " shifts__picker-item--deactivated" : ""}`}
+                  className={`picker-item${is_active ? " picker-item--active" : ""}${active === false ? " picker-item--deactivated" : ""}`}
                   onClick={() => onSelect(id)}
                   role="option"
                   aria-selected={is_active}
                 >
                   <span
-                    className="shifts__picker-dot"
+                    className="picker-item__dot"
                     style={{ background: color }}
                   />
-                  <span className="shifts__picker-label">{label}</span>
+                  <span className="picker-item__label">{label}</span>
                   {active === false && (
-                    <span className="shifts__picker-deactivated-tag">
+                    <span className="picker-item__deactivated-tag">
                       inactive
                     </span>
                   )}
                   {is_active && (
-                    <span className="shifts__picker-check" aria-hidden="true">
+                    <span className="picker-item__check" aria-hidden="true">
                       ✓
                     </span>
                   )}

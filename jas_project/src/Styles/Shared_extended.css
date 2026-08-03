@@ -827,6 +827,146 @@
 }
 
 
+/* ── Picker Trigger (mobile dropdown) ────────────────────────
+   Used by: Shifts (place filter), Household (tab picker)
+   Markup: .picker-trigger > .picker-trigger__icon/.picker-trigger__dot
+           + label + .picker-trigger__chevron
+   ──────────────────────────────────────────────────────────── */
+
+.picker-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 1rem;
+  margin-bottom: 1.25rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text, #e2e8f0);
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.picker-trigger:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.picker-trigger:active {
+  transform: scale(0.97);
+}
+
+.picker-trigger__dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.picker-trigger__icon {
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+.picker-trigger__chevron {
+  font-size: 0.75rem;
+  opacity: 0.5;
+  margin-left: 0.1rem;
+}
+
+
+/* ── Picker List (inside sheet modal) ────────────────────────
+   Used by: Shifts (place filter), Household (tab picker)
+   Markup: .picker-list > li > .picker-item[.picker-item--active]
+           > .picker-item__dot/.picker-item__icon + .picker-item__label
+           + .picker-item__check
+   ──────────────────────────────────────────────────────────── */
+
+.picker-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.picker-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.85rem 1rem;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text, #e2e8f0);
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: left;
+}
+
+.picker-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.picker-item--active {
+  background: rgba(129, 140, 248, 0.12);
+  border-color: rgba(129, 140, 248, 0.25);
+}
+
+.picker-item--deactivated {
+  opacity: 0.5;
+}
+
+.picker-item--deactivated:hover {
+  opacity: 0.75;
+}
+
+.picker-item__dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.picker-item__icon {
+  font-size: 1.15rem;
+  flex-shrink: 0;
+}
+
+.picker-item__label {
+  flex: 1;
+}
+
+.picker-item__check {
+  font-size: 0.85rem;
+  color: var(--color-primary, #818cf8);
+  font-weight: 700;
+}
+
+.picker-item__deactivated-tag {
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-warning, #fbbf24);
+  background: rgba(251, 191, 36, 0.12);
+  border: 1px solid rgba(251, 191, 36, 0.2);
+  padding: 0.1rem 0.35rem;
+  border-radius: var(--radius-pill, 999px);
+  margin-left: auto;
+}
+
+
 /* ── Reduced Motion (consolidated) ─────────────────────────── */
 
 @media (prefers-reduced-motion: reduce) {
@@ -843,7 +983,9 @@
   .category-chip,
   .list-header__add,
   .card--removing,
-  .shake {
+  .shake,
+  .picker-trigger,
+  .picker-item {
     animation: none !important;
     transition: none !important;
   }
