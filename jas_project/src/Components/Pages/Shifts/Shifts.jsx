@@ -337,6 +337,12 @@ function Shifts({ onNavigate }) {
   const Selected_key = To_date_key(Selected_date);
   const Is_today = Selected_key === To_date_key(now);
 
+  const Day_title = Selected_date.toLocaleDateString(undefined, {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+  });
+
   const busyDates = useMemo(() => {
     const set = new Set();
     shifts.forEach((s) => set.add(s.shift_date));
