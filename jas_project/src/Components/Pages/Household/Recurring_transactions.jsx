@@ -951,7 +951,13 @@ function Recurring_transactions({ householdId, user_id, categories: categoriesPr
               onChange={(e) =>
                 setCategoryForm((f) => ({ ...f, name: e.target.value }))
               }
-              onBlur={() => setCatNameTouched(true)}
+              onBlur={() => {
+                setCatNameTouched(true);
+                if (!categoryForm.name.trim()) {
+                  Set_cat_shake_key((k) => k + 1);
+                  Haptic_error();
+                }
+              }}
               placeholder="e.g. Coffee, Rent, Groceries"
               maxLength={40}
             />
