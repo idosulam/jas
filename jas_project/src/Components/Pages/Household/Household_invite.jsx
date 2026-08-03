@@ -295,7 +295,7 @@ function Household_invite({
         onClose={closeCreateModal}
         title="Create household"
       >
-        <div className="household__form">
+        <div className="form-column">
           <Form_field
             label="Household name"
             error={nameFieldError}
@@ -343,7 +343,7 @@ function Household_invite({
         onClose={closeJoinModal}
         title="Join household"
       >
-        <div className="household__form">
+        <div className="form-column">
           <Form_field
             label="Invite code"
             error={codeFieldError}

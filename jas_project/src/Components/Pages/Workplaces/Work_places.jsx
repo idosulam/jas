@@ -417,7 +417,7 @@ function Workplaces({ onNavigate, return_to }) {
                     <div className="workplaces__card-actions">
                       <button
                         type="button"
-                        className="workplaces__action workplaces__action--edit"
+                        className="workplaces__action card-action--edit"
                         onClick={() => Open_edit_modal(wp)}
                         aria-label={`Edit ${wp.label}`}
                       >
@@ -425,7 +425,7 @@ function Workplaces({ onNavigate, return_to }) {
                       </button>
                       <button
                         type="button"
-                        className="workplaces__action workplaces__action--deactivate"
+                        className="workplaces__action card-action--deactivate"
                         onClick={() => {
                           setDeactivateTarget(wp);
                           deactivateModal.open_modal();
@@ -470,14 +470,14 @@ function Workplaces({ onNavigate, return_to }) {
                       <div className="workplaces__card-actions">
                         <button
                           type="button"
-                          className="workplaces__action workplaces__action--reactivate"
+                          className="workplaces__action card-action--reactivate"
                           onClick={() => reactivateWorkplace(wp)}
                         >
                           Reactivate
                         </button>
                         <button
                           type="button"
-                          className="workplaces__action workplaces__action--delete"
+                          className="workplaces__action card-action--delete"
                           onClick={() => {
                             Set_delete_target(wp);
                             Delete_modal.open_modal();

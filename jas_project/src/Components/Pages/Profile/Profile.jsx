@@ -768,7 +768,7 @@ function Profile({ onNavigate }) {
   return (
     <section>
       <Page_header
-        className="profile__header"
+        className="page-header"
         eyebrow={
           Household_name ? `Progress · ${Household_name}` : "Your progress"
         }
@@ -807,7 +807,7 @@ function Profile({ onNavigate }) {
       </Page_header>
 
       {error && (
-        <p className="profile__error profile__error--glass" role="alert">
+        <p className="error-box profile__error--glass" role="alert">
           {error}
         </p>
       )}
@@ -859,7 +859,7 @@ function Profile({ onNavigate }) {
                 className={`profile__goal-bar-wrap${analytics.remainingKg != null && analytics.remainingKg <= 0 ? " profile__goal-reached" : ""}`}
               >
                 <div
-                  className="profile__goal-bar"
+                  className="progress-bar"
                   role="progressbar"
                   aria-valuenow={Math.round(analytics.goalProgress ?? 0)}
                   aria-valuemin={0}
@@ -867,13 +867,13 @@ function Profile({ onNavigate }) {
                   aria-label="Progress toward goal weight"
                 >
                   <div
-                    className="profile__goal-bar-fill"
+                    className="progress-bar__fill"
                     style={{
                       width: `${Math.min(analytics.goalProgress ?? 0, 100)}%`,
                     }}
                   />
                 </div>
-                <div className="profile__goal-meta">
+                <div className="progress-bar__meta">
                   <span>
                     Target{" "}
                     <strong>
@@ -1009,7 +1009,7 @@ function Profile({ onNavigate }) {
         onClose={closeProfileModal}
         title="Edit profile"
       >
-        <form className="profile__form" onSubmit={Save_profile}>
+        <form className="form-column profile__form" onSubmit={Save_profile}>
           <Form_field
             label="Name"
             error={profileFieldErrors.display_name}
@@ -1076,7 +1076,7 @@ function Profile({ onNavigate }) {
               onBlur={() => handleProfileFieldBlur("Height_cm")}
             />
           </Form_field>
-          <div className="profile__height-row">
+          <div className="form-field-row">
             <Form_field label="Feet">
               <input
                 type="number"
@@ -1103,7 +1103,7 @@ function Profile({ onNavigate }) {
               />
             </Form_field>
           </div>
-          <div className="profile__weight-row">
+          <div className="form-field-row">
             <Form_field
               label="Goal weight (kg)"
               error={profileFieldErrors.goal_weight_kg}

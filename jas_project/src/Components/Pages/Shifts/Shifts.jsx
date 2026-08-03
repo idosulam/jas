@@ -166,7 +166,7 @@ function Shifts({ onNavigate }) {
     if (!Use_inline_filters) return;
     const container = Place_filter_ref.current;
     if (!container) return;
-    const active = container.querySelector(".shifts__place-btn--active");
+    const active = container.querySelector(".tab-toggle__btn--active");
     if (!active) return;
     const cRect = container.getBoundingClientRect();
     const aRect = active.getBoundingClientRect();
@@ -919,11 +919,11 @@ function Shifts({ onNavigate }) {
       />
 
       {/* Weekly date navigation */}
-      <div className="shifts__date-nav animate-in animate-in--1">
-        <div className="shifts__date-top">
+      <div className="date-nav animate-in animate-in--1">
+        <div className="date-nav__top">
           <button
             type="button"
-            className="shifts__date-btn"
+            className="date-nav__btn"
             onClick={() =>
               Set_selected_date((d) => Add_days(d, View_mode === "week" ? -7 : -30))
             }
@@ -931,10 +931,10 @@ function Shifts({ onNavigate }) {
           >
             ‹
           </button>
-          <span className="shifts__date-label">{Day_title}</span>
+          <span className="date-nav__label">{Day_title}</span>
           <button
             type="button"
-            className="shifts__date-btn"
+            className="date-nav__btn"
             onClick={() =>
               Set_selected_date((d) => Add_days(d, View_mode === "week" ? 7 : 30))
             }
@@ -946,7 +946,7 @@ function Shifts({ onNavigate }) {
         {!Is_today && (
           <button
             type="button"
-            className="shifts__date-today"
+            className="date-nav__today"
             onClick={() => Set_selected_date(new Date())}
           >
             Today
@@ -956,7 +956,7 @@ function Shifts({ onNavigate }) {
 
       {/* Week day selector */}
       <div
-        className={`shifts__week-days animate-in animate-in--1${View_mode === "month" ? " shifts__week-days--month" : ""}`}
+        className={`week-days animate-in animate-in--1${View_mode === "month" ? " week-days--month" : ""}`}
         role="group"
         aria-label={View_mode === "week" ? "Week days" : "Month days"}
       >
@@ -974,14 +974,14 @@ function Shifts({ onNavigate }) {
             <button
               key={key}
               type="button"
-              className={`shifts__week-day${isSelected ? " shifts__week-day--active" : ""}${isDayToday ? " shifts__week-day--today" : ""}${hasShift ? " shifts__week-day--busy" : ""}${!isInCurrentMonth ? " shifts__week-day--muted" : ""}`}
+              className={`week-day${isSelected ? " week-day--active" : ""}${isDayToday ? " week-day--today" : ""}${hasShift ? " week-day--busy" : ""}${!isInCurrentMonth ? " week-day--muted" : ""}`}
               onClick={() => Set_selected_date(day)}
               aria-pressed={isSelected}
             >
-              <span className="shifts__week-day-label">
+              <span className="week-day__label">
                 {WEEKDAYS[day.getDay()]}
               </span>
-              <span className="shifts__week-day-num">{day.getDate()}</span>
+              <span className="week-day__num">{day.getDate()}</span>
               {hasShift && (
                 <span className="shifts__week-day-dot" aria-hidden="true" />
               )}
@@ -992,13 +992,13 @@ function Shifts({ onNavigate }) {
 
       {/* View toggle */}
       <div
-        className="shifts__view-toggle animate-in animate-in--2"
+        className="view-toggle animate-in animate-in--2"
         role="tablist"
         aria-label="Shifts view"
       >
         <button
           type="button"
-          className={`shifts__view-btn${View_mode === "week" ? " shifts__view-btn--active" : ""}`}
+          className={`view-btn${View_mode === "week" ? " view-btn--active" : ""}`}
           onClick={() => Set_view_mode("week")}
           aria-pressed={View_mode === "week"}
         >
@@ -1006,7 +1006,7 @@ function Shifts({ onNavigate }) {
         </button>
         <button
           type="button"
-          className={`shifts__view-btn${View_mode === "month" ? " shifts__view-btn--active" : ""}`}
+          className={`view-btn${View_mode === "month" ? " view-btn--active" : ""}`}
           onClick={() => Set_view_mode("month")}
           aria-pressed={View_mode === "month"}
         >
@@ -1067,27 +1067,27 @@ function Shifts({ onNavigate }) {
         <Glass_card
           value={`${totals.hours.toFixed(1)}h`}
           label="Hours"
-          className="shifts__stat"
+          className="shifts__stat glass-stat"
         />
         <Glass_card
           value={Format_money(totals.pay)}
           label="Pay"
-          className="shifts__stat"
+          className="shifts__stat glass-stat"
         />
         <Glass_card
           value={Format_money(totals.tips)}
           label="Tips"
-          className="shifts__stat"
+          className="shifts__stat glass-stat"
         />
         <Glass_card
           value={Format_money(totals.total)}
           label="Total"
-          className="shifts__stat shifts__stat--total"
+          className="shifts__stat glass-stat shifts__stat--total"
         />
       </div>
 
       {error && (
-        <p className="shifts__error shifts__error--shake" role="alert">
+        <p className="error-box error-box--shake" role="alert">
           {error}
         </p>
       )}
@@ -1111,8 +1111,8 @@ function Shifts({ onNavigate }) {
         onDeletePreset={Delete_preset}
       />
 
-      <div className="shifts__list-header animate-in animate-in--4">
-        <h2 className="shifts__list-title">
+      <div className="list-header animate-in animate-in--4">
+        <h2 className="list-header__title">
           {Day_title}
           {Place_filter !== "all" && (
             <span className="shifts__list-subtitle">
@@ -1134,7 +1134,7 @@ function Shifts({ onNavigate }) {
           )}
           <button
             type="button"
-            className="shifts__add-btn"
+            className="list-header__add"
             onClick={Open_add_modal}
             ref={Add_btn_ref}
             disabled={Effective_workplaces.length === 0}

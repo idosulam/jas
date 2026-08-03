@@ -38,7 +38,7 @@ export default function Shift_card({
 
   return (
     <li
-      className={`shifts__card${isRemoving ? " shifts__card--removing" : ""}${isDeactivated ? " shifts__card--deactivated" : ""}`}
+      className={`shifts__card${isRemoving ? " card--removing" : ""}${isDeactivated ? " shifts__card--deactivated" : ""}`}
       style={{ "--card-delay": animDelay }}
     >
       <div className="shifts__card-main">
@@ -102,10 +102,10 @@ export default function Shift_card({
           <p className="shifts__note-panel">{shift.notes}</p>
         )}
       </div>
-      <div className="shifts__card-actions">
+      <div className="card-actions">
         <button
           type="button"
-          className="shifts__action shifts__action--copy"
+          className="card-action card-action--copy"
           onClick={() => onCopy(shift)}
           aria-label="Copy shift to today"
         >
@@ -113,7 +113,7 @@ export default function Shift_card({
         </button>
         <button
           type="button"
-          className="shifts__action shifts__action--edit"
+          className="card-action card-action--edit"
           onClick={() => onEdit(shift)}
           aria-label="Edit shift"
         >
@@ -121,7 +121,7 @@ export default function Shift_card({
         </button>
         <button
           type="button"
-          className="shifts__action shifts__action--deactivate"
+          className="card-action card-action--deactivate"
           onClick={() => onDelete(shift)}
           aria-label="Delete shift"
         >

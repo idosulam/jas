@@ -194,12 +194,7 @@
   pointer-events: none;
 }
 
-/* ── Header ── */
-/* NOTE: .page-header provides identical layout */
-.auth__header {
-  text-align: center;
-  margin-bottom: 1.5rem;
-}
+/* .auth__header → migrated to .page-header (Shared.css) */
 
 .auth__title {
   font-family: var(--font-heading);
@@ -216,13 +211,7 @@
   line-height: 1.5;
 }
 
-/* ── Form ── */
-/* NOTE: .form-column provides identical layout */
-.auth__form {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
+/* .auth__form → migrated to .form-column (Shared.css) */
 
 /* ── Fields ── */
 .auth__field {
@@ -639,7 +628,7 @@
     padding: 1.25rem 1.5rem;
   }
 
-  .auth__header {
+  .auth .page-header {
     margin-bottom: 1rem;
   }
 }

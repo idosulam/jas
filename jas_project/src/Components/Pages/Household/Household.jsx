@@ -543,7 +543,7 @@ function Household() {
         <Page_header
           eyebrow="Together"
           title="Household"
-          className="household__header animate-in"
+          className="page-header animate-in"
         />
         <Household_invite
           household={null}
@@ -565,7 +565,7 @@ function Household() {
         <Page_header
           eyebrow="Together"
           title="Household"
-          className="household__header"
+          className="page-header"
         />
         <Loading_skeleton lines={6} />
       </section>
@@ -578,7 +578,7 @@ function Household() {
       <Page_header
         eyebrow="Together"
         title={household?.name || "Household"}
-        className="household__header animate-in"
+        className="page-header animate-in"
       />
 
       {/* Invite + Delete */}
@@ -594,7 +594,7 @@ function Household() {
       />
 
       {/* Error */}
-      {error && <div className="household__error">{error}</div>}
+      {error && <div className="error-box">{error}</div>}
 
       {/* Tab Navigation */}
       <div

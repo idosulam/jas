@@ -663,20 +663,20 @@ function Diet_tracker({ profileData }) {
       </div>
 
       {/* Date selector */}
-      <div className="fitness__date-nav animate-in animate-in--2">
-        <div className="fitness__date-top">
+      <div className="date-nav animate-in animate-in--2">
+        <div className="date-nav__top">
           <button
             type="button"
-            className="fitness__date-btn"
+            className="date-nav__btn"
             onClick={() => shiftNav("prev")}
             aria-label="Previous day"
           >
             ‹
           </button>
-          <span className="fitness__date-label">{formatSelectedDate()}</span>
+          <span className="date-nav__label">{formatSelectedDate()}</span>
           <button
             type="button"
-            className="fitness__date-btn"
+            className="date-nav__btn"
             onClick={() => shiftNav("next")}
             aria-label="Next day"
           >
@@ -686,7 +686,7 @@ function Diet_tracker({ profileData }) {
         {!Is_today && (
           <button
             type="button"
-            className="fitness__date-today"
+            className="date-nav__today"
             onClick={() => Set_selected_date(today)}
           >
             Today
@@ -696,7 +696,7 @@ function Diet_tracker({ profileData }) {
 
       {/* Week day selector */}
       <div
-        className={`fitness__week-days animate-in animate-in--2${View_mode === "month" ? " fitness__week-days--month" : ""}`}
+        className={`week-days animate-in animate-in--2${View_mode === "month" ? " week-days--month" : ""}`}
         role="group"
         aria-label={View_mode === "week" ? "Week days" : "Month days"}
       >
@@ -715,14 +715,14 @@ function Diet_tracker({ profileData }) {
             <button
               key={key}
               type="button"
-              className={`fitness__week-day${isSelected ? " fitness__week-day--active" : ""}${isDayToday ? " fitness__week-day--today" : ""}${hasEntries ? " fitness__week-day--busy" : ""}${!isInCurrentMonth ? " fitness__week-day--muted" : ""}`}
+              className={`week-day${isSelected ? " week-day--active" : ""}${isDayToday ? " week-day--today" : ""}${hasEntries ? " week-day--busy" : ""}${!isInCurrentMonth ? " week-day--muted" : ""}`}
               onClick={() => Set_selected_date(key)}
               aria-pressed={isSelected}
             >
-              <span className="fitness__week-day-label">{WEEKDAYS[day.getDay()]}</span>
-              <span className="fitness__week-day-num">{day.getDate()}</span>
+              <span className="week-day__label">{WEEKDAYS[day.getDay()]}</span>
+              <span className="week-day__num">{day.getDate()}</span>
               {hasEntries && (
-                <span className="fitness__week-day-dot" aria-hidden="true" />
+                <span className="week-day-dot" aria-hidden="true" />
               )}
             </button>
           );
@@ -731,13 +731,13 @@ function Diet_tracker({ profileData }) {
 
       {/* View toggle */}
       <div
-        className="fitness__view-toggle animate-in animate-in--2"
+        className="view-toggle animate-in animate-in--2"
         role="tablist"
         aria-label="Diet view"
       >
         <button
           type="button"
-          className={`fitness__view-btn${View_mode === "week" ? " fitness__view-btn--active" : ""}`}
+          className={`view-btn${View_mode === "week" ? " view-btn--active" : ""}`}
           onClick={() => Set_view_mode("week")}
           aria-pressed={View_mode === "week"}
         >
@@ -745,7 +745,7 @@ function Diet_tracker({ profileData }) {
         </button>
         <button
           type="button"
-          className={`fitness__view-btn${View_mode === "month" ? " fitness__view-btn--active" : ""}`}
+          className={`view-btn${View_mode === "month" ? " view-btn--active" : ""}`}
           onClick={() => Set_view_mode("month")}
           aria-pressed={View_mode === "month"}
         >
@@ -758,53 +758,53 @@ function Diet_tracker({ profileData }) {
         <Glass_card
           value={Math.round(dailyTotals.calories).toString()}
           label="Calories"
-          className="fitness__stat fitness__stat--diet"
+          className="fitness__stat fitness__stat--diet glass-stat"
         />
         <Glass_card
           value={`${Math.round(dailyTotals.protein)}g`}
           label="Protein"
-          className="fitness__stat fitness__stat--diet"
+          className="fitness__stat fitness__stat--diet glass-stat"
         />
         <Glass_card
           value={`${Math.round(dailyTotals.carbs)}g`}
           label="Carbs"
-          className="fitness__stat fitness__stat--diet"
+          className="fitness__stat fitness__stat--diet glass-stat"
         />
         <Glass_card
           value={`${Math.round(dailyTotals.fats)}g`}
           label="Fats"
-          className="fitness__stat fitness__stat--diet"
+          className="fitness__stat fitness__stat--diet glass-stat"
         />
         <Glass_card
           value={Calories_burned > 0 ? Calories_burned.toString() : "—"}
           label="Burned"
-          className="fitness__stat fitness__stat--workout"
+          className="fitness__stat fitness__stat--workout glass-stat"
         />
       </div>
 
       {error && (
-        <p className="fitness__error fitness__error--shake" role="alert">
+        <p className="error-box error-box--shake" role="alert">
           {error}
         </p>
       )}
 
       {/* Presets (quick-add) */}
-      <div className="fitness__templates animate-in animate-in--3">
+      <div className="template-chips animate-in animate-in--3">
         {Presets.map((preset) => (
-          <div key={preset.id} className="fitness__preset">
+          <div key={preset.id} className="preset">
             <button
               type="button"
-              className="fitness__template-chip"
+              className="template-chip"
               onClick={() => applyPreset(preset)}
             >
               {preset.name}
-              <span className="fitness__template-cal">
+              <span className="template-chip__meta">
                 {preset.calories}kcal
               </span>
             </button>
             <button
               type="button"
-              className="fitness__preset-edit"
+              className="preset__edit"
               onClick={() => Open_preset_modal(preset)}
               aria-label={`Edit ${preset.name} preset`}
             >
@@ -814,7 +814,7 @@ function Diet_tracker({ profileData }) {
         ))}
         <button
           type="button"
-          className="fitness__template-chip fitness__template-chip--add"
+          className="template-chip template-chip--add"
           onClick={() => Open_preset_modal()}
         >
           + New preset

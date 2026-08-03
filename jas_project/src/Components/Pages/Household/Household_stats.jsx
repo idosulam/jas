@@ -78,7 +78,7 @@ function Household_stats({
       )}
 
       {/* Combined Earnings Stats */}
-      <h3 className="household__section-title">Shift Earnings</h3>
+      <h3 className="section-title">Shift Earnings</h3>
       <div className="household__stats">
         <Glass_card
           className="household__stat"
@@ -105,7 +105,7 @@ function Household_stats({
       {/* Per-Member Breakdown */}
       {members.length > 1 && (
         <div className="household__breakdown">
-          <h3 className="household__section-title">Per Member</h3>
+          <h3 className="section-title">Per Member</h3>
           <div className="household__member-cards">
             {members.map((member) => {
               const s = Combined_stats.byMember[member.user_id];

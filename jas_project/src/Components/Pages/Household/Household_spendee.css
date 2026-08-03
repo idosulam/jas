@@ -144,17 +144,7 @@
   color: var(--color-primary, #818cf8);
 }
 
-/* Section Titles */
-.transactions__section-title,
-.recurring__section-title,
-.analytics__section-title {
-  font-size: 0.8rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: rgba(255, 255, 255, 0.45);
-  margin-bottom: 0.65rem;
-}
+/* .transactions__section-title, .recurring__section-title, .analytics__section-title → .section-title (Shared_extended.css) */
 
 /* Category Breakdown */
 .transactions__breakdown {
@@ -227,7 +217,7 @@
   margin-bottom: 0.65rem;
 }
 
-.transactions__list-header .transactions__section-title {
+.transactions__list-header .section-title {
   margin-bottom: 0;
 }
 
@@ -383,81 +373,9 @@
   gap: 1rem;
 }
 
-.transactions__type-toggle,
-.recurring__type-toggle {
-  position: relative;
-  display: flex;
-  padding: 0.3rem;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 999px;
-  gap: 0.3rem;
-}
-
-.transactions__type-indicator,
-.recurring__type-indicator {
-  position: absolute;
-  top: 0.3rem;
-  bottom: 0.3rem;
-  left: 0;
-  border-radius: 999px;
-  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
-              width 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
-              background 0.2s ease;
-  pointer-events: none;
-  z-index: 0;
-}
-
-.transactions__type-indicator.expense,
-.recurring__type-indicator.expense {
-  background: rgba(249, 115, 22, 0.12);
-}
-
-.transactions__type-indicator.income,
-.recurring__type-indicator.income {
-  background: rgba(34, 197, 94, 0.12);
-}
-
-.transactions__type-indicator.contribute,
-.recurring__type-indicator.contribute {
-  background: rgba(129, 140, 248, 0.12);
-}
-
-.transactions__type-btn,
-.recurring__type-btn {
-  flex: 1;
-  padding: 0.5rem;
-  border: none;
-  border-radius: 999px;
-  background: transparent;
-  color: rgba(255, 255, 255, 0.5);
-  font-weight: 700;
-  font-size: 0.8rem;
-  cursor: pointer;
-  transition: color 0.2s ease;
-  position: relative;
-  z-index: 1;
-}
-
-.transactions__type-btn:hover,
-.recurring__type-btn:hover {
-  color: rgba(255, 255, 255, 0.8);
-}
-
-.transactions__type-btn--active.expense,
-.recurring__type-btn.active.expense {
-  color: #f97316;
-}
-
-.transactions__type-btn--active.income,
-.recurring__type-btn.active.income {
-  color: #22c55e;
-}
-
-.transactions__type-btn--active.contribute,
-.recurring__type-btn.active.contribute {
-  color: #818cf8;
-}
+/* .transactions__type-toggle, .recurring__type-toggle → .type-toggle (Shared_extended.css) */
+/* .transactions__type-indicator, .recurring__type-indicator → .type-toggle__indicator (Shared_extended.css) */
+/* .transactions__type-btn, .recurring__type-btn → .type-toggle__btn (Shared_extended.css) */
 
 .transactions__category-grid-wrap,
 .recurring__category-grid-wrap {
@@ -466,48 +384,10 @@
   gap: 0.35rem;
 }
 
-.transactions__form-label,
-.recurring__form-label {
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: rgba(255, 255, 255, 0.4);
-}
+/* .transactions__form-label, .recurring__form-label — keep (component-specific) */
 
-.transactions__category-grid,
-.recurring__category-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.35rem;
-}
-
-.transactions__category-chip,
-.recurring__category-chip {
-  display: flex;
-  align-items: center;
-  gap: 0.3rem;
-  padding: 0.4rem 0.6rem;
-  font-size: 0.72rem;
-  font-weight: 500;
-  color: rgba(255, 255, 255, 0.5);
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: var(--radius);
-  cursor: pointer;
-  transition: all 0.15s;
-}
-
-.transactions__category-chip:hover,
-.recurring__category-chip:hover {
-  background: rgba(255, 255, 255, 0.06);
-}
-
-.transactions__category-chip.active,
-.recurring__category-chip.active {
-  color: var(--text);
-  font-weight: 600;
-}
+/* .transactions__category-grid, .recurring__category-grid → .category-chips (Shared_extended.css) */
+/* .transactions__category-chip, .recurring__category-chip → .category-chip (Shared_extended.css) */
 
 @keyframes category-grid-shake {
   0%, 100% { transform: translateX(0); }
@@ -517,8 +397,7 @@
   80% { transform: translateX(3px); }
 }
 
-.transactions__category-grid--shake,
-.recurring__category-grid--shake {
+.category-chips--shake {
   animation: category-grid-shake 0.4s ease;
 }
 
@@ -550,7 +429,7 @@
   margin-bottom: 0.65rem;
 }
 
-.recurring__header .recurring__section-title {
+.recurring__header .section-title {
   margin-bottom: 0;
 }
 

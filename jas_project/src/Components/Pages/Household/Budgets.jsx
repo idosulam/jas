@@ -405,11 +405,11 @@ function Budgets({
     <div className="budgets">
       {/* Create Budget Button — match goals header */}
       <div className="budgets__header">
-        <h3 className="household__section-title">Budgets</h3>
+        <h3 className="section-title">Budgets</h3>
         <div style={{ flex: 1 }} />
         <button
           type="button"
-          className="budgets__header-add"
+          className="icon-btn icon-btn--success"
           onClick={openCreateModal}
           title="Create budget"
         >
@@ -421,7 +421,7 @@ function Budgets({
       {budgetData.length > 0 && (
         <div className="budgets__summary">
           <div className="budgets__summary-header">
-            <h3 className="household__section-title">
+            <h3 className="section-title">
               📊 {monthNames[month]} Budget
             </h3>
           </div>
@@ -504,7 +504,7 @@ function Budgets({
                     <div className="budgets__card-actions">
                       <button
                         type="button"
-                        className="budgets__card-edit"
+                        className="icon-btn"
                         onClick={() => openEditBudget(budget)}
                         title="Edit budget"
                       >
@@ -512,7 +512,7 @@ function Budgets({
                       </button>
                       <button
                         type="button"
-                        className="budgets__card-delete"
+                        className="icon-btn icon-btn--danger"
                         onClick={() => openDeleteBudget(budget)}
                         title="Delete budget"
                       >
@@ -539,21 +539,21 @@ function Budgets({
 
                   <div className="budgets__progress-wrap">
                     <div
-                      className="budgets__progress-bar"
+                      className="progress-bar"
                       role="progressbar"
                       aria-valuenow={Math.round(budget.progress)}
                       aria-valuemin={0}
                       aria-valuemax={100}
                     >
                       <div
-                        className="budgets__progress-fill"
+                        className="progress-bar__fill"
                         style={{
                           width: `${Math.min(budget.progress, 100)}%`,
                           background: statusColor,
                         }}
                       />
                     </div>
-                    <div className="budgets__progress-meta">
+                    <div className="progress-bar__meta">
                       <span>{Math.round(budget.progress)}%</span>
                       {budget.remaining >= 0 ? (
                         <span>{Format_money(budget.remaining)} left</span>
@@ -610,7 +610,7 @@ function Budgets({
         onClose={() => createModal.close_modal()}
         title="Create budget"
       >
-        <div className="budgets__form">
+        <div className="form-column">
           <Form_field
             label="Budget name"
             error={newNameError}
@@ -728,7 +728,7 @@ function Budgets({
         onClose={() => editModal.close_modal()}
         title={`Edit ${editingBudget?.name || "budget"}`}
       >
-        <div className="budgets__form">
+        <div className="form-column">
           <Form_field
             label="Budget name"
             error={editNameError}

@@ -60,7 +60,7 @@ function Fitness() {
   const updateTabIndicator = useCallback(() => {
     const container = tabRef.current;
     if (!container) return;
-    const active = container.querySelector(".fitness__tab-btn--active");
+    const active = container.querySelector(".tab-toggle__btn--active");
     if (!active) return;
     const cRect = container.getBoundingClientRect();
     const aRect = active.getBoundingClientRect();
@@ -89,7 +89,7 @@ function Fitness() {
 
       {/* Sub-tab toggle */}
       <div
-        className="fitness__tabs animate-in animate-in--1"
+        className="tab-toggle animate-in animate-in--1"
         role="tablist"
         aria-label="Fitness sections"
         ref={tabRef}
@@ -98,7 +98,7 @@ function Fitness() {
           <button
             key={tab.id}
             type="button"
-            className={`fitness__tab-btn${activeTab === tab.id ? " fitness__tab-btn--active" : ""}`}
+            className={`tab-toggle__btn${activeTab === tab.id ? " tab-toggle__btn--active" : ""}`}
             onClick={() => setActiveTab(tab.id)}
             role="tab"
             aria-selected={activeTab === tab.id}
@@ -108,7 +108,7 @@ function Fitness() {
           </button>
         ))}
         <span
-          className="fitness__tab-indicator"
+          className="tab-toggle__indicator"
           style={{
             transform: `translateX(${tabIndicator.left}px)`,
             width: tabIndicator.width,

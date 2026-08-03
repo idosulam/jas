@@ -34,7 +34,7 @@ export default function Weight_form({
       swipe_bind={weightSwipe.bind}
       swipe_style={weightSwipe.style}
     >
-      <form className="profile__form" onSubmit={onSubmit}>
+      <form className="form-column profile__form" onSubmit={onSubmit}>
         <Form_field
           label="Date"
           error={weightFieldErrors.Entry_date}
@@ -59,7 +59,7 @@ export default function Weight_form({
             required
           />
         </Form_field>
-        <div className="profile__weight-row">
+        <div className="form-field-row">
           <Form_field
             label="Weight (kg)"
             error={weightFieldErrors.Weight_kg}

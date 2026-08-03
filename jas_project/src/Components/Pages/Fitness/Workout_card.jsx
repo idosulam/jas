@@ -16,7 +16,7 @@ export default function Workout_card({
 
   return (
     <li
-      className={`fitness__card${isRemoving ? " fitness__card--removing" : ""}`}
+      className={`fitness__card${isRemoving ? " card--removing" : ""}`}
       style={{ "--card-delay": `${index * 0.06}s` }}
     >
       <div className="fitness__card-main">
@@ -79,10 +79,10 @@ export default function Workout_card({
           <p className="fitness__note-panel">{workout.notes}</p>
         )}
       </div>
-      <div className="fitness__card-actions">
+      <div className="card-actions">
         <button
           type="button"
-          className="fitness__action fitness__action--edit"
+          className="card-action card-action--edit"
           onClick={() => onEdit(workout)}
           aria-label="Edit workout"
         >
@@ -90,7 +90,7 @@ export default function Workout_card({
         </button>
         <button
           type="button"
-          className="fitness__action fitness__action--delete"
+          className="card-action card-action--delete"
           onClick={() => onDelete(workout)}
           aria-label="Delete workout"
         >

@@ -287,12 +287,12 @@ export default function Profile_onboarding() {
       </p>
 
       {error && (
-        <p className="profile-onboarding__error" role="alert">
+        <p className="error-box" role="alert">
           {error}
         </p>
       )}
 
-      <form className="profile-onboarding__form" onSubmit={Handle_submit}>
+      <form className="form-column" onSubmit={Handle_submit}>
         <Form_field
           label="Name"
           error={Field_errors.display_name}
@@ -358,7 +358,7 @@ export default function Profile_onboarding() {
           />
         </Form_field>
 
-        <div className="profile-onboarding__height-row">
+        <div className="form-field-row">
           <Form_field label="Feet">
             <input
               type="number"

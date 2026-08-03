@@ -42,24 +42,24 @@ export default function Shift_presets({
 }) {
   return (
     <>
-      <div className="shifts__templates animate-in animate-in--3">
+      <div className="template-chips animate-in animate-in--3">
         {Presets
           .filter((p) => Place_filter === "all" || p.place === Place_filter)
           .map((preset) => (
-            <div key={preset.id} className="shifts__preset">
+            <div key={preset.id} className="preset">
               <button
                 type="button"
-                className="shifts__template-chip"
+                className="template-chip"
                 onClick={() => onQuickAdd(preset)}
               >
                 {preset.label}
-                <span className="shifts__template-time">
+                <span className="template-chip__meta">
                   {preset.start_time}–{preset.end_time}
                 </span>
               </button>
               <button
                 type="button"
-                className="shifts__preset-edit"
+                className="preset__edit"
                 onClick={() => onEditPreset(preset)}
                 aria-label={`Edit ${preset.label} preset`}
               >
@@ -69,7 +69,7 @@ export default function Shift_presets({
           ))}
         <button
           type="button"
-          className="shifts__template-chip shifts__template-chip--add"
+          className="template-chip template-chip--add"
           onClick={on_add_preset}
         >
           + New preset

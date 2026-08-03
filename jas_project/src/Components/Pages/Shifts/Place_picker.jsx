@@ -36,7 +36,7 @@ export default function Place_picker({
   if (useInline) {
     return (
       <div
-        className="shifts__place-filter animate-in animate-in--2"
+        className="tab-toggle animate-in animate-in--2"
         role="group"
         aria-label="Filter by place"
         ref={containerRef}
@@ -46,7 +46,7 @@ export default function Place_picker({
             key={id}
             type="button"
             data-place={id}
-            className={`shifts__place-btn${selectedPlaceId === id ? " shifts__place-btn--active" : ""}${id !== "all" ? ` shifts__place-btn--${id}` : ""}${active === false ? " shifts__place-btn--deactivated" : ""}`}
+            className={`tab-toggle__btn${selectedPlaceId === id ? " tab-toggle__btn--active" : ""}${id !== "all" ? ` tab-toggle__btn--${id}` : ""}${active === false ? " tab-toggle__btn--deactivated" : ""}`}
             onClick={() => onSelect(id)}
             aria-pressed={selectedPlaceId === id}
           >
@@ -60,7 +60,7 @@ export default function Place_picker({
           </button>
         ))}
         <span
-          className="shifts__place-indicator"
+          className="tab-toggle__indicator"
           style={{
             transform: `translateX(${indicator.left}px)`,
             width: indicator.width,

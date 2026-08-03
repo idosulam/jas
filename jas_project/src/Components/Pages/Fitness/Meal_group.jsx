@@ -40,7 +40,7 @@ function Meal_group({
             return (
               <li
                 key={entry.id}
-                className={`fitness__entry${isRemoving ? " fitness__entry--removing" : ""}`}
+                className={`fitness__entry${isRemoving ? " card--removing" : ""}`}
               >
                 <div className="fitness__entry-main">
                   <span className="fitness__entry-name">
