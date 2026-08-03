@@ -120,12 +120,7 @@
   padding: 1.5rem 0;
 }
 
-.profile__summary {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 0.65rem;
-  margin-bottom: 1.25rem;
-}
+/* .profile__summary → .stat-grid (Shared_extended.css) */
 
 .profile__stat-value--good {
   color: #6ee7b7;
@@ -628,26 +623,7 @@
   box-shadow: 0 12px 32px rgba(52, 211, 153, 0.3);
 }
 
-.profile .glass-card__value {
-  display: inline-block;
-  animation: statFadeUp 0.4s ease-out backwards;
-}
-
-.profile__summary .profile__stat:nth-child(1) .glass-card__value {
-  animation-delay: 0.05s;
-}
-
-.profile__summary .profile__stat:nth-child(2) .glass-card__value {
-  animation-delay: 0.1s;
-}
-
-.profile__summary .profile__stat:nth-child(3) .glass-card__value {
-  animation-delay: 0.15s;
-}
-
-.profile__summary .profile__stat:nth-child(4) .glass-card__value {
-  animation-delay: 0.2s;
-}
+/* .glass-card__value/label → .glass-stat (Shared_extended.css) */
 
 /* ==========================================================
    Profile-specific Keyframes

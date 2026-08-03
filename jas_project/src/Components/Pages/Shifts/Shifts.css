@@ -24,26 +24,11 @@
   margin-bottom: 1.5rem;
 }
 
-/* ── Scoped glass-card overrides for Shifts ── */
-.shifts .glass-card__value {
-  font-size: 1.4rem;
-  font-weight: 800;
-  color: #fff;
-  margin-bottom: 0.2rem;
-}
-
-.shifts .glass-card__label {
-  font-size: 0.7rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.4);
-}
+/* .glass-card__value/label → .glass-stat (Shared_extended.css) */
 
 /* ── Filters ────────────────────────────────────────────────── */
 
 /* ── Date Navigation → shared .date-nav ── */
-
-/* ── Week Day Selector → shared .week-day ── */
 
 /* ── View Toggle → shared .view-toggle ── */
 
@@ -55,14 +40,7 @@
 /* .shifts__picker-list → .picker-list (Shared_extended.css) */
 /* .shifts__picker-item → .picker-item (Shared_extended.css) */
 
-/* ── Summary ── */
-
-.shifts__summary {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.85rem;
-  margin-bottom: 1.5rem;
-}
+/* .shifts__summary → .stat-grid (Shared_extended.css) */
 
 .shifts__stat--total {
   grid-column: span 2;
@@ -72,7 +50,9 @@
     rgba(192, 132, 252, 0.07)
   );
   border-color: rgba(129, 140, 248, 0.22);
-  box-shadow: 0 0 24px rgba(129, 140, 248, 0.1), var(--shadow-inner-glow);
+  box-shadow:
+    0 0 24px rgba(129, 140, 248, 0.1),
+    var(--shadow-inner-glow);
 }
 
 /* ── Empty State ────────────────────────────────────────────── */
@@ -132,7 +112,9 @@
   transform: translateX(4px);
   background: var(--surface-hover);
   border-color: rgba(129, 140, 248, 0.22);
-  box-shadow: -4px 0 24px rgba(129, 140, 248, 0.1), 0 0 16px rgba(129, 140, 248, 0.06);
+  box-shadow:
+    -4px 0 24px rgba(129, 140, 248, 0.1),
+    0 0 16px rgba(129, 140, 248, 0.06);
 }
 
 .shifts__card-main {
@@ -292,10 +274,6 @@
     padding-bottom: 6rem;
   }
 
-  
-
-  
-
   .shifts__card {
     padding: 0.95rem 1rem;
   }
@@ -303,20 +281,12 @@
   .shifts__card-details {
     font-size: 1rem;
   }
-
-  
 }
 
 @media (max-width: 640px) {
   .shifts {
     padding-bottom: 6.25rem;
   }
-
-  
-
-  
-
-  
 
   .tab-toggle {
     margin-bottom: 1rem;
@@ -330,29 +300,8 @@
     letter-spacing: 0.02em;
   }
 
-  .shifts__summary {
-    grid-template-columns: 1fr;
-    gap: 0.55rem;
-    margin-bottom: 1.15rem;
-  }
-
-  .shifts__stat,
   .shifts__stat--total {
     grid-column: span 1;
-  }
-
-  .shifts__stat {
-    align-items: flex-start;
-    padding: 0.95rem 0.9rem;
-    border-radius: 1rem;
-  }
-
-  .shifts .glass-card__value {
-    font-size: 1.22rem;
-  }
-
-  .shifts .glass-card__label {
-    font-size: 0.66rem;
   }
 
   .shifts__list {
@@ -394,25 +343,9 @@
     min-height: 44px;
   }
 
-  
-
-  
-
-  
-
-  
-
-  
-
   .shifts__form {
     gap: 0.65rem;
   }
-
-  
-
-  
-
-  
 
   .shifts__pay-toggle-btn {
     min-height: 42px;
@@ -422,34 +355,12 @@
     padding: 0.9rem;
     font-size: 0.88rem;
   }
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
 }
 
 @media (max-width: 420px) {
   .shifts__header {
     margin-bottom: 1.1rem;
   }
-
-  
-
-  
 
   .tab-toggle {
     padding: 0.24rem;
@@ -475,10 +386,6 @@
 }
 
 @media (max-width: 360px) {
-  
-
-  
-
   .card-action {
     padding: 0.42rem 0.65rem;
     font-size: 0.72rem;
@@ -624,8 +531,6 @@
   transform: translateY(0);
 }
 
-
-
 /* ── Header actions ── */
 
 .shifts__header-actions {
@@ -661,7 +566,11 @@
 /* ── Reduced Motion ─────────────────────────────────────────── */
 
 @media (prefers-reduced-motion: reduce) {
-  .shifts__stat, .shifts__card, .card-action, .shifts__pay-toggle-btn, .list-header__add {
+  .shifts__stat,
+  .shifts__card,
+  .card-action,
+  .shifts__pay-toggle-btn,
+  .list-header__add {
     animation: none !important;
     transition: none !important;
   }

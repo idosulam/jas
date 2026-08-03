@@ -16,23 +16,7 @@
   padding: 1.5rem;
 }
 
-/* ── Scoped glass-card overrides for Calendar ── */
-.calendar .glass-card__value {
-  display: block;
-  margin-bottom: 0.35rem;
-  font-size: 2.2rem;
-  font-weight: 800;
-  line-height: 1;
-  color: var(--color-primary);
-}
-
-.calendar .glass-card__label {
-  font-size: 0.82rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--text-muted);
-}
+/* .glass-card__value/label → .glass-stat (Shared_extended.css) */
 
 /* Header → uses shared .page-header */
 
@@ -283,34 +267,8 @@
    Summary Cards
    ========================================================== */
 
-.calendar__summary {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1rem;
-  margin-bottom: 2rem;
-}
-
-.calendar__stat {
-  padding: 1.25rem;
-  border-radius: var(--radius-xl);
-  border: 1px solid var(--border);
-  background: var(--surface-glass);
-  backdrop-filter: var(--blur);
-  -webkit-backdrop-filter: var(--blur);
-  text-align: center;
-  box-shadow: var(--shadow-sm);
-  transition:
-    transform var(--transition),
-    border-color var(--transition),
-    box-shadow var(--transition);
-}
-
-/* NOTE: .stat-card:hover available as shared class */
-.calendar__stat:hover {
-  transform: translateY(-4px) scale(1.02);
-  border-color: var(--border-hover);
-  box-shadow: var(--shadow-md), var(--shadow-glow);
-}
+/* .calendar__summary → .stat-grid (Shared_extended.css) */
+/* .calendar__stat → .glass-card (Pages.css) */
 
 /* Error → uses shared .error-box */
 
@@ -816,10 +774,6 @@
 @media (max-width: 640px) {
   .calendar.page {
     padding: 1rem;
-  }
-
-  .calendar__summary {
-    grid-template-columns: 1fr;
   }
 
   .calendar__week--week {
