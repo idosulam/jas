@@ -954,9 +954,33 @@ function Shifts({ onNavigate }) {
         </button>
       </div>
 
-      {/* Week day selector */}
+      {/* View toggle — above day grid, matching Calendar layout */}
       <div
-        className={`week-days animate-in animate-in--1${View_mode === "month" ? " week-days--month" : ""}`}
+        className="view-toggle animate-in animate-in--2"
+        role="tablist"
+        aria-label="Shifts view"
+      >
+        <button
+          type="button"
+          className={`view-btn${View_mode === "week" ? " view-btn--active" : ""}`}
+          onClick={() => Set_view_mode("week")}
+          aria-pressed={View_mode === "week"}
+        >
+          1 week
+        </button>
+        <button
+          type="button"
+          className={`view-btn${View_mode === "month" ? " view-btn--active" : ""}`}
+          onClick={() => Set_view_mode("month")}
+          aria-pressed={View_mode === "month"}
+        >
+          1 month
+        </button>
+      </div>
+
+      {/* Day grid */}
+      <div
+        className={`week-days animate-in animate-in--2${View_mode === "month" ? " week-days--month" : ""}`}
         role="group"
         aria-label={View_mode === "week" ? "Week days" : "Month days"}
       >
@@ -988,30 +1012,6 @@ function Shifts({ onNavigate }) {
             </button>
           );
         })}
-      </div>
-
-      {/* View toggle */}
-      <div
-        className="view-toggle animate-in animate-in--2"
-        role="tablist"
-        aria-label="Shifts view"
-      >
-        <button
-          type="button"
-          className={`view-btn${View_mode === "week" ? " view-btn--active" : ""}`}
-          onClick={() => Set_view_mode("week")}
-          aria-pressed={View_mode === "week"}
-        >
-          1 week
-        </button>
-        <button
-          type="button"
-          className={`view-btn${View_mode === "month" ? " view-btn--active" : ""}`}
-          onClick={() => Set_view_mode("month")}
-          aria-pressed={View_mode === "month"}
-        >
-          1 month
-        </button>
       </div>
 
       {/* No Workplaces CTA */}
