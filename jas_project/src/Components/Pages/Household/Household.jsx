@@ -757,6 +757,7 @@ function Household() {
             householdId={household?.id}
             user_id={user_id}
             categories={categories}
+            onCategoriesChanged={fetchCategories}
           />
         )}
 
