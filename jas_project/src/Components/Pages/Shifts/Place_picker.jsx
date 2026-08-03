@@ -1,4 +1,5 @@
 import Sheet_modal from "../../../Components/UI/Modals/Sheet_modal";
+import Tab_toggle from "../../../Components/UI/Tab_toggle";
 
 /**
  * Workplace filter: inline pills (desktop) or trigger + picker sheet (mobile).
@@ -35,39 +36,33 @@ export default function Place_picker({
 
   if (useInline) {
     return (
-      <div
-        className="tab-toggle animate-in animate-in--2"
+      <Tab_toggle
+        options={placeFilters.map(({ id, label, active }) => ({
+          id,
+          label,
+          className: `${id !== "all" ? `tab-toggle__btn--${id}` : ""}${active === false ? " tab-toggle__btn--deactivated" : ""}`,
+          ariaLabel: label,
+        }))}
+        activeId={selectedPlaceId}
+        onChange={onSelect}
+        ariaLabel="Filter by place"
+        indicator={indicator}
+        setIndicator={() => {}}
+        containerRef={containerRef}
         role="group"
-        aria-label="Filter by place"
-        ref={containerRef}
-      >
-        {placeFilters.map(({ id, label, active }) => (
-          <button
-            key={id}
-            type="button"
-            data-place={id}
-            className={`tab-toggle__btn${selectedPlaceId === id ? " tab-toggle__btn--active" : ""}${id !== "all" ? ` tab-toggle__btn--${id}` : ""}${active === false ? " tab-toggle__btn--deactivated" : ""}`}
-            onClick={() => onSelect(id)}
-            aria-pressed={selectedPlaceId === id}
-          >
-            {label}
-            {active === false && (
+        buttonRole="button"
+        renderOption={(option, isActive) => (
+          <>
+            {option.label}
+            {placeFilters.find((f) => f.id === option.id)?.active === false && (
               <span
                 className="shifts__place-deactivated-dot"
                 aria-label="Deactivated"
               />
             )}
-          </button>
-        ))}
-        <span
-          className="tab-toggle__indicator"
-          style={{
-            transform: `translateX(${indicator.left}px)`,
-            width: indicator.width,
-          }}
-          aria-hidden="true"
-        />
-      </div>
+          </>
+        )}
+      />
     );
   }
 

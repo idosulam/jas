@@ -22,10 +22,13 @@ import Sheet_modal from "../../../Components/UI/Modals/Sheet_modal";
 import Confirm_modal from "../../../Components/UI/Modals/Confirm_modal";
 import Form_field from "../../../Components/UI/Form/Form_field.jsx";
 import Glass_card from "../../../Components/UI/Glass_card";
+import Stat_grid from "../../../Components/UI/Stat_grid";
+import Template_chips from "../../../Components/UI/Template_chips.jsx";
 
 import Macro_progress_bar from "./Macro_progress_bar";
 import Diet_entry_form from "./Diet_entry_form";
 import Meal_group from "./Meal_group";
+import Calendar_nav from "../../../Components/UI/Calendar_nav";
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -55,6 +58,10 @@ function Diet_tracker({ profileData }) {
   const user_id = Use_user_id();
   const today = new Date().toISOString().slice(0, 10);
   const [Selected_date, Set_selected_date] = useState(today);
+  const SelectedDateObj = useMemo(
+    () => new Date(`${Selected_date}T12:00:00`),
+    [Selected_date],
+  );
   const [View_mode, Set_view_mode] = useState("week");
   const [entries, setEntries] = useState([]);
   const [Calories_burned, Set_calories_burned] = useState(0);
@@ -237,7 +244,8 @@ function Diet_tracker({ profileData }) {
     return groups;
   }, [dayEntries]);
 
-  // ── Date navigation ──
+  const To_date_key = (date) => date.toISOString().slice(0, 10);
+
   const Start_of_week = (date) => {
     const d = new Date(date);
     d.setDate(d.getDate() - d.getDay());
@@ -251,43 +259,15 @@ function Diet_tracker({ profileData }) {
     return d;
   };
 
-  const To_date_key = (date) => date.toISOString().slice(0, 10);
+  const handleSelectedDateChange = useCallback(
+    (date) => Set_selected_date(To_date_key(date)),
+    [Set_selected_date],
+  );
 
-  const changeDate = (offset) => {
-    const d = new Date(`${Selected_date}T12:00:00`);
-    d.setDate(d.getDate() + offset);
-    Set_selected_date(d.toISOString().slice(0, 10));
-  };
-
-  const shiftNav = (direction) => {
-    const offset = View_mode === "week" ? 7 : 30;
-    changeDate(direction === "next" ? offset : -offset);
-  };
-
-  const formatSelectedDate = () => {
-    const d = new Date(`${Selected_date}T12:00:00`);
-    return d.toLocaleDateString(undefined, {
-      weekday: "long",
-      month: "long",
-      day: "numeric",
-    });
-  };
-
-  const Is_today = Selected_date === today;
-
-  const Week_days = useMemo(() => {
-    const d = new Date(`${Selected_date}T12:00:00`);
-    const start = Start_of_week(d);
-    return Array.from({ length: 7 }, (_, i) => Add_days(start, i));
-  }, [Selected_date]);
-
-  const Month_days = useMemo(() => {
-    const d = new Date(`${Selected_date}T12:00:00`);
-    const start = Start_of_week(new Date(d.getFullYear(), d.getMonth(), 1));
-    return Array.from({ length: 42 }, (_, i) => Add_days(start, i));
-  }, [Selected_date]);
-
-  const Visible_days = View_mode === "week" ? Week_days : Month_days;
+  const busyDates = useMemo(
+    () => new Set(entries.map((entry) => entry.Entry_date)),
+    [entries],
+  );
 
   // ── Modal open/close ──
   const Open_add_modal = (mealType = "breakfast") => {
@@ -399,7 +379,14 @@ function Diet_tracker({ profileData }) {
     } catch (err) {
       Toast_error(Get_user_facing_error(err.message));
     }
-  }, [Preset_form, Editing_preset, Fetch_presets, Toast_success, Toast_error, user_id]);
+  }, [
+    Preset_form,
+    Editing_preset,
+    Fetch_presets,
+    Toast_success,
+    Toast_error,
+    user_id,
+  ]);
 
   const Delete_preset = useCallback(
     async (id) => {
@@ -662,125 +649,48 @@ function Diet_tracker({ profileData }) {
         )}
       </div>
 
-      {/* Date selector */}
-      <div className="date-nav animate-in animate-in--2">
-        <div className="date-nav__top">
-          <button
-            type="button"
-            className="date-nav__btn"
-            onClick={() => shiftNav("prev")}
-            aria-label="Previous day"
-          >
-            ‹
-          </button>
-          <span className="date-nav__label">{formatSelectedDate()}</span>
-          <button
-            type="button"
-            className="date-nav__btn"
-            onClick={() => shiftNav("next")}
-            aria-label="Next day"
-          >
-            ›
-          </button>
-        </div>
-        {!Is_today && (
-          <button
-            type="button"
-            className="date-nav__today"
-            onClick={() => Set_selected_date(today)}
-          >
-            Today
-          </button>
-        )}
-      </div>
+      {/* Date navigation */}
+      <Calendar_nav
+        selectedDate={SelectedDateObj}
+        viewMode={View_mode}
+        onDateChange={handleSelectedDateChange}
+        onViewModeChange={Set_view_mode}
+        busyDates={busyDates}
+        className="animate-in animate-in--2"
+      />
 
-      {/* Week day selector */}
-      <div
-        className={`week-days animate-in animate-in--2${View_mode === "month" ? " week-days--month" : ""}`}
-        role="group"
-        aria-label={View_mode === "week" ? "Week days" : "Month days"}
-      >
-        {Visible_days.map((day) => {
-          const key = To_date_key(day);
-          const isSelected = key === Selected_date;
-          const isDayToday = key === today;
-          const hasEntries = entries.some((e) => e.Entry_date === key);
-          const d = new Date(`${Selected_date}T12:00:00`);
-          const isInCurrentMonth =
-            View_mode === "month"
-              ? day.getMonth() === d.getMonth()
-              : true;
-
-          return (
-            <button
-              key={key}
-              type="button"
-              className={`week-day${isSelected ? " week-day--active" : ""}${isDayToday ? " week-day--today" : ""}${hasEntries ? " week-day--busy" : ""}${!isInCurrentMonth ? " week-day--muted" : ""}`}
-              onClick={() => Set_selected_date(key)}
-              aria-pressed={isSelected}
-            >
-              <span className="week-day__label">{WEEKDAYS[day.getDay()]}</span>
-              <span className="week-day__num">{day.getDate()}</span>
-              {hasEntries && (
-                <span className="week-day-dot" aria-hidden="true" />
-              )}
-            </button>
-          );
-        })}
-      </div>
-
-      {/* View toggle */}
-      <div
-        className="view-toggle animate-in animate-in--2"
-        role="tablist"
-        aria-label="Diet view"
-      >
-        <button
-          type="button"
-          className={`view-btn${View_mode === "week" ? " view-btn--active" : ""}`}
-          onClick={() => Set_view_mode("week")}
-          aria-pressed={View_mode === "week"}
-        >
-          1 week
-        </button>
-        <button
-          type="button"
-          className={`view-btn${View_mode === "month" ? " view-btn--active" : ""}`}
-          onClick={() => Set_view_mode("month")}
-          aria-pressed={View_mode === "month"}
-        >
-          1 month
-        </button>
-      </div>
-
-      {/* Daily summary */}
-      <div className="fitness__summary animate-in animate-in--3" key={Selected_date}>
-        <Glass_card
-          value={Math.round(dailyTotals.calories).toString()}
-          label="Calories"
-          className="fitness__stat fitness__stat--diet glass-stat"
-        />
-        <Glass_card
-          value={`${Math.round(dailyTotals.protein)}g`}
-          label="Protein"
-          className="fitness__stat fitness__stat--diet glass-stat"
-        />
-        <Glass_card
-          value={`${Math.round(dailyTotals.carbs)}g`}
-          label="Carbs"
-          className="fitness__stat fitness__stat--diet glass-stat"
-        />
-        <Glass_card
-          value={`${Math.round(dailyTotals.fats)}g`}
-          label="Fats"
-          className="fitness__stat fitness__stat--diet glass-stat"
-        />
-        <Glass_card
-          value={Calories_burned > 0 ? Calories_burned.toString() : "—"}
-          label="Burned"
-          className="fitness__stat fitness__stat--workout glass-stat"
-        />
-      </div>
+      <Stat_grid
+        className="animate-in animate-in--3 fitness__summary"
+        key={Selected_date}
+        columns="repeat(auto-fit, minmax(0, 1fr))"
+        stats={[
+          {
+            value: Math.round(dailyTotals.calories).toString(),
+            label: "Calories",
+            className: "fitness__stat fitness__stat--diet glass-stat",
+          },
+          {
+            value: `${Math.round(dailyTotals.protein)}g`,
+            label: "Protein",
+            className: "fitness__stat fitness__stat--diet glass-stat",
+          },
+          {
+            value: `${Math.round(dailyTotals.carbs)}g`,
+            label: "Carbs",
+            className: "fitness__stat fitness__stat--diet glass-stat",
+          },
+          {
+            value: `${Math.round(dailyTotals.fats)}g`,
+            label: "Fats",
+            className: "fitness__stat fitness__stat--diet glass-stat",
+          },
+          {
+            value: Calories_burned > 0 ? Calories_burned.toString() : "—",
+            label: "Burned",
+            className: "fitness__stat fitness__stat--workout glass-stat",
+          },
+        ]}
+      />
 
       {error && (
         <p className="error-box error-box--shake" role="alert">
@@ -789,37 +699,16 @@ function Diet_tracker({ profileData }) {
       )}
 
       {/* Presets (quick-add) */}
-      <div className="template-chips animate-in animate-in--3">
-        {Presets.map((preset) => (
-          <div key={preset.id} className="preset">
-            <button
-              type="button"
-              className="template-chip"
-              onClick={() => applyPreset(preset)}
-            >
-              {preset.name}
-              <span className="template-chip__meta">
-                {preset.calories}kcal
-              </span>
-            </button>
-            <button
-              type="button"
-              className="preset__edit"
-              onClick={() => Open_preset_modal(preset)}
-              aria-label={`Edit ${preset.name} preset`}
-            >
-              ✎
-            </button>
-          </div>
-        ))}
-        <button
-          type="button"
-          className="template-chip template-chip--add"
-          onClick={() => Open_preset_modal()}
-        >
-          + New preset
-        </button>
-      </div>
+      <Template_chips
+        items={Presets}
+        onSelect={applyPreset}
+        onEdit={Open_preset_modal}
+        onAdd={() => Open_preset_modal()}
+        renderMeta={(preset) => (
+          <span className="template-chip__meta">{preset.calories}kcal</span>
+        )}
+        addLabel="+ New preset"
+      />
 
       {/* Food log grouped by meal */}
       <div className="fitness__meals animate-in animate-in--4">
@@ -1002,7 +891,14 @@ function Diet_tracker({ profileData }) {
         description="This action cannot be undone."
         confirm_label="Delete entry"
         icon={
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.75"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
             <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6h14Z" />
             <path d="M10 11v6M14 11v6" />
           </svg>

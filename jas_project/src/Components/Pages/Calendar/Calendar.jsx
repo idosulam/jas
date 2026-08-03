@@ -46,7 +46,8 @@ import { Use_glass_toast } from "../../../Lib/Glass_toast_provider.jsx";
 import { Fetch_palette } from "../../../Lib/Color_palette.js";
 import { Use_household } from "../../../Lib/Household_context.jsx";
 import Event_form from "./Event_form.jsx";
-import Calendar_grid from "./Calendar_grid.jsx";
+import Calendar_nav from "../../../Components/UI/Calendar_nav";
+import Stat_grid from "../../../Components/UI/Stat_grid";
 import Timeline_view from "./Timeline_view.jsx";
 import Reminder_list from "./Reminder_list.jsx";
 
@@ -97,19 +98,7 @@ function Calendar() {
     Fetch_palette().then(Set_palette);
   }, []);
 
-  const Week_days = useMemo(() => {
-    const start = Start_of_week(Selected_date);
-    return Array.from({ length: 7 }, (_, i) => Add_days(start, i));
-  }, [Selected_date]);
 
-  const Month_days = useMemo(() => {
-    const start = Start_of_week(
-      new Date(Selected_date.getFullYear(), Selected_date.getMonth(), 1),
-    );
-    return Array.from({ length: 42 }, (_, i) => Add_days(start, i));
-  }, [Selected_date]);
-
-  const Visible_days = View_mode === "week" ? Week_days : Month_days;
 
   const Hour_labels = useMemo(
     () =>
@@ -341,18 +330,6 @@ function Calendar() {
     if (!form.color) return false;
     return true;
   }, [form]);
-
-  const Shift_selected_date = (direction) => {
-    const delta = direction === "next" ? 1 : -1;
-    if (View_mode === "month") {
-      const next = new Date(Selected_date);
-      next.setMonth(next.getMonth() + delta);
-      Set_selected_date(next);
-      return;
-    }
-
-    Set_selected_date((date) => Add_days(date, delta * 7));
-  };
 
   const Open_add_modal = (start_time = "09:00") => {
     const [h] = start_time.split(":").map(Number);
@@ -668,12 +645,6 @@ function Calendar() {
     );
   };
 
-  const Day_title = Selected_date.toLocaleDateString(undefined, {
-    weekday: "long",
-    month: "long",
-    day: "numeric",
-  });
-
   return (
     <section className="calendar page">
       <Page_header
@@ -682,88 +653,22 @@ function Calendar() {
         title="Calendar"
       />
 
-      <div className="calendar__nav animate-in animate-in--1">
-        <button
-          type="button"
-          className="calendar__nav-btn"
-          onClick={() => Shift_selected_date("prev")}
-          aria-label={View_mode === "month" ? "Previous month" : "Previous week"}
-        >
-          ‹
-        </button>
-        <div className="calendar__nav-center">
-          <p className="calendar__date-label">
-            {View_mode === "month"
-              ? Selected_date.toLocaleDateString(undefined, {
-                  month: "long",
-                  year: "numeric",
-                })
-              : Day_title}
-          </p>
-          {!Is_today && (
-            <button
-              type="button"
-              className="calendar__today-btn"
-              onClick={() => Set_selected_date(new Date())}
-            >
-              Today
-            </button>
-          )}
-        </div>
-        <button
-          type="button"
-          className="calendar__nav-btn"
-          onClick={() => Shift_selected_date("next")}
-          aria-label={View_mode === "month" ? "Next month" : "Next week"}
-        >
-          ›
-        </button>
-      </div>
-
-      <div
-        className="view-toggle animate-in animate-in--2"
-        role="tablist"
-        aria-label="Calendar view"
-      >
-        <button
-          type="button"
-          className={`view-btn${View_mode === "week" ? " view-btn--active" : ""}`}
-          onClick={() => Set_view_mode("week")}
-          aria-pressed={View_mode === "week"}
-        >
-          1 week
-        </button>
-        <button
-          type="button"
-          className={`view-btn${View_mode === "month" ? " view-btn--active" : ""}`}
-          onClick={() => Set_view_mode("month")}
-          aria-pressed={View_mode === "month"}
-        >
-          1 month
-        </button>
-      </div>
-
-      <Calendar_grid
-        Visible_days={Visible_days}
-        Selected_date={Selected_date}
-        today={today}
-        View_mode={View_mode}
-        busy_dates={busy_dates}
-        onDaySelect={Set_selected_date}
+      <Calendar_nav
+        className="calendar__calendar-nav"
+        selectedDate={Selected_date}
+        viewMode={View_mode}
+        onDateChange={Set_selected_date}
+        onViewModeChange={Set_view_mode}
+        busyDates={busy_dates}
       />
 
-      <div className="calendar__summary animate-in animate-in--3">
-        <Glass_card
-          className="calendar__stat"
-          value={events.length}
-          label="Events"
-        />
-        <Glass_card
-          className="calendar__stat"
-          value={pending_count}
-          label="Pending"
-        />
-      </div>
+      <Stat_grid
+        className="animate-in animate-in--3 calendar__summary"
+        stats={[
+          { value: events.length, label: "Events", className: "calendar__stat" },
+          { value: pending_count, label: "Pending", className: "calendar__stat" },
+        ]}
+      />
 
       {error && (
         <p className="error-box" role="alert">

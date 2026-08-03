@@ -13,6 +13,95 @@
   margin-bottom: 1.5rem;
 }
 
+/* ── Fitness calendar wrapper ────────────────────────────────── */
+.fitness__diet,
+.fitness__workout {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.fitness__diet .date-nav,
+.fitness__workout .date-nav {
+  padding: 1rem 1.25rem;
+  border-radius: var(--radius-xl);
+  background: var(--surface-glass);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: var(--shadow-sm);
+}
+
+.fitness__diet .date-nav__center,
+.fitness__workout .date-nav__center {
+  min-width: 0;
+}
+
+.fitness__diet .date-nav__label,
+.fitness__workout .date-nav__label {
+  font-family: var(--font-heading);
+  font-size: 1rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.fitness__diet .view-toggle,
+.fitness__workout .view-toggle {
+  width: max-content;
+  margin: 0 auto 1.2rem;
+  border-color: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.fitness__diet .week-days,
+.fitness__workout .week-days {
+  margin-bottom: 1rem;
+}
+
+.fitness__diet .week-day,
+.fitness__workout .week-day {
+  min-height: 4.8rem;
+  justify-content: center;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.fitness__diet .week-day:hover,
+.fitness__workout .week-day:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.fitness__diet .date-nav__btn,
+.fitness__workout .date-nav__btn,
+.fitness__diet .date-nav__today,
+.fitness__workout .date-nav__today {
+  color: #fff;
+}
+
+.fitness__diet .date-nav__btn,
+.fitness__workout .date-nav__btn {
+  width: 2.7rem;
+  height: 2.7rem;
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.fitness__diet .date-nav__btn:hover,
+.fitness__workout .date-nav__btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.fitness__diet .date-nav__today,
+.fitness__workout .date-nav__today {
+  padding: 0.45rem 0.9rem;
+  background: linear-gradient(
+    135deg,
+    var(--color-primary),
+    var(--color-secondary)
+  );
+  color: #fff;
+  border: none;
+}
+
 /* ── Filters ────────────────────────────────────────────────── */
 
 /* ── Month Grid ────────────────────────────────────────────── */
@@ -21,38 +110,8 @@
   opacity: 0.3;
 }
 
-/* ── Summary ────────────────────────────────────────────────── */
-
-.fitness__summary {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0.65rem;
-  margin-bottom: 1.5rem;
-}
-
-.fitness__stat {
-  min-width: 0;
-  padding: 1rem 0.75rem;
-  background: var(--surface-glass);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  backdrop-filter: var(--blur);
-  -webkit-backdrop-filter: var(--blur);
-  transition:
-    transform var(--duration-normal) var(--ease-spring),
-    border-color var(--duration-normal) ease,
-    box-shadow var(--duration-normal) ease;
-}
-
-/* NOTE: .stat-card:hover provides identical hover */
-.fitness__stat:hover {
-  transform: translateY(-4px) scale(1.02);
-  border-color: var(--border-hover);
-  box-shadow: var(--shadow-md), var(--shadow-glow);
-}
+/* .fitness__summary → .stat-grid (Shared_extended.css) */
+/* .fitness__stat → .glass-card (Pages.css) */
 
 .fitness__stat--workout {
   border-color: rgba(52, 211, 153, 0.15);
@@ -72,19 +131,7 @@
   box-shadow: 0 4px 20px rgba(96, 165, 250, 0.15);
 }
 
-.fitness .glass-card__value {
-  font-size: 1.4rem;
-  font-weight: 800;
-  color: #fff;
-  margin-bottom: 0.2rem;
-}
-
-.fitness .glass-card__label {
-  font-size: 0.7rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.4);
-}
+/* .glass-card__value/label → .glass-stat (Shared_extended.css) */
 
 /* ── Macro Dashboard (Diet) ─────────────────────────────────── */
 
@@ -786,30 +833,6 @@
     padding-bottom: 6rem;
   }
 
-  
-
-  .fitness__summary {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0.55rem;
-  }
-
-  .fitness__diet .fitness__summary {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .fitness__stat {
-    padding: 0.85rem 0.5rem;
-    border-radius: 1rem;
-  }
-
-  .fitness .glass-card__value {
-    font-size: 1.2rem;
-  }
-
-  .fitness .glass-card__label {
-    font-size: 0.65rem;
-  }
-
   .fitness__card {
     flex-direction: column;
     gap: 0.85rem;
@@ -858,14 +881,6 @@
     padding: 0.75rem 0.5rem;
   }
 
-  .fitness .glass-card__value {
-    font-size: 1.1rem;
-  }
-
-  .fitness .glass-card__label {
-    font-size: 0.6rem;
-  }
-
   .fitness__macro-inputs {
     grid-template-columns: 1fr;
   }
@@ -875,12 +890,6 @@
   .fitness {
     padding-bottom: 6.25rem;
   }
-
-  
-
-  
-
-  
 
   .fitness__summary {
     grid-template-columns: 1fr;
