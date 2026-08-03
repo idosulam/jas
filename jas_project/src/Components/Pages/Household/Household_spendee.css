@@ -556,15 +556,7 @@
   border-radius: 999px;
   padding: 0.3rem;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-}
-
-.household__tab-nav::-webkit-scrollbar {
-  display: none;
-}
+  overflow: hidden;
 
 .household__tab-indicator {
   position: absolute;
