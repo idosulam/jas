@@ -509,6 +509,19 @@
   font-weight: 600;
 }
 
+@keyframes category-grid-shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-4px); }
+  40% { transform: translateX(4px); }
+  60% { transform: translateX(-3px); }
+  80% { transform: translateX(3px); }
+}
+
+.transactions__category-grid--shake,
+.recurring__category-grid--shake {
+  animation: category-grid-shake 0.4s ease;
+}
+
 /* ── Recurring ──────────────────────────────────────────────── */
 
 .recurring__summary {

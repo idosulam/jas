@@ -188,7 +188,7 @@ export default function Category_manager({
           type="button"
           className="btn btn--primary"
           onClick={onSave}
-          disabled={!categoryForm.name.trim()}
+          disabled={!categoryForm.name.trim() || !categoryForm.icon}
         >
           {editingCategory ? "Update" : "Create"}
         </button>

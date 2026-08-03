@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Get_supabase_client } from "../../../Lib/Superbase";
-import { Get_user_facing_error, Sanitize_text } from "../../../Lib/Security";
+import { Get_user_facing_error, Sanitize_text, Haptic_error } from "../../../Lib/Security";
 import { Use_glass_toast } from "../../../Lib/Glass_toast_provider.jsx";
 import { Use_modal, Use_body_scroll_lock } from "../../../Hooks";
 import Sheet_modal from "../../UI/Modals/Sheet_modal";
@@ -46,13 +46,15 @@ function Transactions({ householdId, user_id, members, goals = [] }) {
   // Category form
   const [categoryForm, setCategoryForm] = useState({
     name: "",
-    icon: "📦",
+    icon: "",
     color: "",
     type: "expense",
   });
   const [editingCategory, setEditingCategory] = useState(null);
   const [deleteCategoryTarget, setDeleteCategoryTarget] = useState(null);
   const [deletingCategory, setDeletingCategory] = useState(false);
+  const [Cat_shake_key, Set_cat_shake_key] = useState(0);
+  const [catNameTouched, setCatNameTouched] = useState(false);
 
   // Filter tabs sliding indicator
   const filterTabRef = useRef(null);
@@ -355,7 +357,8 @@ function Transactions({ householdId, user_id, members, goals = [] }) {
 
   const openNewCategory = (type = "expense") => {
     setEditingCategory(null);
-    setCategoryForm({ name: "", icon: "📦", color: "", type });
+    setCategoryForm({ name: "", icon: "", color: "", type });
+    setCatNameTouched(false);
     categoryModal.open_modal();
   };
 
@@ -367,12 +370,17 @@ function Transactions({ householdId, user_id, members, goals = [] }) {
       color: cat.color,
       type: cat.type,
     });
+    setCatNameTouched(false);
     categoryModal.open_modal();
   };
 
   const saveCategory = async () => {
     const name = Sanitize_text(categoryForm.name, 40);
-    if (!name) return;
+    if (!name || !categoryForm.icon) {
+      Set_cat_shake_key((k) => k + 1);
+      Haptic_error();
+      return;
+    }
 
     try {
       const supabase = Get_supabase_client();
@@ -683,6 +691,8 @@ function Transactions({ householdId, user_id, members, goals = [] }) {
         closing={categoryModal.closing}
         onClose={() => categoryModal.close_modal()}
         title={editingCategory ? "Edit label" : "Manage labels"}
+        overlay_class_name="sheet-overlay--nested"
+        className="sheet-modal--nested"
       >
         <div className="transactions__form">
           {/* Existing categories list */}
@@ -754,13 +764,31 @@ function Transactions({ householdId, user_id, members, goals = [] }) {
           )}
 
           {/* Create / Edit form */}
-          <Form_field label="Label name">
+          <Form_field
+            label="Label name"
+            error={catNameTouched && !categoryForm.name.trim() ? "Label name is required" : null}
+            state={!catNameTouched ? "idle" : categoryForm.name.trim() ? "valid" : "error"}
+            show_indicator
+            shake={catNameTouched && !categoryForm.name.trim() ? Cat_shake_key : 0}
+          >
             <input
               type="text"
               value={categoryForm.name}
-              onChange={(e) =>
-                setCategoryForm((f) => ({ ...f, name: e.target.value }))
-              }
+              onChange={(e) => {
+                const val = e.target.value;
+                setCategoryForm((f) => ({ ...f, name: val }));
+                if (catNameTouched && !val.trim()) {
+                  Set_cat_shake_key((k) => k + 1);
+                  Haptic_error();
+                }
+              }}
+              onBlur={() => {
+                setCatNameTouched(true);
+                if (!categoryForm.name.trim()) {
+                  Set_cat_shake_key((k) => k + 1);
+                  Haptic_error();
+                }
+              }}
               placeholder="e.g. Coffee, Rent, Groceries"
               maxLength={40}
             />
@@ -768,8 +796,18 @@ function Transactions({ householdId, user_id, members, goals = [] }) {
 
           {/* Icon picker */}
           <div className="transactions__category-grid-wrap">
-            <label className="transactions__form-label">Icon</label>
-            <div className="transactions__category-grid">
+            <label className="transactions__form-label">
+              Icon
+              {!categoryForm.icon && Cat_shake_key > 0 && (
+                <span style={{ color: "var(--error, #ef4444)", fontSize: 12, marginLeft: 6 }}>
+                  — Pick an icon
+                </span>
+              )}
+            </label>
+            <div
+              className={`transactions__category-grid ${!categoryForm.icon && Cat_shake_key > 0 ? "transactions__category-grid--shake" : ""}`}
+              key={`icon-grid-${Cat_shake_key}`}
+            >
               {DEFAULT_ICONS.map((icon) => (
                 <button
                   key={icon}
@@ -844,7 +882,7 @@ function Transactions({ householdId, user_id, members, goals = [] }) {
               type="button"
               className="btn btn--primary"
               onClick={saveCategory}
-              disabled={!categoryForm.name.trim()}
+              disabled={!categoryForm.name.trim() || !categoryForm.icon}
             >
               {editingCategory ? "Update" : "Create"}
             </button>

@@ -13,6 +13,8 @@ import Confirm_modal from "../../UI/Modals/Confirm_modal";
 import Form_field from "../../UI/Form/Form_field.jsx";
 import Glass_card from "../../UI/Glass_card";
 import Empty_state from "../../UI/Empty_state";
+import Color_palette_picker from "../../../Lib/Color_palette_picker.jsx";
+import { DEFAULT_ICONS } from "./Category_manager";
 
 import { Format_money } from "../../../Lib/Format";
 
@@ -34,10 +36,16 @@ const FREQUENCIES = [
   { value: "yearly", label: "Yearly" },
 ];
 
-function Recurring_transactions({ householdId, user_id, categories }) {
+function Recurring_transactions({ householdId, user_id, categories: categoriesProp, onCategoriesChanged }) {
   const [recurring, setRecurring] = useState([]);
+  const [localCategories, setLocalCategories] = useState([]);
   const [Loading, Set_loading] = useState(true);
   const { success: Toast_success, error: Toast_error } = Use_glass_toast();
+
+  // Sync prop → local state on initial mount
+  useEffect(() => {
+    setLocalCategories(categoriesProp);
+  }, []);
 
   const addModal = Use_modal(260);
   const editModal = Use_modal(260);
@@ -66,6 +74,21 @@ function Recurring_transactions({ householdId, user_id, categories }) {
   const [descError, setDescError] = useState(null);
   const [descTouched, setDescTouched] = useState(false);
   const [Shake_key, Set_shake_key] = useState(0);
+  const [Cat_shake_key, Set_cat_shake_key] = useState(0);
+
+  // Category management state
+  const categoryModal = Use_modal(260);
+  const deleteCategoryModal = Use_modal(260);
+  const [categoryForm, setCategoryForm] = useState({
+    name: "",
+    icon: "",
+    color: "",
+    type: "expense",
+  });
+  const [catNameTouched, setCatNameTouched] = useState(false);
+  const [editingCategory, setEditingCategory] = useState(null);
+  const [deleteCategoryTarget, setDeleteCategoryTarget] = useState(null);
+  const [deletingCategory, setDeletingCategory] = useState(false);
 
   // Sliding indicator state
   const typeToggleRef = useRef(null);
@@ -85,7 +108,23 @@ function Recurring_transactions({ householdId, user_id, categories }) {
     }
   }, [form.type]);
 
-  Use_body_scroll_lock(addModal.open, editModal.open, Delete_modal.open);
+  Use_body_scroll_lock(addModal.open, editModal.open, Delete_modal.open, categoryModal.open, deleteCategoryModal.open);
+
+  const Fetch_categories = useCallback(async () => {
+    if (!householdId) return;
+    try {
+      const supabase = Get_supabase_client();
+      const { data, error } = await supabase
+        .from("transaction_categories")
+        .select("*")
+        .eq("household_id", householdId)
+        .order("name");
+      if (error) throw error;
+      setLocalCategories(data ?? []);
+    } catch {
+      // silent
+    }
+  }, [householdId]);
 
   const Fetch_recurring = useCallback(async () => {
     if (!householdId) return;
@@ -107,7 +146,8 @@ function Recurring_transactions({ householdId, user_id, categories }) {
 
   useEffect(() => {
     Fetch_recurring();
-  }, [Fetch_recurring]);
+    Fetch_categories();
+  }, [Fetch_recurring, Fetch_categories]);
 
   const validateAmount = (value, is_blur = false) => {
     if (!value) {
@@ -339,7 +379,91 @@ function Recurring_transactions({ householdId, user_id, categories }) {
     return "";
   };
 
-  const availableCategories = categories.filter((c) => c.type === form.type);
+  const availableCategories = localCategories.filter((c) => c.type === form.type);
+
+  // ── Category Management ──────────────────────────────────
+
+  const openNewCategory = (type = "expense") => {
+    setEditingCategory(null);
+    setCategoryForm({ name: "", icon: "", color: "", type });
+    setCatNameTouched(false);
+    categoryModal.open_modal();
+  };
+
+  const openEditCategory = (cat) => {
+    setEditingCategory(cat);
+    setCategoryForm({
+      name: cat.name,
+      icon: cat.icon,
+      color: cat.color,
+      type: cat.type,
+    });
+    setCatNameTouched(false);
+    categoryModal.open_modal();
+  };
+
+  const saveCategory = async () => {
+    const name = Sanitize_text(categoryForm.name, 40);
+    if (!name || !categoryForm.icon) {
+      Set_cat_shake_key((k) => k + 1);
+      Haptic_error();
+      return;
+    }
+
+    try {
+      const supabase = Get_supabase_client();
+      const payload = {
+        name,
+        icon: categoryForm.icon,
+        color: categoryForm.color,
+        type: categoryForm.type,
+        household_id: householdId,
+      };
+
+      if (editingCategory) {
+        const { error } = await supabase
+          .from("transaction_categories")
+          .update(payload)
+          .eq("id", editingCategory.id);
+        if (error) throw error;
+        Toast_success("Label updated.");
+      } else {
+        const { error } = await supabase
+          .from("transaction_categories")
+          .insert(payload);
+        if (error) throw error;
+        Toast_success("Label created!");
+      }
+
+      categoryModal.close_modal();
+      Fetch_categories();
+      if (onCategoriesChanged) onCategoriesChanged();
+    } catch (err) {
+      Toast_error(Get_user_facing_error(err.message));
+    }
+  };
+
+  const confirmDeleteCategory = async () => {
+    if (!deleteCategoryTarget) return;
+    setDeletingCategory(true);
+    try {
+      const supabase = Get_supabase_client();
+      const { error } = await supabase
+        .from("transaction_categories")
+        .delete()
+        .eq("id", deleteCategoryTarget.id);
+      if (error) throw error;
+      deleteCategoryModal.close_modal();
+      categoryModal.close_modal();
+      setEditingCategory(null);
+      Toast_success("Label deleted.");
+      Fetch_categories();
+      if (onCategoriesChanged) onCategoriesChanged();
+    } catch (err) {
+      Toast_error(Get_user_facing_error(err.message));
+    }
+    setDeletingCategory(false);
+  };
 
   // Monthly total estimate
   const Monthly_estimate = recurring
@@ -573,10 +697,26 @@ function Recurring_transactions({ householdId, user_id, categories }) {
 
           {/* Category */}
           <div className="recurring__category-grid-wrap">
-            <label className="recurring__form-label">Category</label>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <label className="recurring__form-label">Category</label>
+              <button
+                type="button"
+                className="btn btn--ghost btn--sm"
+                style={{ fontSize: 12, padding: "2px 8px" }}
+                onClick={() => openNewCategory(form.type)}
+              >
+                + Edit labels
+              </button>
+            </div>
             {availableCategories.length === 0 ? (
               <p style={{ color: "var(--text-muted, #888)", fontSize: 14 }}>
-                No labels yet. Create labels in the Transactions tab first.
+                No labels yet. Tap "+ Edit labels" to create your own.
               </p>
             ) : (
               <div className="recurring__category-grid">
@@ -716,6 +856,220 @@ function Recurring_transactions({ householdId, user_id, categories }) {
         message={`Delete "${Delete_target?.description}"? Future transactions won't be generated.`}
         confirmText={Deleting ? "Deleting…" : "Delete"}
         onConfirm={Confirm_delete}
+        danger
+      />
+
+      {/* ── Category Management Modal ──────────────────────── */}
+      <Sheet_modal
+        open={categoryModal.open}
+        closing={categoryModal.closing}
+        onClose={() => categoryModal.close_modal()}
+        title={editingCategory ? "Edit label" : "Manage labels"}
+        overlay_class_name="sheet-overlay--nested"
+        className="sheet-modal--nested"
+      >
+        <div className="recurring__form">
+          {/* Existing categories list */}
+          {!editingCategory && (
+            <div style={{ marginBottom: 16 }}>
+              <label className="recurring__form-label">
+                Your {form.type} labels
+              </label>
+              {localCategories.filter((c) => c.type === form.type).length === 0 ? (
+                <p
+                  style={{
+                    color: "var(--text-muted, #888)",
+                    fontSize: 14,
+                    margin: "8px 0",
+                  }}
+                >
+                  No labels yet. Create one below.
+                </p>
+              ) : (
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 6,
+                    marginBottom: 12,
+                  }}
+                >
+                  {localCategories
+                    .filter((c) => c.type === form.type)
+                    .map((cat) => (
+                      <div
+                        key={cat.id}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 8,
+                          padding: "8px 12px",
+                          borderRadius: 10,
+                          background: "rgba(255,255,255,0.05)",
+                          cursor: "pointer",
+                        }}
+                        onClick={() => openEditCategory(cat)}
+                      >
+                        <span style={{ fontSize: 20 }}>{cat.icon}</span>
+                        <span style={{ flex: 1, fontSize: 14 }}>
+                          {cat.name}
+                        </span>
+                        <div
+                          style={{
+                            width: 12,
+                            height: 12,
+                            borderRadius: "50%",
+                            background: cat.color,
+                          }}
+                        />
+                        <span
+                          style={{
+                            color: "var(--text-muted, #888)",
+                            fontSize: 12,
+                          }}
+                        >
+                          ✎
+                        </span>
+                      </div>
+                    ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Create / Edit form */}
+          <Form_field
+            label="Label name"
+            error={catNameTouched && !categoryForm.name.trim() ? "Label name is required" : null}
+            state={!catNameTouched ? "idle" : categoryForm.name.trim() ? "valid" : "error"}
+            show_indicator
+            shake={catNameTouched && !categoryForm.name.trim() ? Cat_shake_key : 0}
+          >
+            <input
+              type="text"
+              value={categoryForm.name}
+              onChange={(e) => {
+                const val = e.target.value;
+                setCategoryForm((f) => ({ ...f, name: val }));
+                if (catNameTouched && !val.trim()) {
+                  Set_cat_shake_key((k) => k + 1);
+                  Haptic_error();
+                }
+              }}
+              onBlur={() => {
+                setCatNameTouched(true);
+                if (!categoryForm.name.trim()) {
+                  Set_cat_shake_key((k) => k + 1);
+                  Haptic_error();
+                }
+              }}
+              placeholder="e.g. Coffee, Rent, Groceries"
+              maxLength={40}
+            />
+          </Form_field>
+
+          {/* Icon picker */}
+          <div className="recurring__category-grid-wrap">
+            <label className="recurring__form-label">
+              Icon
+              {!categoryForm.icon && Cat_shake_key > 0 && (
+                <span style={{ color: "var(--error, #ef4444)", fontSize: 12, marginLeft: 6 }}>
+                  — Pick an icon
+                </span>
+              )}
+            </label>
+            <div
+              className={`recurring__category-grid ${!categoryForm.icon && Cat_shake_key > 0 ? "recurring__category-grid--shake" : ""}`}
+              key={`icon-grid-${Cat_shake_key}`}
+            >
+              {DEFAULT_ICONS.map((icon) => (
+                <button
+                  key={icon}
+                  type="button"
+                  className={`recurring__category-chip ${categoryForm.icon === icon ? "active" : ""}`}
+                  style={
+                    categoryForm.icon === icon
+                      ? {
+                          borderColor: categoryForm.color,
+                          background: `${categoryForm.color}15`,
+                        }
+                      : {}
+                  }
+                  onClick={() => setCategoryForm((f) => ({ ...f, icon }))}
+                >
+                  <span>{icon}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Color picker */}
+          <div className="recurring__category-grid-wrap">
+            <label className="recurring__form-label">Color</label>
+            <Color_palette_picker
+              value={categoryForm.color}
+              onChange={(color) => setCategoryForm((f) => ({ ...f, color }))}
+            />
+          </div>
+
+          {/* Type selector */}
+          <div className="recurring__category-grid-wrap">
+            <label className="recurring__form-label">Type</label>
+            <div className="recurring__type-toggle" style={{ maxWidth: 220 }}>
+              {["expense", "income"].map((t) => (
+                <button
+                  key={t}
+                  type="button"
+                  className={`recurring__type-btn ${categoryForm.type === t ? `active ${t}` : ""}`}
+                  onClick={() => setCategoryForm((f) => ({ ...f, type: t }))}
+                >
+                  {t === "expense" ? "Expense" : "Income"}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="btn-row">
+            <button
+              type="button"
+              className="btn btn--ghost"
+              onClick={() => categoryModal.close_modal()}
+            >
+              {editingCategory ? "Back" : "Done"}
+            </button>
+            {editingCategory && (
+              <button
+                type="button"
+                className="btn btn--danger"
+                onClick={() => {
+                  setDeleteCategoryTarget(editingCategory);
+                  deleteCategoryModal.open_modal();
+                }}
+              >
+                Delete
+              </button>
+            )}
+            <button
+              type="button"
+              className="btn btn--primary"
+              onClick={saveCategory}
+              disabled={!categoryForm.name.trim() || !categoryForm.icon}
+            >
+              {editingCategory ? "Update" : "Create"}
+            </button>
+          </div>
+        </div>
+      </Sheet_modal>
+
+      {/* ── Delete Category Confirmation ───────────────────── */}
+      <Confirm_modal
+        open={deleteCategoryModal.open}
+        closing={deleteCategoryModal.closing}
+        onClose={() => deleteCategoryModal.close_modal()}
+        title="Delete label"
+        message={`Delete "${deleteCategoryTarget?.name}"? Existing recurring transactions will keep their data.`}
+        confirmText={deletingCategory ? "Deleting…" : "Delete"}
+        onConfirm={confirmDeleteCategory}
         danger
       />
     </div>
