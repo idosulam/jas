@@ -774,9 +774,14 @@ function Transactions({ householdId, user_id, members, goals = [] }) {
             <input
               type="text"
               value={categoryForm.name}
-              onChange={(e) =>
-                setCategoryForm((f) => ({ ...f, name: e.target.value }))
-              }
+              onChange={(e) => {
+                const val = e.target.value;
+                setCategoryForm((f) => ({ ...f, name: val }));
+                if (catNameTouched && !val.trim()) {
+                  Set_cat_shake_key((k) => k + 1);
+                  Haptic_error();
+                }
+              }}
               onBlur={() => {
                 setCatNameTouched(true);
                 if (!categoryForm.name.trim()) {
