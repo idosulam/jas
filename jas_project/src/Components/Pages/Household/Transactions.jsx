@@ -798,7 +798,7 @@ function Transactions({ householdId, user_id, members, goals = [] }) {
           <div className="transactions__category-grid-wrap">
             <label className="transactions__form-label">
               Icon
-              {!categoryForm.icon && Cat_shake_key > 0 && (
+              {!categoryForm.icon && (
                 <span style={{ color: "var(--error, #ef4444)", fontSize: 12, marginLeft: 6 }}>
                   — Pick an icon
                 </span>

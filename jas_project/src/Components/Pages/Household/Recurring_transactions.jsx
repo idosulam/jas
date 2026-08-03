@@ -972,7 +972,7 @@ function Recurring_transactions({ householdId, user_id, categories: categoriesPr
           <div className="recurring__category-grid-wrap">
             <label className="recurring__form-label">
               Icon
-              {!categoryForm.icon && Cat_shake_key > 0 && (
+              {!categoryForm.icon && (
                 <span style={{ color: "var(--error, #ef4444)", fontSize: 12, marginLeft: 6 }}>
                   — Pick an icon
                 </span>
