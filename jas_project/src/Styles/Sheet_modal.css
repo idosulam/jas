@@ -22,6 +22,15 @@
   animation: sheetOverlayOut 0.26s ease forwards;
 }
 
+/* Nested modal (opened from inside another modal) */
+.sheet-overlay--nested {
+  z-index: 110;
+}
+
+.sheet-modal--nested {
+  z-index: 110;
+}
+
 .sheet-modal {
   position: relative;
   width: min(100%, 640px);

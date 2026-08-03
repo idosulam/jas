@@ -862,6 +862,8 @@ function Recurring_transactions({ householdId, user_id, categories: categoriesPr
         closing={categoryModal.closing}
         onClose={() => categoryModal.close_modal()}
         title={editingCategory ? "Edit label" : "Manage labels"}
+        overlay_class_name="sheet-overlay--nested"
+        className="sheet-modal--nested"
       >
         <div className="recurring__form">
           {/* Existing categories list */}

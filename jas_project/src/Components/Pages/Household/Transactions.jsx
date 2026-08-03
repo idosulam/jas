@@ -688,6 +688,8 @@ function Transactions({ householdId, user_id, members, goals = [] }) {
         closing={categoryModal.closing}
         onClose={() => categoryModal.close_modal()}
         title={editingCategory ? "Edit label" : "Manage labels"}
+        overlay_class_name="sheet-overlay--nested"
+        className="sheet-modal--nested"
       >
         <div className="transactions__form">
           {/* Existing categories list */}
