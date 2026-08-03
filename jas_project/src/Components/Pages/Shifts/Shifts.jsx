@@ -31,7 +31,6 @@ import FAB from "../../../Components/UI/Fab";
 import {
   PAY_TYPES,
   FILTER_PICKER_BREAKPOINT,
-  WEEKDAYS,
   MODAL_EXIT_MS,
   get_current_local_time,
   calculate_hours_from_times,
@@ -44,6 +43,8 @@ import Shift_delete_confirm from "./Shift_delete_confirm";
 import Place_picker from "./Place_picker";
 import Shift_presets from "./Shift_presets";
 import Shift_card from "./Shift_card";
+import { To_date_key, Start_of_week, Add_days } from "../../../Lib/Date_utils";
+import Calendar_nav from "../../../Components/UI/Calendar_nav";
 
 function Shifts({ onNavigate }) {
   const user_id = Use_user_id();
@@ -333,45 +334,14 @@ function Shifts({ onNavigate }) {
     Preset_modal.open_modal();
   }, [form, PLACES, Preset_modal]);
 
-  // Week helpers
-  const Start_of_week = (date) => {
-    const d = new Date(date);
-    d.setDate(d.getDate() - d.getDay());
-    d.setHours(0, 0, 0, 0);
-    return d;
-  };
-
-  const Add_days = (date, n) => {
-    const d = new Date(date);
-    d.setDate(d.getDate() + n);
-    return d;
-  };
-
-  const To_date_key = (date) => date.toISOString().slice(0, 10);
-
   const Selected_key = To_date_key(Selected_date);
   const Is_today = Selected_key === To_date_key(now);
 
-  const Week_days = useMemo(() => {
-    const start = Start_of_week(Selected_date);
-    return Array.from({ length: 7 }, (_, i) => Add_days(start, i));
-  }, [Selected_date]);
-
-  const Month_days = useMemo(() => {
-    const d = Selected_date; // already a Date object
-    const start = Start_of_week(new Date(d.getFullYear(), d.getMonth(), 1));
-    return Array.from({ length: 42 }, (_, i) => Add_days(start, i));
-  }, [Selected_date]);
-
-  const Visible_days = View_mode === "week" ? Week_days : Month_days;
-
-  const Day_title = useMemo(() => {
-    return Selected_date.toLocaleDateString(undefined, {
-      weekday: "long",
-      month: "long",
-      day: "numeric",
-    });
-  }, [Selected_date]);
+  const busyDates = useMemo(() => {
+    const set = new Set();
+    shifts.forEach((s) => set.add(s.shift_date));
+    return set;
+  }, [shifts]);
 
   const Fetch_shifts = useCallback(async () => {
     if (!user_id) return;
@@ -918,101 +888,14 @@ function Shifts({ onNavigate }) {
         className="shifts__header animate-in"
       />
 
-      {/* Date navigation — matches Calendar style */}
-      <div className="date-nav animate-in animate-in--1">
-        <button
-          type="button"
-          className="date-nav__btn"
-          onClick={() =>
-            Set_selected_date((d) => Add_days(d, View_mode === "week" ? -7 : -30))
-          }
-          aria-label="Previous"
-        >
-          ‹
-        </button>
-        <div className="date-nav__center">
-          <span className="date-nav__label">{Day_title}</span>
-          {!Is_today && (
-            <button
-              type="button"
-              className="date-nav__today"
-              onClick={() => Set_selected_date(new Date())}
-            >
-              Today
-            </button>
-          )}
-        </div>
-        <button
-          type="button"
-          className="date-nav__btn"
-          onClick={() =>
-            Set_selected_date((d) => Add_days(d, View_mode === "week" ? 7 : 30))
-          }
-          aria-label="Next"
-        >
-          ›
-        </button>
-      </div>
-
-      {/* View toggle — above day grid, matching Calendar layout */}
-      <div
-        className="view-toggle animate-in animate-in--2"
-        role="tablist"
-        aria-label="Shifts view"
-      >
-        <button
-          type="button"
-          className={`view-btn${View_mode === "week" ? " view-btn--active" : ""}`}
-          onClick={() => Set_view_mode("week")}
-          aria-pressed={View_mode === "week"}
-        >
-          1 week
-        </button>
-        <button
-          type="button"
-          className={`view-btn${View_mode === "month" ? " view-btn--active" : ""}`}
-          onClick={() => Set_view_mode("month")}
-          aria-pressed={View_mode === "month"}
-        >
-          1 month
-        </button>
-      </div>
-
-      {/* Day grid */}
-      <div
-        className={`week-days animate-in animate-in--2${View_mode === "month" ? " week-days--month" : ""}`}
-        role="group"
-        aria-label={View_mode === "week" ? "Week days" : "Month days"}
-      >
-        {Visible_days.map((day) => {
-          const key = To_date_key(day);
-          const isSelected = key === Selected_key;
-          const isDayToday = key === To_date_key(now);
-          const hasShift = shifts.some((s) => s.shift_date === key);
-          const isInCurrentMonth =
-            View_mode === "month"
-              ? day.getMonth() === Selected_date.getMonth()
-              : true;
-
-          return (
-            <button
-              key={key}
-              type="button"
-              className={`week-day${isSelected ? " week-day--active" : ""}${isDayToday ? " week-day--today" : ""}${hasShift ? " week-day--busy" : ""}${!isInCurrentMonth ? " week-day--muted" : ""}`}
-              onClick={() => Set_selected_date(day)}
-              aria-pressed={isSelected}
-            >
-              <span className="week-day__label">
-                {WEEKDAYS[day.getDay()]}
-              </span>
-              <span className="week-day__num">{day.getDate()}</span>
-              {hasShift && (
-                <span className="shifts__week-day-dot" aria-hidden="true" />
-              )}
-            </button>
-          );
-        })}
-      </div>
+      {/* Calendar navigation — shared component */}
+      <Calendar_nav
+        selectedDate={Selected_date}
+        viewMode={View_mode}
+        onDateChange={Set_selected_date}
+        onViewModeChange={Set_view_mode}
+        busyDates={busyDates}
+      />
 
       {/* No Workplaces CTA */}
       {!Loading && Effective_workplaces.length === 0 && onNavigate && (
