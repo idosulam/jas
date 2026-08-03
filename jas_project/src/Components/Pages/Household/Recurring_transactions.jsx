@@ -36,10 +36,16 @@ const FREQUENCIES = [
   { value: "yearly", label: "Yearly" },
 ];
 
-function Recurring_transactions({ householdId, user_id, categories, onCategoriesChanged }) {
+function Recurring_transactions({ householdId, user_id, categories: categoriesProp, onCategoriesChanged }) {
   const [recurring, setRecurring] = useState([]);
+  const [localCategories, setLocalCategories] = useState([]);
   const [Loading, Set_loading] = useState(true);
   const { success: Toast_success, error: Toast_error } = Use_glass_toast();
+
+  // Sync prop → local state on initial mount
+  useEffect(() => {
+    setLocalCategories(categoriesProp);
+  }, []);
 
   const addModal = Use_modal(260);
   const editModal = Use_modal(260);
@@ -102,6 +108,22 @@ function Recurring_transactions({ householdId, user_id, categories, onCategories
 
   Use_body_scroll_lock(addModal.open, editModal.open, Delete_modal.open, categoryModal.open, deleteCategoryModal.open);
 
+  const Fetch_categories = useCallback(async () => {
+    if (!householdId) return;
+    try {
+      const supabase = Get_supabase_client();
+      const { data, error } = await supabase
+        .from("transaction_categories")
+        .select("*")
+        .eq("household_id", householdId)
+        .order("name");
+      if (error) throw error;
+      setLocalCategories(data ?? []);
+    } catch {
+      // silent
+    }
+  }, [householdId]);
+
   const Fetch_recurring = useCallback(async () => {
     if (!householdId) return;
     try {
@@ -122,7 +144,8 @@ function Recurring_transactions({ householdId, user_id, categories, onCategories
 
   useEffect(() => {
     Fetch_recurring();
-  }, [Fetch_recurring]);
+    Fetch_categories();
+  }, [Fetch_recurring, Fetch_categories]);
 
   const validateAmount = (value, is_blur = false) => {
     if (!value) {
@@ -354,7 +377,7 @@ function Recurring_transactions({ householdId, user_id, categories, onCategories
     return "";
   };
 
-  const availableCategories = categories.filter((c) => c.type === form.type);
+  const availableCategories = localCategories.filter((c) => c.type === form.type);
 
   // ── Category Management ──────────────────────────────────
 
@@ -405,6 +428,7 @@ function Recurring_transactions({ householdId, user_id, categories, onCategories
       }
 
       categoryModal.close_modal();
+      Fetch_categories();
       if (onCategoriesChanged) onCategoriesChanged();
     } catch (err) {
       Toast_error(Get_user_facing_error(err.message));
@@ -425,6 +449,7 @@ function Recurring_transactions({ householdId, user_id, categories, onCategories
       categoryModal.close_modal();
       setEditingCategory(null);
       Toast_success("Label deleted.");
+      Fetch_categories();
       if (onCategoriesChanged) onCategoriesChanged();
     } catch (err) {
       Toast_error(Get_user_facing_error(err.message));
@@ -840,7 +865,7 @@ function Recurring_transactions({ householdId, user_id, categories, onCategories
               <label className="recurring__form-label">
                 Your {form.type} labels
               </label>
-              {categories.filter((c) => c.type === form.type).length === 0 ? (
+              {localCategories.filter((c) => c.type === form.type).length === 0 ? (
                 <p
                   style={{
                     color: "var(--text-muted, #888)",
@@ -859,7 +884,7 @@ function Recurring_transactions({ householdId, user_id, categories, onCategories
                     marginBottom: 12,
                   }}
                 >
-                  {categories
+                  {localCategories
                     .filter((c) => c.type === form.type)
                     .map((cat) => (
                       <div
