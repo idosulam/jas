@@ -25,7 +25,6 @@ export const DEFAULT_ICONS = [
   "🐕",
   "🎵",
   "🔧",
-  "🛍️",
 ];
 
 export default function Category_manager({
