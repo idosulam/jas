@@ -120,12 +120,7 @@
   padding: 1.5rem 0;
 }
 
-.profile__summary {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 0.65rem;
-  margin-bottom: 1.25rem;
-}
+/* .profile__summary → .stat-grid (Shared_extended.css) */
 
 .profile__stat-value--good {
   color: #6ee7b7;

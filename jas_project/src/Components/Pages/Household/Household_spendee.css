@@ -401,26 +401,7 @@
   animation: category-grid-shake 0.4s ease;
 }
 
-/* ── Recurring ──────────────────────────────────────────────── */
-
-.recurring__summary {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 0.5rem;
-  margin-bottom: 1.25rem;
-}
-
-.recurring__summary .glass-card {
-  text-align: center;
-  padding: 0.65rem 0.5rem;
-}
-
-.recurring__summary .glass-card__value {
-  font-size: 1.1rem;
-  font-weight: 800;
-  color: #f97316;
-  font-family: var(--font-mono, monospace);
-}
+/* .recurring__summary → .stat-grid (Shared_extended.css) */
 
 .recurring__header {
   display: flex;
@@ -656,19 +637,7 @@
   min-height: 10rem;
 }
 
-/* ── Tx Summary (Overview) ──────────────────────────────────── */
-
-.household__tx-summary {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 0.5rem;
-  margin-bottom: 1.25rem;
-}
-
-.household__tx-summary .glass-card {
-  text-align: center;
-  padding: 0.65rem 0.5rem;
-}
+/* .household__tx-summary → .stat-grid (Shared_extended.css) */
 
 .glass-card__value--green {
   color: #22c55e !important;

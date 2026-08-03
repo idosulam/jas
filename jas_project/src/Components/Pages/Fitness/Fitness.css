@@ -21,38 +21,8 @@
   opacity: 0.3;
 }
 
-/* ── Summary ────────────────────────────────────────────────── */
-
-.fitness__summary {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0.65rem;
-  margin-bottom: 1.5rem;
-}
-
-.fitness__stat {
-  min-width: 0;
-  padding: 1rem 0.75rem;
-  background: var(--surface-glass);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  backdrop-filter: var(--blur);
-  -webkit-backdrop-filter: var(--blur);
-  transition:
-    transform var(--duration-normal) var(--ease-spring),
-    border-color var(--duration-normal) ease,
-    box-shadow var(--duration-normal) ease;
-}
-
-/* NOTE: .stat-card:hover provides identical hover */
-.fitness__stat:hover {
-  transform: translateY(-4px) scale(1.02);
-  border-color: var(--border-hover);
-  box-shadow: var(--shadow-md), var(--shadow-glow);
-}
+/* .fitness__summary → .stat-grid (Shared_extended.css) */
+/* .fitness__stat → .glass-card (Pages.css) */
 
 .fitness__stat--workout {
   border-color: rgba(52, 211, 153, 0.15);
@@ -788,19 +758,7 @@
 
   
 
-  .fitness__summary {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0.55rem;
-  }
 
-  .fitness__diet .fitness__summary {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .fitness__stat {
-    padding: 0.85rem 0.5rem;
-    border-radius: 1rem;
-  }
 
   .fitness .glass-card__value {
     font-size: 1.2rem;

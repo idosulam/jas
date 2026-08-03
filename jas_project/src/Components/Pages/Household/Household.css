@@ -176,26 +176,8 @@
 
 /* ── Combined Stats ─────────────────────────────────────────── */
 
-.household__stats {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 0.65rem;
-  margin-bottom: 1.25rem;
-}
-
-.household__stat .glass-card__value {
-  font-size: 1.3rem;
-  font-weight: 800;
-  color: #fff;
-  margin-bottom: 0.2rem;
-}
-
-.household__stat .glass-card__label {
-  font-size: 0.7rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.4);
-}
+/* .household__stats → .stat-grid (Shared_extended.css) */
+/* .household__stat → .glass-card (Pages.css) */
 
 .household__stat--total .glass-card__value {
   color: var(--color-primary, #818cf8);
