@@ -217,7 +217,7 @@ function Analytics({ transactions, members, month, year }) {
       {/* Category List */}
       {categories.length > 0 && (
         <div className="analytics__categories">
-          <h3 className="analytics__section-title">Categories</h3>
+          <h3 className="section-title">Categories</h3>
           <div className="analytics__category-list">
             {categories.map((cat) => {
               const pct = Grand_total > 0 ? (cat.total / Grand_total) * 100 : 0;
@@ -261,7 +261,7 @@ function Analytics({ transactions, members, month, year }) {
       {/* Per-Member Breakdown */}
       {memberBreakdown.length > 1 && (
         <div className="analytics__members">
-          <h3 className="analytics__section-title">By Member</h3>
+          <h3 className="section-title">By Member</h3>
           <div className="analytics__member-list">
             {memberBreakdown.map((member) => {
               const pct =
@@ -302,7 +302,7 @@ function Analytics({ transactions, members, month, year }) {
       {/* Daily Trend Mini Chart */}
       {dailyTrend.some((d) => d.total > 0) && (
         <div className="analytics__trend">
-          <h3 className="analytics__section-title">Daily Trend</h3>
+          <h3 className="section-title">Daily Trend</h3>
           <div className="analytics__trend-chart">
             {dailyTrend.map((d) => {
               const height = maxDaily > 0 ? (d.total / maxDaily) * 100 : 0;

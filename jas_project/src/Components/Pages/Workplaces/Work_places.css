@@ -146,55 +146,13 @@
   min-height: 2.75rem;
 }
 
-.workplaces__action--edit {
-  background: rgba(168, 85, 247, 0.1);
-  color: #d8b4fe;
-  border-color: rgba(168, 85, 247, 0.2);
-}
+/* .workplaces__action--edit → migrated to .card-action--edit (Shared_extended.css) */
 
-.workplaces__action--edit:hover {
-  background: rgba(168, 85, 247, 0.25);
-  color: #e9d5ff;
-  border-color: rgba(168, 85, 247, 0.45);
-  transform: scale(1.06);
-}
+/* .workplaces__action--deactivate → migrated to .card-action--deactivate (Shared_extended.css) */
 
-.workplaces__action--deactivate {
-  background: rgba(239, 68, 68, 0.08);
-  border: 1px solid rgba(239, 68, 68, 0.15);
-  color: rgba(239, 68, 68, 0.5);
-}
+/* .workplaces__action--reactivate → migrated to .card-action--reactivate (Shared_extended.css) */
 
-.workplaces__action--deactivate:hover {
-  background: rgba(239, 68, 68, 0.2);
-  border-color: rgba(239, 68, 68, 0.4);
-  color: #fca5a5;
-  transform: scale(1.06);
-}
-
-.workplaces__action--reactivate {
-  background: rgba(52, 211, 153, 0.1);
-  color: #34d399;
-  border-color: rgba(52, 211, 153, 0.25);
-}
-
-.workplaces__action--reactivate:hover {
-  background: rgba(52, 211, 153, 0.18);
-  transform: scale(1.06);
-}
-
-.workplaces__action--delete {
-  background: rgba(239, 68, 68, 0.08);
-  border: 1px solid rgba(239, 68, 68, 0.15);
-  color: rgba(239, 68, 68, 0.5);
-}
-
-.workplaces__action--delete:hover {
-  background: rgba(239, 68, 68, 0.2);
-  border-color: rgba(239, 68, 68, 0.4);
-  color: #fca5a5;
-  transform: scale(1.06);
-}
+/* .workplaces__action--delete → migrated to .card-action--delete (Shared_extended.css) */
 
 /* ── Section ── */
 .workplaces__section {

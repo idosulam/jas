@@ -506,7 +506,7 @@ function Recurring_transactions({ householdId, user_id, categories: categoriesPr
 
       {/* List */}
       <div className="recurring__header">
-        <h3 className="recurring__section-title">Recurring</h3>
+        <h3 className="section-title">Recurring</h3>
         <button className="btn btn--primary btn--sm" onClick={Open_add}>
           + Add
         </button>
@@ -615,9 +615,9 @@ function Recurring_transactions({ householdId, user_id, categories: categoriesPr
       >
         <div className="recurring__form">
           {/* Type Toggle */}
-          <div className="recurring__type-toggle" ref={typeToggleRef}>
+          <div className="type-toggle" ref={typeToggleRef}>
             <span
-              className={`recurring__type-indicator ${form.type}`}
+              className={`type-toggle__indicator ${form.type}`}
               style={{
                 transform: `translateX(${indicatorStyle.left}px)`,
                 width: `${indicatorStyle.width}px`,
@@ -630,7 +630,7 @@ function Recurring_transactions({ householdId, user_id, categories: categoriesPr
                   if (el) typeBtnRefs.current[t] = el;
                 }}
                 type="button"
-                className={`recurring__type-btn ${form.type === t ? `active ${t}` : ""}`}
+                className={`type-toggle__btn ${form.type === t ? `type-toggle__btn--active ${t}` : ""}`}
                 onClick={() =>
                   Set_form((f) => ({ ...f, type: t, category_id: "" }))
                 }
@@ -719,14 +719,14 @@ function Recurring_transactions({ householdId, user_id, categories: categoriesPr
                 No labels yet. Tap "+ Edit labels" to create your own.
               </p>
             ) : (
-              <div className="recurring__category-grid">
+              <div className="category-chips">
                 {availableCategories.map((cat) => {
                   const is_active = form.category_id === cat.id;
                   return (
                     <button
                       key={cat.id}
                       type="button"
-                      className={`recurring__category-chip ${is_active ? "active" : ""}`}
+                      className={`category-chip ${is_active ? "category-chip--active" : ""}`}
                       style={
                         is_active
                           ? {
@@ -979,14 +979,14 @@ function Recurring_transactions({ householdId, user_id, categories: categoriesPr
               )}
             </label>
             <div
-              className={`recurring__category-grid ${!categoryForm.icon && Cat_shake_key > 0 ? "recurring__category-grid--shake" : ""}`}
+              className={`category-chips ${!categoryForm.icon && Cat_shake_key > 0 ? "category-chips--shake" : ""}`}
               key={`icon-grid-${Cat_shake_key}`}
             >
               {DEFAULT_ICONS.map((icon) => (
                 <button
                   key={icon}
                   type="button"
-                  className={`recurring__category-chip ${categoryForm.icon === icon ? "active" : ""}`}
+                  className={`category-chip ${categoryForm.icon === icon ? "category-chip--active" : ""}`}
                   style={
                     categoryForm.icon === icon
                       ? {
@@ -1015,12 +1015,12 @@ function Recurring_transactions({ householdId, user_id, categories: categoriesPr
           {/* Type selector */}
           <div className="recurring__category-grid-wrap">
             <label className="recurring__form-label">Type</label>
-            <div className="recurring__type-toggle" style={{ maxWidth: 220 }}>
+            <div className="type-toggle" style={{ maxWidth: 220 }}>
               {["expense", "income"].map((t) => (
                 <button
                   key={t}
                   type="button"
-                  className={`recurring__type-btn ${categoryForm.type === t ? `active ${t}` : ""}`}
+                  className={`type-toggle__btn ${categoryForm.type === t ? `type-toggle__btn--active ${t}` : ""}`}
                   onClick={() => setCategoryForm((f) => ({ ...f, type: t }))}
                 >
                   {t === "expense" ? "Expense" : "Income"}

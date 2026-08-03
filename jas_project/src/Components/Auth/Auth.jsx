@@ -410,7 +410,7 @@ function Auth() {
         <AnimatePresence mode="wait" custom={direction}>
           <motion.div
             key={mode + "-header"}
-            className="auth__header"
+            className="page-header"
             custom={direction}
             variants={slide_variants}
             initial="enter"

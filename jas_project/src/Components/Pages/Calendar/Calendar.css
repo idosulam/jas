@@ -34,15 +34,7 @@
   color: var(--text-muted);
 }
 
-/* ==========================================================
-   Header
-   ========================================================== */
-
-.calendar__header {
-  text-align: center;
-  margin-bottom: 2rem;
-}
-/* NOTE: .page-header available as shared class */
+/* Header → uses shared .page-header */
 
 /* ==========================================================
    Top Navigation
@@ -140,58 +132,7 @@
 
 
 
-/* ==========================================================
-   View Switch
-   ========================================================== */
-
-.calendar__view-toggle {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 0.25rem;
-  width: max-content;
-  margin: 0 auto 2rem;
-  padding: 0.25rem;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-pill);
-  background: var(--surface);
-  backdrop-filter: var(--blur);
-  -webkit-backdrop-filter: var(--blur);
-}
-
-.calendar__view-btn {
-  border: none;
-  border-radius: var(--radius-pill);
-  padding: 0.55rem 1.1rem;
-  background: transparent;
-  color: var(--text-muted);
-  font-family: var(--font-heading);
-  font-weight: 600;
-  font-size: 0.8rem;
-  letter-spacing: 0.02em;
-  cursor: pointer;
-  transition:
-    color var(--duration-normal) ease,
-    background var(--duration-normal) ease;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.calendar__view-btn:hover {
-  color: var(--text);
-  background: var(--surface-hover);
-}
-
-.calendar__view-btn--active {
-  color: #fff;
-  background: linear-gradient(
-    135deg,
-    var(--color-primary),
-    var(--color-secondary)
-  );
-  box-shadow:
-    0 4px 16px rgba(129, 140, 248, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.12);
-}
+/* View Switch → uses shared .view-toggle / .view-btn / .view-btn--active */
 
 
 
@@ -371,19 +312,7 @@
   box-shadow: var(--shadow-md), var(--shadow-glow);
 }
 
-/* ==========================================================
-   Error
-   ========================================================== */
-
-.calendar__error {
-  margin-bottom: 1.2rem;
-  padding: 0.9rem 1rem;
-  border-radius: 1rem;
-  border: 1px solid rgba(239, 68, 68, 0.35);
-  background: rgba(239, 68, 68, 0.12);
-  color: #fecaca;
-  font-size: 0.9rem;
-}
+/* Error → uses shared .error-box */
 
 /* ==========================================================
    Toolbar
@@ -876,12 +805,7 @@
 /* ── Delete icon (Calendar-specific) ── */
 
 /* ── Form ── */
-.calendar__form {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-/* NOTE: .form-column available as shared class */
+/* Form → uses shared .form-column */
 
 /* NOTE: Use shared @keyframes spin from animations.css */
 

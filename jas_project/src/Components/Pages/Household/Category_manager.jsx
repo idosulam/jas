@@ -122,12 +122,12 @@ export default function Category_manager({
       {/* Icon picker */}
       <div className="transactions__category-grid-wrap">
         <label className="transactions__form-label">Icon</label>
-        <div className="transactions__category-grid">
+        <div className="category-chips">
           {DEFAULT_ICONS.map((icon) => (
             <button
               key={icon}
               type="button"
-              className={`transactions__category-chip ${categoryForm.icon === icon ? "active" : ""}`}
+              className={`category-chip ${categoryForm.icon === icon ? "category-chip--active" : ""}`}
               style={
                 categoryForm.icon === icon
                   ? {
@@ -156,12 +156,12 @@ export default function Category_manager({
       {/* Type selector */}
       <div className="transactions__category-grid-wrap">
         <label className="transactions__form-label">Type</label>
-        <div className="transactions__type-toggle" style={{ maxWidth: 220 }}>
+        <div className="type-toggle" style={{ maxWidth: 220 }}>
           {["expense", "income"].map((t) => (
             <button
               key={t}
               type="button"
-              className={`transactions__type-btn ${categoryForm.type === t ? `transactions__type-btn--active ${t}` : ""}`}
+              className={`type-toggle__btn ${categoryForm.type === t ? `type-toggle__btn--active ${t}` : ""}`}
               onClick={() => setCategoryForm((f) => ({ ...f, type: t }))}
             >
               {t === "expense" ? "Expense" : "Income"}

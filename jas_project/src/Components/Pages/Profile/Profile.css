@@ -10,11 +10,7 @@
   padding-bottom: 3rem;
 }
 
-/* NOTE: .page-header provides identical layout */
-.profile__header {
-  text-align: center;
-  margin-bottom: 1.5rem;
-}
+/* .profile__header → migrated to .page-header (Shared.css) */
 
 .profile__avatar {
   display: flex;
@@ -111,15 +107,10 @@
   box-shadow: 0 4px 16px rgba(129, 140, 248, 0.25);
 }
 
-.profile__error {
-  padding: 0.75rem 1rem;
-  margin-bottom: 1rem;
-  border-radius: 0.65rem;
-  background: rgba(239, 68, 68, 0.15);
-  border: 1px solid rgba(239, 68, 68, 0.35);
-  color: #fecaca;
-  font-size: 0.85rem;
+/* .profile__error → migrated to .error-box (Shared.css) */
+.profile__error--glass {
   text-align: center;
+  font-size: 0.85rem;
 }
 
 .profile__empty{
@@ -345,7 +336,7 @@
   gap: 0.65rem;
 }
 
-.profile__goal-bar {
+.profile .progress-bar {
   height: 10px;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.08);
@@ -353,7 +344,7 @@
   position: relative;
 }
 
-.profile__goal-bar-fill {
+.profile .progress-bar__fill {
   height: 100%;
   border-radius: 999px;
   background: linear-gradient(90deg, #6366f1, #ec4899);
@@ -362,7 +353,7 @@
   animation: goalShimmer 3s linear infinite;
 }
 
-.profile__goal-meta {
+.profile .progress-bar__meta {
   display: flex;
   justify-content: space-between;
   gap: 0.5rem;
@@ -370,12 +361,12 @@
   color: rgba(255, 255, 255, 0.55);
 }
 
-.profile__goal-meta strong {
+.profile .progress-bar__meta strong {
   color: rgba(255, 255, 255, 0.9);
   font-weight: 600;
 }
 
-.profile__goal-meta span:last-child {
+.profile .progress-bar__meta span:last-child {
   font-weight: 600;
 }
 
@@ -386,7 +377,7 @@
   overflow: visible;
 }
 
-.profile__goal-reached .profile__goal-bar-fill {
+.profile__goal-reached .progress-bar__fill {
   background: linear-gradient(90deg, #34d399, #10b981);
   animation: goalPulse 2s ease-in-out infinite;
 }
@@ -522,43 +513,8 @@
   margin-right: 0.25rem;
 }
 
-/* ── Icon buttons (44px touch target) ── */
-.profile__icon-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 2.75rem;
-  height: 2.75rem;
-  border-radius: 50%;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.06);
-  color: rgba(255, 255, 255, 0.65);
-  cursor: pointer;
-  transition:
-    background 0.2s ease,
-    color 0.2s ease,
-    transform var(--duration-fast) ease,
-    box-shadow var(--duration-fast) ease;
-}
-
-.profile__icon-btn svg {
-  width: 1rem;
-  height: 1rem;
-}
-
-.profile__icon-btn:hover {
-  background: rgba(255, 255, 255, 0.08);
-  color: #fff;
-  transform: scale(1.1);
-  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.25);
-}
-
-.profile__icon-btn--danger:hover {
-  background: rgba(239, 68, 68, 0.15);
-  border-color: rgba(239, 68, 68, 0.35);
-  color: #ef4444;
-  box-shadow: 0 4px 14px rgba(239, 68, 68, 0.3);
-}
+/* .profile__icon-btn → migrated to .icon-btn-lg (Shared_extended.css) */
+/* .profile__icon-btn--danger → migrated to .icon-btn-lg--danger (Shared_extended.css) */
 
 
 
@@ -600,18 +556,10 @@
 
 /* NOTE: .form-column provides base layout (gap: 1rem) */
 .profile__form {
-  display: flex;
-  flex-direction: column;
   gap: 0.85rem;
 }
 
-/* NOTE: .form-field-row provides identical 2-col grid */
-.profile__height-row,
-.profile__weight-row {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.7rem;
-}
+/* .profile__height-row, .profile__weight-row → migrated to .form-field-row (Shared.css) */
 
 .profile__form-hint {
   font-size: 0.72rem;
@@ -763,7 +711,7 @@
 /* ── Reduced Motion ─────────────────────────────────────────── */
 
 @media (prefers-reduced-motion: reduce) {
-  .profile__unit-indicator, .profile__goal-bar-fill, .profile__stat, .profile__history-item, .profile__history-item--removing, .profile__icon-btn, .profile__chart-dot, .profile .glass-card__value{
+  .profile__unit-indicator, .progress-bar__fill, .profile__stat, .profile__history-item, .profile__history-item--removing, .icon-btn-lg, .profile__chart-dot, .profile .glass-card__value{
     transition: none;
     animation: none;
   }
@@ -783,27 +731,14 @@
   line-height: 1.5;
 }
 
-.profile-onboarding__error {
-  margin-bottom: 1rem;
-  padding: 0.75rem 1rem;
-  border-radius: 0.75rem;
-  border: 1px solid rgba(239, 68, 68, 0.35);
-  background: rgba(239, 68, 68, 0.12);
-  color: #fecaca;
-  font-size: 0.85rem;
-}
+/* .profile-onboarding__error → migrated to .error-box (Shared.css) */
 
+/* .profile-onboarding__form → migrated to .form-column (Shared.css) */
 .profile-onboarding__form {
-  display: flex;
-  flex-direction: column;
   gap: 1.1rem;
 }
 
-.profile-onboarding__height-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.75rem;
-}
+/* .profile-onboarding__height-row → migrated to .form-field-row (Shared.css) */
 
 .profile-onboarding__submit {
   width: 100%;

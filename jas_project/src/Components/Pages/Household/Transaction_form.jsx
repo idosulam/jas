@@ -128,9 +128,9 @@ export default function Transaction_form({
   return (
     <div className="transactions__form">
       {/* Type Toggle */}
-      <div className="transactions__type-toggle" ref={typeToggleRef}>
+      <div className="type-toggle" ref={typeToggleRef}>
         <span
-          className={`transactions__type-indicator ${form.type}`}
+          className={`type-toggle__indicator ${form.type}`}
           style={{
             transform: `translateX(${indicatorStyle.left}px)`,
             width: `${indicatorStyle.width}px`,
@@ -142,7 +142,7 @@ export default function Transaction_form({
             ref={(el) => {
               if (el) typeBtnRefs.current[t] = el;
             }}
-            className={`transactions__type-btn ${form.type === t ? `transactions__type-btn--active ${t}` : ""}`}
+            className={`type-toggle__btn ${form.type === t ? `type-toggle__btn--active ${t}` : ""}`}
             onClick={() =>
               Set_form((f) => ({
                 ...f,
@@ -229,14 +229,14 @@ export default function Transaction_form({
               No active goals. Create one first.
             </p>
           ) : (
-            <div className="transactions__category-grid">
+            <div className="category-chips">
               {activeGoals.map((goal) => {
                 const is_active = form.goal_id === goal.id;
                 return (
                   <button
                     key={goal.id}
                     type="button"
-                    className={`transactions__category-chip ${is_active ? "active" : ""}`}
+                    className={`category-chip ${is_active ? "category-chip--active" : ""}`}
                     style={
                       is_active
                         ? {
@@ -284,14 +284,14 @@ export default function Transaction_form({
               No labels yet. Tap "+ Edit labels" to create your own.
             </p>
           ) : (
-            <div className="transactions__category-grid">
+            <div className="category-chips">
               {availableCategories.map((cat) => {
                 const is_active = form.category_id === cat.id;
                 return (
                   <button
                     key={cat.id}
                     type="button"
-                    className={`transactions__category-chip ${is_active ? "active" : ""}`}
+                    className={`category-chip ${is_active ? "category-chip--active" : ""}`}
                     style={
                       is_active
                         ? {

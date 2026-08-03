@@ -41,446 +41,27 @@
 
 /* ── Filters ────────────────────────────────────────────────── */
 
-/* ── Date Navigation (Weekly) ───────────────────────────────── */
+/* ── Date Navigation → shared .date-nav ── */
 
-.shifts__date-nav {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem 1rem;
-  margin-bottom: 0.75rem;
-  padding: 0.85rem 1rem;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-}
+/* ── Week Day Selector → shared .week-day ── */
 
-.shifts__date-top {
-  display: flex;
-  align-items: center;
-  width: 100%;
-  justify-content: space-between;
-}
+/* ── View Toggle → shared .view-toggle ── */
 
-.shifts__date-btn {
-  width: 2.25rem;
-  height: 2.25rem;
-  display: grid;
-  place-items: center;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: var(--radius-sm, 0.5rem);
-  background: rgba(255, 255, 255, 0.06);
-  color: var(--text, #fff);
-  font-size: 1.15rem;
-  cursor: pointer;
-  transition: all 0.15s ease;
-  flex-shrink: 0;
-}
+/* ── Month Grid → shared .week-days--month ── */
 
-.shifts__date-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.2);
-}
+/* ── Place Filter Pills → shared .tab-toggle ── */
 
-.shifts__date-label {
-  font-family: var(--font-heading);
-  font-weight: 800;
-  font-size: 1.15rem;
-  color: #fff;
-  letter-spacing: -0.01em;
-  text-align: center;
-  min-width: 0;
-}
+/* .shifts__place-trigger → .picker-trigger (Shared_extended.css) */
+/* .shifts__picker-list → .picker-list (Shared_extended.css) */
+/* .shifts__picker-item → .picker-item (Shared_extended.css) */
 
-.shifts__date-today {
-  padding: 0.4rem 1.25rem;
-  border: none;
-  border-radius: var(--radius-pill, 999px);
-  background: linear-gradient(135deg, #b3a0e0, #9a7de3);
-  color: #fff;
-  font-family: var(--font-heading);
-  font-size: 0.78rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 4px 16px rgba(154, 125, 227, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2);
-}
-
-.shifts__date-today:hover {
-  transform: translateY(-2px) scale(1.04);
-  box-shadow: 0 6px 20px rgba(154, 125, 227, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.25);
-}
-
-.shifts__date-today:active {
-  transform: scale(0.97);
-}
-
-/* ── Week Day Selector ──────────────────────────────────────── */
-
-.shifts__week-days {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 0.35rem;
-  margin-bottom: 1.25rem;
-}
-
-.shifts__week-day {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.2rem;
-  padding: 0.5rem 0.25rem;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: var(--radius);
-  background: transparent;
-  color: rgba(255, 255, 255, 0.45);
-  cursor: pointer;
-  transition: all 0.2s ease;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.shifts__week-day:hover {
-  background: rgba(255, 255, 255, 0.04);
-  border-color: rgba(255, 255, 255, 0.12);
-}
-
-.shifts__week-day--active {
-  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
-  border-color: rgba(255, 255, 255, 0.18);
-  color: #fff;
-  box-shadow: 0 4px 16px rgba(129, 140, 248, 0.35), 0 0 12px rgba(129, 140, 248, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.15);
-  transform: scale(1.05);
-}
-
-.shifts__week-day--today {
-  border-color: rgba(96, 165, 250, 0.4);
-}
-
-.shifts__week-day--today:not(.shifts__week-day--active) {
-  color: #60a5fa;
-}
-
-.shifts__week-day--busy:not(.shifts__week-day--active)::after {
-  content: "";
-  position: absolute;
-  bottom: 0.3rem;
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  background: #34d399;
-}
-
-.shifts__week-day-label {
-  font-size: 0.65rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-.shifts__week-day-num {
-  font-family: var(--font-heading);
-  font-size: 0.95rem;
-  font-weight: 800;
-}
-
-.shifts__week-day:focus-visible {
-  outline: 2px solid var(--color-primary);
-  outline-offset: 2px;
-}
-
-/* ── View Toggle ───────────────────────────────────────────── */
-
-.shifts__view-toggle {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 0.25rem;
-  width: max-content;
-  margin: 0 auto 1.5rem;
-  padding: 0.25rem;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-pill);
-  background: var(--surface);
-}
-
-.shifts__view-btn {
-  border: none;
-  border-radius: var(--radius-pill);
-  padding: 0.5rem 1rem;
-  background: transparent;
-  color: var(--text-muted);
-  font-family: var(--font-heading);
-  font-weight: 600;
-  font-size: 0.8rem;
-  letter-spacing: 0.02em;
-  cursor: pointer;
-  transition: color 0.2s ease, background 0.2s ease;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.shifts__view-btn:hover {
-  color: var(--text);
-  background: var(--surface-hover);
-}
-
-.shifts__view-btn--active {
-  color: #fff;
-  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
-  box-shadow: 0 4px 16px rgba(129, 140, 248, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.12);
-}
-
-.shifts__view-btn:focus-visible {
-  outline: 2px solid var(--color-primary);
-  outline-offset: 2px;
-}
-
-/* ── Month Grid ────────────────────────────────────────────── */
-
-.shifts__week-days--month {
-  gap: 0.2rem;
-}
-
-.shifts__week-days--month .shifts__week-day {
-  padding: 0.35rem 0.15rem;
-}
-
-.shifts__week-days--month .shifts__week-day--muted {
-  opacity: 0.3;
-}
-
-/* ── Place Filter Pills ─────────────────────────────────────── */
-
-.shifts__place-filter {
-  position: relative;
-  display: flex;
-  padding: 0.3rem;
-  margin-bottom: 1.25rem;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.04);
-  min-width: 0;
-  overflow-x: auto;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-}
-
-.shifts__place-filter::-webkit-scrollbar {
-  display: none;
-}
-
-.shifts__place-btn {
-  position: relative;
-  z-index: 1;
-  flex: 1 1 0;
-  min-width: 0;
-  padding: 0.55rem 0.75rem;
-  border: none;
-  border-radius: 999px;
-  background: transparent;
-  color: rgba(255, 255, 255, 0.45);
-  font-family: inherit;
-  font-size: 0.8rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: color 0.3s ease;
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-
-.shifts__place-btn:hover {
-  color: rgba(255, 255, 255, 0.75);
-}
-
-.shifts__place-btn--active {
-  color: #fff;
-}
-
-.shifts__place-btn:focus-visible {
-  outline: 2px solid var(--color-primary);
-  outline-offset: 2px;
-}
-
-.shifts__place-indicator {
-  position: absolute;
-  top: 0.3rem;
-  left: 0.3rem;
-  height: calc(100% - 0.6rem);
-  border-radius: var(--radius-pill);
-  background: linear-gradient(
-    135deg,
-    var(--color-primary),
-    var(--color-secondary)
-  );
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  box-shadow:
-    0 4px 16px rgba(129, 140, 248, 0.35),
-    inset 0 1px 0 rgba(255, 255, 255, 0.15);
-  transition:
-    transform 0.45s var(--ease-spring),
-    width 0.35s var(--ease-spring);
-  pointer-events: none;
-  z-index: 0;
-  will-change: transform;
-}
-
-.shifts__place-btn {
-  position: relative;
-  z-index: 1;
-}
-
-/* ── Place filter trigger (when many workplaces) ──────────── */
-
-.shifts__place-trigger {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.55rem 1rem;
-  margin-bottom: 1.25rem;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.06);
-  color: var(--text, #e2e8f0);
-  font-family: inherit;
-  font-size: 0.85rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.shifts__place-trigger:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.2);
-}
-
-.shifts__place-trigger:active {
-  transform: scale(0.97);
-}
-
-.shifts__place-trigger-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-.shifts__place-trigger-chevron {
-  font-size: 0.75rem;
-  opacity: 0.5;
-  margin-left: 0.1rem;
-}
-
-/* ── Place picker sheet ───────────────────────────────────── */
-
-.shifts__picker-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-}
-
-.shifts__picker-item {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  width: 100%;
-  padding: 0.85rem 1rem;
-  border: 1px solid transparent;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.04);
-  color: var(--text, #e2e8f0);
-  font-family: inherit;
-  font-size: 0.9rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.15s ease;
-  text-align: left;
-}
-
-.shifts__picker-item:hover {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.08);
-}
-
-.shifts__picker-item--active {
-  background: rgba(129, 140, 248, 0.12);
-  border-color: rgba(129, 140, 248, 0.25);
-}
-
-.shifts__picker-dot {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-.shifts__picker-label {
-  flex: 1;
-}
-
-.shifts__picker-check {
-  font-size: 0.85rem;
-  color: var(--color-primary, #818cf8);
-  font-weight: 700;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .shifts__place-trigger {
-    transition: none !important;
-  }
-}
-
-/* ── Summary ────────────────────────────────────────────────── */
+/* ── Summary ── */
 
 .shifts__summary {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.85rem;
   margin-bottom: 1.5rem;
-}
-
-.shifts__stat {
-  min-width: 0;
-  padding: 1rem 0.75rem;
-  background: var(--surface-glass);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  backdrop-filter: var(--blur);
-  -webkit-backdrop-filter: var(--blur);
-  box-shadow: var(--shadow-sm), var(--shadow-inner-glow);
-  position: relative;
-  overflow: hidden;
-  transition:
-    transform var(--duration-normal) var(--ease-spring),
-    border-color var(--duration-normal) ease,
-    box-shadow var(--duration-normal) ease,
-    background var(--duration-normal) ease;
-}
-
-.shifts__stat::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background-image: var(--noise);
-  background-repeat: repeat;
-  background-size: 128px 128px;
-  pointer-events: none;
-  opacity: 0.3;
-  mix-blend-mode: overlay;
-}
-
-.shifts__stat:hover {
-  transform: translateY(-5px) scale(1.02);
-  border-color: var(--border-hover);
-  box-shadow: var(--shadow-md), var(--shadow-glow-sm);
-  background: rgba(255, 255, 255, 0.06);
 }
 
 .shifts__stat--total {
@@ -496,105 +77,13 @@
 
 /* ── Empty State ────────────────────────────────────────────── */
 
-/* ── Quick-Add Templates ───────────────────────────────────── */
-
-.shifts__templates {
-  display: flex;
-  gap: 0.5rem;
-  overflow-x: auto;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-  margin-bottom: 1rem;
-  padding-bottom: 0.25rem;
-}
-
-.shifts__templates::-webkit-scrollbar {
-  display: none;
-}
-
-.shifts__template-chip {
-  display: flex;
-  align-items: center;
-  gap: 0.45rem;
-  padding: 0.5rem 0.85rem;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-pill);
-  background: var(--surface);
-  color: var(--text);
-  font-family: var(--font-body);
-  font-size: 0.78rem;
-  font-weight: 600;
-  white-space: nowrap;
-  cursor: pointer;
-  transition:
-    background var(--duration-fast) ease,
-    border-color var(--duration-fast) ease,
-    transform var(--duration-fast) var(--ease-spring);
-  -webkit-tap-highlight-color: transparent;
-}
-
-.shifts__template-chip:hover {
-  background: var(--surface-hover);
-  border-color: var(--border-hover);
-}
-
-.shifts__template-chip:active {
-  transform: scale(0.96);
-}
-
-.shifts__template-chip--add {
-  border-style: dashed;
-  color: var(--text-muted);
-  font-weight: 500;
-}
-
-.shifts__template-chip--add:hover {
-  color: var(--text);
-  border-color: var(--color-primary);
-}
-
-.shifts__preset {
-  display: flex;
-  align-items: center;
-  gap: 0;
-  flex-shrink: 0;
-}
-
-.shifts__preset .shifts__template-chip {
-  border-radius: var(--radius-pill) 0 0 var(--radius-pill);
-}
-
-.shifts__preset-edit {
-  padding: 0.5rem 0.6rem;
-  border: 1px solid var(--border);
-  border-left: none;
-  border-radius: 0 var(--radius-pill) var(--radius-pill) 0;
-  background: var(--surface);
-  color: var(--text-dim);
-  font-size: 0.7rem;
-  cursor: pointer;
-  transition:
-    background var(--duration-fast) ease,
-    color var(--duration-fast) ease;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.shifts__preset-edit:hover {
-  background: var(--surface-hover);
-  color: var(--text);
-}
+/* ── Quick-Add Templates → shared .template-chips ── */
 
 .shifts__preset-hint {
   font-size: 0.82rem;
   color: var(--text-muted);
   margin-bottom: 1.25rem;
   text-align: center;
-}
-
-.shifts__template-time {
-  font-size: 0.68rem;
-  color: var(--text-muted);
-  font-weight: 500;
 }
 
 .shifts__empty-card {
@@ -607,7 +96,7 @@
   animation: fadeUp 0.5s var(--ease-out) backwards;
 }
 
-/* ── List & Cards ───────────────────────────────────────────── */
+/* ── List & Cards → shared card classes ── */
 
 .shifts__list {
   list-style: none;
@@ -698,74 +187,6 @@
   min-width: 0;
 }
 
-/* ── Card Actions ───────────────────────────────────────────── */
-
-.shifts__card-actions {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 0.5rem;
-  margin-left: 0.75rem;
-  flex-shrink: 0;
-}
-
-.shifts__action {
-  padding: 0.45rem 0.8rem;
-  border-radius: 0.65rem;
-  font-size: 0.75rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all var(--duration-fast) var(--ease-out);
-  text-align: center;
-  min-width: 4.5rem;
-  min-height: 2.75rem;
-  border: 1px solid transparent;
-}
-
-.shifts__action--copy {
-  background: rgba(16, 185, 129, 0.08);
-  color: #6ee7b7;
-  border-color: rgba(16, 185, 129, 0.15);
-}
-
-.shifts__action--copy:hover {
-  background: rgba(16, 185, 129, 0.2);
-  color: #6ee7b7;
-  border-color: rgba(16, 185, 129, 0.4);
-  transform: scale(1.06);
-}
-
-.shifts__action--edit {
-  background: rgba(168, 85, 247, 0.1);
-  color: #d8b4fe;
-  border-color: rgba(168, 85, 247, 0.2);
-}
-
-.shifts__action--edit:hover {
-  background: rgba(168, 85, 247, 0.25);
-  color: #e9d5ff;
-  border-color: rgba(168, 85, 247, 0.45);
-  transform: scale(1.06);
-}
-
-.shifts__action--deactivate {
-  background: rgba(239, 68, 68, 0.08);
-  border: 1px solid rgba(239, 68, 68, 0.15);
-  color: rgba(239, 68, 68, 0.5);
-}
-
-.shifts__action--deactivate:hover {
-  background: rgba(239, 68, 68, 0.2);
-  border-color: rgba(239, 68, 68, 0.4);
-  color: #fca5a5;
-  transform: scale(1.06);
-}
-
-.shifts__action:focus-visible {
-  outline: 2px solid var(--color-primary);
-  outline-offset: 2px;
-}
-
 /* ── Modal / Bottom Sheet ──────────────────────────────────── */
 
 .shifts__delete-date {
@@ -854,63 +275,15 @@
 
 /* NOTE: Use shared @keyframes spin from animations.css */
 
-/* ── Buttons ────────────────────────────────────────────────── */
+/* ── List Header & Add Button → shared .list-header ── */
 
-.shifts__list-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
-  margin-bottom: 0.85rem;
+.list-header__add:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  pointer-events: none;
 }
-
-.shifts__list-title {
-  font-family: var(--font-heading);
-}
-
-.shifts__add-btn {
-  padding: 0.55rem 1.1rem;
-  border: none;
-  border-radius: var(--radius-pill);
-  background: linear-gradient(
-    135deg,
-    var(--color-primary),
-    var(--color-secondary)
-  );
-  color: #fff;
-  font-family: var(--font-heading);
-  font-weight: 700;
-  font-size: 0.8rem;
-  letter-spacing: 0.02em;
-  cursor: pointer;
-  box-shadow:
-    0 4px 16px rgba(129, 140, 248, 0.35),
-    inset 0 1px 0 rgba(255, 255, 255, 0.15);
-  transition:
-    transform var(--duration-normal) var(--ease-spring),
-    box-shadow var(--duration-normal) ease;
-  flex-shrink: 0;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.shifts__add-btn:hover {
-  transform: translateY(-2px) scale(1.03);
-  box-shadow:
-    0 8px 24px rgba(129, 140, 248, 0.45),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
-}
-
-.shifts__add-btn:active {
-  transform: scale(0.97);
-}
-
-/* NOTE: Use shared @keyframes spin from animations.css */
 
 /* ── FAB ────────────────────────────────────────────────────── */
-
-/* ── Shifts-specific Keyframes ──────────────────────────────── */
-
-/* NOTE: Use shared keyframes from sheet_modal.css (sheetOverlayIn/Out, sheetModalSlideUp, sheetModalCenterIn/Out) */
 
 /* ── Responsive / Adaptive ──────────────────────────────────── */
 
@@ -945,12 +318,12 @@
 
   
 
-  .shifts__place-filter {
+  .tab-toggle {
     margin-bottom: 1rem;
     border-radius: 1rem;
   }
 
-  .shifts__place-btn {
+  .tab-toggle__btn {
     min-height: 44px;
     padding: 0.65rem 0.45rem;
     font-size: 0.76rem;
@@ -1008,14 +381,14 @@
     gap: 0.45rem;
   }
 
-  .shifts__card-actions {
+  .card-actions {
     flex-direction: row;
     width: 100%;
     margin-left: 0;
     gap: 0.55rem;
   }
 
-  .shifts__action {
+  .card-action {
     flex: 1 1 0;
     min-width: 0;
     min-height: 44px;
@@ -1078,11 +451,11 @@
 
   
 
-  .shifts__place-filter {
+  .tab-toggle {
     padding: 0.24rem;
   }
 
-  .shifts__place-btn {
+  .tab-toggle__btn {
     padding: 0.58rem 0.32rem;
     font-size: 0.7rem;
   }
@@ -1106,37 +479,15 @@
 
   
 
-  .shifts__action {
+  .card-action {
     padding: 0.42rem 0.65rem;
     font-size: 0.72rem;
   }
 }
 
-/* ── Deletion Animation ─────────────────────────────────────── */
+/* ── Deletion Animation → shared .card--removing ── */
 
-.shifts__card--removing {
-  animation: shiftsCardRemove 0.35s var(--ease-smooth) forwards;
-}
-
-/* NOTE: Use shared @keyframes cardRemove from animations.css */
-
-/* ── Error message ── */
-
-.shifts__error {
-  margin-bottom: 1.2rem;
-  padding: 0.9rem 1rem;
-  border-radius: 1rem;
-  border: 1px solid rgba(239, 68, 68, 0.35);
-  background: rgba(239, 68, 68, 0.12);
-  color: #fecaca;
-  font-size: 0.9rem;
-}
-
-.shifts__error--shake {
-  animation: shiftsErrorShake 0.5s ease-in-out;
-}
-
-/* NOTE: Use shared @keyframes shake from animations.css */
+/* ── Error message → shared .error-box ── */
 
 /* ── Deactivated workplace shifts ── */
 
@@ -1170,11 +521,11 @@
 
 /* ── Deactivated filter pill ── */
 
-.shifts__place-btn--deactivated {
+.tab-toggle__btn--deactivated {
   opacity: 0.5;
 }
 
-.shifts__place-btn--deactivated:hover {
+.tab-toggle__btn--deactivated:hover {
   opacity: 0.75;
 }
 
@@ -1191,26 +542,8 @@
 
 /* ── Deactivated picker item ── */
 
-.shifts__picker-item--deactivated {
-  opacity: 0.5;
-}
-
-.shifts__picker-item--deactivated:hover {
-  opacity: 0.75;
-}
-
-.shifts__picker-deactivated-tag {
-  font-size: 0.6rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--color-warning, #fbbf24);
-  background: rgba(251, 191, 36, 0.12);
-  border: 1px solid rgba(251, 191, 36, 0.2);
-  padding: 0.1rem 0.35rem;
-  border-radius: var(--radius-pill, 999px);
-  margin-left: auto;
-}
+/* .shifts__picker-item--deactivated → .picker-item--deactivated (Shared_extended.css) */
+/* .shifts__picker-deactivated-tag → .picker-item__deactivated-tag (Shared_extended.css) */
 
 /* ── No workplaces CTA ── */
 
@@ -1291,11 +624,7 @@
   transform: translateY(0);
 }
 
-.shifts__add-btn:disabled {
-  opacity: 0.35;
-  cursor: not-allowed;
-  pointer-events: none;
-}
+
 
 /* ── Header actions ── */
 
@@ -1332,7 +661,7 @@
 /* ── Reduced Motion ─────────────────────────────────────────── */
 
 @media (prefers-reduced-motion: reduce) {
-  .shifts__stat, .shifts__card, .shifts__action, .shifts__pay-toggle-btn, .shifts__add-btn{
+  .shifts__stat, .shifts__card, .card-action, .shifts__pay-toggle-btn, .list-header__add {
     animation: none !important;
     transition: none !important;
   }

@@ -45,7 +45,7 @@ export default function Profile_history({
             </span>
             <button
               type="button"
-              className="profile__icon-btn"
+              className="icon-btn-lg"
               onClick={() => onEdit(entry)}
               aria-label="Edit weigh-in"
             >
@@ -64,7 +64,7 @@ export default function Profile_history({
             </button>
             <button
               type="button"
-              className="profile__icon-btn profile__icon-btn--danger"
+              className="icon-btn-lg icon-btn-lg--danger"
               onClick={() => onDelete(entry)}
               aria-label="Delete weigh-in"
             >

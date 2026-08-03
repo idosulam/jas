@@ -144,7 +144,7 @@ function Auth_form({
     <AnimatePresence mode="wait" custom={direction}>
       <motion.form
         key={mode + "-form"}
-        className="auth__form"
+        className="form-column"
         onSubmit={onSubmit}
         custom={direction}
         variants={slide_variants}

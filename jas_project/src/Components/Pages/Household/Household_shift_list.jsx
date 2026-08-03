@@ -14,7 +14,7 @@ function Household_shift_list({
       {/* Today's Shifts */}
       {todayShifts.length > 0 && (
         <div className="household__today">
-          <h3 className="household__section-title">Today</h3>
+          <h3 className="section-title">Today</h3>
           <div className="household__today-cards">
             {todayShifts.map((shift) => {
               const wp = Workplaces[shift.user_id]?.[shift.place];
@@ -41,7 +41,7 @@ function Household_shift_list({
 
       {/* Earnings Chart */}
       <div className="household__chart-section">
-        <h3 className="household__section-title">Daily Earnings</h3>
+        <h3 className="section-title">Daily Earnings</h3>
         <Earnings_chart
           data={Chart_data}
           members={members}

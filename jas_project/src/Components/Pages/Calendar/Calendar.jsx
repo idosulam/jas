@@ -677,7 +677,7 @@ function Calendar() {
   return (
     <section className="calendar page">
       <Page_header
-        className="calendar__header animate-in"
+        className="page-header animate-in"
         eyebrow={Household_name ? `Calendar · ${Household_name}` : "Daily planner"}
         title="Calendar"
       />
@@ -721,13 +721,13 @@ function Calendar() {
       </div>
 
       <div
-        className="calendar__view-toggle animate-in animate-in--2"
+        className="view-toggle animate-in animate-in--2"
         role="tablist"
         aria-label="Calendar view"
       >
         <button
           type="button"
-          className={`calendar__view-btn${View_mode === "week" ? " calendar__view-btn--active" : ""}`}
+          className={`view-btn${View_mode === "week" ? " view-btn--active" : ""}`}
           onClick={() => Set_view_mode("week")}
           aria-pressed={View_mode === "week"}
         >
@@ -735,7 +735,7 @@ function Calendar() {
         </button>
         <button
           type="button"
-          className={`calendar__view-btn${View_mode === "month" ? " calendar__view-btn--active" : ""}`}
+          className={`view-btn${View_mode === "month" ? " view-btn--active" : ""}`}
           onClick={() => Set_view_mode("month")}
           aria-pressed={View_mode === "month"}
         >
@@ -766,7 +766,7 @@ function Calendar() {
       </div>
 
       {error && (
-        <p className="calendar__error calendar__error--glass" role="alert">
+        <p className="error-box" role="alert">
           {error}
         </p>
       )}

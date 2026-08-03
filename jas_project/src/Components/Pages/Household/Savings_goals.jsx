@@ -304,7 +304,7 @@ function savings_goals({ householdId, user_id, members, hideTitle }) {
     <div className="savings-goals">
       <div className="savings-goals__header">
         {!hideTitle && (
-          <h3 className="household__section-title">💰 Savings Goals</h3>
+          <h3 className="section-title">💰 Savings Goals</h3>
         )}
         <div style={{ flex: 1 }} />
         <button

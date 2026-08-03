@@ -7,6 +7,7 @@ import { Get_user_facing_error } from "../../../Lib/Security";
 import { Use_glass_toast } from "../../../Lib/Glass_toast_provider.jsx";
 import { Use_body_scroll_lock, Use_modal } from "../../../Hooks";
 import Confirm_modal from "../../UI/Modals/Confirm_modal";
+import Sheet_modal from "../../UI/Modals/Sheet_modal";
 import Page_header from "../../UI/Page_header";
 import Loading_skeleton from "../../UI/Loading_skeleton";
 import Savings_goals from "./Savings_goals";
@@ -155,9 +156,22 @@ function Household() {
   const joinModal = Use_modal(260);
   const createModal = Use_modal(260);
   const Delete_modal = Use_modal(260);
+  const tabPickerModal = Use_modal(260);
+  const [Is_mobile, set_is_mobile] = useState(
+    () => window.innerWidth < 480,
+  );
   const [Deleting, Set_deleting] = useState(false);
 
-  Use_body_scroll_lock(joinModal.open, createModal.open, Delete_modal.open);
+  Use_body_scroll_lock(joinModal.open, createModal.open, Delete_modal.open, tabPickerModal.open);
+
+  // Track viewport width for responsive tab layout
+  useEffect(() => {
+    const mql = window.matchMedia("(max-width: 479px)");
+    const handler = (e) => set_is_mobile(e.matches);
+    mql.addEventListener("change", handler);
+    set_is_mobile(mql.matches);
+    return () => mql.removeEventListener("change", handler);
+  }, []);
 
   // Fetch household membership
   const Fetch_household = useCallback(async () => {
@@ -543,7 +557,7 @@ function Household() {
         <Page_header
           eyebrow="Together"
           title="Household"
-          className="household__header animate-in"
+          className="page-header animate-in"
         />
         <Household_invite
           household={null}
@@ -565,7 +579,7 @@ function Household() {
         <Page_header
           eyebrow="Together"
           title="Household"
-          className="household__header"
+          className="page-header"
         />
         <Loading_skeleton lines={6} />
       </section>
@@ -578,7 +592,7 @@ function Household() {
       <Page_header
         eyebrow="Together"
         title={household?.name || "Household"}
-        className="household__header animate-in"
+        className="page-header animate-in"
       />
 
       {/* Invite + Delete */}
@@ -594,32 +608,88 @@ function Household() {
       />
 
       {/* Error */}
-      {error && <div className="household__error">{error}</div>}
+      {error && <div className="error-box">{error}</div>}
 
-      {/* Tab Navigation */}
-      <div
-        className="household__tab-nav animate-in animate-in--2"
-        ref={tabNavRef}
-      >
-        <span
-          className="household__tab-indicator"
-          style={{
-            transform: `translateX(${tabIndicatorStyle.left}px)`,
-            width: `${tabIndicatorStyle.width}px`,
-          }}
-        />
-        {TABS.map((tab) => (
+      {/* Tab Navigation — inline on desktop, dropdown on mobile */}
+      {Is_mobile ? (
+        <>
           <button
-            key={tab.id}
-            ref={(el) => tabBtnRef(el, tab.id)}
-            className={`household__tab ${activeTab === tab.id ? "household__tab--active" : ""}`}
-            onClick={() => setActiveTab(tab.id)}
+            type="button"
+            className="picker-trigger animate-in animate-in--2"
+            onClick={() => tabPickerModal.open_modal()}
+            aria-haspopup="listbox"
+            aria-expanded={tabPickerModal.open}
           >
-            <span className="household__tab-icon">{tab.icon}</span>
-            <span className="household__tab-label">{tab.label}</span>
+            <span className="picker-trigger__icon">
+              {TABS.find((t) => t.id === activeTab)?.icon}
+            </span>
+            {TABS.find((t) => t.id === activeTab)?.label}
+            <span className="picker-trigger__chevron" aria-hidden="true">
+              ▾
+            </span>
           </button>
-        ))}
-      </div>
+
+          <Sheet_modal
+            open={tabPickerModal.open}
+            closing={tabPickerModal.closing}
+            onClose={() => tabPickerModal.close_modal()}
+            title="Switch tab"
+            compact
+          >
+            <ul className="picker-list">
+              {TABS.map((tab) => {
+                const is_active = activeTab === tab.id;
+                return (
+                  <li key={tab.id}>
+                    <button
+                      type="button"
+                      className={`picker-item${is_active ? " picker-item--active" : ""}`}
+                      onClick={() => {
+                        setActiveTab(tab.id);
+                        tabPickerModal.close_modal();
+                      }}
+                      role="option"
+                      aria-selected={is_active}
+                    >
+                      <span className="picker-item__icon">{tab.icon}</span>
+                      <span className="picker-item__label">{tab.label}</span>
+                      {is_active && (
+                        <span className="picker-item__check" aria-hidden="true">
+                          ✓
+                        </span>
+                      )}
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          </Sheet_modal>
+        </>
+      ) : (
+        <div
+          className="household__tab-nav animate-in animate-in--2"
+          ref={tabNavRef}
+        >
+          <span
+            className="household__tab-indicator"
+            style={{
+              transform: `translateX(${tabIndicatorStyle.left}px)`,
+              width: `${tabIndicatorStyle.width}px`,
+            }}
+          />
+          {TABS.map((tab) => (
+            <button
+              key={tab.id}
+              ref={(el) => tabBtnRef(el, tab.id)}
+              className={`household__tab ${activeTab === tab.id ? "household__tab--active" : ""}`}
+              onClick={() => setActiveTab(tab.id)}
+            >
+              <span className="household__tab-icon">{tab.icon}</span>
+              <span className="household__tab-label">{tab.label}</span>
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Month/Year Filter (shared across tabs) */}
       <div className="household__filters animate-in animate-in--3">

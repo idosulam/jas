@@ -35,7 +35,7 @@ export default function Event_form({
       onClose={onClose}
       title={Editing_event ? "Edit event" : "Add event"}
     >
-      <form className="calendar__form" onSubmit={onSubmit}>
+      <form className="form-column" onSubmit={onSubmit}>
         <Form_field
           label="Title"
           error={Field_errors.title}

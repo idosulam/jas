@@ -527,7 +527,7 @@ function Transactions({ householdId, user_id, members, goals = [] }) {
         typeFilter !== "contribute" &&
         categoryBreakdown.length > 0 && (
           <div className="transactions__breakdown">
-            <h3 className="transactions__section-title">By Category</h3>
+            <h3 className="section-title">By Category</h3>
             <div className="transactions__category-list">
               {categoryBreakdown.slice(0, 6).map((cat) => (
                 <div key={cat.name} className="transactions__category-item">
@@ -561,7 +561,7 @@ function Transactions({ householdId, user_id, members, goals = [] }) {
 
       {/* Transaction List */}
       <div className="transactions__list-header">
-        <h3 className="transactions__section-title">Transactions</h3>
+        <h3 className="section-title">Transactions</h3>
         <div className="transactions__add-btns">
           <button
             className="btn btn--ghost btn--sm"
@@ -805,14 +805,14 @@ function Transactions({ householdId, user_id, members, goals = [] }) {
               )}
             </label>
             <div
-              className={`transactions__category-grid ${!categoryForm.icon && Cat_shake_key > 0 ? "transactions__category-grid--shake" : ""}`}
+              className={`category-chips ${!categoryForm.icon && Cat_shake_key > 0 ? "category-chips--shake" : ""}`}
               key={`icon-grid-${Cat_shake_key}`}
             >
               {DEFAULT_ICONS.map((icon) => (
                 <button
                   key={icon}
                   type="button"
-                  className={`transactions__category-chip ${categoryForm.icon === icon ? "active" : ""}`}
+                  className={`category-chip ${categoryForm.icon === icon ? "category-chip--active" : ""}`}
                   style={
                     categoryForm.icon === icon
                       ? {
@@ -842,14 +842,14 @@ function Transactions({ householdId, user_id, members, goals = [] }) {
           <div className="transactions__category-grid-wrap">
             <label className="transactions__form-label">Type</label>
             <div
-              className="transactions__type-toggle"
+              className="type-toggle"
               style={{ maxWidth: 220 }}
             >
               {["expense", "income"].map((t) => (
                 <button
                   key={t}
                   type="button"
-                  className={`transactions__type-btn ${categoryForm.type === t ? `transactions__type-btn--active ${t}` : ""}`}
+                  className={`type-toggle__btn ${categoryForm.type === t ? `type-toggle__btn--active ${t}` : ""}`}
                   onClick={() => setCategoryForm((f) => ({ ...f, type: t }))}
                 >
                   {t === "expense" ? "Expense" : "Income"}
