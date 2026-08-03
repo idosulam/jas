@@ -773,6 +773,25 @@
   margin-bottom: 1.5rem;
 }
 
+.stat-grid .glass-card {
+  text-align: center;
+  padding: 1.15rem;
+}
+
+.stat-grid .glass-card__value {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: 0.2rem;
+}
+
+.stat-grid .glass-card__label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.4);
+}
+
 @media (max-width: 640px) {
   .stat-grid {
     grid-template-columns: 1fr;
@@ -782,25 +801,7 @@
 }
 
 
-/* ── Glass Card Stat Override ────────────────────────────────
-   Used by: Fitness, Shifts, Household, Calendar
-   Scoped overrides for .glass-card__value / .glass-card__label
-   when used as stat displays
-   ──────────────────────────────────────────────────────────── */
-
-.glass-stat .glass-card__value {
-  font-size: 1.4rem;
-  font-weight: 800;
-  color: #fff;
-  margin-bottom: 0.2rem;
-}
-
-.glass-stat .glass-card__label {
-  font-size: 0.7rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.4);
-}
+/* .glass-stat → now handled by .stat-grid above */
 
 
 /* ── Deletion Card Remove Animation ──────────────────────────

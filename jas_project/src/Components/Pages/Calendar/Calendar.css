@@ -16,23 +16,7 @@
   padding: 1.5rem;
 }
 
-/* ── Scoped glass-card overrides for Calendar ── */
-.calendar .glass-card__value {
-  display: block;
-  margin-bottom: 0.35rem;
-  font-size: 2.2rem;
-  font-weight: 800;
-  line-height: 1;
-  color: var(--color-primary);
-}
-
-.calendar .glass-card__label {
-  font-size: 0.82rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--text-muted);
-}
+/* .glass-card__value/label → .glass-stat (Shared_extended.css) */
 
 /* Header → uses shared .page-header */
 

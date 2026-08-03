@@ -42,19 +42,7 @@
   box-shadow: 0 4px 20px rgba(96, 165, 250, 0.15);
 }
 
-.fitness .glass-card__value {
-  font-size: 1.4rem;
-  font-weight: 800;
-  color: #fff;
-  margin-bottom: 0.2rem;
-}
-
-.fitness .glass-card__label {
-  font-size: 0.7rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.4);
-}
+/* .glass-card__value/label → .glass-stat (Shared_extended.css) */
 
 /* ── Macro Dashboard (Diet) ─────────────────────────────────── */
 
@@ -760,13 +748,6 @@
 
 
 
-  .fitness .glass-card__value {
-    font-size: 1.2rem;
-  }
-
-  .fitness .glass-card__label {
-    font-size: 0.65rem;
-  }
 
   .fitness__card {
     flex-direction: column;
@@ -816,13 +797,6 @@
     padding: 0.75rem 0.5rem;
   }
 
-  .fitness .glass-card__value {
-    font-size: 1.1rem;
-  }
-
-  .fitness .glass-card__label {
-    font-size: 0.6rem;
-  }
 
   .fitness__macro-inputs {
     grid-template-columns: 1fr;

@@ -24,20 +24,7 @@
   margin-bottom: 1.5rem;
 }
 
-/* ── Scoped glass-card overrides for Shifts ── */
-.shifts .glass-card__value {
-  font-size: 1.4rem;
-  font-weight: 800;
-  color: #fff;
-  margin-bottom: 0.2rem;
-}
-
-.shifts .glass-card__label {
-  font-size: 0.7rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.4);
-}
+/* .glass-card__value/label → .glass-stat (Shared_extended.css) */
 
 /* ── Filters ────────────────────────────────────────────────── */
 
@@ -513,13 +500,7 @@
     grid-column: span 1;
   }
 
-  .shifts .glass-card__value {
-    font-size: 1.22rem;
-  }
 
-  .shifts .glass-card__label {
-    font-size: 0.66rem;
-  }
 
   .shifts__list {
     gap: 0.6rem;
