@@ -558,6 +558,12 @@
   border: 1px solid rgba(255, 255, 255, 0.1);
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.household__tab-nav::-webkit-scrollbar {
+  display: none;
 }
 
 .household__tab-indicator {
@@ -609,6 +615,42 @@
   font-size: 0.65rem;
   text-transform: uppercase;
   letter-spacing: 0.04em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+/* ── Tab Nav — Responsive ────────────────────────────────────── */
+
+@media (max-width: 420px) {
+  .household__tab-nav {
+    gap: 0.15rem;
+    padding: 0.22rem;
+  }
+
+  .household__tab {
+    padding: 0.45rem 0.25rem;
+  }
+
+  .household__tab-icon {
+    font-size: 0.9rem;
+  }
+
+  .household__tab-label {
+    font-size: 0.55rem;
+    letter-spacing: 0.02em;
+  }
+}
+
+@media (max-width: 360px) {
+  .household__tab-label {
+    display: none;
+  }
+
+  .household__tab {
+    padding: 0.5rem 0.35rem;
+  }
 }
 
 /* ── Tab Content ────────────────────────────────────────────── */
