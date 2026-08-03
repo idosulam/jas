@@ -627,10 +627,13 @@
   .household__tab-nav {
     gap: 0.15rem;
     padding: 0.22rem;
+    justify-content: flex-start;
   }
 
   .household__tab {
-    padding: 0.45rem 0.25rem;
+    flex: 0 0 auto;
+    min-width: 3.5rem;
+    padding: 0.45rem 0.5rem;
   }
 
   .household__tab-icon {
@@ -649,7 +652,7 @@
   }
 
   .household__tab {
-    padding: 0.5rem 0.35rem;
+    padding: 0.5rem 0.65rem;
   }
 }
 
