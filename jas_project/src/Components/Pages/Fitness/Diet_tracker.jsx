@@ -309,39 +309,42 @@ function Diet_tracker({ profileData }) {
   };
 
   // ── Presets ──
-  const Open_preset_modal = (preset = null) => {
-    if (preset) {
-      Set_editing_preset(preset);
-      Set_preset_form({
-        name: preset.name,
-        meal_type: preset.meal_type || "breakfast",
-        calories: preset.calories ? String(preset.calories) : "",
-        protein_g: preset.protein_g ? String(preset.protein_g) : "",
-        carbs_g: preset.carbs_g ? String(preset.carbs_g) : "",
-        fats_g: preset.fats_g ? String(preset.fats_g) : "",
-        fiber_g: preset.fiber_g ? String(preset.fiber_g) : "",
-      });
-    } else {
-      Set_editing_preset(null);
-      Set_preset_form({
-        name: "",
-        meal_type: "breakfast",
-        calories: "",
-        protein_g: "",
-        carbs_g: "",
-        fats_g: "",
-        fiber_g: "",
-      });
-    }
-    Preset_modal.open_modal();
-  };
+  const Open_preset_modal = useCallback(
+    (preset = null) => {
+      if (preset) {
+        Set_editing_preset(preset);
+        Set_preset_form({
+          name: preset.name,
+          meal_type: preset.meal_type || "breakfast",
+          calories: preset.calories ? String(preset.calories) : "",
+          protein_g: preset.protein_g ? String(preset.protein_g) : "",
+          carbs_g: preset.carbs_g ? String(preset.carbs_g) : "",
+          fats_g: preset.fats_g ? String(preset.fats_g) : "",
+          fiber_g: preset.fiber_g ? String(preset.fiber_g) : "",
+        });
+      } else {
+        Set_editing_preset(null);
+        Set_preset_form({
+          name: "",
+          meal_type: "breakfast",
+          calories: "",
+          protein_g: "",
+          carbs_g: "",
+          fats_g: "",
+          fiber_g: "",
+        });
+      }
+      Preset_modal.open_modal();
+    },
+    [Preset_modal],
+  );
 
-  const Close_preset_modal = () => {
+  const Close_preset_modal = useCallback(() => {
     Preset_modal.close_modal();
     setTimeout(() => {
       Set_editing_preset(null);
     }, MODAL_EXIT_MS);
-  };
+  }, [Preset_modal]);
 
   const Save_preset = useCallback(async () => {
     const name = Preset_form.name.trim();
@@ -409,22 +412,32 @@ function Diet_tracker({ profileData }) {
     [Fetch_presets, Toast_success, Toast_error],
   );
 
-  const applyPreset = (preset) => {
-    setEditingEntry(null);
-    Set_form({
-      Entry_date: Selected_date,
-      meal_type: preset.meal_type || "breakfast",
-      food_name: preset.name,
-      calories: preset.calories ? String(preset.calories) : "",
-      protein_g: preset.protein_g ? String(preset.protein_g) : "",
-      carbs_g: preset.carbs_g ? String(preset.carbs_g) : "",
-      fats_g: preset.fats_g ? String(preset.fats_g) : "",
-      fiber_g: preset.fiber_g ? String(preset.fiber_g) : "",
-    });
-    Set_field_errors({});
-    Set_field_states({});
-    Form_modal.open_modal();
-  };
+  const renderPresetMeta = useCallback(
+    (preset) => (
+      <span className="template-chip__meta">{preset.calories}kcal</span>
+    ),
+    [],
+  );
+
+  const applyPreset = useCallback(
+    (preset) => {
+      setEditingEntry(null);
+      Set_form({
+        Entry_date: Selected_date,
+        meal_type: preset.meal_type || "breakfast",
+        food_name: preset.name,
+        calories: preset.calories ? String(preset.calories) : "",
+        protein_g: preset.protein_g ? String(preset.protein_g) : "",
+        carbs_g: preset.carbs_g ? String(preset.carbs_g) : "",
+        fats_g: preset.fats_g ? String(preset.fats_g) : "",
+        fiber_g: preset.fiber_g ? String(preset.fiber_g) : "",
+      });
+      Set_field_errors({});
+      Set_field_states({});
+      Form_modal.open_modal();
+    },
+    [Form_modal, Selected_date],
+  );
 
   // ── Validation ──
   const Validate_field = (field_name, value) => {
@@ -703,10 +716,8 @@ function Diet_tracker({ profileData }) {
         items={Presets}
         onSelect={applyPreset}
         onEdit={Open_preset_modal}
-        onAdd={() => Open_preset_modal()}
-        renderMeta={(preset) => (
-          <span className="template-chip__meta">{preset.calories}kcal</span>
-        )}
+        onAdd={Open_preset_modal}
+        renderMeta={renderPresetMeta}
         addLabel="+ New preset"
       />
 

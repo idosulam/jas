@@ -39,6 +39,7 @@ import {
   Empty_state,
   Loading_skeleton,
   Page_header,
+  Section_header,
   Glass_card,
   FAB,
 } from "../../../Components";
@@ -87,7 +88,8 @@ function Calendar() {
 
   const Form_modal = Use_modal(MODAL_EXIT_MS);
   const Delete_modal = Use_modal(MODAL_EXIT_MS);
-  const { ref: Add_btn_ref, visible: Show_floating_actions } = Use_floating_actions();
+  const { ref: Add_btn_ref, visible: Show_floating_actions } =
+    Use_floating_actions();
   const { success: Toast_success, error: Toast_error } = Use_glass_toast();
 
   const Selected_key = To_date_key(Selected_date);
@@ -97,8 +99,6 @@ function Calendar() {
   useEffect(() => {
     Fetch_palette().then(Set_palette);
   }, []);
-
-
 
   const Hour_labels = useMemo(
     () =>
@@ -154,7 +154,11 @@ function Calendar() {
     const range_end =
       View_mode === "week"
         ? Add_days(range_start, 6)
-        : new Date(Selected_date.getFullYear(), Selected_date.getMonth() + 1, 0);
+        : new Date(
+            Selected_date.getFullYear(),
+            Selected_date.getMonth() + 1,
+            0,
+          );
 
     const start_key = To_date_key(range_start);
     const end_key = To_date_key(range_end);
@@ -649,7 +653,9 @@ function Calendar() {
     <section className="calendar page">
       <Page_header
         className="page-header animate-in"
-        eyebrow={Household_name ? `Calendar · ${Household_name}` : "Daily planner"}
+        eyebrow={
+          Household_name ? `Calendar · ${Household_name}` : "Daily planner"
+        }
         title="Calendar"
       />
 
@@ -665,8 +671,16 @@ function Calendar() {
       <Stat_grid
         className="animate-in animate-in--3 calendar__summary"
         stats={[
-          { value: events.length, label: "Events", className: "calendar__stat" },
-          { value: pending_count, label: "Pending", className: "calendar__stat" },
+          {
+            value: events.length,
+            label: "Events",
+            className: "calendar__stat",
+          },
+          {
+            value: pending_count,
+            label: "Pending",
+            className: "calendar__stat",
+          },
         ]}
       />
 
@@ -676,17 +690,20 @@ function Calendar() {
         </p>
       )}
 
-      <div className="calendar__toolbar animate-in animate-in--4">
-        <h2 className="calendar__section-title">Day overview</h2>
-        <button
-          type="button"
-          className="calendar__add-btn"
-          onClick={() => Open_add_modal()}
-          ref={Add_btn_ref}
-        >
-          + Add event
-        </button>
-      </div>
+      <Section_header
+        className="calendar__toolbar"
+        title="Day overview"
+        right={
+          <button
+            type="button"
+            className="calendar__add-btn"
+            onClick={() => Open_add_modal()}
+            ref={Add_btn_ref}
+          >
+            + Add event
+          </button>
+        }
+      />
 
       {Loading ? (
         <Loading_skeleton count={3} height="4rem" />

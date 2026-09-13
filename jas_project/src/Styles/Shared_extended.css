@@ -5,7 +5,6 @@
      Household_spendee, Auth, Workplaces, Form_field
    ============================================================ */
 
-
 /* ── Date Navigation ─────────────────────────────────────────
    Used by: Fitness, Shifts
    Markup: .date-nav > .date-nav__top > .date-nav__btn / .date-nav__label
@@ -102,7 +101,6 @@
   transform: scale(0.97);
 }
 
-
 /* ── Week Day Selector ───────────────────────────────────────
    Used by: Fitness, Shifts
    Markup: .week-days > .week-day[.week-day--active/--today/--busy]
@@ -138,10 +136,16 @@
 }
 
 .week-day--active {
-  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+  background: linear-gradient(
+    135deg,
+    var(--color-primary),
+    var(--color-secondary)
+  );
   border-color: rgba(255, 255, 255, 0.15);
   color: #fff;
-  box-shadow: 0 4px 16px rgba(129, 140, 248, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  box-shadow:
+    0 4px 16px rgba(129, 140, 248, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
 }
 
 .week-day--today {
@@ -187,7 +191,6 @@
   padding: 0.35rem 0.15rem;
 }
 
-
 /* ── View Toggle ─────────────────────────────────────────────
    Used by: Calendar, Fitness, Shifts
    Markup: .view-toggle > .view-btn[.view-btn--active]
@@ -217,7 +220,9 @@
   font-size: 0.8rem;
   letter-spacing: 0.02em;
   cursor: pointer;
-  transition: color 0.2s ease, background 0.2s ease;
+  transition:
+    color 0.2s ease,
+    background 0.2s ease;
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -228,15 +233,20 @@
 
 .view-btn--active {
   color: #fff;
-  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
-  box-shadow: 0 4px 16px rgba(129, 140, 248, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  background: linear-gradient(
+    135deg,
+    var(--color-primary),
+    var(--color-secondary)
+  );
+  box-shadow:
+    0 4px 16px rgba(129, 140, 248, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
 
 .view-btn:focus-visible {
   outline: 2px solid var(--color-primary);
   outline-offset: 2px;
 }
-
 
 /* ── Tab Toggle (pill-style sub-tabs) ────────────────────────
    Used by: Fitness, Shifts (place filter), Household (goals/budgets),
@@ -260,10 +270,18 @@
   left: 0.3rem;
   height: calc(100% - 0.6rem);
   border-radius: var(--radius-pill);
-  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+  background: linear-gradient(
+    135deg,
+    var(--color-primary),
+    var(--color-secondary)
+  );
   border: 1px solid rgba(255, 255, 255, 0.15);
-  box-shadow: 0 4px 16px rgba(129, 140, 248, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.15);
-  transition: transform 0.45s var(--ease-spring), width 0.35s var(--ease-spring);
+  box-shadow:
+    0 4px 16px rgba(129, 140, 248, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  transition:
+    transform 0.45s var(--ease-spring),
+    width 0.35s var(--ease-spring);
   pointer-events: none;
   z-index: 0;
   will-change: transform;
@@ -293,7 +311,6 @@
 .tab-toggle__btn--active {
   color: #fff;
 }
-
 
 /* ── Template Chips (quick-add presets) ───────────────────────
    Used by: Fitness, Shifts
@@ -329,7 +346,10 @@
   font-weight: 600;
   white-space: nowrap;
   cursor: pointer;
-  transition: background var(--duration-fast) ease, border-color var(--duration-fast) ease, transform var(--duration-fast) var(--ease-spring);
+  transition:
+    background var(--duration-fast) ease,
+    border-color var(--duration-fast) ease,
+    transform var(--duration-fast) var(--ease-spring);
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -379,7 +399,9 @@
   color: var(--text-dim);
   font-size: 0.7rem;
   cursor: pointer;
-  transition: background var(--duration-fast) ease, color var(--duration-fast) ease;
+  transition:
+    background var(--duration-fast) ease,
+    color var(--duration-fast) ease;
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -387,7 +409,6 @@
   background: var(--surface-hover);
   color: var(--text);
 }
-
 
 /* ── List Header + Add Button ────────────────────────────────
    Used by: Fitness, Shifts
@@ -410,28 +431,57 @@
   padding: 0.55rem 1.1rem;
   border: none;
   border-radius: var(--radius-pill);
-  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+  background: linear-gradient(
+    135deg,
+    var(--color-primary),
+    var(--color-secondary)
+  );
   color: #fff;
   font-family: var(--font-heading);
   font-weight: 700;
   font-size: 0.8rem;
   letter-spacing: 0.02em;
   cursor: pointer;
-  box-shadow: 0 4px 16px rgba(129, 140, 248, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.15);
-  transition: transform var(--duration-normal) var(--ease-spring), box-shadow var(--duration-normal) ease;
+  box-shadow:
+    0 4px 16px rgba(129, 140, 248, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  transition:
+    transform var(--duration-normal) var(--ease-spring),
+    box-shadow var(--duration-normal) ease;
   flex-shrink: 0;
   -webkit-tap-highlight-color: transparent;
 }
 
 .list-header__add:hover {
   transform: translateY(-2px) scale(1.03);
-  box-shadow: 0 8px 24px rgba(129, 140, 248, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  box-shadow:
+    0 8px 24px rgba(129, 140, 248, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 .list-header__add:active {
   transform: scale(0.97);
 }
 
+.list-header__title-wrap {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  min-width: 0;
+}
+
+.list-header__subtitle {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
+.list-header__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
 
 /* ── Card Actions ────────────────────────────────────────────
    Used by: Fitness, Shifts, Workplaces
@@ -528,7 +578,6 @@
   outline-offset: 2px;
 }
 
-
 /* ── Progress Bar ────────────────────────────────────────────
    Used by: Budgets, Household (savings goals), Profile (goal bar)
    Markup: .progress-bar > .progress-bar__fill
@@ -560,7 +609,6 @@
   font-size: 0.7rem;
   color: rgba(255, 255, 255, 0.35);
 }
-
 
 /* ── Icon Button (small circular) ────────────────────────────
    Used by: Budgets, Household (savings goals), Profile
@@ -600,7 +648,6 @@
   color: #34d399;
 }
 
-
 /* ── Icon Button (large, 44px touch target) ──────────────────
    Used by: Profile
    Markup: .icon-btn-lg[.icon-btn-lg--danger]
@@ -617,7 +664,11 @@
   background: rgba(255, 255, 255, 0.06);
   color: rgba(255, 255, 255, 0.65);
   cursor: pointer;
-  transition: background 0.2s ease, color 0.2s ease, transform var(--duration-fast) ease, box-shadow var(--duration-fast) ease;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    transform var(--duration-fast) ease,
+    box-shadow var(--duration-fast) ease;
 }
 
 .icon-btn-lg svg {
@@ -638,7 +689,6 @@
   color: #ef4444;
   box-shadow: 0 4px 14px rgba(239, 68, 68, 0.3);
 }
-
 
 /* ── Type Toggle (income/expense/contribute) ─────────────────
    Used by: Household_spendee (transactions, recurring)
@@ -661,7 +711,10 @@
   bottom: 0.3rem;
   left: 0;
   border-radius: 999px;
-  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), width 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.2s ease;
+  transition:
+    transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+    width 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+    background 0.2s ease;
   pointer-events: none;
   z-index: 0;
 }
@@ -709,7 +762,6 @@
   color: #818cf8;
 }
 
-
 /* ── Category Chips ──────────────────────────────────────────
    Used by: Household_spendee (transactions, recurring)
    Markup: .category-chips > .category-chip[.category-chip--active]
@@ -745,7 +797,6 @@
   font-weight: 600;
 }
 
-
 /* ── Section Title ───────────────────────────────────────────
    Used by: Household, Budgets, Household_spendee
    Markup: .section-title
@@ -759,7 +810,6 @@
   color: rgba(255, 255, 255, 0.5);
   margin-bottom: 0.75rem;
 }
-
 
 /* ── Stat Grid (shared summary cards) ────────────────────────
    Used by: Shifts, Calendar, Household, Fitness, Profile, Recurring
@@ -800,9 +850,7 @@
   }
 }
 
-
 /* .glass-stat → now handled by .stat-grid above */
-
 
 /* ── Deletion Card Remove Animation ──────────────────────────
    Used by: Fitness, Shifts, Calendar
@@ -836,7 +884,6 @@
   }
 }
 
-
 /* ── Error Shake (enhanced) ──────────────────────────────────
    Used by: Form_field
    Apply .form-field--shake-enhanced to trigger
@@ -847,11 +894,17 @@
 }
 
 @keyframes shakeShared {
-  0%, 100% { transform: translateX(0); }
-  25% { transform: translateX(-6px); }
-  75% { transform: translateX(6px); }
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-6px);
+  }
+  75% {
+    transform: translateX(6px);
+  }
 }
-
 
 /* ── Responsive ─────────────────────────────────────────────── */
 
@@ -865,7 +918,6 @@
     font-size: 0.78rem;
   }
 }
-
 
 /* ── Picker Trigger (mobile dropdown) ────────────────────────
    Used by: Shifts (place filter), Household (tab picker)
@@ -919,7 +971,6 @@
   opacity: 0.5;
   margin-left: 0.1rem;
 }
-
 
 /* ── Picker List (inside sheet modal) ────────────────────────
    Used by: Shifts (place filter), Household (tab picker)
@@ -1007,7 +1058,6 @@
   border-radius: var(--radius-pill, 999px);
   margin-left: auto;
 }
-
 
 /* ── Reduced Motion (consolidated) ─────────────────────────── */
 

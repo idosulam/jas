@@ -1,5 +1,5 @@
 import "./Fitness.css";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Get_supabase_client } from "../../../Lib/Superbase";
 import { Use_user_id } from "../../../Lib/Auth_context.jsx";
 import { Use_household } from "../../../Lib/Household_context.jsx";
@@ -19,8 +19,15 @@ function Fitness() {
   const { Household_name } = Use_household();
   const [activeTab, setActiveTab] = useState("workouts");
   const [profileData, setProfileData] = useState(null);
-  const tabRef = useRef(null);
-  const [tabIndicator, setTabIndicator] = useState({ left: 0, width: 0 });
+
+  const tabOptions = useMemo(
+    () =>
+      SUB_TABS.map((tab) => ({
+        ...tab,
+        controlId: `fitness-panel-${tab.id}`,
+      })),
+    [],
+  );
 
   // Fetch profile data for BMR/macro calculations
   const Fetch_profile = useCallback(async () => {
@@ -58,28 +65,6 @@ function Fitness() {
   }, [Fetch_profile]);
 
   // Sliding indicator for sub-tabs
-  const updateTabIndicator = useCallback(() => {
-    const container = tabRef.current;
-    if (!container) return;
-    const active = container.querySelector(".tab-toggle__btn--active");
-    if (!active) return;
-    const cRect = container.getBoundingClientRect();
-    const aRect = active.getBoundingClientRect();
-    setTabIndicator({
-      left: aRect.left - cRect.left,
-      width: aRect.width,
-    });
-  }, [activeTab]);
-
-  useEffect(() => {
-    const id = requestAnimationFrame(updateTabIndicator);
-    window.addEventListener("resize", updateTabIndicator);
-    return () => {
-      cancelAnimationFrame(id);
-      window.removeEventListener("resize", updateTabIndicator);
-    };
-  }, [updateTabIndicator]);
-
   return (
     <section className="fitness page">
       <Page_header
@@ -92,16 +77,10 @@ function Fitness() {
 
       {/* Sub-tab toggle */}
       <Tab_toggle
-        options={SUB_TABS.map((tab) => ({
-          ...tab,
-          controlId: `fitness-panel-${tab.id}`,
-        }))}
+        options={tabOptions}
         activeId={activeTab}
         onChange={setActiveTab}
         ariaLabel="Fitness sections"
-        indicator={tabIndicator}
-        setIndicator={setTabIndicator}
-        containerRef={tabRef}
       />
 
       {/* Sub-tab content */}

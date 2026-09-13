@@ -1,3 +1,4 @@
+import { useCallback } from "react";
 import Sheet_modal from "../../../Components/UI/Modals/Sheet_modal";
 import Form_field from "../../UI/Form/Form_field.jsx";
 import Template_chips from "../../../Components/UI/Template_chips.jsx";
@@ -41,6 +42,14 @@ export default function Shift_presets({
   onSavePreset,
   onDeletePreset,
 }) {
+  const renderPresetMeta = useCallback(
+    (preset) => (
+      <span className="template-chip__meta">
+        {preset.start_time}–{preset.end_time}
+      </span>
+    ),
+    [],
+  );
   return (
     <>
       <Template_chips
@@ -50,11 +59,7 @@ export default function Shift_presets({
         onSelect={onQuickAdd}
         onEdit={onEditPreset}
         onAdd={on_add_preset}
-        renderMeta={(preset) => (
-          <span className="template-chip__meta">
-            {preset.start_time}–{preset.end_time}
-          </span>
-        )}
+        renderMeta={renderPresetMeta}
         addLabel="+ New preset"
       />
 
