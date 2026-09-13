@@ -141,17 +141,12 @@ function Auth_form({
     `${touched && state === "valid" ? "auth__input-wrap--valid" : ""} ${touched && state === "error" ? "auth__input-wrap--error" : ""}`.trim();
 
   return (
-    <AnimatePresence mode="wait" custom={direction}>
       <motion.form
-        key={mode + "-form"}
         className="form-column"
         onSubmit={onSubmit}
-        custom={direction}
-        variants={slide_variants}
-        initial="enter"
-        animate="center"
-        exit="exit"
-        transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.25 }}
       >
         {/* Name (register only) */}
         {mode === MODES.REGISTER && (
@@ -435,7 +430,6 @@ function Auth_form({
           </AnimatePresence>
         </motion.button>
       </motion.form>
-    </AnimatePresence>
   );
 }
 

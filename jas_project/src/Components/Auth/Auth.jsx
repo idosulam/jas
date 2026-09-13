@@ -40,9 +40,9 @@ function Auth() {
   const { success: Toast_success, error: Toast_error } = Use_glass_toast();
 
   useEffect(() => {
-    const t = setTimeout(() => Email_ref.current?.focus(), 400);
+    const t = setTimeout(() => Email_ref.current?.focus(), 350);
     return () => clearTimeout(t);
-  }, []);
+  }, [mode]);
 
   const Switch_mode = (new_mode) => {
     Set_error(null);
@@ -407,21 +407,18 @@ function Auth() {
         <div className="auth__card-pattern" aria-hidden="true" />
         <div className="auth__card-shine" aria-hidden="true" />
 
-        <AnimatePresence mode="wait" custom={direction}>
-          <motion.div
-            key={mode + "-header"}
-            className="page-header"
-            custom={direction}
-            variants={slide_variants}
-            initial="enter"
-            animate="center"
-            exit="exit"
-            transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-          >
-            <h2 className="auth__title">{titles[mode]}</h2>
-            <p className="auth__subtitle">{subtitles[mode]}</p>
-          </motion.div>
-        </AnimatePresence>
+        <motion.div
+          key={mode + "-header"}
+          className="page-header"
+          custom={direction}
+          variants={slide_variants}
+          initial="enter"
+          animate="center"
+          transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+        >
+          <h2 className="auth__title">{titles[mode]}</h2>
+          <p className="auth__subtitle">{subtitles[mode]}</p>
+        </motion.div>
 
         <Auth_form
           mode={mode}
