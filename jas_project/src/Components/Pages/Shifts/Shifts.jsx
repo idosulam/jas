@@ -26,6 +26,7 @@ import Empty_state from "../../../Components/UI/Empty_state";
 import Loading_skeleton from "../../../Components/UI/Loading_skeleton";
 import Page_header from "../../../Components/UI/Page_header";
 import Glass_card from "../../../Components/UI/Glass_card";
+import Section_header from "../../../Components/UI/Section_header";
 import Stat_grid from "../../../Components/UI/Stat_grid";
 import FAB from "../../../Components/UI/Fab";
 
@@ -81,8 +82,6 @@ function Shifts({ onNavigate }) {
     pay_type: "hourly",
   });
   const Add_btn_ref = useRef(null);
-  const Place_filter_ref = useRef(null);
-  const [Place_indicator, set_place_indicator] = useState({ left: 0, width: 0 });
   const [Is_mobile, set_is_mobile] = useState(
     () => window.innerWidth < FILTER_PICKER_BREAKPOINT,
   );
@@ -164,29 +163,6 @@ function Shifts({ onNavigate }) {
   const Use_inline_filters = !Is_mobile;
 
   // Sliding indicator for place filter (only when inline pills are shown)
-  const Update_place_indicator = useCallback(() => {
-    if (!Use_inline_filters) return;
-    const container = Place_filter_ref.current;
-    if (!container) return;
-    const active = container.querySelector(".tab-toggle__btn--active");
-    if (!active) return;
-    const cRect = container.getBoundingClientRect();
-    const aRect = active.getBoundingClientRect();
-    set_place_indicator({
-      left: aRect.left - cRect.left - container.scrollLeft,
-      width: aRect.width,
-    });
-  }, [Place_filter, Use_inline_filters]);
-  useEffect(() => {
-    // Wait a tick so the DOM has the up-to-date set of pills
-    // (e.g. after Effective_workplaces loads asynchronously) before measuring.
-    const id = requestAnimationFrame(Update_place_indicator);
-    window.addEventListener("resize", Update_place_indicator);
-    return () => {
-      cancelAnimationFrame(id);
-      window.removeEventListener("resize", Update_place_indicator);
-    };
-  }, [Update_place_indicator, Effective_workplaces]);
 
   const Open_place_picker = useCallback(() => {
     Place_picker_modal.open_modal();
@@ -908,7 +884,7 @@ function Shifts({ onNavigate }) {
       {!Loading && Effective_workplaces.length === 0 && onNavigate && (
         <Empty_state
           className="animate-in animate-in--1"
-          icon={(
+          icon={
             <svg
               viewBox="0 0 24 24"
               fill="none"
@@ -920,10 +896,10 @@ function Shifts({ onNavigate }) {
               <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z" />
               <path d="M9 22V12h6v10" />
             </svg>
-          )}
+          }
           title="No Workplaces yet"
           text="Add a workplace first to start tracking your shifts."
-          action={(
+          action={
             <button
               type="button"
               className="btn btn--primary"
@@ -931,7 +907,7 @@ function Shifts({ onNavigate }) {
             >
               + Add workplace
             </button>
-          )}
+          }
         />
       )}
 
@@ -946,19 +922,6 @@ function Shifts({ onNavigate }) {
         Picker_closing={Place_picker_modal.closing}
         onOpenPicker={Open_place_picker}
         onClosePicker={Close_place_picker}
-        indicator={Place_indicator}
-        containerRef={Place_filter_ref}
-      />
-
-      <Stat_grid
-        className="animate-in animate-in--3 shifts__summary"
-        key={`${Selected_key}-${Place_filter}`}
-        stats={[
-          { value: `${totals.hours.toFixed(1)}h`, label: "Hours", className: "glass-stat" },
-          { value: Format_money(totals.pay), label: "Pay", className: "glass-stat" },
-          { value: Format_money(totals.tips), label: "Tips", className: "glass-stat" },
-          { value: Format_money(totals.total), label: "Total", className: "glass-stat shifts__stat--total" },
-        ]}
       />
 
       {error && (
@@ -986,43 +949,42 @@ function Shifts({ onNavigate }) {
         onDeletePreset={Delete_preset}
       />
 
-      <div className="list-header animate-in animate-in--4">
-        <h2 className="list-header__title">
-          {Day_title}
-          {Place_filter !== "all" && (
-            <span className="shifts__list-subtitle">
-              {" "}
-              · {PLACES[Place_filter]?.label}
-            </span>
-          )}
-        </h2>
-        <div className="shifts__header-actions">
-          {onNavigate && (
+      <Section_header
+        title={Day_title}
+        subtitle={
+          Place_filter !== "all"
+            ? `· ${PLACES[Place_filter]?.label}`
+            : undefined
+        }
+        right={
+          <>
+            {onNavigate && (
+              <button
+                type="button"
+                className="shifts__manage-link"
+                onClick={() => onNavigate("Workplaces")}
+                title="Manage Workplaces"
+              >
+                ⚙ Workplaces
+              </button>
+            )}
             <button
               type="button"
-              className="shifts__manage-link"
-              onClick={() => onNavigate("Workplaces")}
-              title="Manage Workplaces"
+              className="list-header__add"
+              onClick={Open_add_modal}
+              ref={Add_btn_ref}
+              disabled={Effective_workplaces.length === 0}
+              title={
+                Effective_workplaces.length === 0
+                  ? "Add a workplace first"
+                  : "Add a new shift"
+              }
             >
-              ⚙ Workplaces
+              + Add shift
             </button>
-          )}
-          <button
-            type="button"
-            className="list-header__add"
-            onClick={Open_add_modal}
-            ref={Add_btn_ref}
-            disabled={Effective_workplaces.length === 0}
-            title={
-              Effective_workplaces.length === 0
-                ? "Add a workplace first"
-                : "Add a new shift"
-            }
-          >
-            + Add shift
-          </button>
-        </div>
-      </div>
+          </>
+        }
+      />
 
       {Loading ? (
         <div className="shifts__list">

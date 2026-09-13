@@ -5,6 +5,7 @@ export { default as FAB } from "./UI/Fab";
 export { default as Glass_card } from "./UI/Glass_card";
 export { default as Loading_skeleton } from "./UI/Loading_skeleton";
 export { default as Page_header } from "./UI/Page_header";
+export { default as Section_header } from "./UI/Section_header";
 
 // Form components
 export { default as Form_field } from "./UI/Form/Form_field";

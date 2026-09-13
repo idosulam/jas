@@ -20,6 +20,7 @@ import Loading_skeleton from "../../../Components/UI/Loading_skeleton";
 import Glass_card from "../../../Components/UI/Glass_card";
 import Stat_grid from "../../../Components/UI/Stat_grid";
 import FAB from "../../../Components/UI/Fab";
+import Section_header from "../../../Components/UI/Section_header";
 import Template_chips from "../../../Components/UI/Template_chips.jsx";
 
 import { Kg_to_lbs } from "../../../Lib/Weight";
@@ -521,27 +522,32 @@ function Workout_logger() {
     [Fetch_presets, Toast_success, Toast_error],
   );
 
-  const applyPreset = (preset) => {
-    const exercises =
-      Array.isArray(preset.exercises) && preset.exercises.length > 0
-        ? preset.exercises.map((ex) => ({
-            ...ex,
-            name: Sanitize_text(ex.name, 80),
-            weight_lbs: ex.weight ? Kg_to_lbs(ex.weight) : "",
-          }))
-        : [Empty_exercise()];
-    setEditingWorkout(null);
-    Set_form({
-      workout_date: new Date().toISOString().slice(0, 10),
-      preset_name: preset.name,
-      exercises,
-      notes: "",
-      duration_minutes: "",
-    });
-    Set_field_errors({});
-    Set_field_states({});
-    Form_modal.open_modal();
-  };
+  const renderPresetMeta = useCallback(() => null, []);
+
+  const applyPreset = useCallback(
+    (preset) => {
+      const exercises =
+        Array.isArray(preset.exercises) && preset.exercises.length > 0
+          ? preset.exercises.map((ex) => ({
+              ...ex,
+              name: Sanitize_text(ex.name, 80),
+              weight_lbs: ex.weight ? Kg_to_lbs(ex.weight) : "",
+            }))
+          : [Empty_exercise()];
+      setEditingWorkout(null);
+      Set_form({
+        workout_date: new Date().toISOString().slice(0, 10),
+        preset_name: preset.name,
+        exercises,
+        notes: "",
+        duration_minutes: "",
+      });
+      Set_field_errors({});
+      Set_field_states({});
+      Form_modal.open_modal();
+    },
+    [Form_modal],
+  );
 
   // ── Validation ──
   const Validate_field = (field_name, value) => {
@@ -842,22 +848,24 @@ function Workout_logger() {
         items={Presets}
         onSelect={applyPreset}
         onEdit={Open_preset_modal}
-        onAdd={() => Open_preset_modal()}
+        onAdd={Open_preset_modal}
+        renderMeta={renderPresetMeta}
         addLabel="+ New preset"
       />
 
-      {/* List header */}
-      <div className="list-header animate-in animate-in--4">
-        <h2 className="list-header__title">{Day_title}</h2>
-        <button
-          type="button"
-          className="list-header__add"
-          onClick={Open_add_modal}
-          ref={Add_btn_ref}
-        >
-          + Add workout
-        </button>
-      </div>
+      <Section_header
+        title={Day_title}
+        right={
+          <button
+            type="button"
+            className="list-header__add"
+            onClick={Open_add_modal}
+            ref={Add_btn_ref}
+          >
+            + Add workout
+          </button>
+        }
+      />
 
       {/* Workout list */}
       {Loading ? (

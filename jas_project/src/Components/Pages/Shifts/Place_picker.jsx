@@ -1,3 +1,4 @@
+import { useCallback, useMemo } from "react";
 import Sheet_modal from "../../../Components/UI/Modals/Sheet_modal";
 import Tab_toggle from "../../../Components/UI/Tab_toggle";
 
@@ -14,8 +15,6 @@ import Tab_toggle from "../../../Components/UI/Tab_toggle";
  *   Picker_closing     – mobile picker modal closing flag
  *   onOpenPicker()    – open mobile picker
  *   onClosePicker()   – close mobile picker
- *   indicator         – { left, width } for the sliding pill indicator
- *   containerRef      – ref for the inline-pills container
  */
 export default function Place_picker({
   places,
@@ -27,41 +26,48 @@ export default function Place_picker({
   Picker_closing,
   onOpenPicker,
   onClosePicker,
-  indicator,
-  containerRef,
 }) {
   const useInline = !Is_mobile && placeFilters.length > 1;
 
   if (placeFilters.length <= 1) return null;
 
+  const placeOptions = useMemo(
+    () =>
+      placeFilters.map(({ id, label, active }) => ({
+        id,
+        label,
+        className: `${id !== "all" ? `tab-toggle__btn--${id}` : ""}${active === false ? " tab-toggle__btn--deactivated" : ""}`,
+        ariaLabel: label,
+        deactivated: active === false,
+      })),
+    [placeFilters],
+  );
+
+  const renderOption = useCallback(
+    (option) => (
+      <>
+        {option.label}
+        {option.deactivated && (
+          <span
+            className="shifts__place-deactivated-dot"
+            aria-label="Deactivated"
+          />
+        )}
+      </>
+    ),
+    [],
+  );
+
   if (useInline) {
     return (
       <Tab_toggle
-        options={placeFilters.map(({ id, label, active }) => ({
-          id,
-          label,
-          className: `${id !== "all" ? `tab-toggle__btn--${id}` : ""}${active === false ? " tab-toggle__btn--deactivated" : ""}`,
-          ariaLabel: label,
-        }))}
+        options={placeOptions}
         activeId={selectedPlaceId}
         onChange={onSelect}
         ariaLabel="Filter by place"
-        indicator={indicator}
-        setIndicator={() => {}}
-        containerRef={containerRef}
         role="group"
         buttonRole="button"
-        renderOption={(option, isActive) => (
-          <>
-            {option.label}
-            {placeFilters.find((f) => f.id === option.id)?.active === false && (
-              <span
-                className="shifts__place-deactivated-dot"
-                aria-label="Deactivated"
-              />
-            )}
-          </>
-        )}
+        renderOption={renderOption}
       />
     );
   }
