@@ -39,7 +39,11 @@ function Auth() {
   const Email_ref = useRef(null);
   const { success: Toast_success, error: Toast_error } = Use_glass_toast();
 
+  // Only steal focus on real-pointer devices. On touch the auto-focus pops the
+  // soft keyboard open, which shoves the card (and the "back" links) off-screen.
   useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (!window.matchMedia("(pointer: fine)").matches) return;
     const t = setTimeout(() => Email_ref.current?.focus(), 350);
     return () => clearTimeout(t);
   }, [mode]);
@@ -373,6 +377,7 @@ function Auth() {
       <div className="auth__orb auth__orb--2" aria-hidden="true" />
       <div className="auth__orb auth__orb--3" aria-hidden="true" />
 
+      <div className="auth__stack">
       <motion.div
         className="auth__brand"
         initial={{ opacity: 0, y: -20 }}
@@ -406,6 +411,28 @@ function Auth() {
       >
         <div className="auth__card-pattern" aria-hidden="true" />
         <div className="auth__card-shine" aria-hidden="true" />
+
+        {mode !== MODES.LOGIN && (
+          <button
+            type="button"
+            className="auth__back"
+            onClick={() => Switch_mode(MODES.LOGIN)}
+          >
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.25"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M19 12H5" />
+              <path d="m12 19-7-7 7-7" />
+            </svg>
+            Back to sign in
+          </button>
+        )}
 
         <motion.div
           key={mode + "-header"}
@@ -512,6 +539,7 @@ function Auth() {
       >
         Track shifts. Count earnings. Stay organized.
       </motion.p>
+      </div>
     </div>
   );
 }

@@ -9,16 +9,67 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  /* flex-start + `margin-block: auto` on .auth__stack instead of
+     `justify-content: center`. Centering a flex container that overflows
+     pushes the overflow out BOTH ends and makes the top/bottom
+     unreachable — that is why the "back to sign in" link could not be
+     scrolled into view on the register form. margin:auto has no such bug. */
+  justify-content: flex-start;
   min-height: 100dvh;
-  min-height: -webkit-fill-available;
   padding: env(safe-area-inset-top, 1.5rem) 1.25rem
     env(safe-area-inset-bottom, 1.5rem);
   background: #070b14;
   color-scheme: dark;
-  overflow: hidden;
+  overflow-x: hidden;
   overflow-y: auto;
+  overscroll-behavior: contain;
+  scroll-padding-block: 1rem;
   -webkit-overflow-scrolling: touch;
+}
+
+/* Centers the stack when it fits, scrolls cleanly when it does not. */
+.auth__stack {
+  width: 100%;
+  max-width: 24rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-block: auto;
+}
+
+/* Always-reachable back affordance (register / forgot modes). */
+.auth__back {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin: 0 0 0.85rem;
+  padding: 0.35rem 0.7rem 0.35rem 0.45rem;
+  border: none;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-muted, rgba(241, 245, 249, 0.6));
+  font-size: 0.78rem;
+  font-weight: 600;
+  font-family: var(--font-heading);
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  position: relative;
+  z-index: 2;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
+}
+
+.auth__back svg {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+}
+
+.auth__back:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text, #f1f5f9);
 }
 
 /* ── Ambient orbs (enhanced) ── */
@@ -27,7 +78,12 @@
   border-radius: 50%;
   pointer-events: none;
   will-change: transform;
-  filter: blur(90px);
+  /* 90px of blur over 45vmax boxes is enormous to rasterise and, worse, it
+     sits behind .auth__card's backdrop-filter — so every animated frame of
+     these orbs forced a full-screen backdrop re-blur. The radial-gradients
+     below already fade to transparent, so 55px reads the same for a lot
+     less work. */
+  filter: blur(55px);
 }
 
 .auth__orb--1 {
@@ -116,6 +172,25 @@
   }
 }
 
+/* Low-power / narrow devices: drop the glass blur entirely and compensate
+   with opacity. A moving blurred layer behind a backdrop-filter is the
+   single most expensive thing on this screen. */
+@media (max-width: 640px) {
+  .auth__orb {
+    animation: none;
+  }
+
+  .auth__card {
+    background: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.1) 0%,
+      rgba(255, 255, 255, 0.04) 100%
+    );
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}
+
 /* ── Brand ── */
 .auth__brand {
   display: flex;
@@ -157,8 +232,11 @@
     rgba(255, 255, 255, 0.02) 100%
   );
   border: 1px solid rgba(255, 255, 255, 0.12);
-  backdrop-filter: blur(28px) saturate(200%);
-  -webkit-backdrop-filter: blur(28px) saturate(200%);
+  /* 28px blur + saturate(200%) is very expensive on mobile, and it forces the
+     compositor to re-blur the backdrop every frame the orbs animate. 16px
+     keeps the glass look without the jank. */
+  backdrop-filter: blur(16px) saturate(150%);
+  -webkit-backdrop-filter: blur(16px) saturate(150%);
   box-shadow:
     0 8px 32px rgba(0, 0, 0, 0.4),
     0 1px 0 rgba(255, 255, 255, 0.06) inset,
@@ -175,8 +253,9 @@
   background-repeat: repeat;
   background-size: 128px 128px;
   pointer-events: none;
-  opacity: 0.3;
-  mix-blend-mode: overlay;
+  opacity: 0.25;
+  /* mix-blend-mode: overlay forced a backdrop readback + full composite on
+     every paint of the card. The noise reads identically as plain alpha. */
   z-index: 0;
 }
 
@@ -620,6 +699,10 @@
   .auth {
     justify-content: flex-start;
     padding-top: max(env(safe-area-inset-top, 1rem), 1rem);
+  }
+
+  .auth__stack {
+    margin-block: 0;
   }
 
   .auth__brand {
