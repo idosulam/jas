@@ -100,10 +100,21 @@ function Shake_field({ trigger, children, ...rest }) {
   );
 }
 
+/* One animated unit per auth mode — header + form + footer slide together.
+   Deliberately no `scale`: scaling repaints the backdrop region every frame,
+   which is the expensive part on a glass card. */
 const slide_variants = {
-  enter: (dir) => ({ x: dir > 0 ? 80 : -80, opacity: 0, scale: 0.96 }),
-  center: { x: 0, opacity: 1, scale: 1 },
-  exit: (dir) => ({ x: dir > 0 ? -80 : 80, opacity: 0, scale: 0.96 }),
+  enter: (dir) => ({ x: dir > 0 ? 56 : -56, opacity: 0 }),
+  center: {
+    x: 0,
+    opacity: 1,
+    transition: { duration: 0.24, ease: [0.16, 1, 0.3, 1] },
+  },
+  exit: (dir) => ({
+    x: dir > 0 ? -56 : 56,
+    opacity: 0,
+    transition: { duration: 0.12, ease: "easeIn" },
+  }),
 };
 
 function Auth_form({
@@ -159,9 +170,7 @@ function Auth_form({
       <motion.form
         className="form-column"
         onSubmit={onSubmit}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.25 }}
+        initial={false}
       >
         {/* Name (register only) */}
         {mode === MODES.REGISTER && (

@@ -37,6 +37,13 @@
   margin-block: auto;
 }
 
+/* One animated unit per auth mode (header + form + footer). */
+.auth__panel {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
 /* Always-reachable back affordance (register / forgot modes). */
 .auth__back {
   align-self: flex-start;
@@ -172,14 +179,12 @@
   }
 }
 
-/* Low-power / narrow devices: drop the glass blur entirely and compensate
-   with opacity. A moving blurred layer behind a backdrop-filter is the
-   single most expensive thing on this screen. */
+/* Low-power / narrow devices: drop the glass blur and compensate with
+   opacity. The blur is what made the animated orbs expensive — a moving
+   blurred layer behind a backdrop-filter forces the compositor to re-blur
+   the whole backdrop every frame. With the card blur gone the orbs are just
+   pre-rastered composited layers sliding around, so they animate cheaply. */
 @media (max-width: 640px) {
-  .auth__orb {
-    animation: none;
-  }
-
   .auth__card {
     background: linear-gradient(
       135deg,

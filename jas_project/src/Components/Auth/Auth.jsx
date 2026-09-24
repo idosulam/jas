@@ -412,6 +412,19 @@ function Auth() {
         <div className="auth__card-pattern" aria-hidden="true" />
         <div className="auth__card-shine" aria-hidden="true" />
 
+        {/* custom must also go to AnimatePresence: exiting children keep the
+            `custom` they mounted with, so without it a "back" navigation slides
+            the old panel out in the same direction the new one comes in. */}
+        <AnimatePresence mode="wait" initial={false} custom={direction}>
+        <motion.div
+          key={mode}
+          className="auth__panel"
+          custom={direction}
+          variants={slide_variants}
+          initial="enter"
+          animate="center"
+          exit="exit"
+        >
         {mode !== MODES.LOGIN && (
           <button
             type="button"
@@ -434,18 +447,10 @@ function Auth() {
           </button>
         )}
 
-        <motion.div
-          key={mode + "-header"}
-          className="page-header"
-          custom={direction}
-          variants={slide_variants}
-          initial="enter"
-          animate="center"
-          transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-        >
+        <div className="page-header">
           <h2 className="auth__title">{titles[mode]}</h2>
           <p className="auth__subtitle">{subtitles[mode]}</p>
-        </motion.div>
+        </div>
 
         <Auth_form
           mode={mode}
@@ -485,12 +490,7 @@ function Auth() {
           onSubmit={Handle_submit}
         />
 
-        <motion.div
-          className="auth__footer"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.4, duration: 0.4 }}
-        >
+        <div className="auth__footer">
           {mode === MODES.LOGIN && (
             <>
               <button
@@ -528,7 +528,9 @@ function Auth() {
               ← Back to sign in
             </button>
           )}
+        </div>
         </motion.div>
+        </AnimatePresence>
       </motion.div>
 
       <motion.p
