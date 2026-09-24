@@ -1,5 +1,6 @@
 import Password_strength_bar, { MODES } from "./Password_strength_bar";
-import { motion, AnimatePresence } from "framer-motion";
+import { useEffect, useRef } from "react";
+import { motion, AnimatePresence, useAnimationControls } from "framer-motion";
 
 /* ── Inline check / cross indicator ── */
 function Field_indicator({ state }) {
@@ -71,15 +72,29 @@ function Field_error({ message }) {
 }
 
 /* ── Shake wrapper ── */
+/* Do NOT key this wrapper by `trigger`: a changing key remounts the whole
+   subtree, which destroys the inner <input>. That steals focus, closes the
+   mobile keyboard and resets the caret every time a field shakes.
+   Drive the shake through animation controls instead — the DOM stays put. */
 function Shake_field({ trigger, children, ...rest }) {
+  const controls = useAnimationControls();
+  const Last_trigger = useRef(0);
+
+  useEffect(() => {
+    if (trigger === Last_trigger.current) return;
+    Last_trigger.current = trigger;
+    if (trigger <= 0) {
+      controls.start({ x: 0 });
+      return;
+    }
+    controls.start({
+      x: [0, -10, 10, -8, 8, -4, 4, 0],
+      transition: { duration: 0.5, ease: "easeInOut" },
+    });
+  }, [trigger, controls]);
+
   return (
-    <motion.div
-      key={"shake-" + trigger}
-      initial={false}
-      animate={trigger > 0 ? { x: [0, -10, 10, -8, 8, -4, 4, 0] } : { x: 0 }}
-      transition={{ duration: 0.5, ease: "easeInOut" }}
-      {...rest}
-    >
+    <motion.div animate={controls} initial={false} {...rest}>
       {children}
     </motion.div>
   );
