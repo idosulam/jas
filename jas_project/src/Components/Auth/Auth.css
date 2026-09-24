@@ -85,12 +85,11 @@
   border-radius: 50%;
   pointer-events: none;
   will-change: transform;
-  /* 90px of blur over 45vmax boxes is enormous to rasterise and, worse, it
-     sits behind .auth__card's backdrop-filter — so every animated frame of
-     these orbs forced a full-screen backdrop re-blur. The radial-gradients
-     below already fade to transparent, so 55px reads the same for a lot
-     less work. */
-  filter: blur(55px);
+  /* Deliberately NO `filter: blur()`. The radial-gradients below already
+     fade to transparent at 50-70%, so the blur bought almost nothing
+     visually while forcing the browser to rasterise three enormous filtered
+     layers and re-composite them every frame. Dropping it is close to free
+     visually and is the single biggest win on this screen. */
 }
 
 .auth__orb--1 {
@@ -135,40 +134,42 @@
   animation: authOrb3 15s ease-in-out infinite;
 }
 
+/* Translate and opacity only — no `scale`. Scaling forces the layer to be
+   re-rasterised at the new size, which on 45vmax boxes is very expensive.
+   Pure translation is handled entirely by the compositor. */
 @keyframes authOrb1 {
   0%,
   100% {
-    transform: translate(0, 0) scale(1);
+    transform: translate3d(0, 0, 0);
   }
   33% {
-    transform: translate(8%, -5%) scale(1.1);
+    transform: translate3d(8%, -5%, 0);
   }
   66% {
-    transform: translate(-4%, 6%) scale(0.92);
+    transform: translate3d(-4%, 6%, 0);
   }
 }
 
 @keyframes authOrb2 {
   0%,
   100% {
-    transform: translate(0, 0) scale(1);
+    transform: translate3d(0, 0, 0);
   }
   33% {
-    transform: translate(-6%, 4%) scale(1.06);
+    transform: translate3d(-6%, 4%, 0);
   }
   66% {
-    transform: translate(5%, -5%) scale(0.95);
+    transform: translate3d(5%, -5%, 0);
   }
 }
 
+/* Opacity pulse only — the cheapest possible motion on a promoted layer. */
 @keyframes authOrb3 {
   0%,
   100% {
-    transform: translateX(-50%) scale(1);
-    opacity: 0.6;
+    opacity: 0.55;
   }
   50% {
-    transform: translateX(-50%) scale(1.3);
     opacity: 1;
   }
 }
@@ -179,22 +180,8 @@
   }
 }
 
-/* Low-power / narrow devices: drop the glass blur and compensate with
-   opacity. The blur is what made the animated orbs expensive — a moving
-   blurred layer behind a backdrop-filter forces the compositor to re-blur
-   the whole backdrop every frame. With the card blur gone the orbs are just
-   pre-rastered composited layers sliding around, so they animate cheaply. */
-@media (max-width: 640px) {
-  .auth__card {
-    background: linear-gradient(
-      135deg,
-      rgba(255, 255, 255, 0.1) 0%,
-      rgba(255, 255, 255, 0.04) 100%
-    );
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
-  }
-}
+/* No breakpoint-specific glass handling needed any more: backdrop-filter is
+   gone at every width, so the orbs animate cheaply everywhere. */
 
 /* ── Brand ── */
 .auth__brand {
@@ -237,11 +224,16 @@
     rgba(255, 255, 255, 0.02) 100%
   );
   border: 1px solid rgba(255, 255, 255, 0.12);
-  /* 28px blur + saturate(200%) is very expensive on mobile, and it forces the
-     compositor to re-blur the backdrop every frame the orbs animate. 16px
-     keeps the glass look without the jank. */
-  backdrop-filter: blur(16px) saturate(150%);
-  -webkit-backdrop-filter: blur(16px) saturate(150%);
+  /* Deliberately NO backdrop-filter. Any backdrop-filter makes the browser
+     re-blur everything behind the card every frame that the orbs move —
+     that is what made the whole screen feel heavy even at idle. The card is
+     nearly opaque over the #070b14 background anyway, so we buy the
+     legibility back with alpha instead of blur. */
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.1) 0%,
+    rgba(255, 255, 255, 0.045) 100%
+  );
   box-shadow:
     0 8px 32px rgba(0, 0, 0, 0.4),
     0 1px 0 rgba(255, 255, 255, 0.06) inset,
@@ -484,8 +476,12 @@
 }
 
 .auth__strength-bar-fill {
+  width: 100%;
   height: 100%;
   border-radius: 999px;
+  /* Scaled rather than width-animated: animating `width` triggers layout on
+     every keystroke while the user types a password. */
+  transform-origin: left center;
   transition: background 0.3s ease;
 }
 

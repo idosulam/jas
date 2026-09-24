@@ -32,17 +32,17 @@ export default function Password_strength_bar({ password, mode }) {
   return (
     <motion.div
       className="auth__strength"
-      initial={{ opacity: 0, height: 0 }}
-      animate={{ opacity: 1, height: "auto" }}
-      exit={{ opacity: 0, height: 0 }}
-      transition={{ duration: 0.25 }}
+      initial={{ opacity: 0, y: -4 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -4 }}
+      transition={{ duration: 0.2 }}
     >
       <div className="auth__strength-bar-track">
         <motion.div
           className="auth__strength-bar-fill"
-          initial={{ width: 0 }}
-          animate={{ width: `${percent}%` }}
-          transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+          initial={{ scaleX: 0 }}
+          animate={{ scaleX: percent / 100 }}
+          transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
           style={{ background: color }}
         />
       </div>

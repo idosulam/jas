@@ -53,16 +53,20 @@ function Field_indicator({ state }) {
   );
 }
 
+/* No `height: 0 -> auto` here. Framer animates height on the main thread by
+   measuring and re-laying-out the subtree, which janks on every keystroke
+   that flips a field in/out of error. Opacity + transform stay on the
+   compositor. */
 function Field_error({ message }) {
   return (
     <AnimatePresence>
       {message && (
         <motion.span
           className="auth__field-error-msg"
-          initial={{ opacity: 0, y: -4, height: 0 }}
-          animate={{ opacity: 1, y: 0, height: "auto" }}
-          exit={{ opacity: 0, y: -4, height: 0 }}
-          transition={{ duration: 0.2 }}
+          initial={{ opacity: 0, y: -4 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -4 }}
+          transition={{ duration: 0.15 }}
         >
           {message}
         </motion.span>
@@ -371,10 +375,10 @@ function Auth_form({
           {error && (
             <motion.div
               className="auth__error"
-              initial={{ opacity: 0, y: -8, height: 0 }}
-              animate={{ opacity: 1, y: 0, height: "auto" }}
-              exit={{ opacity: 0, y: -8, height: 0 }}
-              transition={{ duration: 0.2 }}
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.15 }}
               role="alert"
             >
               <svg
@@ -398,10 +402,10 @@ function Auth_form({
           {success_msg && (
             <motion.div
               className="auth__success"
-              initial={{ opacity: 0, y: -8, height: 0 }}
-              animate={{ opacity: 1, y: 0, height: "auto" }}
-              exit={{ opacity: 0, y: -8, height: 0 }}
-              transition={{ duration: 0.2 }}
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.15 }}
               role="status"
             >
               <svg
